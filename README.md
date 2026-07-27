@@ -35,6 +35,32 @@ to regenerate, precompile the `<script type="text/babel">` block with the Babel
 `react` preset, inline `react`/`react-dom` UMD bundles, and embed the Google Fonts
 woff2 files as `data:` URIs.
 
+## Deployment
+
+Live at **https://worklaw.app** and **https://furrball26.github.io/USAAssist/**.
+
+- **GitHub Pages** serves the self-contained `index.html` from `main` (root) — fully
+  offline-capable, auto-publishes on every push.
+- **worklaw.app** is a Vercel project (`usaassist`, team Spectrum Dating; DNS already
+  points there). It serves a small shell `index.html` that loads React from a CDN and the
+  app bundle from jsDelivr, git-backed:
+  `https://cdn.jsdelivr.net/gh/furrball26/USAAssist@main/assets/app.js`.
+  `assets/app.js` is the minified compiled build, committed to the repo.
+
+### Updating a live change
+
+1. Edit `index.dev.html` (the JSX source).
+2. Rebuild the artifacts: self-contained `index.html` (for Pages) and minified
+   `assets/app.js` (for jsDelivr / the Vercel shell).
+3. `git push`. Pages updates immediately. For worklaw.app, purge the jsDelivr cache so the
+   new bundle is picked up right away:
+   `curl https://purge.jsdelivr.net/gh/furrball26/USAAssist@main/assets/app.js`
+   (otherwise jsDelivr serves the cached bundle for up to ~12h).
+
+> Alternative: point worklaw.app's DNS at GitHub Pages (apex A records to GitHub's IPs,
+> `www` CNAME to `furrball26.github.io`) to serve the fully self-contained build directly,
+> dropping the CDN dependencies. Requires a DNS change at the registrar.
+
 ## Accessibility (core to the brief)
 
 Atkinson Hyperlegible for UI text, IBM Plex Mono for data/citations; 17px minimum
