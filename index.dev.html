@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14181F">
+<title>WorkLaw — know your rights at work</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    background:#F3EFE7;
+    font-family:'Atkinson Hyperlegible',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    color:#14181F;
+  }
+  a{color:#2B3AA8}
+  a:hover{color:#1B2778}
+  button{font-family:inherit}
+  input{font-family:inherit}
+  ::-webkit-scrollbar{width:0;height:0}
+  @keyframes popin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
+
+  /* Device / app shell */
+  #root{min-height:100%;display:flex;align-items:center;justify-content:center;padding:24px}
+  .device{
+    width:410px;height:864px;max-height:calc(100vh - 32px);
+    background:#14181F;border-radius:52px;padding:10px;
+    box-shadow:0 24px 60px rgba(20,24,31,.28);
+  }
+  .screen{
+    width:100%;height:100%;background:#FFFDF8;border-radius:42px;
+    overflow:hidden;position:relative;display:flex;flex-direction:column;
+  }
+  .statusbar{
+    height:54px;flex:none;display:flex;align-items:flex-end;justify-content:space-between;
+    padding:0 26px 8px;font:700 14px 'IBM Plex Mono',monospace;color:#14181F;
+  }
+  .scrollarea{flex:1;overflow-y:auto;overflow-x:hidden}
+  .hoverfx{transition:background .12s ease}
+  .hoverfx:hover{background:#EEF1FF !important}
+
+  /* Full-bleed on phones — the real app fills the viewport */
+  @media (max-width:520px){
+    #root{padding:0}
+    .device{width:100vw;height:100vh;height:100dvh;max-height:none;border-radius:0;padding:0;box-shadow:none;background:#FFFDF8}
+    .screen{border-radius:0}
+    .statusbar{padding-top:env(safe-area-inset-top,0)}
+  }
+</style>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+const { useState, useRef, useEffect, useCallback } = React;
+
+/* Parse a CSS declaration string into a React style object.
+   Lets us reuse the design's exact inline-style strings verbatim. */
+function css(str){
+  const out = {};
+  if(!str) return out;
+  str.split(';').forEach(decl => {
+    const i = decl.indexOf(':');
+    if(i === -1) return;
+    const rawProp = decl.slice(0, i).trim();
+    const value = decl.slice(i + 1).trim();
+    if(!rawProp || value === '') return;
+    const prop = rawProp.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+    out[prop] = value;
+  });
+  return out;
+}
+
+/* ── Static content (ported verbatim from the design) ─────────────── */
+
+const RESULTS = {
+  r_salary_low: { v:'non', title:'Likely non-exempt — overtime is owed', body:'A salary under $684 per week ($35,568/year) fails the federal salary-level test automatically. No duties test can make you exempt below that line, whatever your title says.', cites:['29 C.F.R. §541.600','29 U.S.C. §207'] },
+  r_hourly: { v:'non', title:'Likely non-exempt — overtime is owed', body:'Hourly pay fails the salary-basis test for the executive, administrative and professional exemptions. Outside of a few narrow carve-outs, hourly workers must be paid overtime.', cites:['29 C.F.R. §541.602','29 U.S.C. §207'] },
+  r_duties_none: { v:'non', title:'Likely non-exempt — overtime is owed', body:'Your salary clears the federal threshold, but exemption also requires exempt duties. Following set procedures and tasks is not executive, administrative or professional work under the regulations.', cites:['29 C.F.R. §541','CA Lab. Code §510'] },
+  r_exec_no: { v:'non', title:'Likely non-exempt — overtime is owed', body:'Supervising alone is not enough for the executive exemption. Without real authority over hiring, firing or promotion — or recommendations that carry particular weight — the duties test fails.', cites:['29 C.F.R. §541.100','29 C.F.R. §541.105'] },
+  r_hourly_comp_no: { v:'non', title:'Likely non-exempt — overtime is owed', body:'The hourly computer-employee exemption requires both qualifying duties (systems analysis, design, programming) and at least $27.63/hour. Missing either means overtime is owed.', cites:['29 U.S.C. §213(a)(17)','29 C.F.R. §541.400'] },
+  r_outside_no: { v:'non', title:'Likely non-exempt — overtime is owed', body:'The outside-sales exemption only covers people customarily working away from the employer’s place of business making sales. Inside sales — phone, email, at a desk — does not qualify.', cites:['29 C.F.R. §541.500'] },
+  r_exec: { v:'ex', title:'Possibly exempt — executive', body:'You appear to meet the executive exemption: salaried above the threshold, managing two or more employees, with real hiring/firing input. If any answer overstated your actual authority, revisit it — actual duties control, not titles.', cites:['29 C.F.R. §541.100','29 U.S.C. §213(a)(1)'] },
+  r_admin: { v:'ex', title:'Possibly exempt — administrative', body:'Office or business-operations work involving discretion and independent judgment on significant matters can qualify. This is the most-litigated exemption — "independent judgment" means real authority, not following guidelines.', cites:['29 C.F.R. §541.200','29 C.F.R. §541.202'] },
+  r_prof: { v:'ex', title:'Possibly exempt — learned professional', body:'Work requiring advanced knowledge in a field of science or learning, acquired through prolonged specialized instruction (law, medicine, engineering, accounting), can qualify when salaried above the threshold.', cites:['29 C.F.R. §541.301'] },
+  r_creative: { v:'ex', title:'Possibly exempt — creative professional', body:'Work requiring invention, imagination, originality or talent in a recognized artistic or creative field can qualify. Routine or formulaic creative work usually does not.', cites:['29 C.F.R. §541.302'] },
+  r_comp: { v:'ex', title:'Possibly exempt — computer employee', body:'Systems analysis, design and programming duties can qualify, salaried or at $27.63+/hour. Note: California’s computer exemption sets a much higher pay floor — you may still be owed overtime under state law.', cites:['29 U.S.C. §213(a)(17)','CA Lab. Code §515.5'] },
+  r_outside: { v:'ex', title:'Possibly exempt — outside sales', body:'Regularly making sales away from the employer’s place of business qualifies, with no salary requirement. Time spent on deliveries or service work counts against the exemption.', cites:['29 C.F.R. §541.500'] },
+  r_commission: { v:'maybe', title:'It depends — commissioned sales rules', body:'Commission and piece-rate workers are usually overtime-eligible, but retail/service employees earning over half their pay in commissions at more than 1.5× minimum wage fall under a special exception. Log your hours and pay so the math can be checked.', cites:['29 U.S.C. §207(i)'] }
+};
+
+const TREE = {
+  start: { q:'How are you paid?', help:'Most exemptions require a fixed salary — this is the salary-basis test.', opts:[['A fixed salary every period','salaryLevel','SALARY'],['Hourly','hourlyType','HOURLY'],['Commission or piece rate','r_commission','COMMISSION'],['I am an outside salesperson','outsideSales','OUTSIDE SALES']] },
+  salaryLevel: { q:'Is your salary at least $684 per week?', help:'That is $35,568/year — the federal salary-level test. California sets a higher floor ($1,352/week in 2026); we flag both.', opts:[['Yes, $684/week or more','duties','≥ $684/WK'],['No, less than that','r_salary_low','< $684/WK'],['Not sure','duties','SALARY ?']] },
+  duties: { q:'What do you mainly do all day?', help:'The duties test looks at your real work, not your job title. Pick the closest.', opts:[['Manage two or more employees','execAuth','MANAGES 2+'],['Office work with independent judgment on significant matters','r_admin','ADMIN DUTIES'],['Work requiring an advanced degree (law, engineering, medicine…)','r_prof','PROFESSIONAL'],['Original creative or artistic work','r_creative','CREATIVE'],['Systems analysis, software design or programming','r_comp','COMPUTER'],['Follow set procedures and tasks','r_duties_none','ROUTINE TASKS']] },
+  execAuth: { q:'Can you hire or fire — or do your recommendations carry real weight?', help:'The executive exemption requires genuine authority over other employees’ jobs, not just scheduling shifts.', opts:[['Yes, I have that authority','r_exec','HIRE/FIRE: YES'],['No, I just supervise the work','r_exec_no','HIRE/FIRE: NO']] },
+  hourlyType: { q:'Do you mainly do computer systems work at $27.63/hour or more?', help:'Hourly workers are almost always owed overtime — the one big exception is computer employees at or above $27.63/hour.', opts:[['Yes, both of those','r_comp','COMPUTER $27.63+'],['No','r_hourly','HOURLY, OTHER']] },
+  outsideSales: { q:'Do you regularly make sales away from your employer’s place of business?', help:'Customer sites, door-to-door, the field. Selling by phone or email from home or an office does not count.', opts:[['Yes, mostly in the field','r_outside','FIELD SALES'],['No, mostly from a desk','r_outside_no','INSIDE SALES']] }
+};
+
+const RIGHTS = [
+  { kicker:'OVERTIME', title:'Daily overtime past 8 hours', body:'California requires 1.5× after 8 hours in a day and 2× after 12 — federal law only counts the weekly total. The rule that pays you more applies.', cite:'Lab. Code §510', scope:'CALIFORNIA', tone:'#E8F6EE' },
+  { kicker:'PAY TRANSPARENCY', title:'You may discuss your pay', body:'Your employer cannot forbid you from talking about wages with coworkers. Policies saying otherwise are unenforceable.', cite:'29 U.S.C. §157', scope:'FEDERAL', tone:'#EEF1FF' },
+  { kicker:'DISCRIMINATION', title:'Sexual orientation & gender identity are protected', body:'Firing or harassing someone for being LGBTQ+ is sex discrimination under Title VII, and FEHA adds broader state protection including gender expression.', cite:'Gov. Code §12940', scope:'CALIFORNIA + FEDERAL', tone:'#FFE7EC' },
+  { kicker:'DISABILITY · ADA', title:'Reasonable accommodation is your right', body:'If you can do the job’s core duties, employers with 15+ workers must accommodate a disability — modified schedule, equipment, remote work, reassignment — unless it causes undue hardship. California applies this at 5+ employees.', cite:'42 U.S.C. §12112', scope:'FEDERAL + CALIFORNIA', tone:'#EEF1FF' },
+  { kicker:'DISABILITY · ADA', title:'The interactive process is mandatory', body:'Once you ask for an accommodation (no magic words needed), your employer must engage in a good-faith back-and-forth to find one. Ignoring the request is itself a violation in California.', cite:'Gov. Code §12940(n)', scope:'CALIFORNIA', tone:'#EEF1FF' },
+  { kicker:'DISABILITY · ADA', title:'Medical info stays confidential', body:'Your employer may only ask for documentation related to the accommodation, and must keep medical records separate from your personnel file.', cite:'42 U.S.C. §12112(d)', scope:'FEDERAL', tone:'#EEF1FF' },
+  { kicker:'PROTECTED CLASSES', title:'Who the law protects', body:'Federal law covers race, color, religion, sex (including pregnancy, sexual orientation, gender identity), national origin, age 40+, disability, and genetic information. California adds marital status, ancestry, medical condition, military status, and more.', cite:'Title VII · Gov. Code §12940', scope:'FEDERAL + CALIFORNIA', tone:'#FFE7EC' },
+  { kicker:'PROTECTED CLASSES', title:'Retaliation for reporting is illegal', body:'You are protected the moment you report discrimination or harassment — even informally, and even if the underlying claim is not ultimately proven — as long as it was made in good faith.', cite:'42 U.S.C. §2000e-3', scope:'FEDERAL', tone:'#FFE7EC' },
+  { kicker:'LOCAL', title:'Oakland minimum wage exceeds the state', body:'Employers in Oakland must pay the city minimum, which is above California’s. Alameda and Berkeley set their own as well.', cite:'Oakland Mun. Code 5.92', scope:'ALAMEDA COUNTY', tone:'#FFF4D6' }
+];
+
+const CLAUSES = [
+  { title:'Release of claims', level:'READ CLOSELY', quote:'…releases all claims arising from employment, known or unknown…', plain:'You give up the right to sue for anything that already happened — including the overtime you logged. Wage claims already earned generally cannot be waived in California.', tone:'#FFE7EC', badge:'#E0322F' },
+  { title:'Non-disparagement', level:'NEGOTIABLE', quote:'…shall not make any statement that reflects negatively on the Company…', plain:'As written this is broad. California law protects your ability to describe unlawful conduct you experienced; that carve-out is missing here.', tone:'#FFF4D6', badge:'#B57900' },
+  { title:'Severance amount', level:'STANDARD', quote:'…eight (8) weeks of base salary, less withholdings…', plain:'Eight weeks is within a normal range for your tenure. It is separate from wages you are already owed.', tone:'#E8F6EE', badge:'#1F8A4C' }
+];
+
+const FACTORS = [
+  { name:'Written records', pct:85, status:'STRONG', note:'14 timestamped entries plus your own timesheet photos.', color:'#1F8A4C' },
+  { name:'Pay stubs', pct:60, status:'PARTIAL', note:'March and April uploaded. May and June still missing.', color:'#B57900' },
+  { name:'Witnesses', pct:45, status:'PARTIAL', note:'Two coworkers named; neither has confirmed they would speak.', color:'#B57900' },
+  { name:'Employer statements', pct:75, status:'STRONG', note:'A manager’s refusal to pay overtime is documented in your log.', color:'#1F8A4C' }
+];
+
+const LAWYERS = [
+  { name:'Ortega & Bay LLP', match:'94% MATCH', detail:'Wage-and-hour class actions, Oakland. 18 years, 40+ overtime cases in Alameda County.', fee:'CONTINGENCY', langs:'EN · ES' },
+  { name:'K. Mensah, Attorney at Law', match:'88% MATCH', detail:'Solo practice, individual wage claims and retaliation. Free 30-minute consult.', fee:'FREE CONSULT', langs:'EN · FR' },
+  { name:'Bay Workers Legal Clinic', match:'80% MATCH', detail:'Nonprofit clinic. Sliding scale, income-qualified representation.', fee:'SLIDING SCALE', langs:'EN · ES · ZH' }
+];
+
+const ISSUE_LIST = [
+  ['Unpaid overtime or wages','Hours past 40, off-the-clock work, missed breaks'],
+  ['Harassment or a hostile workplace','Conduct based on a protected characteristic'],
+  ['Discrimination','Race, gender, sexual orientation, gender identity, disability, age'],
+  ['Fired or pushed out','Retaliation, wrongful termination, constructive discharge'],
+  ['A document to review','Offer, contract, NDA, severance, PIP']
+];
+
+const STEP_DEFS = [
+  'Add last week’s hours to your log',
+  'Upload your March–June pay stubs',
+  'Request your personnel file in writing',
+  'Confirm your exemption status'
+];
+
+const PROMPT_TEXTS = ['Can my boss refuse to pay overtime?','How do I ask for an ADA accommodation?','What counts as retaliation?','Should I sign this severance?'];
+
+const TAB_DEFS = [['home','⌂','Home'],['chat','✦','Ask AI'],['log','◷','Log'],['rights','§','Rights'],['lawyers','⚖','Referrals']];
+
+const ONB_TITLES = { 1:'Where do you work?', 2:'What brings you here?' };
+const ONB_BODIES = {
+  1:'Employment law changes by state and sometimes by county. We only show rules that actually apply to you.',
+  2:'Pick the closest one. You can add more later — most cases involve two or three issues.'
+};
+
+const REPLIES = [
+  { text:'No. In California an employer can discipline you for working unapproved overtime, but it must still pay for every hour you actually worked. "Not approved" is not a defense to nonpayment.', cites:['29 U.S.C. §207','Lab. Code §510'] },
+  { text:'Retaliation means a negative action — firing, demotion, cut hours, a sudden bad review — taken because you did something protected, like complaining about wages or reporting harassment. Timing matters, so your log entries are useful evidence.', cites:['Lab. Code §1102.5'] },
+  { text:'Not today. You have 21 days to consider it and 7 days to revoke after signing. Two clauses in your copy are worth negotiating — open Review a document to see them side by side.', cites:['29 U.S.C. §626(f)'] }
+];
+const ADA_REPLY = { text:'Put it in writing, plainly: describe your limitation and what change would help — no legal terms required. Your employer must then start an interactive process with you. I can draft that request from a template and add it to your case file.', cites:['42 U.S.C. §12112','Gov. Code §12940(n)'] };
+
+/* ── App ──────────────────────────────────────────────────────────── */
+
+function App(){
+  const [screen, setScreen] = useState('onboarding');
+  const [onbStep, setOnbStep] = useState(1);
+  const [stateSel, setStateSel] = useState('California');
+  const [county, setCounty] = useState('Alameda County');
+  const [issue, setIssue] = useState(null);
+  const [homeMode, setHomeMode] = useState('standard');
+  const [done, setDone] = useState({});
+  const [draft, setDraft] = useState('');
+  const [typing, setTyping] = useState(false);
+  const [wizNode, setWizNode] = useState('start');
+  const [wizPath, setWizPath] = useState([]);
+  const [messages, setMessages] = useState([
+    { role:'ai', text:'You said your hours ran past 40 last week without extra pay. Tell me your job title and how you are paid — salary or hourly — and I will tell you which overtime rules apply in Alameda County.' }
+  ]);
+  const [entries, setEntries] = useState([
+    { date:'JUN 14, 2026 · 7:42 PM', title:'Worked 11.5 hours, no premium pay', body:'Clocked 8:00am–7:30pm covering the dock. Paycheck showed straight time only.', tag:'Wage & hour', color:'#EF7B22' },
+    { date:'JUN 09, 2026 · 9:15 AM', title:'Manager said overtime is "not approved"', body:'Told in person that unapproved overtime would not be paid. Two coworkers present.', tag:'Statement', color:'#2B3AA8' },
+    { date:'JUN 02, 2026 · 6:05 PM', title:'Schedule changed after the fact', body:'Posted schedule edited to show a shorter shift than I worked.', tag:'Records', color:'#7A3AA8' }
+  ]);
+
+  const timer = useRef(null);
+  const chatEnd = useRef(null);
+  useEffect(() => () => clearTimeout(timer.current), []);
+  useEffect(() => { if(screen === 'chat' && chatEnd.current) chatEnd.current.scrollIntoView({ behavior:'smooth' }); }, [messages, typing, screen]);
+
+  const nav = useCallback(k => () => setScreen(k), []);
+
+  const addEntry = (title, body, color, tag) => {
+    setEntries(p => [{ date:'JUL 26, 2026 · JUST NOW', title, body, tag, color }, ...p]);
+  };
+
+  const send = (text) => {
+    if(!text.trim()) return;
+    const lower = text.toLowerCase();
+    const isAda = lower.includes('accommodation') || lower.includes('ada') || lower.includes('disab');
+    setMessages(prev => {
+      const i = prev.filter(m => m.role === 'user').length % REPLIES.length;
+      const next = prev.concat([{ role:'user', text }]);
+      clearTimeout(timer.current);
+      timer.current = setTimeout(() => {
+        setTyping(false);
+        setMessages(p => p.concat([Object.assign({ role:'ai' }, isAda ? ADA_REPLY : REPLIES[i])]));
+      }, 900);
+      return next;
+    });
+    setDraft('');
+    setTyping(true);
+  };
+
+  const locationLabel = 'Alameda County, CA';
+  const countyShort = 'Oakland';
+  const showTabs = screen !== 'onboarding';
+
+  const chip = (active, big) => 'padding:' + (big ? '14px 16px' : '12px 15px') + ';border-radius:999px;border:2px solid ' + (active ? '#2B3AA8' : '#14181F') + ';background:' + (active ? '#2B3AA8' : '#fff') + ';color:' + (active ? '#fff' : '#14181F') + ";font:700 16px 'Atkinson Hyperlegible',sans-serif;cursor:pointer";
+
+  /* ── Screen renderers ──────────────────────────────────────────── */
+
+  const Onboarding = () => (
+    <div style={css("padding:20px 24px 40px;display:flex;flex-direction:column;gap:22px")}>
+      <div style={css("display:flex;gap:4px;height:6px")}>
+        <div style={css("flex:1;border-radius:3px;background:#2B3AA8")}></div>
+        <div style={css("flex:1;border-radius:3px;background:" + (onbStep >= 2 ? '#2B3AA8' : 'rgba(20,24,31,.12)'))}></div>
+        <div style={css("flex:1;border-radius:3px;background:rgba(20,24,31,.12)")}></div>
+      </div>
+      <div style={css("display:flex;gap:3px;height:5px;border-radius:3px;overflow:hidden")}>
+        <div style={css("flex:1;background:#E0322F")}></div><div style={css("flex:1;background:#EF7B22")}></div><div style={css("flex:1;background:#E3B505")}></div><div style={css("flex:1;background:#1F8A4C")}></div><div style={css("flex:1;background:#2B3AA8")}></div><div style={css("flex:1;background:#7A3AA8")}></div>
+      </div>
+      <h1 style={css("margin:0;font:700 34px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{ONB_TITLES[onbStep]}</h1>
+      <p style={css("margin:0;font:400 18px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty")}>{ONB_BODIES[onbStep]}</p>
+
+      {onbStep === 1 &&
+        <div style={css("display:flex;flex-direction:column;gap:14px")}>
+          <label style={css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em")}>STATE</label>
+          <div style={css("display:flex;flex-wrap:wrap;gap:10px")}>
+            {['California','Texas','New York','Florida','Illinois'].map(n =>
+              <button key={n} onClick={() => setStateSel(n)} style={css(chip(stateSel === n))}>{n}</button>
+            )}
+          </div>
+          <label style={css("margin-top:6px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em")}>COUNTY</label>
+          <div style={css("display:flex;flex-wrap:wrap;gap:10px")}>
+            {['Alameda County','San Francisco County','Los Angeles County'].map(n =>
+              <button key={n} onClick={() => setCounty(n)} style={css(chip(county === n))}>{n}</button>
+            )}
+          </div>
+          <div style={css("margin-top:4px;padding:16px 18px;border-radius:14px;background:#EEF1FF;border:2px solid #2B3AA8")}>
+            <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>Alameda County sits under California wage law plus Oakland, Berkeley and Emeryville city ordinances. We check all three layers.</p>
+          </div>
+        </div>
+      }
+
+      {onbStep === 2 &&
+        <div style={css("display:flex;flex-direction:column;gap:12px")}>
+          {ISSUE_LIST.map(([name, desc]) =>
+            <button key={name} onClick={() => setIssue(name)}
+              style={css('text-align:left;display:flex;flex-direction:column;gap:5px;padding:18px;border-radius:16px;border:2px solid ' + (issue === name ? '#2B3AA8' : '#14181F') + ';background:' + (issue === name ? '#EEF1FF' : '#fff') + ';cursor:pointer')}>
+              <span style={css("font:700 18px 'Atkinson Hyperlegible',sans-serif")}>{name}</span>
+              <span style={css("font:400 15px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{desc}</span>
+            </button>
+          )}
+        </div>
+      }
+
+      <div style={css("padding:18px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F")}>
+        <p style={css("margin:0 0 6px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>WorkLaw is legal information, not legal advice.</p>
+        <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>We explain the law where you live and help you organize facts. We are not your attorney and no attorney–client relationship is created.</p>
+      </div>
+
+      <button onClick={() => onbStep === 1 ? setOnbStep(2) : setScreen('home')} style={css("width:100%;padding:20px;border:none;border-radius:16px;background:#2B3AA8;color:#fff;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{onbStep === 1 ? 'Continue' : 'Open my dashboard'}</button>
+      <button onClick={nav('home')} style={css("align-self:center;background:none;border:none;padding:6px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;text-decoration:underline;cursor:pointer")}>Skip to dashboard</button>
+    </div>
+  );
+
+  const ModeSwitch = ({ theme }) => {
+    const dark = theme === 'dark';
+    const modes = [['standard','Standard'],['action','Action-first'],['plain','Plain']];
+    return (
+      <div style={css("display:flex;gap:6px;margin-bottom:4px")}>
+        {modes.map(([k, label]) => {
+          const on = homeMode === k;
+          const border = dark ? '#fff' : '#14181F';
+          const bg = on ? (dark ? '#FFF4D6' : '#14181F') : 'transparent';
+          const color = on ? (dark ? '#14181F' : '#fff') : (dark ? '#fff' : '#14181F');
+          return <button key={k} onClick={() => setHomeMode(k)} style={css('flex:1;padding:9px 6px;border-radius:999px;border:2px solid ' + border + ';background:' + bg + ';color:' + color + ";font:700 13px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{label}</button>;
+        })}
+      </div>
+    );
+  };
+
+  const HomeStandard = () => (
+    <div style={css("padding:8px 22px 34px;display:flex;flex-direction:column;gap:18px")}>
+      <ModeSwitch theme="light" />
+      <div style={css("display:flex;align-items:center;justify-content:space-between;gap:10px")}>
+        <button onClick={() => { setScreen('onboarding'); setOnbStep(1); }} style={css("display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;border:2px solid #14181F;background:#FFF;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer")}>◉ {locationLabel}</button>
+        <span style={css("font:700 13px 'IBM Plex Mono',monospace;color:#4A5162")}>CASE #24-118</span>
+      </div>
+
+      <div>
+        <h1 style={css("margin:0 0 6px;font:700 30px/1.12 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Unpaid overtime</h1>
+        <p style={css("margin:0;font:400 17px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Opened 14 days ago · last updated today</p>
+      </div>
+
+      <button onClick={nav('strength')} style={css("text-align:left;padding:20px;border-radius:18px;border:2px solid #14181F;background:#E8F6EE;cursor:pointer;display:flex;flex-direction:column;gap:14px")}>
+        <div style={css("display:flex;align-items:baseline;justify-content:space-between")}>
+          <span style={css("font:700 15px 'IBM Plex Mono',monospace;color:#14181F;letter-spacing:.04em")}>CASE STRENGTH</span>
+          <span style={css("font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#136B3C")}>View →</span>
+        </div>
+        <div style={css("font:700 26px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Moderate to strong</div>
+        <div style={css("display:flex;gap:5px;height:14px")}>
+          <div style={css("flex:1;border-radius:7px;background:#1F8A4C")}></div>
+          <div style={css("flex:1;border-radius:7px;background:#1F8A4C")}></div>
+          <div style={css("flex:1;border-radius:7px;background:#1F8A4C")}></div>
+          <div style={css("flex:1;border-radius:7px;background:#9CC7AE")}></div>
+          <div style={css("flex:1;border-radius:7px;background:rgba(20,24,31,.14)")}></div>
+        </div>
+        <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#25302B")}>3 of 5 evidence items collected. Your timesheets are the strongest item; a written schedule would help most next.</p>
+      </button>
+
+      <div>
+        <h2 style={css("margin:0 0 12px;font:700 20px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Your next steps</h2>
+        <div style={css("display:flex;flex-direction:column;gap:10px")}>
+          {STEP_DEFS.map((text, i) => {
+            const on = !!done[i];
+            return (
+              <button key={i} onClick={() => setDone(p => Object.assign({}, p, { [i]: !p[i] }))}
+                style={css('display:flex;align-items:center;gap:14px;text-align:left;padding:16px;border-radius:14px;border:2px solid #14181F;background:' + (on ? '#E8F6EE' : '#fff') + ';cursor:pointer')}>
+                <span style={css('flex:none;width:30px;height:30px;border-radius:8px;border:2px solid #14181F;background:' + (on ? '#1F8A4C' : '#fff') + ';color:#fff;display:flex;align-items:center;justify-content:center;font:700 17px sans-serif')}>{on ? '✓' : ''}</span>
+                <span style={css("font:700 17px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-decoration:" + (on ? 'line-through' : 'none'))}>{text}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div>
+        <h2 style={css("margin:0 0 12px;font:700 20px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Tools</h2>
+        <div style={css("display:grid;grid-template-columns:1fr 1fr;gap:10px")}>
+          <button onClick={nav('wizard')} style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#FFF4D6;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
+            <span style={css("font:700 22px 'IBM Plex Mono',monospace")}>§</span>
+            <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Am I exempt from overtime?</span>
+          </button>
+          <button onClick={nav('log')} style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#FFE7EC;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
+            <span style={css("font:700 22px 'IBM Plex Mono',monospace")}>◷</span>
+            <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Log an incident or hours</span>
+          </button>
+          <button onClick={nav('doc')} style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#EEF1FF;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
+            <span style={css("font:700 22px 'IBM Plex Mono',monospace")}>▤</span>
+            <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Review a document</span>
+          </button>
+          <button onClick={nav('letter')} style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#E8F6EE;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
+            <span style={css("font:700 22px 'IBM Plex Mono',monospace")}>✎</span>
+            <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Draft a letter</span>
+          </button>
+        </div>
+      </div>
+
+      <button onClick={nav('lawyers')} style={css("text-align:left;padding:18px 20px;border-radius:16px;border:2px solid #2B3AA8;background:#fff;cursor:pointer;display:flex;flex-direction:column;gap:6px")}>
+        <span style={css("font:700 18px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Ready for a real attorney?</span>
+        <span style={css("font:400 16px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>4 employment attorneys near {countyShort} offer free consultations. Your case file exports in one tap.</span>
+      </button>
+
+      <div style={css("padding:18px;border-radius:16px;background:#FFF4D6;border:2px solid #14181F")}>
+        <p style={css("margin:0 0 6px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Information, not advice</p>
+        <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>Everything here explains the law that applies in {locationLabel}. It is not legal advice and WorkLaw is not your attorney.</p>
+      </div>
+    </div>
+  );
+
+  /* 1b — alternate home: action-first, one thing at a time */
+  const HomeAction = () => (
+    <div style={css("padding:16px 24px 28px;display:flex;flex-direction:column;gap:18px;min-height:100%")}>
+      <ModeSwitch theme="dark" />
+      <p style={css("margin:0;font:700 14px 'IBM Plex Mono',monospace;color:#C9D0FF;letter-spacing:.05em")}>STEP 3 OF 6 · UNPAID OVERTIME</p>
+      <h1 style={css("margin:0;font:700 40px/1.08 'Atkinson Hyperlegible',sans-serif;color:#fff;text-wrap:pretty")}>Get your last 12 weeks of pay stubs.</h1>
+      <p style={css("margin:0;font:400 19px/1.5 'Atkinson Hyperlegible',sans-serif;color:#DDE2FF")}>Your employer must give you copies within 21 days of asking, in writing. We wrote the request for you.</p>
+      <div style={css("display:flex;flex-direction:column;gap:12px")}>
+        <button onClick={nav('letter')} style={css("padding:20px;border-radius:16px;border:none;background:#FFF4D6;color:#14181F;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Send the request</button>
+        <button onClick={() => setHomeMode('standard')} style={css("padding:20px;border-radius:16px;border:2px solid #fff;background:transparent;color:#fff;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>I already have them</button>
+        <button onClick={nav('rights')} style={css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.4);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Why this matters</button>
+      </div>
+      <div style={css("margin-top:auto;display:flex;flex-direction:column;gap:12px")}>
+        <div style={css("padding:16px;border-radius:14px;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.35)")}>
+          <p style={css("margin:0 0 4px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#fff")}>Done so far</p>
+          <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#DDE2FF")}>Set your location · Logged 14 incidents · Confirmed you are non-exempt</p>
+        </div>
+        <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#C9D0FF")}>Legal information, not legal advice.</p>
+      </div>
+    </div>
+  );
+
+  /* 1c — alternate home: plain-language mode, max legibility */
+  const HomePlain = () => (
+    <div style={css("padding:14px 22px 28px;display:flex;flex-direction:column;gap:16px;min-height:100%")}>
+      <ModeSwitch theme="light" />
+      <div style={css("display:flex;gap:3px;height:6px;border-radius:3px;overflow:hidden")}>
+        <div style={css("flex:1;background:#E0322F")}></div><div style={css("flex:1;background:#EF7B22")}></div><div style={css("flex:1;background:#E3B505")}></div><div style={css("flex:1;background:#1F8A4C")}></div><div style={css("flex:1;background:#2B3AA8")}></div><div style={css("flex:1;background:#7A3AA8")}></div>
+      </div>
+      <h1 style={css("margin:0;font:700 30px/1.15 'Atkinson Hyperlegible',sans-serif;color:#000")}>You worked 62 hours you were not paid for.</h1>
+      <div style={css("padding:20px;border-radius:0;background:#FFEB6B;border:4px solid #000")}>
+        <p style={css("margin:0 0 10px;font:700 24px/1.25 'Atkinson Hyperlegible',sans-serif;color:#000")}>You are probably owed $2,418.</p>
+        <p style={css("margin:0;font:400 20px/1.5 'Atkinson Hyperlegible',sans-serif;color:#000")}>The law says most hourly workers get 1.5× pay after 40 hours a week. In California, also after 8 hours a day.</p>
+      </div>
+      <button onClick={nav('letter')} style={css("padding:22px;border:4px solid #000;background:#000;color:#fff;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Ask for the money</button>
+      <button onClick={nav('log')} style={css("padding:22px;border:4px solid #000;background:#fff;color:#000;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Add hours I worked</button>
+      <button onClick={nav('lawyers')} style={css("padding:22px;border:4px solid #000;background:#fff;color:#000;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Talk to a lawyer</button>
+      <div style={css("margin-top:auto;padding:18px;border:4px solid #000;background:#fff")}>
+        <p style={css("margin:0;font:700 18px/1.45 'Atkinson Hyperlegible',sans-serif;color:#000")}>This app explains the law. It is not your lawyer.</p>
+      </div>
+    </div>
+  );
+
+  const HomeScreen = () => (
+    homeMode === 'action' ? <HomeAction /> : homeMode === 'plain' ? <HomePlain /> : <HomeStandard />
+  );
+
+  const Chat = () => (
+    <div style={css("display:flex;flex-direction:column;min-height:100%")}>
+      <div style={css("padding:6px 22px 14px;border-bottom:2px solid rgba(20,24,31,.1)")}>
+        <h1 style={css("margin:0 0 4px;font:700 26px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Ask about your rights</h1>
+        <p style={css("margin:0;font:400 15px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Answers cite the exact law for {locationLabel}. Not legal advice.</p>
+      </div>
+      <div style={css("flex:1;padding:18px 22px;display:flex;flex-direction:column;gap:14px")}>
+        {messages.map((m, idx) => {
+          const cites = m.cites || [];
+          return (
+            <div key={idx} style={css('display:flex;flex-direction:column;gap:8px;align-items:' + (m.role === 'ai' ? 'flex-start' : 'flex-end') + ';animation:popin .22s ease both')}>
+              <div style={css('max-width:300px;padding:15px 17px;border-radius:' + (m.role === 'ai' ? '18px 18px 18px 4px' : '18px 18px 4px 18px') + ';background:' + (m.role === 'ai' ? '#F0EDE5' : '#2B3AA8') + ';color:' + (m.role === 'ai' ? '#14181F' : '#fff') + ';border:2px solid ' + (m.role === 'ai' ? 'rgba(20,24,31,.14)' : '#2B3AA8') + ";font:400 17px/1.45 'Atkinson Hyperlegible',sans-serif")}>{m.text}</div>
+              {cites.length > 0 &&
+                <div style={css("display:flex;flex-wrap:wrap;gap:7px;max-width:300px")}>
+                  {cites.map((c, ci) => <span key={ci} style={css("padding:7px 11px;border-radius:8px;background:#EEF1FF;border:2px solid #2B3AA8;font:600 13px 'IBM Plex Mono',monospace;color:#1B2778")}>{c}</span>)}
+                </div>
+              }
+            </div>
+          );
+        })}
+        {typing &&
+          <div style={css("align-self:flex-start;padding:14px 18px;border-radius:18px 18px 18px 4px;background:#F0EDE5;border:2px solid rgba(20,24,31,.14);display:flex;gap:6px")}>
+            <span style={css("width:9px;height:9px;border-radius:50%;background:#14181F;animation:blink 1.2s infinite")}></span>
+            <span style={css("width:9px;height:9px;border-radius:50%;background:#14181F;animation:blink 1.2s .2s infinite")}></span>
+            <span style={css("width:9px;height:9px;border-radius:50%;background:#14181F;animation:blink 1.2s .4s infinite")}></span>
+          </div>
+        }
+        <div ref={chatEnd}></div>
+      </div>
+      <div style={css("position:sticky;bottom:0;background:#FFFDF8;border-top:2px solid rgba(20,24,31,.1);padding:14px 20px 18px;display:flex;flex-direction:column;gap:12px")}>
+        <div style={css("display:flex;gap:8px;overflow-x:auto")}>
+          {PROMPT_TEXTS.map(t => <button key={t} onClick={() => send(t)} style={css("flex:none;padding:11px 14px;border-radius:999px;border:2px solid #14181F;background:#FFF;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer")}>{t}</button>)}
+        </div>
+        <div style={css("display:flex;gap:10px;align-items:center")}>
+          <input value={draft} onChange={e => setDraft(e.target.value)} onKeyDown={e => { if(e.key === 'Enter' && draft.trim()) send(draft); }} placeholder="Type your question" style={css("flex:1;padding:16px;border-radius:14px;border:2px solid #14181F;background:#fff;font:400 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
+          <button onClick={() => send(draft)} style={css("padding:16px 20px;border-radius:14px;border:none;background:#2B3AA8;color:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Send</button>
+        </div>
+        <p style={css("margin:0;font:400 13px/1.35 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>AI can be wrong. Verify anything important with an attorney — tap Referrals in the tab bar.</p>
+      </div>
+    </div>
+  );
+
+  const Wizard = () => {
+    const result = RESULTS[wizNode];
+    const wizDone = !!result;
+    const cur = TREE[wizNode] || TREE.start;
+    const depth = wizPath.length + 1;
+    return (
+      <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:20px")}>
+        <button onClick={nav('home')} style={css("align-self:flex-start;background:none;border:none;padding:6px 0;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}>← Dashboard</button>
+        <div>
+          <span style={css("font:700 13px 'IBM Plex Mono',monospace;color:#4A5162;letter-spacing:.05em")}>OVERTIME EXEMPTION CHECK · {wizDone ? 'COMPLETE' : 'QUESTION ' + depth}</span>
+          <h1 style={css("margin:8px 0 0;font:700 27px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{wizDone ? 'Your overtime status' : cur.q}</h1>
+        </div>
+        {!wizDone &&
+          <div style={css("display:flex;flex-direction:column;gap:12px")}>
+            <p style={css("margin:0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{cur.help}</p>
+            {cur.opts.map(([label, next, tag]) =>
+              <button key={label} className="hoverfx" onClick={() => { setWizNode(next); setWizPath(p => p.concat([tag])); }} style={css("text-align:left;padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff;font:700 18px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer")}>{label}</button>
+            )}
+          </div>
+        }
+        {wizDone &&
+          <div style={css("display:flex;flex-direction:column;gap:16px")}>
+            <div style={css("display:flex;flex-wrap:wrap;gap:8px")}>
+              {wizPath.map((a, ai) => <span key={ai} style={css("padding:8px 12px;border-radius:999px;background:#F0EDE5;border:2px solid rgba(20,24,31,.25);font:600 13px 'IBM Plex Mono',monospace;color:#14181F")}>{a}</span>)}
+            </div>
+            <div style={css('padding:22px;border-radius:18px;border:3px solid #14181F;background:' + (result.v === 'non' ? '#E8F6EE' : result.v === 'ex' ? '#FFE7EC' : '#FFF4D6'))}>
+              <p style={css("margin:0 0 8px;font:700 14px 'IBM Plex Mono',monospace;letter-spacing:.05em;color:" + (result.v === 'non' ? '#136B3C' : result.v === 'ex' ? '#B3264F' : '#B57900'))}>RESULT</p>
+              <p style={css("margin:0 0 12px;font:700 26px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{result.title}</p>
+              <p style={css("margin:0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#25302B")}>{result.body}</p>
+            </div>
+            <div style={css("padding:18px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF")}>
+              <p style={css("margin:0 0 10px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>What applies where you are</p>
+              <p style={css("margin:0 0 8px;font:400 16px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}><strong>Federal (FLSA):</strong> time-and-a-half past 40 hours in a week. Exemption requires passing the salary-basis, salary-level ($684/week) and duties tests — failing any one means overtime is owed.</p>
+              <p style={css("margin:0;font:400 16px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}><strong>California:</strong> also daily overtime past 8 hours, double time past 12, and a higher salary floor — $1,352/week in 2026. Passing the federal test but failing California's still means overtime.</p>
+            </div>
+            <div style={css("display:flex;flex-wrap:wrap;gap:8px")}>
+              {result.cites.map((c, ci) => <span key={ci} style={css("padding:8px 12px;border-radius:8px;background:#fff;border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace")}>{c}</span>)}
+            </div>
+            {result.v === 'non' &&
+              <button onClick={nav('letter')} style={css("padding:18px;border-radius:16px;border:none;background:#2B3AA8;color:#fff;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Draft a wage demand letter</button>
+            }
+            {result.v !== 'non' &&
+              <button onClick={nav('chat')} style={css("padding:18px;border-radius:16px;border:none;background:#2B3AA8;color:#fff;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Ask the AI about your classification</button>
+            }
+            <button onClick={() => { setWizNode('start'); setWizPath([]); }} style={css("padding:16px;border-radius:16px;border:2px solid #14181F;background:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer")}>Run the check again</button>
+            <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>This is a plain-language reading of published rules, not a legal opinion about your job.</p>
+          </div>
+        }
+      </div>
+    );
+  };
+
+  const Log = () => (
+    <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:18px")}>
+      <h1 style={css("margin:0;font:700 26px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Incident log</h1>
+      <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Contemporaneous notes carry real weight. Each entry is timestamped and stored encrypted on your device.</p>
+      <div style={css("display:flex;gap:8px;flex-wrap:wrap")}>
+        <button onClick={() => addEntry('Logged extra hours', 'Added from the quick log. Edit to add detail while it is fresh.', '#EF7B22', 'Wage & hour')} style={css("padding:12px 15px;border-radius:999px;border:2px solid #14181F;background:#FFF4D6;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer")}>+ Hours worked</button>
+        <button onClick={() => addEntry('Statement recorded', 'Who said it, where, and who else heard it.', '#2B3AA8', 'Statement')} style={css("padding:12px 15px;border-radius:999px;border:2px solid #14181F;background:#FFF4D6;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer")}>+ Something said</button>
+        <button onClick={() => addEntry('Document saved', 'Attached a file to your case record.', '#7A3AA8', 'Records')} style={css("padding:12px 15px;border-radius:999px;border:2px solid #14181F;background:#FFF4D6;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer")}>+ A document</button>
+      </div>
+      <div style={css("display:flex;flex-direction:column")}>
+        {entries.map((e, i) =>
+          <div key={i} style={css("display:flex;gap:14px")}>
+            <div style={css("display:flex;flex-direction:column;align-items:center;width:22px;flex:none")}>
+              <span style={css('flex:none;width:18px;height:18px;border-radius:50%;background:' + e.color + ';border:3px solid #14181F')}></span>
+              <span style={css("flex:1;width:3px;background:rgba(20,24,31,.15)")}></span>
+            </div>
+            <div style={css("padding-bottom:18px;flex:1")}>
+              <p style={css("margin:0 0 3px;font:600 13px 'IBM Plex Mono',monospace;color:#4A5162")}>{e.date}</p>
+              <p style={css("margin:0 0 5px;font:700 18px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{e.title}</p>
+              <p style={css("margin:0 0 8px;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{e.body}</p>
+              <span style={css("display:inline-block;padding:6px 10px;border-radius:8px;background:#F0EDE5;border:2px solid #14181F;font:600 12px 'IBM Plex Mono',monospace;color:#14181F")}>{e.tag}</span>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  const Doc = () => (
+    <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
+      <button onClick={nav('home')} style={css("align-self:flex-start;background:none;border:none;padding:6px 0;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}>← Dashboard</button>
+      <h1 style={css("margin:0;font:700 26px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Severance agreement</h1>
+      <p style={css("margin:0;font:600 14px 'IBM Plex Mono',monospace;color:#4A5162")}>6 pages · read in 4s · 3 clauses flagged</p>
+      <div style={css("display:flex;flex-direction:column;gap:12px")}>
+        {CLAUSES.map((cl, i) =>
+          <div key={i} style={css('padding:18px;border-radius:16px;border:2px solid #14181F;background:' + cl.tone)}>
+            <div style={css("display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px")}>
+              <span style={css("font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{cl.title}</span>
+              <span style={css('flex:none;padding:6px 10px;border-radius:8px;background:#fff;border:2px solid ' + cl.badge + ";font:700 12px 'IBM Plex Mono',monospace;color:" + cl.badge)}>{cl.level}</span>
+            </div>
+            <p style={css("margin:0 0 10px;padding-left:12px;border-left:4px solid rgba(20,24,31,.25);font:italic 400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>“{cl.quote}”</p>
+            <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{cl.plain}</p>
+          </div>
+        )}
+      </div>
+      <div style={css("padding:16px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F")}>
+        <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>You have <strong>21 days</strong> to consider this and <strong>7 days</strong> to revoke after signing. Do not sign to hit an artificial deadline.</p>
+      </div>
+    </div>
+  );
+
+  const Letter = () => (
+    <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
+      <button onClick={nav('home')} style={css("align-self:flex-start;background:none;border:none;padding:6px 0;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}>← Dashboard</button>
+      <h1 style={css("margin:0;font:700 26px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Wage demand letter</h1>
+      <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Built from your log: 14 entries, 62 unpaid hours, Mar–Jun 2026.</p>
+      <div style={css("padding:22px;border-radius:12px;background:#fff;border:2px solid #14181F;font:400 15px/1.65 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>
+        <p style={css("margin:0 0 12px")}>Rivera Logistics, Attn: Payroll<br/>1140 Embarcadero, Oakland, CA</p>
+        <p style={css("margin:0 0 12px")}><strong>Re: Unpaid overtime wages, March–June 2026</strong></p>
+        <p style={css("margin:0 0 12px")}>I am writing to request payment of overtime wages earned and not paid. My records show <span style={css("background:#FFF4D6;padding:1px 3px")}>62.5 hours</span> worked beyond 40 in a workweek and beyond 8 in a workday.</p>
+        <p style={css("margin:0 0 12px")}>Under 29 U.S.C. §207 and California Labor Code §510, these hours are compensable at premium rates. I request payment of <span style={css("background:#FFF4D6;padding:1px 3px")}>$2,418.75</span> within 14 days.</p>
+        <p style={css("margin:0")}>Sincerely,<br/>Sam Okonkwo</p>
+      </div>
+      <div style={css("display:flex;gap:10px")}>
+        <button style={css("flex:1;padding:17px;border-radius:14px;border:none;background:#2B3AA8;color:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Export PDF</button>
+        <button style={css("flex:1;padding:17px;border-radius:14px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 17px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Edit text</button>
+      </div>
+      <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>A template you send yourself. WorkLaw does not represent you and cannot send this on your behalf.</p>
+    </div>
+  );
+
+  const Strength = () => (
+    <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:18px")}>
+      <button onClick={nav('home')} style={css("align-self:flex-start;background:none;border:none;padding:6px 0;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}>← Dashboard</button>
+      <h1 style={css("margin:0;font:700 26px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>What makes your case</h1>
+      <div style={css("display:flex;flex-direction:column;gap:12px")}>
+        {FACTORS.map((f, i) =>
+          <div key={i} style={css("padding:16px;border-radius:14px;border:2px solid #14181F;background:#fff")}>
+            <div style={css("display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px")}>
+              <span style={css("font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{f.name}</span>
+              <span style={css('padding:5px 10px;border-radius:8px;background:#fff;border:2px solid ' + f.color + ";font:700 12px 'IBM Plex Mono',monospace;color:" + f.color)}>{f.status}</span>
+            </div>
+            <div style={css("height:12px;border-radius:6px;background:rgba(20,24,31,.12);overflow:hidden;margin-bottom:8px")}>
+              <div style={css('height:100%;width:' + f.pct + '%;background:' + f.color)}></div>
+            </div>
+            <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{f.note}</p>
+          </div>
+        )}
+      </div>
+      <div style={css("padding:18px;border-radius:16px;background:#FFE7EC;border:2px solid #14181F")}>
+        <p style={css("margin:0 0 6px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Deadline watch</p>
+        <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>Federal wage claims generally must be filed within 2 years (3 if willful). California allows 3 years. Your earliest logged hours age out in <strong>Mar 2029</strong>.</p>
+      </div>
+    </div>
+  );
+
+  const RightsLib = () => (
+    <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
+      <h1 style={css("margin:0;font:700 26px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Rights library</h1>
+      <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Filtered to {locationLabel}. County rules shown where they beat the state.</p>
+      <div style={css("display:flex;flex-direction:column;gap:12px")}>
+        {RIGHTS.map((r, i) =>
+          <div key={i} style={css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff")}>
+            <p style={css("margin:0 0 4px;font:600 13px 'IBM Plex Mono',monospace;color:#4A5162;letter-spacing:.04em")}>{r.kicker}</p>
+            <p style={css("margin:0 0 8px;font:700 19px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{r.title}</p>
+            <p style={css("margin:0 0 12px;font:400 16px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{r.body}</p>
+            <div style={css("display:flex;gap:8px;flex-wrap:wrap")}>
+              <span style={css("padding:7px 11px;border-radius:8px;background:#EEF1FF;font:600 13px 'IBM Plex Mono',monospace;color:#1B2778")}>{r.cite}</span>
+              <span style={css('padding:7px 11px;border-radius:8px;background:' + r.tone + ";border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace;color:#14181F")}>{r.scope}</span>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  const Lawyers = () => (
+    <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
+      <h1 style={css("margin:0;font:700 26px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Talk to a real attorney</h1>
+      <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Licensed in California, practicing in {countyShort}. WorkLaw takes no referral fee.</p>
+      <div style={css("padding:16px;border-radius:14px;background:#E8F6EE;border:2px solid #14181F")}>
+        <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#25302B")}>Your case file — timeline, documents, and the exemption analysis — exports as one PDF you control.</p>
+      </div>
+      <div style={css("display:flex;flex-direction:column;gap:12px")}>
+        {LAWYERS.map((l, i) =>
+          <div key={i} style={css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff;display:flex;flex-direction:column;gap:8px")}>
+            <div style={css("display:flex;justify-content:space-between;align-items:baseline;gap:10px")}>
+              <span style={css("font:700 19px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{l.name}</span>
+              <span style={css("padding:6px 10px;border-radius:8px;background:#E8F6EE;border:2px solid #1F8A4C;font:700 13px 'IBM Plex Mono',monospace;color:#136B3C")}>{l.match}</span>
+            </div>
+            <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{l.detail}</p>
+            <div style={css("display:flex;gap:8px;flex-wrap:wrap")}>
+              <span style={css("padding:7px 11px;border-radius:8px;background:#F0EDE5;font:600 13px 'IBM Plex Mono',monospace;color:#14181F")}>{l.fee}</span>
+              <span style={css("padding:7px 11px;border-radius:8px;background:#F0EDE5;font:600 13px 'IBM Plex Mono',monospace;color:#14181F")}>{l.langs}</span>
+            </div>
+            <button style={css("margin-top:4px;padding:15px;border-radius:12px;border:none;background:#2B3AA8;color:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Send case file & request consult</button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  const SCREENS = {
+    onboarding: Onboarding, home: HomeScreen, chat: Chat, wizard: Wizard, log: Log,
+    doc: Doc, letter: Letter, strength: Strength, rights: RightsLib, lawyers: Lawyers
+  };
+  const Current = SCREENS[screen] || HomeScreen;
+
+  const altHome = screen === 'home' ? homeMode : null;
+  const screenBg = altHome === 'action' ? '#2B3AA8' : altHome === 'plain' ? '#FFFFFF' : '#FFFDF8';
+  const statusColor = altHome === 'action' ? '#fff' : '#14181F';
+
+  return (
+    <div className="device">
+      <div className="screen" style={css('background:' + screenBg)}>
+        <div className="statusbar" style={css('color:' + statusColor)}>
+          <span>9:41</span><span style={css("letter-spacing:2px")}>▮▮▮ ᯤ ▰</span>
+        </div>
+        <div className="scrollarea">
+          <Current />
+        </div>
+        {showTabs &&
+          <div style={css("flex:none;border-top:2px solid rgba(20,24,31,.14);background:#FFFDF8;padding:10px 12px 26px;display:grid;grid-template-columns:repeat(5,1fr);gap:4px")}>
+            {TAB_DEFS.map(([k, icon, label]) =>
+              <button key={k} onClick={nav(k)} style={css('display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 2px;border-radius:12px;border:2px solid ' + (screen === k ? '#14181F' : 'transparent') + ';background:' + (screen === k ? '#FFF4D6' : 'transparent') + ';color:#14181F;cursor:pointer;min-height:56px')}>
+                <span style={css("font:700 19px 'IBM Plex Mono',monospace")}>{icon}</span>
+                <span style={css("font:700 12px 'Atkinson Hyperlegible',sans-serif")}>{label}</span>
+              </button>
+            )}
+          </div>
+        }
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
