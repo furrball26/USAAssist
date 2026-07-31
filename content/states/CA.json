@@ -1,0 +1,124 @@
+{
+  "jurisdiction": "CA",
+  "name": "California",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "overtime.daily",
+      "value": "1.5x after 8 hrs/day; 2x after 12",
+      "summary": "California requires daily overtime: 1.5x after 8 hours in a workday and 2x after 12, plus 1.5x after 40 in a week and rules for the 7th consecutive day. The rule that pays more applies.",
+      "citation": "Cal. Lab. Code § 510",
+      "sourceUrl": "https://www.dir.ca.gov/dlse/faq_overtime.htm",
+      "sourceAgency": "California Dept of Industrial Relations, DLSE",
+      "lastChecked": "2026-07-30",
+      "reviewed": false, "reviewedBy": null, "notes": ""
+    },
+    {
+      "topic": "overtime.salaryFloorWeekly",
+      "value": 1352,
+      "summary": "California's white-collar exemption salary floor is 2x the state minimum wage for full-time work — about $1,352/week in 2026 — higher than the federal $684. Failing the state floor means overtime is owed even if the federal test passes.",
+      "citation": "Cal. Lab. Code § 515(a); IWC Wage Orders",
+      "sourceUrl": "https://www.dir.ca.gov/dlse/faq_overtimeexemptions.htm",
+      "sourceAgency": "California Dept of Industrial Relations, DLSE",
+      "lastChecked": "2026-07-30",
+      "reviewed": false, "reviewedBy": null,
+      "notes": "Derived as 2 x state minimum wage x 40 hrs x 52 / 12. VERIFY exact 2026 figure against the current CA minimum wage."
+    },
+    {
+      "topic": "overtime.computerExemption",
+      "value": "higher CA pay floor",
+      "summary": "California's computer-professional exemption sets a much higher pay floor than the federal $27.63/hour; a worker exempt federally may still be owed overtime under California law.",
+      "citation": "Cal. Lab. Code § 515.5",
+      "sourceUrl": "https://www.dir.ca.gov/dlse/faq_overtimeexemptions.htm",
+      "sourceAgency": "California Dept of Industrial Relations, DLSE",
+      "lastChecked": "2026-07-30",
+      "reviewed": false, "reviewedBy": null, "notes": "VERIFY current-year computer-exemption rate."
+    },
+    {
+      "topic": "minimumWage.hourly",
+      "value": 16.90,
+      "summary": "California state minimum wage (indexed annually). Many localities set a higher wage that applies instead.",
+      "citation": "Cal. Lab. Code § 1182.12",
+      "sourceUrl": "https://www.dir.ca.gov/dlse/faq_minimumwage.htm",
+      "sourceAgency": "California Dept of Industrial Relations, DLSE",
+      "lastChecked": "2026-07-30",
+      "reviewed": false, "reviewedBy": null,
+      "notes": "VERIFY 2026 figure; provisional based on indexing from 2025 $16.50."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": ["+ marital status", "ancestry", "medical condition", "military/veteran status", "gender expression", "and more (in addition to federal classes)"],
+      "summary": "California's FEHA covers all federal protected classes plus additional categories, and applies to more employers than federal law.",
+      "citation": "Cal. Gov. Code § 12940",
+      "sourceUrl": "https://calcivilrights.ca.gov/employment/",
+      "sourceAgency": "California Civil Rights Department",
+      "lastChecked": "2026-07-30",
+      "reviewed": false, "reviewedBy": null, "notes": ""
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": "5+ employees (harassment: 1+)",
+      "summary": "FEHA covers employers with 5 or more employees; the harassment provisions apply to employers of any size.",
+      "citation": "Cal. Gov. Code § 12926(d); § 12940(j)",
+      "sourceUrl": "https://calcivilrights.ca.gov/employment/",
+      "sourceAgency": "California Civil Rights Department",
+      "lastChecked": "2026-07-30",
+      "reviewed": false, "reviewedBy": null, "notes": ""
+    },
+    {
+      "topic": "disability.interactiveProcess",
+      "value": "mandatory",
+      "summary": "Once accommodation is requested (no magic words needed), the employer must engage in a good-faith interactive process; failing to do so is itself a violation. Applies at 5+ employees.",
+      "citation": "Cal. Gov. Code § 12940(n)",
+      "sourceUrl": "https://calcivilrights.ca.gov/employment/",
+      "sourceAgency": "California Civil Rights Department",
+      "lastChecked": "2026-07-30",
+      "reviewed": false, "reviewedBy": null, "notes": ""
+    },
+    {
+      "topic": "retaliation.whistleblower",
+      "value": true,
+      "summary": "California protects employees from retaliation for reporting suspected legal violations or refusing to participate in them.",
+      "citation": "Cal. Lab. Code § 1102.5",
+      "sourceUrl": "https://www.dir.ca.gov/dlse/",
+      "sourceAgency": "California Dept of Industrial Relations, DLSE",
+      "lastChecked": "2026-07-30",
+      "reviewed": false, "reviewedBy": null, "notes": ""
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "3 years (up to 4 via UCL)",
+      "summary": "California allows 3 years to bring statutory wage claims, and up to 4 years under the Unfair Competition Law.",
+      "citation": "Cal. Code Civ. Proc. § 338; Cal. Bus. & Prof. Code § 17208",
+      "sourceUrl": "https://www.dir.ca.gov/dlse/HowToFileWageClaim.htm",
+      "sourceAgency": "California Dept of Industrial Relations, DLSE",
+      "lastChecked": "2026-07-30",
+      "reviewed": false, "reviewedBy": null, "notes": ""
+    },
+    {
+      "topic": "deadlines.fehaComplaint",
+      "value": "3 years to file with CRD",
+      "summary": "A FEHA complaint must be filed with the Civil Rights Department within 3 years of the alleged violation, followed by a right-to-sue.",
+      "citation": "Cal. Gov. Code § 12960(e)",
+      "sourceUrl": "https://calcivilrights.ca.gov/complaintprocess/",
+      "sourceAgency": "California Civil Rights Department",
+      "lastChecked": "2026-07-30",
+      "reviewed": false, "reviewedBy": null, "notes": ""
+    },
+    {
+      "topic": "severance.wageWaiver",
+      "value": "earned wages not waivable",
+      "summary": "Already-earned wages generally cannot be waived in a release; a severance release does not extinguish overtime already owed.",
+      "citation": "Cal. Lab. Code § 206.5",
+      "sourceUrl": "https://www.dir.ca.gov/dlse/",
+      "sourceAgency": "California Dept of Industrial Relations, DLSE",
+      "lastChecked": "2026-07-30",
+      "reviewed": false, "reviewedBy": null, "notes": ""
+    }
+  ],
+  "agencies": {
+    "wageHour": { "name": "California DIR / Division of Labor Standards Enforcement", "url": "https://www.dir.ca.gov/dlse/" },
+    "discrimination": { "name": "California Civil Rights Department", "url": "https://calcivilrights.ca.gov/" }
+  }
+}

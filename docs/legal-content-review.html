@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WorkLaw — legal content review</title>
+<style>
+  :root{ --ink:#14181F; --muted:#4A5162; --line:rgba(20,24,31,.14); --bg:#F3EFE7; --card:#fff;
+    --indigo:#2B3AA8; --green:#136B3C; --greenbg:#E8F6EE; --amber:#B57900; --amberbg:#FFF4D6; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1000px;margin:0 auto;padding:32px 20px 80px}
+  h1{font-size:26px;margin:0 0 4px}
+  .sub{color:var(--muted);margin:0 0 20px}
+  .stats{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 28px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;min-width:120px}
+  .stat b{display:block;font-size:24px}
+  .stat span{color:var(--muted);font-size:13px}
+  h2{font-size:20px;margin:28px 0 12px;display:flex;align-items:center;gap:10px}
+  .fact{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin:0 0 10px}
+  .fact .top{display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap}
+  .topic{font:600 12px 'IBM Plex Mono',ui-monospace,monospace;color:var(--muted);letter-spacing:.02em}
+  .val{font-weight:700}
+  .summary{margin:8px 0}
+  .meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px;font-size:13px;color:var(--muted)}
+  .cite{font:600 12px 'IBM Plex Mono',ui-monospace,monospace;background:#EEF1FF;color:#1B2778;padding:4px 8px;border-radius:6px}
+  a.src{font:600 12px 'IBM Plex Mono',ui-monospace,monospace;background:#eef;color:var(--indigo);padding:4px 8px;border-radius:6px;text-decoration:none;border:1px solid var(--indigo)}
+  a.src:hover{background:var(--indigo);color:#fff}
+  .notes{margin-top:8px;font-size:13px;color:var(--amber);background:var(--amberbg);border-radius:8px;padding:8px 10px}
+  .badge{font:700 11px 'IBM Plex Mono',ui-monospace,monospace;padding:4px 8px;border-radius:6px}
+  .b-review{background:var(--amberbg);color:var(--amber)}
+  .b-ok{background:var(--greenbg);color:var(--green)}
+  .remaining{background:var(--card);border:1px dashed var(--line);border-radius:12px;padding:16px;margin-top:12px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .chip{font-size:13px;background:#EEE9DF;border-radius:999px;padding:4px 10px}
+  .err{color:#B3264F}
+  footer{margin-top:40px;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Legal content review</h1>
+  <p class="sub">Every datum the app renders, with its official source and review status. Nothing renders as authoritative in the app until its jurisdiction is marked <b>reviewed</b>.</p>
+  <div class="stats" id="stats"></div>
+  <div id="out"><p>Loading dataset…</p></div>
+  <div class="remaining" id="remaining"></div>
+  <footer>
+    Data model &amp; sourcing: <code>content/README.md</code> · source registry: <code>content/sources.md</code> · scope &amp; phasing: <code>docs/state-content-scope.md</code>.
+    <br>Every fact carries <code>sourceUrl</code> (official .gov), <code>citation</code>, <code>lastChecked</code>, and a <code>reviewed</code> flag counsel sets per item.
+  </footer>
+</div>
+
+<script>
+const ALL_52 = {
+  AL:"Alabama",AK:"Alaska",AZ:"Arizona",AR:"Arkansas",CA:"California",CO:"Colorado",CT:"Connecticut",
+  DE:"Delaware",FL:"Florida",GA:"Georgia",HI:"Hawaii",ID:"Idaho",IL:"Illinois",IN:"Indiana",IA:"Iowa",
+  KS:"Kansas",KY:"Kentucky",LA:"Louisiana",ME:"Maine",MD:"Maryland",MA:"Massachusetts",MI:"Michigan",
+  MN:"Minnesota",MS:"Mississippi",MO:"Missouri",MT:"Montana",NE:"Nebraska",NV:"Nevada",NH:"New Hampshire",
+  NJ:"New Jersey",NM:"New Mexico",NY:"New York",NC:"North Carolina",ND:"North Dakota",OH:"Ohio",
+  OK:"Oklahoma",OR:"Oregon",PA:"Pennsylvania",RI:"Rhode Island",SC:"South Carolina",SD:"South Dakota",
+  TN:"Tennessee",TX:"Texas",UT:"Utah",VT:"Vermont",VA:"Virginia",WA:"Washington",WV:"West Virginia",
+  WI:"Wisconsin",WY:"Wyoming",DC:"District of Columbia",PR:"Puerto Rico"
+};
+const C = "../content/";
+const esc = s => String(s==null?"":s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const val = v => Array.isArray(v) ? v.join(", ") : (v==null? "—" : String(v));
+
+function factHtml(f){
+  const ok = f.reviewed;
+  return `<div class="fact">
+    <div class="top">
+      <span class="topic">${esc(f.topic)}</span>
+      <span class="badge ${ok?'b-ok':'b-review'}">${ok?'REVIEWED':'NEEDS REVIEW'}</span>
+    </div>
+    <div class="summary">${esc(f.summary)} ${f.value!=null?`<span class="val">(${esc(val(f.value))})</span>`:''}</div>
+    <div class="meta">
+      ${f.citation?`<span class="cite">${esc(f.citation)}</span>`:''}
+      ${f.sourceUrl?`<a class="src" href="${esc(f.sourceUrl)}" target="_blank" rel="noopener">${esc(f.sourceAgency||'source')} ↗</a>`:'<span class="err">no source URL</span>'}
+      ${f.lastChecked?`<span>checked ${esc(f.lastChecked)}</span>`:''}
+    </div>
+    ${f.notes?`<div class="notes">${esc(f.notes)}</div>`:''}
+  </div>`;
+}
+
+function sectionHtml(title, data){
+  const facts = (data.facts||[]);
+  const reviewed = facts.filter(f=>f.reviewed).length;
+  return `<h2>${esc(title)} <span class="badge ${data.reviewed?'b-ok':'b-review'}">${reviewed}/${facts.length} facts reviewed</span></h2>` +
+    facts.map(factHtml).join("");
+}
+
+async function load(){
+  let idx;
+  try { idx = await (await fetch(C+"index.json")).json(); }
+  catch(e){ document.getElementById("out").innerHTML = '<p class="err">Could not load content/index.json — serve this over HTTP (not file://).</p>'; return; }
+
+  const fed = await (await fetch(C+idx.federal)).json();
+  const states = [];
+  for(const ab of (idx.states||[])){
+    try { states.push(await (await fetch(C+"states/"+ab+".json")).json()); } catch(e){}
+  }
+
+  const allFacts = [fed, ...states].flatMap(d=>d.facts||[]);
+  const reviewedFacts = allFacts.filter(f=>f.reviewed).length;
+  const withSource = allFacts.filter(f=>f.sourceUrl).length;
+
+  document.getElementById("stats").innerHTML = `
+    <div class="stat"><b>${states.length+1}</b><span>jurisdictions authored (of 53 incl. federal)</span></div>
+    <div class="stat"><b>${allFacts.length}</b><span>total facts</span></div>
+    <div class="stat"><b>${withSource}</b><span>with source URL</span></div>
+    <div class="stat"><b>${reviewedFacts}</b><span>counsel-reviewed</span></div>`;
+
+  let html = sectionHtml("Federal (United States)", fed);
+  for(const s of states) html += sectionHtml(s.name+" ("+s.jurisdiction+")", s);
+  document.getElementById("out").innerHTML = html;
+
+  const have = new Set((idx.states||[]));
+  const remaining = Object.entries(ALL_52).filter(([ab])=>!have.has(ab));
+  document.getElementById("remaining").innerHTML =
+    `<b>Not yet authored — ${remaining.length} jurisdictions</b>` +
+    `<div class="chips">${remaining.map(([ab,n])=>`<span class="chip">${esc(n)}</span>`).join("")}</div>`;
+}
+load();
+</script>
+</body>
+</html>

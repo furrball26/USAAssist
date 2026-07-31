@@ -1,0 +1,5 @@
+{
+  "federal": "_federal.json",
+  "states": ["CA"],
+  "note": "states[] lists jurisdictions with an authored data file. Add each ABBR as its states/<ABBR>.json is built. reviewed:true (per file) is what gates authoritative rendering in the app."
+}

@@ -1,0 +1,160 @@
+{
+  "jurisdiction": "US",
+  "name": "Federal (United States)",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "overtime.basicRule",
+      "value": "1.5x after 40 hrs/week",
+      "summary": "Non-exempt employees must be paid time-and-a-half for hours over 40 in a workweek. Federal law has no daily overtime.",
+      "citation": "29 U.S.C. § 207(a)",
+      "sourceUrl": "https://www.dol.gov/agencies/whd/overtime",
+      "sourceAgency": "U.S. Department of Labor, Wage and Hour Division",
+      "lastChecked": "2026-07-30",
+      "reviewed": false, "reviewedBy": null,
+      "notes": ""
+    },
+    {
+      "topic": "overtime.salaryLevelWeekly",
+      "value": 684,
+      "summary": "The executive/administrative/professional (EAP) exemption requires a salary of at least $684/week ($35,568/year), plus the salary-basis and duties tests.",
+      "citation": "29 C.F.R. § 541.600; 29 U.S.C. § 213(a)(1)",
+      "sourceUrl": "https://www.dol.gov/agencies/whd/overtime/salary-levels",
+      "sourceAgency": "U.S. Department of Labor, Wage and Hour Division",
+      "lastChecked": "2026-07-30",
+      "reviewed": false, "reviewedBy": null,
+      "notes": "The 2024 final rule (raising to $844 then $1,128/wk) was vacated 2024-11-15 (E.D. Tex.). A technical amendment restored the 2019 $684 text, effective 2026-05-15. Confirm figure annually."
+    },
+    {
+      "topic": "overtime.highlyCompensatedAnnual",
+      "value": 107432,
+      "summary": "Highly compensated employees ($107,432/year+) are exempt under a relaxed duties test.",
+      "citation": "29 C.F.R. § 541.601",
+      "sourceUrl": "https://www.dol.gov/agencies/whd/overtime/salary-levels",
+      "sourceAgency": "U.S. Department of Labor, Wage and Hour Division",
+      "lastChecked": "2026-07-30",
+      "reviewed": false, "reviewedBy": null, "notes": ""
+    },
+    {
+      "topic": "overtime.computerEmployeeHourly",
+      "value": 27.63,
+      "summary": "Computer employees are exempt if paid at least $27.63/hour (or the salary level) and perform qualifying duties.",
+      "citation": "29 U.S.C. § 213(a)(17); 29 C.F.R. § 541.400",
+      "sourceUrl": "https://www.dol.gov/agencies/whd/fact-sheets/17e-overtime-computer",
+      "sourceAgency": "U.S. Department of Labor, Wage and Hour Division",
+      "lastChecked": "2026-07-30",
+      "reviewed": false, "reviewedBy": null, "notes": ""
+    },
+    {
+      "topic": "minimumWage.hourly",
+      "value": 7.25,
+      "summary": "Federal minimum wage is $7.25/hour. State or local minimums that are higher apply instead.",
+      "citation": "29 U.S.C. § 206(a)(1)",
+      "sourceUrl": "https://www.dol.gov/agencies/whd/minimum-wage",
+      "sourceAgency": "U.S. Department of Labor, Wage and Hour Division",
+      "lastChecked": "2026-07-30",
+      "reviewed": false, "reviewedBy": null, "notes": ""
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": ["race", "color", "religion", "sex (incl. pregnancy, sexual orientation, gender identity)", "national origin", "age 40+", "disability", "genetic information"],
+      "summary": "Federal law prohibits employment discrimination based on these protected characteristics.",
+      "citation": "42 U.S.C. § 2000e-2 (Title VII); 29 U.S.C. § 623 (ADEA); 42 U.S.C. § 12112 (ADA); Bostock v. Clayton County (2020)",
+      "sourceUrl": "https://www.eeoc.gov/prohibited-employment-policiespractices",
+      "sourceAgency": "U.S. Equal Employment Opportunity Commission",
+      "lastChecked": "2026-07-30",
+      "reviewed": false, "reviewedBy": null, "notes": ""
+    },
+    {
+      "topic": "discrimination.coverageTitleVII",
+      "value": "15+ employees",
+      "summary": "Title VII and the ADA cover employers with 15 or more employees; the ADEA covers employers with 20 or more.",
+      "citation": "42 U.S.C. § 2000e(b); 42 U.S.C. § 12111(5); 29 U.S.C. § 630(b)",
+      "sourceUrl": "https://www.eeoc.gov/employers/small-business/what-laws-does-eeoc-enforce",
+      "sourceAgency": "U.S. Equal Employment Opportunity Commission",
+      "lastChecked": "2026-07-30",
+      "reviewed": false, "reviewedBy": null, "notes": "ADEA threshold is 20 employees, not 15."
+    },
+    {
+      "topic": "disability.reasonableAccommodation",
+      "value": true,
+      "summary": "Employers (15+) must provide reasonable accommodation for a known disability unless it causes undue hardship, and must engage in an interactive process. Medical info must be kept confidential.",
+      "citation": "42 U.S.C. § 12112(b)(5); 29 C.F.R. § 1630.2(o); 42 U.S.C. § 12112(d)",
+      "sourceUrl": "https://www.eeoc.gov/disability-discrimination",
+      "sourceAgency": "U.S. Equal Employment Opportunity Commission",
+      "lastChecked": "2026-07-30",
+      "reviewed": false, "reviewedBy": null, "notes": ""
+    },
+    {
+      "topic": "retaliation.protected",
+      "value": true,
+      "summary": "It is illegal to retaliate against someone for reporting discrimination/harassment or otherwise engaging in protected activity, even if the underlying claim is not proven, if made in good faith.",
+      "citation": "42 U.S.C. § 2000e-3(a)",
+      "sourceUrl": "https://www.eeoc.gov/retaliation",
+      "sourceAgency": "U.S. Equal Employment Opportunity Commission",
+      "lastChecked": "2026-07-30",
+      "reviewed": false, "reviewedBy": null, "notes": ""
+    },
+    {
+      "topic": "payDiscussion.protected",
+      "value": true,
+      "summary": "Employees have the right to discuss wages and working conditions with coworkers; policies forbidding it are generally unenforceable.",
+      "citation": "29 U.S.C. § 157 (NLRA § 7)",
+      "sourceUrl": "https://www.nlrb.gov/about-nlrb/rights-we-protect/your-rights/employee-rights",
+      "sourceAgency": "National Labor Relations Board",
+      "lastChecked": "2026-07-30",
+      "reviewed": false, "reviewedBy": null, "notes": ""
+    },
+    {
+      "topic": "deadlines.eeocCharge",
+      "value": "180 or 300 days",
+      "summary": "A discrimination charge must be filed with the EEOC within 180 days, extended to 300 days where a state/local agency enforces a parallel law. Federal employees must contact an EEO Counselor within 45 days.",
+      "citation": "42 U.S.C. § 2000e-5(e)(1)",
+      "sourceUrl": "https://www.eeoc.gov/time-limits-filing-charge",
+      "sourceAgency": "U.S. Equal Employment Opportunity Commission",
+      "lastChecked": "2026-07-30",
+      "reviewed": false, "reviewedBy": null, "notes": "Verified against source 2026-07-30."
+    },
+    {
+      "topic": "deadlines.flsaWageClaim",
+      "value": "2 years (3 if willful)",
+      "summary": "FLSA wage claims must generally be brought within 2 years, or 3 years for a willful violation.",
+      "citation": "29 U.S.C. § 255(a)",
+      "sourceUrl": "https://www.dol.gov/agencies/whd/flsa",
+      "sourceAgency": "U.S. Department of Labor, Wage and Hour Division",
+      "lastChecked": "2026-07-30",
+      "reviewed": false, "reviewedBy": null, "notes": ""
+    },
+    {
+      "topic": "deadlines.equalPayAct",
+      "value": "2 years (3 if willful)",
+      "summary": "Equal Pay Act claims may be filed within 2 years (3 for willful) and do not require an EEOC charge first.",
+      "citation": "29 U.S.C. § 255(a); 29 U.S.C. § 206(d)",
+      "sourceUrl": "https://www.eeoc.gov/time-limits-filing-charge",
+      "sourceAgency": "U.S. Equal Employment Opportunity Commission",
+      "lastChecked": "2026-07-30",
+      "reviewed": false, "reviewedBy": null, "notes": ""
+    },
+    {
+      "topic": "leave.fmla",
+      "value": "12 weeks unpaid; 50+ employees",
+      "summary": "Eligible employees at employers with 50+ employees (within 75 miles) may take up to 12 weeks of unpaid, job-protected leave for qualifying family/medical reasons.",
+      "citation": "29 U.S.C. §§ 2611–2612",
+      "sourceUrl": "https://www.dol.gov/agencies/whd/fmla",
+      "sourceAgency": "U.S. Department of Labor, Wage and Hour Division",
+      "lastChecked": "2026-07-30",
+      "reviewed": false, "reviewedBy": null, "notes": ""
+    },
+    {
+      "topic": "severance.adeaWaiver",
+      "value": "21 days consider / 7 days revoke",
+      "summary": "For a valid waiver of age claims in severance, workers 40+ get at least 21 days to consider (45 in a group layoff) and 7 days to revoke after signing.",
+      "citation": "29 U.S.C. § 626(f) (OWBPA)",
+      "sourceUrl": "https://www.eeoc.gov/laws/guidance/understanding-waivers-discrimination-claims-employee-severance-agreements",
+      "sourceAgency": "U.S. Equal Employment Opportunity Commission",
+      "lastChecked": "2026-07-30",
+      "reviewed": false, "reviewedBy": null, "notes": ""
+    }
+  ]
+}

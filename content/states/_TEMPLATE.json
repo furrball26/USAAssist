@@ -1,0 +1,52 @@
+{
+  "jurisdiction": "XX",
+  "name": "State Name",
+  "reviewed": false,
+  "lastChecked": null,
+  "facts": [
+    {
+      "topic": "overtime.daily",
+      "value": null,
+      "summary": "Does this state require daily overtime or a higher salary floor than federal? If not, state that it follows the federal FLSA standard.",
+      "citation": "",
+      "sourceUrl": "",
+      "sourceAgency": "",
+      "lastChecked": null,
+      "reviewed": false, "reviewedBy": null, "notes": ""
+    },
+    {
+      "topic": "minimumWage.hourly",
+      "value": null,
+      "summary": "State minimum wage (or 'follows federal $7.25').",
+      "citation": "",
+      "sourceUrl": "",
+      "sourceAgency": "",
+      "lastChecked": null,
+      "reviewed": false, "reviewedBy": null, "notes": ""
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": null,
+      "summary": "Any protected classes beyond the federal set; state coverage threshold.",
+      "citation": "",
+      "sourceUrl": "",
+      "sourceAgency": "",
+      "lastChecked": null,
+      "reviewed": false, "reviewedBy": null, "notes": ""
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": null,
+      "summary": "State statute of limitations for wage claims.",
+      "citation": "",
+      "sourceUrl": "",
+      "sourceAgency": "",
+      "lastChecked": null,
+      "reviewed": false, "reviewedBy": null, "notes": ""
+    }
+  ],
+  "agencies": {
+    "wageHour": { "name": "", "url": "" },
+    "discrimination": { "name": "", "url": "" }
+  }
+}
