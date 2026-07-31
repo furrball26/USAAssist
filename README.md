@@ -43,8 +43,8 @@ Live at **https://worklaw.app** and **https://furrball26.github.io/USAAssist/**.
   offline-capable, auto-publishes on every push.
 - **worklaw.app** is a Vercel project (`usaassist`, team Spectrum Dating; DNS already
   points there). It serves a small shell `index.html` that loads React from a CDN and the
-  app bundle from jsDelivr, git-backed:
-  `https://cdn.jsdelivr.net/gh/furrball26/USAAssist@main/assets/app.js`.
+  app bundle from jsDelivr, pinned to a **commit SHA** (immutable, cache-safe):
+  `https://cdn.jsdelivr.net/gh/furrball26/USAAssist@<SHA>/assets/app.js`.
   `assets/app.js` is the minified compiled build, committed to the repo.
 
 ### Updating a live change
@@ -52,10 +52,11 @@ Live at **https://worklaw.app** and **https://furrball26.github.io/USAAssist/**.
 1. Edit `index.dev.html` (the JSX source).
 2. Rebuild the artifacts: self-contained `index.html` (for Pages) and minified
    `assets/app.js` (for jsDelivr / the Vercel shell).
-3. `git push`. Pages updates immediately. For worklaw.app, purge the jsDelivr cache so the
-   new bundle is picked up right away:
-   `curl https://purge.jsdelivr.net/gh/furrball26/USAAssist@main/assets/app.js`
-   (otherwise jsDelivr serves the cached bundle for up to ~12h).
+3. `git push`. **GitHub Pages** (furrball26.github.io/USAAssist) updates automatically.
+4. For **worklaw.app**, redeploy the Vercel shell with the script `src` pinned to the new
+   commit SHA (`git rev-parse HEAD`). Pinning to the SHA avoids all CDN/browser cache lag —
+   a mutable `@main` URL can serve a stale bundle for up to ~12h even after a jsDelivr purge.
+   (Data source for the state/county list: US Census `national_county.txt`, embedded at build.)
 
 > Alternative: point worklaw.app's DNS at GitHub Pages (apex A records to GitHub's IPs,
 > `www` CNAME to `furrball26.github.io`) to serve the fully self-contained build directly,
