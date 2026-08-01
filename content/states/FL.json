@@ -1,0 +1,102 @@
+{
+  "jurisdiction": "FL",
+  "name": "Florida",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "overtime.daily",
+      "value": "follows federal FLSA",
+      "summary": "Florida has no state overtime statute; overtime is governed entirely by the federal FLSA (time-and-a-half after 40 hours per week, no daily overtime).",
+      "citation": "No Florida overtime statute; see Fla. Stat. ch. 448",
+      "sourceUrl": "https://www.floridajobs.org/florida-minimum-wage",
+      "sourceAgency": "Florida Department of Commerce",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Florida statutes contain no overtime provision; the state defers to federal FLSA. The floridajobs.org page was reachable via search but returned HTTP 403 to automated fetch; verify the URL in a browser."
+    },
+    {
+      "topic": "minimumWage.hourly",
+      "value": 14.00,
+      "summary": "Florida's minimum wage is $14.00/hour (effective Sept 30, 2025), scheduled to rise to $15.00/hour on Sept 30, 2026; tipped minimum is $10.98 (tip credit $3.02), rising to $11.98.",
+      "citation": "Fla. Const. art. X, s. 24; Fla. Stat. 448.110",
+      "sourceUrl": "https://www.floridajobs.org/docs/default-source/business-growth-and-partnerships/for-employers/posters-and-required-notices/2025-minimum-wage/2025-minimum-wage-announcement.pdf",
+      "sourceAgency": "Florida Department of Commerce",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Higher than federal $7.25. As of the 2026-07-30 check date the current rate is $14.00; it increases to $15.00 on 2026-09-30 (final step of the 2020 constitutional amendment). Confirm which figure to display based on effective date. Beginning 2027 the Dept of Commerce adjusts annually for inflation."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": ["marital status", "pregnancy", "handicap (disability)", "AIDS/HIV status"],
+      "summary": "The Florida Civil Rights Act adds 'marital status' beyond the federal set; it also expressly protects pregnancy, handicap/disability, and (via handicap) AIDS/HIV status.",
+      "citation": "Fla. Stat. 760.10(1)",
+      "sourceUrl": "http://www.leg.state.fl.us/statutes/index.cfm?App_mode=Display_Statute&URL=0700-0799/0760/Sections/0760.10.html",
+      "sourceAgency": "Florida Legislature (Florida Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Full FCRA list: race, color, religion, sex, pregnancy, national origin, age, handicap, marital status. The genuine ADD versus federal Title VII/ADA/ADEA is 'marital status'. Florida law does not statewide list sexual orientation or gender identity."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": "follows federal (15+ employees)",
+      "summary": "The Florida Civil Rights Act covers employers with 15 or more employees for each working day in 20+ calendar weeks, the same threshold as federal Title VII.",
+      "citation": "Fla. Stat. 760.02(7)",
+      "sourceUrl": "http://www.leg.state.fl.us/statutes/index.cfm?App_mode=Display_Statute&URL=0700-0799/0760/Sections/0760.02.html",
+      "sourceAgency": "Florida Legislature (Florida Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Same 15-employee threshold as federal; not lower. Recorded because coverage is a listed topic."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "365 days",
+      "summary": "A discrimination complaint must be filed with the Florida Commission on Human Relations within 365 days of the alleged violation, longer than the federal 180/300-day EEOC deadlines.",
+      "citation": "Fla. Stat. 760.11(1)",
+      "sourceUrl": "http://www.leg.state.fl.us/statutes/index.cfm?App_mode=Display_Statute&URL=0700-0799/0760/Sections/0760.11.html",
+      "sourceAgency": "Florida Legislature (Florida Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "FCHR is Florida's FEPA. Separate downstream deadlines apply to filing the civil lawsuit after an FCHR/EEOC determination (amended effective July 1, 2026); this fact covers only the administrative charge deadline."
+    },
+    {
+      "topic": "whistleblower",
+      "value": "Florida Private Sector Whistleblower's Act, Fla. Stat. 448.101-448.105",
+      "summary": "Florida's Private Whistleblower's Act protects private employees (employers with 10+ employees) from retaliation for disclosing, or refusing to participate in, a violation of law, rule, or regulation.",
+      "citation": "Fla. Stat. 448.102 (see also 448.101, 448.103)",
+      "sourceUrl": "http://www.leg.state.fl.us/statutes/index.cfm?App_mode=Display_Statute&URL=0400-0499/0448/Sections/0448.102.html",
+      "sourceAgency": "Florida Legislature (Florida Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Statute number 448.102 confirmed via official statute site listing; exact section text not individually fetched. 'Employer' 10+ employees per 448.101(3). Remedies include reinstatement, back pay, and attorney's fees under 448.103."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "2 years (general wages); 4 years, or 5 years if willful, for minimum-wage claims",
+      "summary": "General actions to recover wages/overtime have a 2-year limitations period, while minimum-wage claims carry a 4-year period (5 years for willful violations) under the state constitution.",
+      "citation": "Fla. Stat. 95.11(5)(d); Fla. Const. art. X, s. 24(e); Fla. Stat. 448.110(8)",
+      "sourceUrl": "http://www.leg.state.fl.us/statutes/index.cfm?App_mode=Display_Statute&URL=0000-0099/0095/Sections/0095.11.html",
+      "sourceAgency": "Florida Legislature (Florida Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "95.11(5)(d) sets a 2-year SOL for general wage/overtime recovery. Minimum-wage claims follow the constitutional 4-year (5-year willful) period mirroring the federal FLSA; 448.110(8) ties the period to 95.11. Confirm which period applies to the specific claim type."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Florida Department of Commerce",
+      "url": "https://www.floridajobs.org/florida-minimum-wage"
+    },
+    "discrimination": {
+      "name": "Florida Commission on Human Relations (FCHR)",
+      "url": "https://fchr.myflorida.com/"
+    }
+  }
+}

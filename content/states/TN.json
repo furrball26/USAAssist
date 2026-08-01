@@ -1,0 +1,126 @@
+{
+  "jurisdiction": "TN",
+  "name": "Tennessee",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "overtime.daily",
+      "value": "follows federal FLSA",
+      "summary": "Tennessee has no state overtime or daily-overtime law; overtime is governed entirely by the federal FLSA (time-and-a-half after 40 hours per week).",
+      "citation": "No TN overtime statute",
+      "sourceUrl": "https://www.tn.gov/workforce/employees/labor-laws.html",
+      "sourceAgency": "Tennessee Department of Labor & Workforce Development, Labor Standards Unit",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Inferred from the fact that the Labor Standards Unit enforces only six labor laws (Child Labor Act, Wage Regulations Act, Prevailing Wage Act, Illegal Alien Act, Tennessee Lawful Employment Act, Non-Smoker Protection Act) — none of which set overtime rates. Verify no change if a state wage/hour statute is enacted."
+    },
+    {
+      "topic": "minimumWage.hourly",
+      "value": "follows federal $7.25",
+      "summary": "Tennessee has no state minimum-wage statute, so the federal minimum wage of $7.25/hour applies.",
+      "citation": "No TN minimum-wage statute",
+      "sourceUrl": "https://www.tn.gov/workforce/employees/labor-laws.html",
+      "sourceAgency": "Tennessee Department of Labor & Workforce Development, Labor Standards Unit",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "TN's Wage Regulations Act governs how/when wages are paid, not a minimum rate; no minimum-wage act is among the laws the Labor Standards Unit enforces. Federal $7.25 figure is the FLSA baseline, not a TN-published number. Re-verify against US DOL state table."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": ["race", "creed", "color", "religion", "sex", "age (over 40)", "national origin", "disability"],
+      "summary": "The Tennessee Human Rights Act bars employment discrimination based on race, creed, color, religion, sex, age (over 40), and national origin; the separate Tennessee Disability Act covers disability.",
+      "citation": "Tenn. Code Ann. § 4-21-101 et seq. (THRA); Tenn. Code Ann. § 8-50-103 et seq. (Tennessee Disability Act)",
+      "sourceUrl": "https://www.tn.gov/attorneygeneral/cred/laws-cred-enforces.html",
+      "sourceAgency": "Tennessee Attorney General, Civil Rights Enforcement Division (CRED)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Largely mirrors the federal set; 'creed' is the main addition beyond Title VII/ADEA/ADA. Age protection is limited to individuals over 40, like the ADEA."
+    },
+    {
+      "topic": "disability.accommodation",
+      "value": "Tennessee Disability Act prohibits disability discrimination",
+      "summary": "The Tennessee Disability Act separately prohibits employment discrimination against individuals based on disability, enforced alongside the THRA.",
+      "citation": "Tenn. Code Ann. § 8-50-103 et seq.",
+      "sourceUrl": "https://www.tn.gov/attorneygeneral/cred/laws-cred-enforces.html",
+      "sourceAgency": "Tennessee Attorney General, Civil Rights Enforcement Division (CRED)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Official source confirms the statute prohibits disability discrimination but does not detail a reasonable-accommodation/interactive-process mandate; scope of accommodation duty should be verified against the statute text and case law before relying on it."
+    },
+    {
+      "topic": "retaliation.whistleblower",
+      "value": "Tennessee Public Protection Act (Whistleblower Law), Tenn. Code Ann. § 50-1-304",
+      "summary": "Tennessee's whistleblower statute protects employees from retaliatory discharge for refusing to participate in, or remain silent about, illegal activities.",
+      "citation": "Tenn. Code Ann. § 50-1-304",
+      "sourceUrl": "https://www.tn.gov/workforce/employees/labor-laws/labor-laws-redirect/employee-rights.html",
+      "sourceAgency": "Tennessee Department of Labor & Workforce Development",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Tennessee also recognizes common-law retaliatory-discharge claims and statutory anti-retaliation protections tied to workers' comp claims (§ 50-6-101 et seq.), jury duty (§ 22-4-106), and military service (§ 8-33-101 et seq.)."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "180 days to file with CRED; 1 year to file a private THRA lawsuit",
+      "summary": "An employment discrimination complaint must be filed with the AG's Civil Rights Enforcement Division within 180 days of the last discriminatory act; a private THRA lawsuit must be filed within one year after the discriminatory practice ceases.",
+      "citation": "Tenn. Code Ann. § 4-21-101 et seq.",
+      "sourceUrl": "https://www.tn.gov/attorneygeneral/cred/cred-faq.html",
+      "sourceAgency": "Tennessee Attorney General, Civil Rights Enforcement Division (CRED)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Per CRED FAQ, filing an administrative complaint does NOT toll the THRA's one-year statute of limitations for a private lawsuit. Civil-rights enforcement moved from the former Tennessee Human Rights Commission to the AG's CRED division."
+    },
+    {
+      "topic": "final-pay",
+      "value": "next regular payday or 21 days after separation, whichever is later",
+      "summary": "A departing employee (quit or discharged) must be paid all earned wages by the next regular payday or within 21 days of separation, whichever occurs last.",
+      "citation": "Tenn. Code Ann. § 50-2-103(g)",
+      "sourceUrl": "https://www.tn.gov/workforce/employees/labor-laws/labor-laws-redirect/wages-breaks.html",
+      "sourceAgency": "Tennessee Department of Labor & Workforce Development, Labor Standards Unit",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "This is a TN-specific timing rule with no direct federal equivalent."
+    },
+    {
+      "topic": "wagePayment.frequency",
+      "value": "at least once per month (semi-monthly for many private employers)",
+      "summary": "Wages in private employment must be paid at least monthly, with additional scheduling requirements for employers using more frequent pay periods.",
+      "citation": "Tenn. Code Ann. § 50-2-103(a)(1)",
+      "sourceUrl": "https://www.tn.gov/workforce/employees/labor-laws/labor-laws-redirect/wages-breaks.html",
+      "sourceAgency": "Tennessee Department of Labor & Workforce Development, Labor Standards Unit",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "State-specific wage-payment rule; federal FLSA sets no general pay-frequency requirement. Verify semi-monthly threshold details against statute text."
+    },
+    {
+      "topic": "mealBreak",
+      "value": "30-minute unpaid meal/rest period when scheduled 6 consecutive hours",
+      "summary": "Tennessee requires a 30-minute unpaid meal or rest period for employees scheduled to work six consecutive hours (with limited workplace exceptions).",
+      "citation": "Tenn. Code Ann. § 50-2-103(h)",
+      "sourceUrl": "https://www.tn.gov/workforce/employees/labor-laws/labor-laws-redirect/wages-breaks.html",
+      "sourceAgency": "Tennessee Department of Labor & Workforce Development, Labor Standards Unit",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "State addition beyond federal law, which does not mandate meal or rest breaks."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Tennessee Department of Labor & Workforce Development, Labor Standards Unit",
+      "url": "https://www.tn.gov/workforce/employees/labor-laws.html"
+    },
+    "discrimination": {
+      "name": "Tennessee Attorney General, Civil Rights Enforcement Division (CRED)",
+      "url": "https://www.tn.gov/attorneygeneral/cred.html"
+    }
+  }
+}

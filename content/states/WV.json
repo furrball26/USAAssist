@@ -1,0 +1,114 @@
+{
+  "jurisdiction": "WV",
+  "name": "West Virginia",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "minimumWage.hourly",
+      "value": 8.75,
+      "summary": "West Virginia's state minimum wage is $8.75 per hour, higher than the federal $7.25.",
+      "citation": "W. Va. Code §21-5C-2",
+      "sourceUrl": "https://code.wvlegislature.gov/21-5C-2/",
+      "sourceAgency": "West Virginia Legislature (WV Code); WV Division of Labor",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Rate set at $8.75 effective after Dec. 31, 2015; statute defaults to the federal rate only if federal ever exceeds the state rate. Verify no 2026 legislative increase has taken effect."
+    },
+    {
+      "topic": "minimumWage.coverage",
+      "value": 6,
+      "summary": "The West Virginia state minimum wage applies where an employer has six or more non-exempt employees at any one permanent work location.",
+      "citation": "W. Va. Code §21-5C-1 et seq.",
+      "sourceUrl": "https://labor.wv.gov/wage-hour/jobs-act/minimum-wage",
+      "sourceAgency": "WV Division of Labor",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Per Division of Labor: the $8.75 state rate applies when there are six or more non-exempt employees at any one separate, distinct and permanent work location; otherwise FLSA may govern."
+    },
+    {
+      "topic": "overtime.daily",
+      "value": "follows federal FLSA",
+      "summary": "West Virginia has no daily overtime and no higher salary floor; overtime is 1.5x after 40 hours in a workweek, mirroring federal law.",
+      "citation": "W. Va. Code §21-5C-3",
+      "sourceUrl": "https://code.wvlegislature.gov/21-5C-3/",
+      "sourceAgency": "West Virginia Legislature (WV Code)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "State law requires overtime only for hours over 40 per workweek (no daily OT). Statute does not set a state salary threshold above the federal level."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": ["ancestry", "blindness"],
+      "summary": "The WV Human Rights Act protects the federal classes plus ancestry and blindness in employment (full list: race, religion, color, national origin, ancestry, sex, age 40+, blindness, disability).",
+      "citation": "W. Va. Code §16B-17-3; §16B-17-9",
+      "sourceUrl": "https://code.wvlegislature.gov/16B-17-3/",
+      "sourceAgency": "West Virginia Legislature (WV Code); WV Human Rights Commission",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Human Rights Act was recodified from Chapter 5, Article 11 to Chapter 16B, Article 17 (SB 300, 2024 session). Definitions also list 'familial status', which primarily applies to housing rather than employment; verify employment applicability."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": 12,
+      "summary": "The WV Human Rights Act covers employers with 12 or more employees, a lower threshold than the federal 15 under Title VII.",
+      "citation": "W. Va. Code §16B-17-3",
+      "sourceUrl": "https://code.wvlegislature.gov/16B-17-3/",
+      "sourceAgency": "West Virginia Legislature (WV Code); WV Human Rights Commission",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "'Employer' means the state/political subdivisions and any person employing 12 or more persons within the state for 20 or more calendar weeks in the current or preceding calendar year."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "365 days",
+      "summary": "A discrimination complaint must be filed with the WV Human Rights Commission within 365 days of the most recent act of discrimination.",
+      "citation": "W. Va. Code §16B-17-1 et seq.",
+      "sourceUrl": "https://oig.wv.gov/human-rights-commission",
+      "sourceAgency": "WV Human Rights Commission (Office of the Inspector General)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "365-day state deadline is more generous than the federal EEOC 180/300-day charge deadlines. HRC now sits within the WV Office of the Inspector General (oig.wv.gov)."
+    },
+    {
+      "topic": "whistleblower",
+      "value": "WV Whistle-blower Law (public employees)",
+      "summary": "West Virginia's Whistle-blower Law bars public/government employers from retaliating against employees who report wrongdoing or waste in good faith.",
+      "citation": "W. Va. Code §6C-1-1 et seq. (§6C-1-3)",
+      "sourceUrl": "https://code.wvlegislature.gov/6C-1-3/",
+      "sourceAgency": "West Virginia Legislature (WV Code)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Statutory whistle-blower protection covers public employees. Private-sector retaliation protection in WV arises primarily from common law (Harless public-policy doctrine), which is not captured here as it is not an official statutory source."
+    },
+    {
+      "topic": "final-pay",
+      "value": "next regular payday",
+      "summary": "Employees who are discharged or who quit must be paid all wages due by the next regular payday, and unpaid wages carry liquidated damages of two times the amount owed.",
+      "citation": "W. Va. Code §21-5-4",
+      "sourceUrl": "https://code.wvlegislature.gov/21-5-4/",
+      "sourceAgency": "West Virginia Legislature (WV Code); WV Division of Labor",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "2015 amendment changed the old 72-hour rule to the next regular payday. Liquidated damages of 2x unpaid wages apply for noncompliance under §21-5-4(e)."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "West Virginia Division of Labor - Wage & Hour Section",
+      "url": "https://labor.wv.gov/wage-hour-section"
+    },
+    "discrimination": {
+      "name": "West Virginia Human Rights Commission (Office of the Inspector General)",
+      "url": "https://oig.wv.gov/human-rights-commission"
+    }
+  }
+}

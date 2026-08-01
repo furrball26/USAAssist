@@ -1,0 +1,138 @@
+{
+  "jurisdiction": "IA",
+  "name": "Iowa",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "overtime.daily",
+      "value": "follows federal FLSA",
+      "summary": "Iowa has no state overtime statute; overtime is governed by the federal FLSA (time-and-a-half after 40 hours per week), and the state directs overtime claims to the U.S. Department of Labor.",
+      "citation": "No Iowa overtime statute (federal FLSA applies)",
+      "sourceUrl": "https://dial.iowa.gov/i-need/claims/how-do-i-wage-claim/wage-claims-faq",
+      "sourceAgency": "Iowa Department of Inspections, Appeals & Licensing (Division of Labor)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "State wage FAQ instructs workers with overtime claims to contact the U.S. DOL (515-284-4625); Iowa adds no daily overtime or higher salary floor beyond federal."
+    },
+    {
+      "topic": "minimumWage.hourly",
+      "value": 7.25,
+      "summary": "Iowa's minimum wage is $7.25 per hour, unchanged since January 1, 2008, matching the federal minimum wage.",
+      "citation": "Iowa Code 91D.1",
+      "sourceUrl": "https://dial.iowa.gov/i-need/claims/how-do-i-wage-claim/wage-claims-faq",
+      "sourceAgency": "Iowa Department of Inspections, Appeals & Licensing (Division of Labor)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Effectively follows the federal $7.25 floor. Bills to raise it (e.g., HF283) have been proposed but not enacted as of 2026; verify no increase took effect. Small retail/service establishments grossing under $300,000/year may be exempt."
+    },
+    {
+      "topic": "minimumWage.tipped",
+      "value": 4.35,
+      "summary": "Iowa's tipped-employee cash minimum wage is $4.35 per hour (for employees earning $30+/month in tips), higher than the federal $2.13, with the employer covering any shortfall below $7.25.",
+      "citation": "Iowa Code 91D.1(1)(d)",
+      "sourceUrl": "https://dial.iowa.gov/i-need/claims/how-do-i-wage-claim/wage-claims-faq",
+      "sourceAgency": "Iowa Department of Inspections, Appeals & Licensing (Division of Labor)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Iowa also allows an 'initial employment wage' of $6.35/hr for the first 90 calendar days with the same employer. Verify current-year figures."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": ["age", "race", "creed", "color", "sex", "sexual orientation", "national origin", "religion", "disability (physical and mental)", "pregnancy"],
+      "summary": "The Iowa Civil Rights Act prohibits employment discrimination based on age, race, creed, color, sex, sexual orientation, national origin, religion, and physical or mental disability, adding creed and (explicitly) sexual orientation beyond the core federal categories.",
+      "citation": "Iowa Code 216.6(1)",
+      "sourceUrl": "https://www.legis.iowa.gov/docs/code/216.6.pdf",
+      "sourceAgency": "Iowa General Assembly / Iowa Civil Rights Commission",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "IMPORTANT: 'Gender identity' was REMOVED as a protected class effective July 1, 2025 (2025 Acts, ch 1, §8-9) and is no longer listed in Iowa Code 216.6. Age protection begins at 18. Pregnancy/childbirth is separately protected under 216.6(2)."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": 4,
+      "summary": "The Iowa Civil Rights Act covers employers who regularly employ four or more individuals, a much lower threshold than the federal 15 (Title VII/ADA) or 20 (ADEA).",
+      "citation": "Iowa Code 216.6(6)(a)",
+      "sourceUrl": "https://www.legis.iowa.gov/docs/code/216.6.pdf",
+      "sourceAgency": "Iowa General Assembly / Iowa Civil Rights Commission",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Statute exempts 'any employer who regularly employs less than four individuals'; family members are not counted as employees. Additional exemptions exist for domestic/personal service and bona fide religious institutions."
+    },
+    {
+      "topic": "disability.pregnancyLeave",
+      "value": "up to 8 weeks pregnancy disability leave",
+      "summary": "Iowa requires covered employers to grant a pregnant employee a leave of absence for the period she is disabled by pregnancy, childbirth, or related conditions, up to a maximum of eight weeks, when adequate leave is not otherwise available.",
+      "citation": "Iowa Code 216.6(2)(e)",
+      "sourceUrl": "https://www.legis.iowa.gov/docs/code/216.6.pdf",
+      "sourceAgency": "Iowa General Assembly / Iowa Civil Rights Commission",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "State addition applicable to employers with 4+ employees, independent of the federal FMLA 50-employee threshold. Pregnancy-related disabilities must be treated like other temporary disabilities under employer leave/insurance plans."
+    },
+    {
+      "topic": "retaliation.whistleblower",
+      "value": "Iowa Code 70A.28 (public employees)",
+      "summary": "Iowa's statutory whistleblower protection under Iowa Code 70A.28 prohibits retaliation against state and local government employees who disclose legal violations, mismanagement, or threats to public health/safety; private-sector employees rely on common-law wrongful-discharge and statute-specific anti-retaliation provisions.",
+      "citation": "Iowa Code 70A.28",
+      "sourceUrl": "https://ombudsman.iowa.gov/services/for-whistleblowers",
+      "sourceAgency": "Iowa Office of Ombudsman",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "70A.28 covers public employees; no general private-sector whistleblower statute exists (private employees rely on common-law public-policy wrongful discharge and provisions such as ICRA 216.11 anti-retaliation). Verify filing procedures/deadlines."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "300 days",
+      "summary": "A discrimination complaint must be filed with the Iowa Civil Rights Commission within 300 days of the discriminatory act.",
+      "citation": "Iowa Code 216.15(12)",
+      "sourceUrl": "https://icrc.iowa.gov/resources/frequently-asked-questions",
+      "sourceAgency": "Iowa Civil Rights Commission (Iowa Office of Civil Rights)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Longer than the federal base 180-day EEOC deadline; matches the 300 days available in a deferral state. Subject to waiver, estoppel, and equitable tolling."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "2 years",
+      "summary": "Claims for wages, or for any liability or penalty for failure to pay wages, must be brought within two years under Iowa's statute of limitations.",
+      "citation": "Iowa Code 614.1(8)",
+      "sourceUrl": "https://www.legis.iowa.gov/docs/code/614.1.pdf",
+      "sourceAgency": "Iowa General Assembly",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Comparable to the FLSA non-willful 2-year period (federal allows 3 years for willful violations). Iowa Code 2026, Section 614.1(8) verified verbatim."
+    },
+    {
+      "topic": "final-pay.wageClaim",
+      "value": "administrative wage claim up to $6,500 via DIAL; unpaid wages plus liquidated damages for intentional nonpayment",
+      "summary": "Under the Iowa Wage Payment Collection Law, employees may file an administrative wage claim (for amounts up to $6,500) with the state, and employers who intentionally fail to pay wages are liable for the unpaid wages plus liquidated damages, costs, and attorney's fees.",
+      "citation": "Iowa Code 91A (esp. 91A.8, 91A.10)",
+      "sourceUrl": "https://dial.iowa.gov/i-need/claims/how-do-i-wage-claim/wage-claims-faq",
+      "sourceAgency": "Iowa Department of Inspections, Appeals & Licensing (Division of Labor)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Wage-claim enforcement moved from Iowa Workforce Development / Iowa Division of Labor to the Department of Inspections, Appeals & Licensing (DIAL). Iowa has no separate statutory severance-pay mandate; severance is owed only where an employer agreement/policy provides it (91A.2)."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Iowa Department of Inspections, Appeals & Licensing (Division of Labor)",
+      "url": "https://dial.iowa.gov/hearings/wage-and-child-labor/wages"
+    },
+    "discrimination": {
+      "name": "Iowa Civil Rights Commission (Iowa Office of Civil Rights)",
+      "url": "https://icrc.iowa.gov"
+    }
+  }
+}

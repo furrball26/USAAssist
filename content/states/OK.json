@@ -1,0 +1,90 @@
+{
+  "jurisdiction": "OK",
+  "name": "Oklahoma",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "minimumWage.hourly",
+      "value": "follows federal $7.25",
+      "summary": "Oklahoma's minimum wage is tied to the current federal minimum wage, so it is $7.25 per hour.",
+      "citation": "40 O.S. § 197.2",
+      "sourceUrl": "https://www.oscn.net/applications/oscn/DeliverDocument.asp?CiteID=77537",
+      "sourceAgency": "Oklahoma State Courts Network (Oklahoma Statutes, Title 40 Labor)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Statute text states no employer shall pay 'less than the current federal minimum wage,' so OK tracks the federal rate ($7.25). Verify federal rate has not changed."
+    },
+    {
+      "topic": "overtime.daily",
+      "value": "follows federal FLSA",
+      "summary": "Oklahoma has no state daily or weekly overtime law and no higher salary floor; overtime is governed by the federal FLSA (1.5x after 40 hrs/week).",
+      "citation": "40 O.S. § 197.2 (Oklahoma Minimum Wage Act)",
+      "sourceUrl": "https://www.oscn.net/applications/oscn/DeliverDocument.asp?CiteID=77537",
+      "sourceAgency": "Oklahoma State Courts Network (Oklahoma Statutes, Title 40 Labor)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "The Oklahoma Minimum Wage Act sets no overtime premium or state salary threshold, so federal FLSA controls. No separate OK overtime statute located."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": ["race", "color", "religion", "sex", "national origin", "age", "genetic information", "disability"],
+      "summary": "The Oklahoma Anti-Discrimination Act prohibits employment discrimination based on race, color, religion, sex, national origin, age, genetic information, and disability.",
+      "citation": "25 O.S. § 1302",
+      "sourceUrl": "https://www.oscn.net/applications/oscn/DeliverDocument.asp?CiteID=73443",
+      "sourceAgency": "Oklahoma State Courts Network (Oklahoma Statutes, Title 25)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Classes largely mirror federal Title VII/ADEA/ADA/GINA. No additional classes (e.g., sexual orientation/gender identity) are enumerated in the statute text reviewed."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": 1,
+      "summary": "Oklahoma's anti-discrimination law defines 'employer' as an entity paying one or more individuals, so it reaches employers of any size with no minimum-headcount threshold.",
+      "citation": "25 O.S. § 1301",
+      "sourceUrl": "https://www.oscn.net/applications/oscn/DeliverDocument.asp?CiteID=73442",
+      "sourceAgency": "Oklahoma State Courts Network (Oklahoma Statutes, Title 25)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Broader than federal thresholds (Title VII/ADA 15+, ADEA 20+). Definition covers a legal entity that 'pays one or more individuals a salary or wages.' Confirm no separate size carve-outs elsewhere in Title 25."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "180 days",
+      "summary": "A discrimination charge must be filed within 180 days of the last alleged discriminatory act with the Oklahoma Attorney General's Office of Civil Rights Enforcement (or the EEOC); a lawsuit must be filed within 90 days of receiving a Notice of Right to Sue.",
+      "citation": "25 O.S. § 1350",
+      "sourceUrl": "https://www.oscn.net/applications/oscn/DeliverDocument.asp?CiteID=462820",
+      "sourceAgency": "Oklahoma State Courts Network (Oklahoma Statutes, Title 25)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Charge filed with the AG's Office of Civil Rights Enforcement (Oklahoma's FEPA, successor to the former Human Rights Commission) or EEOC. Suit is barred more than 90 days after the Right-to-Sue notice."
+    },
+    {
+      "topic": "final-pay",
+      "value": "next regular payday",
+      "summary": "Upon termination (discharge or resignation), Oklahoma requires the employer to pay final wages in full at the next regular designated payday for the pay period in which the work was performed.",
+      "citation": "40 O.S. § 165.3",
+      "sourceUrl": "https://www.oscn.net/applications/oscn/DeliverDocument.asp?CiteID=77476",
+      "sourceAgency": "Oklahoma State Courts Network (Oklahoma Statutes, Title 40 Labor)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Statute does not distinguish discharge vs. resignation; both are paid at the next regular payday. Failure-to-pay exposes employer to liquidated damages (2% of unpaid wages per day, capped at the total unpaid amount)."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Oklahoma Department of Labor",
+      "url": "https://oklahoma.gov/odol"
+    },
+    "discrimination": {
+      "name": "Oklahoma Attorney General's Office of Civil Rights Enforcement",
+      "url": "https://www.oag.ok.gov"
+    }
+  }
+}

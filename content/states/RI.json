@@ -1,0 +1,114 @@
+{
+  "jurisdiction": "RI",
+  "name": "Rhode Island",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "minimumWage.hourly",
+      "value": 16.00,
+      "summary": "Rhode Island's minimum wage is $16.00 per hour effective January 1, 2026, well above the federal $7.25.",
+      "citation": "R.I. Gen. Laws § 28-12-3",
+      "sourceUrl": "https://webserver.rilegislature.gov/Statutes/TITLE28/28-12/28-12-3.htm",
+      "sourceAgency": "Rhode Island General Assembly (RI General Laws)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Statute schedules $15.00 (2025), $16.00 (2026), $17.00 (2027). Confirm the 2026 figure is in effect and not further amended; DLT posts the current rate at https://dlt.ri.gov."
+    },
+    {
+      "topic": "overtime.daily",
+      "value": "follows federal FLSA",
+      "summary": "Rhode Island requires overtime at 1.5x only after 40 hours in a workweek, with no daily overtime, mirroring the federal FLSA.",
+      "citation": "R.I. Gen. Laws § 28-12-4.1",
+      "sourceUrl": "https://webserver.rilegislature.gov/Statutes/TITLE28/28-12/28-12-4.1.htm",
+      "sourceAgency": "Rhode Island General Assembly (RI General Laws)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "No daily OT and no higher state salary threshold. RI separately requires premium/time-and-a-half pay for some retail work on Sundays and holidays under § 5-23-2, which is outside standard OT."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": ["sexual orientation", "gender identity or expression", "country of ancestral origin"],
+      "summary": "Rhode Island's Fair Employment Practices Act bars discrimination on bases beyond federal law, including sexual orientation, gender identity or expression, and ancestral origin (in addition to race, color, religion, sex, disability, and age).",
+      "citation": "R.I. Gen. Laws § 28-5-7",
+      "sourceUrl": "https://webserver.rilegislature.gov/Statutes/TITLE28/28-5/28-5-7.htm",
+      "sourceAgency": "Rhode Island General Assembly (RI General Laws)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Listed classes supplement the federal set. Other RI statutes add further protections (e.g., pregnancy under § 28-5-7.4); values here focus on the § 28-5-7 additions to federal Title VII/ADA/ADEA bases."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": 4,
+      "summary": "The Rhode Island Fair Employment Practices Act covers private employers with four or more employees, a lower threshold than the federal 15-employee minimum under Title VII/ADA.",
+      "citation": "R.I. Gen. Laws § 28-5-6",
+      "sourceUrl": "https://webserver.rilegislature.gov/Statutes/TITLE28/28-5/28-5-6.htm",
+      "sourceAgency": "Rhode Island General Assembly (RI General Laws)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "'Employer' means any person employing four or more individuals; state and its political subdivisions covered regardless of size. Narrow religious-organization exception applies."
+    },
+    {
+      "topic": "disability.accommodation",
+      "value": "state adds pregnancy/childbirth/menopause reasonable accommodation duty",
+      "summary": "Beyond ADA disability accommodation, Rhode Island requires employers to reasonably accommodate conditions related to pregnancy, childbirth, menopause, or related medical conditions absent undue hardship.",
+      "citation": "R.I. Gen. Laws § 28-5-7.4",
+      "sourceUrl": "https://webserver.rilegislature.gov/Statutes/TITLE28/28-5/28-5-7.4.htm",
+      "sourceAgency": "Rhode Island General Assembly (RI General Laws)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Employer bears burden of proving undue hardship; must give written notice of these rights. Statute does not label a formal 'interactive process' but requires individualized accommodation."
+    },
+    {
+      "topic": "whistleblower",
+      "value": "Rhode Island Whistleblowers' Protection Act",
+      "summary": "Rhode Island's Whistleblowers' Protection Act prohibits employers from discharging, threatening, or otherwise retaliating against employees who report or refuse to participate in violations of law.",
+      "citation": "R.I. Gen. Laws § 28-50-3",
+      "sourceUrl": "https://webserver.rilegislature.gov/Statutes/TITLE28/28-50/28-50-3.htm",
+      "sourceAgency": "Rhode Island General Assembly (RI General Laws)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Protection requires a reasonable belief a violation occurred; also bars threats to report an employee's immigration status. Chapter index: https://webserver.rilegislature.gov/Statutes/TITLE28/28-50/INDEX.htm"
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "3 years",
+      "summary": "A civil action to recover unpaid wages under Rhode Island's Payment of Wages law must be commenced within three years after the cause of action accrued.",
+      "citation": "R.I. Gen. Laws § 28-14-19.2(g)",
+      "sourceUrl": "https://webserver.rilegislature.gov/Statutes/TITLE28/28-14/28-14-19.2.htm",
+      "sourceAgency": "Rhode Island General Assembly (RI General Laws)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Statute states any claim is 'forever barred unless commenced within three (3) years after the cause of action accrued.'"
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "1 year",
+      "summary": "A discrimination charge must be filed with the Rhode Island Commission for Human Rights within one year of the unlawful employment practice, more generous than the federal EEOC 180/300-day deadlines.",
+      "citation": "R.I. Gen. Laws § 28-5-17",
+      "sourceUrl": "https://webserver.rilegislature.gov/Statutes/TITLE28/28-5/28-5-17.htm",
+      "sourceAgency": "Rhode Island General Assembly (RI General Laws)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "One year runs from when the practice occurred, terminated, or was applied to adversely affect the aggrieved person, whichever is later."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Rhode Island Department of Labor & Training (DLT)",
+      "url": "https://dlt.ri.gov"
+    },
+    "discrimination": {
+      "name": "Rhode Island Commission for Human Rights (RICHR)",
+      "url": "https://richr.ri.gov"
+    }
+  }
+}

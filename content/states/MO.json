@@ -1,0 +1,102 @@
+{
+  "jurisdiction": "MO",
+  "name": "Missouri",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "minimumWage.hourly",
+      "value": 15.00,
+      "summary": "Missouri's minimum wage is $15.00 per hour effective January 1, 2026, higher than the federal $7.25.",
+      "citation": "RSMo 290.502",
+      "sourceUrl": "https://labor.mo.gov/news/press-releases/minimum-wage-increases-1500-hour-2026",
+      "sourceAgency": "Missouri Department of Labor and Industrial Relations",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Per HB 567 (2025), the wage is no longer annually adjusted by CPI. Tipped employees must be paid at least 50% ($7.50/hr) plus enough to reach full minimum wage."
+    },
+    {
+      "topic": "overtime.daily",
+      "value": "follows federal FLSA",
+      "summary": "Missouri requires overtime at 1.5x after 40 hours per week and incorporates the FLSA's exemptions; there is no daily overtime or higher salary floor.",
+      "citation": "RSMo 290.505",
+      "sourceUrl": "https://revisor.mo.gov/main/OneSection.aspx?section=290.505",
+      "sourceAgency": "Missouri Revisor of Statutes",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Statute is interpreted in accordance with the FLSA (29 U.S.C. 201 et seq.). Exception: certain amusement/recreation businesses owe OT only after 52 hours/week."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": ["race", "color", "religion", "national origin", "ancestry", "sex", "disability", "age"],
+      "summary": "The Missouri Human Rights Act prohibits employment discrimination based on race, color, religion, national origin, ancestry, sex, disability, and age.",
+      "citation": "RSMo 213.055",
+      "sourceUrl": "https://labor.mo.gov/mohumanrights/discrimination",
+      "sourceAgency": "Missouri Commission on Human Rights (MCHR)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Age is protected in employment only. Sexual orientation and gender identity are not enumerated in the MHRA. Age coverage under MHRA is broader than federal ADEA's 40+/20-employee limits but verify age-range specifics."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": 6,
+      "summary": "The Missouri Human Rights Act covers employers with six or more employees, a lower threshold than Title VII's 15.",
+      "citation": "RSMo 213.010(8)",
+      "sourceUrl": "https://revisor.mo.gov/main/OneSection.aspx?section=213.010",
+      "sourceAgency": "Missouri Revisor of Statutes",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Six or more employees for each working day in 20+ calendar weeks in the current or preceding year. Excludes corporations/associations owned or operated by religious or sectarian organizations."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "180 days",
+      "summary": "A discrimination complaint must be filed with the Missouri Commission on Human Rights within 180 days of the alleged discriminatory act.",
+      "citation": "RSMo 213.075",
+      "sourceUrl": "https://revisor.mo.gov/main/OneSection.aspx?section=213.075",
+      "sourceAgency": "Missouri Revisor of Statutes",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Failure to timely file deprives the commission of jurisdiction. This is shorter than the federal 300-day cross-filing window in deferral states."
+    },
+    {
+      "topic": "whistleblower",
+      "value": "Missouri Whistleblower's Protection Act",
+      "summary": "Missouri's Whistleblower's Protection Act makes it unlawful to discharge an employee for reporting or refusing to carry out an unlawful act, providing actual (not punitive) damages.",
+      "citation": "RSMo 285.575",
+      "sourceUrl": "https://revisor.mo.gov/main/OneSection.aspx?section=285.575",
+      "sourceAgency": "Missouri Revisor of Statutes",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Enacted 2017; codifies and limits the common-law public-policy exception to at-will employment. Applies to at-will employees; provides a private right of action for actual damages but not punitive damages."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "3 years",
+      "summary": "An action to collect unpaid minimum wages or overtime must be brought within three years of accrual.",
+      "citation": "RSMo 290.527",
+      "sourceUrl": "https://revisor.mo.gov/main/OneSection.aspx?section=290.527",
+      "sourceAgency": "Missouri Revisor of Statutes",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Recovery includes the unpaid wages plus an additional amount equal to twice the unpaid wages as liquidated damages, costs, and attorney fees."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Missouri Department of Labor and Industrial Relations, Division of Labor Standards",
+      "url": "https://labor.mo.gov/dls/minimum-wage"
+    },
+    "discrimination": {
+      "name": "Missouri Commission on Human Rights (MCHR)",
+      "url": "https://labor.mo.gov/mohumanrights/discrimination"
+    }
+  }
+}

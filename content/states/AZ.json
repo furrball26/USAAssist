@@ -1,0 +1,126 @@
+{
+  "jurisdiction": "AZ",
+  "name": "Arizona",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "overtime.daily",
+      "value": "follows federal FLSA",
+      "summary": "Arizona has no state overtime statute; overtime is governed solely by the federal FLSA (time-and-a-half after 40 hours per week), with no daily overtime or higher state salary threshold.",
+      "citation": "No Arizona overtime statute (federal FLSA, 29 U.S.C. 207 controls)",
+      "sourceUrl": "https://www.azica.gov/frequently-asked-questions-about-wage-and-earned-paid-sick-time-laws",
+      "sourceAgency": "Industrial Commission of Arizona, Labor Department",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Arizona wage law does not address overtime; the ICA administers minimum wage and paid sick time only. Verify FAQ page still states no state overtime provision."
+    },
+    {
+      "topic": "minimumWage.hourly",
+      "value": 15.15,
+      "summary": "Arizona's minimum wage is $15.15 per hour effective January 1, 2026, indexed annually to inflation and well above the federal $7.25.",
+      "citation": "A.R.S. 23-363 (Fair Wages and Healthy Families Act)",
+      "sourceUrl": "https://www.azica.gov/news/2026-minimum-wage-increase-effective-january-1-2026",
+      "sourceAgency": "Industrial Commission of Arizona, Labor Department",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Increased from $14.70 to $15.15 (+$0.45) based on CPI. Employers may take a tip credit of up to $3.00/hr under A.R.S. 23-363(C), making the tipped minimum $12.15/hr for 2026 — verify tipped figure directly on the ICA page (azica.gov blocked automated fetch; figure confirmed via ICA search summary and statutory tip-credit amount)."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": "follows federal (mirrors Title VII/ADEA/ADA)",
+      "summary": "The Arizona Civil Rights Act mirrors federal law, prohibiting employment discrimination based on race, color, religion, sex (including pregnancy), age (40+), national origin, and disability; Arizona adds no additional statewide protected classes.",
+      "citation": "A.R.S. 41-1463",
+      "sourceUrl": "https://www.azag.gov/civil-rights/faq",
+      "sourceAgency": "Arizona Attorney General, Civil Rights Division (FEPA)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "No statewide protection for sexual orientation or gender identity in employment; some Arizona municipalities (e.g., Phoenix, Tucson) add local protections. Verify current ACRA class list."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": 1,
+      "summary": "For sexual harassment claims (and retaliation for opposing sexual harassment), the Arizona Civil Rights Act covers employers with one or more employees — far below the general 15-employee threshold that otherwise matches federal Title VII.",
+      "citation": "A.R.S. 41-1461",
+      "sourceUrl": "https://www.azleg.gov/ars/41/01461.htm",
+      "sourceAgency": "Arizona State Legislature (Arizona Revised Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "General ACRA coverage is 15+ employees (same as federal). The 1-employee threshold is specific to sexual harassment / retaliation-for-opposing-harassment claims."
+    },
+    {
+      "topic": "retaliation.whistleblower",
+      "value": "Arizona Employment Protection Act",
+      "summary": "The Arizona Employment Protection Act prohibits terminating employees for refusing to violate the law, reporting statutory violations in a reasonable manner, exercising workers' compensation rights, jury or military service, or voting.",
+      "citation": "A.R.S. 23-1501",
+      "sourceUrl": "https://www.azleg.gov/ars/23/01501.htm",
+      "sourceAgency": "Arizona State Legislature (Arizona Revised Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Codifies wrongful-termination exceptions to at-will employment; where a statute provides its own remedy, that remedy is exclusive."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "1 year",
+      "summary": "An administrative wage claim (for wages up to $12,000) must be filed with the Industrial Commission within one year of accrual, and civil actions for unpaid wages/treble damages also carry a one-year statute of limitations.",
+      "citation": "A.R.S. 23-356; A.R.S. 12-541",
+      "sourceUrl": "https://www.azleg.gov/ars/23/00356.htm",
+      "sourceAgency": "Arizona State Legislature (Arizona Revised Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "A.R.S. 23-356 sets the one-year limit and $12,000 cap for administrative claims; the one-year civil-suit limit for the statutory treble-damages action derives from A.R.S. 12-541. Recovery under A.R.S. 23-355 can be treble the unpaid wages."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "180 days",
+      "summary": "A discrimination charge must be filed with the Arizona Civil Rights Division within 180 days after the alleged unlawful employment practice occurred.",
+      "citation": "A.R.S. 41-1481",
+      "sourceUrl": "https://www.azleg.gov/ars/41/01481.htm",
+      "sourceAgency": "Arizona Attorney General, Civil Rights Division (FEPA)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "State FEPA deadline is 180 days (shorter than the 300-day federal deadline available via EEOC in deferral states). Back pay does not accrue more than two years before filing."
+    },
+    {
+      "topic": "final-pay",
+      "value": "discharge: 7 working days or end of next pay period, whichever is sooner; quit: next regular payday",
+      "summary": "A discharged employee must be paid all wages within seven working days or by the end of the next regular pay period (whichever is sooner); an employee who quits is paid by the next regular payday.",
+      "citation": "A.R.S. 23-353",
+      "sourceUrl": "https://www.azleg.gov/ars/23/00353.htm",
+      "sourceAgency": "Arizona State Legislature (Arizona Revised Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Federal FLSA has no comparable final-pay deadline, so this is a state addition. Violation is a petty offense."
+    },
+    {
+      "topic": "leave.earnedPaidSickTime",
+      "value": "state-mandated earned paid sick time",
+      "summary": "Arizona requires employers to provide earned paid sick time (accrued at one hour per 30 hours worked) under the Fair Wages and Healthy Families Act — a benefit with no federal equivalent.",
+      "citation": "A.R.S. 23-372",
+      "sourceUrl": "https://www.azica.gov/frequently-asked-questions-about-wage-and-earned-paid-sick-time-laws",
+      "sourceAgency": "Industrial Commission of Arizona, Labor Department",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Accrual rate (one hour per 30 hours worked) and caps of 40 hours/year (employers with 15+ employees) or 24 hours/year (fewer than 15) are set by A.R.S. 23-372; A.R.S. 23-373 covers permitted uses only (citation corrected from 23-373 to 23-372). Verify current accrual caps on the ICA FAQ page."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Industrial Commission of Arizona, Labor Department",
+      "url": "https://www.azica.gov/labor-department"
+    },
+    "discrimination": {
+      "name": "Arizona Attorney General, Civil Rights Division",
+      "url": "https://www.azag.gov/civil-rights"
+    }
+  }
+}

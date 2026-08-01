@@ -1,0 +1,114 @@
+{
+  "jurisdiction": "KY",
+  "name": "Kentucky",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "minimumWage.hourly",
+      "value": 7.25,
+      "summary": "Kentucky's minimum wage is $7.25/hour and by statute automatically tracks the federal rate, so it matches the federal floor.",
+      "citation": "KRS 337.275",
+      "sourceUrl": "https://apps.legislature.ky.gov/law/statutes/statute.aspx?id=32064",
+      "sourceAgency": "Kentucky Legislature (Kentucky Revised Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Statute pegs the state rate to the federal minimum and raises it only if the federal rate exceeds it. Verify no 2026 legislative increase took effect (SB 16 proposing $10-$15 was introduced but confirm enactment status)."
+    },
+    {
+      "topic": "overtime.daily",
+      "value": "seventh-day premium: time-and-a-half for hours worked on the 7th consecutive day of a workweek",
+      "summary": "Beyond the federal 40-hour rule, Kentucky requires time-and-a-half for time worked on the seventh day when an employee works all seven days of a workweek.",
+      "citation": "KRS 337.050",
+      "sourceUrl": "https://apps.legislature.ky.gov/law/statutes/statute.aspx?id=32049",
+      "sourceAgency": "Kentucky Legislature (Kentucky Revised Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Otherwise Kentucky follows federal FLSA (time-and-a-half after 40 hrs/week). Seventh-day rule has exceptions (e.g., supervisory employees) and 7th-day premium may be credited against weekly OT owed. No state daily-OT rule and no higher state salary threshold identified."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": ["smoker or nonsmoker status"],
+      "summary": "The Kentucky Civil Rights Act adds smoker/nonsmoker status as a protected class beyond the federal set (race, color, religion, national origin, sex, age 40+, disability).",
+      "citation": "KRS 344.040",
+      "sourceUrl": "https://apps.legislature.ky.gov/law/statutes/statute.aspx?id=49405",
+      "sourceAgency": "Kentucky Legislature (Kentucky Revised Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Statewide statute does not list sexual orientation or gender identity; those are covered only by Executive Order 2020-214 and various local 'Fairness' ordinances, not the KCRA itself. Confirm current EO/local status before relying on SOGI coverage."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": 8,
+      "summary": "Kentucky's anti-discrimination law covers employers with 8 or more employees, a lower threshold than the federal 15 (though disability claims still require 15+).",
+      "citation": "KRS 344.030; KRS 344.040",
+      "sourceUrl": "https://apps.legislature.ky.gov/law/statutes/statute.aspx?id=49405",
+      "sourceAgency": "Kentucky Legislature (Kentucky Revised Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "8+ employees in each of 20+ calendar weeks in the current or preceding year for most claims; disability discrimination requires 15+ employees, matching federal ADA. Confirmed by Kentucky Commission on Human Rights."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "180 days",
+      "summary": "An employment discrimination charge must be filed with the Kentucky Commission on Human Rights within 180 days of the alleged unlawful practice.",
+      "citation": "KRS 344.200",
+      "sourceUrl": "https://kchr.ky.gov/About/Pages/FAQs.aspx",
+      "sourceAgency": "Kentucky Commission on Human Rights",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "180 days applies to employment, public accommodations, and financial-transaction charges (housing is 365 days). KCHR has a worksharing agreement with the EEOC. Note: a direct court action under the KCRA generally follows the separate civil statute of limitations."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "3 years",
+      "summary": "A wage claim under Kentucky's Wage and Hour Act must be commenced within three years after the cause of action accrued.",
+      "citation": "KRS 337.385",
+      "sourceUrl": "https://apps.legislature.ky.gov/law/statutes//statute.aspx?id=55338",
+      "sourceAgency": "Kentucky Legislature (Kentucky Revised Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "2024 HB 320 shortened the KWHA limitations period from five years to three years; confirm the current codified subsection text on the official statute page, which loads as a PDF in some fetchers."
+    },
+    {
+      "topic": "final-pay",
+      "value": "next regular payday or within 14 days of separation, whichever is later",
+      "summary": "On termination or resignation, Kentucky requires final wages by the next regular payday or within 14 days of separation, whichever occurs later.",
+      "citation": "KRS 337.055",
+      "sourceUrl": "https://apps.legislature.ky.gov/law/statutes/statute.aspx?id=32050",
+      "sourceAgency": "Kentucky Legislature (Kentucky Revised Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Applies to both voluntary and involuntary separations. No federal analog requires a specific final-pay deadline."
+    },
+    {
+      "topic": "whistleblower",
+      "value": "public employees: protected from reprisal for disclosing violations; claim within 90 days",
+      "summary": "The Kentucky Whistleblower Act protects public (government) employees from reprisal for reporting suspected legal violations, mismanagement, or dangers to public health/safety, with a 90-day window to sue.",
+      "citation": "KRS 61.102 (see also KRS 61.103)",
+      "sourceUrl": "https://apps.legislature.ky.gov/law/statutes/statute.aspx?id=40158",
+      "sourceAgency": "Kentucky Legislature (Kentucky Revised Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "This statute covers public employers/employees only; it does not create a general private-sector whistleblower cause of action. Retaliation for filing wage complaints is separately barred under KRS 337, and KCRA retaliation under KRS 344.280. Confirm the 90-day filing period against KRS 61.103."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Kentucky Education and Labor Cabinet, Division of Wages and Hours",
+      "url": "https://www.labor.ky.gov"
+    },
+    "discrimination": {
+      "name": "Kentucky Commission on Human Rights",
+      "url": "https://kchr.ky.gov"
+    }
+  }
+}

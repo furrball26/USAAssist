@@ -1,0 +1,141 @@
+{
+  "jurisdiction": "MN",
+  "name": "Minnesota",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "minimumWage.hourly",
+      "value": 11.41,
+      "summary": "Minnesota's minimum wage is $11.41 per hour for all employers effective January 1, 2026 (adjusted annually for inflation), higher than the federal $7.25.",
+      "citation": "Minn. Stat. 177.24",
+      "sourceUrl": "https://dli.mn.gov/news/minimum-wage-rate-adjusted-inflation-jan-1-2026",
+      "sourceAgency": "Minnesota Department of Labor and Industry",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Effective Jan. 1, 2026. A 90-day training wage of $9.31 applies to workers under age 20. Minneapolis and St. Paul have separate, higher local minimum-wage ordinances."
+    },
+    {
+      "topic": "overtime.daily",
+      "value": "State law requires overtime after 48 hours/week; federal FLSA 40-hour rule controls for covered employers",
+      "summary": "Minnesota's own overtime law only requires time-and-a-half after 48 hours per workweek, but most employers are covered by the stricter federal FLSA 40-hour standard, which applies.",
+      "citation": "Minn. Stat. 177.25",
+      "sourceUrl": "https://www.dli.mn.gov/overtime",
+      "sourceAgency": "Minnesota Department of Labor and Industry",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Minnesota does not mandate daily overtime. State threshold (48 hrs) is less protective than federal (40 hrs); the more stringent standard governs. No daily OT."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": [
+        "race",
+        "color",
+        "creed",
+        "religion",
+        "national origin",
+        "sex (including pregnancy)",
+        "gender identity",
+        "sexual orientation",
+        "marital status",
+        "familial status",
+        "disability",
+        "status with regard to public assistance",
+        "age",
+        "local human rights commission activity"
+      ],
+      "summary": "The Minnesota Human Rights Act protects more classes than federal law, adding creed, marital status, familial status, sexual orientation, gender identity, and status with regard to public assistance.",
+      "citation": "Minn. Stat. 363A.08; 363A.03",
+      "sourceUrl": "https://mn.gov/mdhr/yourrights/mhra/",
+      "sourceAgency": "Minnesota Department of Human Rights",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Race definition includes traits associated with race such as hair texture and hairstyle. Verify full current class list against 363A.03 definitions."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": 1,
+      "summary": "The Minnesota Human Rights Act covers any employer with one or more employees, far broader than the federal 15-employee threshold under Title VII/ADA.",
+      "citation": "Minn. Stat. 363A.03, subd. 16",
+      "sourceUrl": "https://www.revisor.mn.gov/statutes/cite/363A.03",
+      "sourceAgency": "Minnesota Office of the Revisor of Statutes",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "'Employer' means a person who has one or more employees."
+    },
+    {
+      "topic": "discrimination.ageCoverage",
+      "value": "18 and older (no upper or lower age floor of 40)",
+      "summary": "The Minnesota Human Rights Act protects workers 18 and older from age discrimination, broader than the federal ADEA which only protects workers 40 and older.",
+      "citation": "Minn. Stat. 363A.08; 363A.03",
+      "sourceUrl": "https://mn.gov/mdhr/yourrights/mhra/",
+      "sourceAgency": "Minnesota Department of Human Rights",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Unlike federal ADEA (20+ employees, age 40+), MHRA age protection is not limited to workers over 40. Confirm exact age-definition wording in 363A.03."
+    },
+    {
+      "topic": "whistleblower",
+      "value": "Minnesota Whistleblower Act prohibits retaliation for good-faith reports of legal violations",
+      "summary": "The Minnesota Whistleblower Act bars employers from retaliating against employees who in good faith report suspected legal violations, participate in investigations, or refuse to perform illegal acts.",
+      "citation": "Minn. Stat. 181.932",
+      "sourceUrl": "https://www.revisor.mn.gov/statutes/cite/181.932",
+      "sourceAgency": "Minnesota Office of the Revisor of Statutes",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Protects good-faith reports; false statements or reckless disregard for the truth are not protected. This is a state-law addition to federal protections."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "2 years (3 years if willful)",
+      "summary": "A wage or overtime claim in Minnesota must generally be brought within two years, extended to three years where nonpayment is willful or the employer fails to produce payroll records.",
+      "citation": "Minn. Stat. 541.07(5)",
+      "sourceUrl": "https://www.revisor.mn.gov/statutes/cite/541.07",
+      "sourceAgency": "Minnesota Office of the Revisor of Statutes",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Two-year default; three years for willful nonpayment or failure to submit payroll records to DLI on request."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "1 year (365 days)",
+      "summary": "A charge of discrimination under the Minnesota Human Rights Act must be filed with the Department of Human Rights within one year of the discriminatory act, longer than the federal EEOC 180/300-day deadlines.",
+      "citation": "Minn. Stat. 363A.28, subd. 3",
+      "sourceUrl": "https://mn.gov/mdhr/intake/faq/",
+      "sourceAgency": "Minnesota Department of Human Rights",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "One year from the date discrimination occurred. Verify the exact statutory subdivision citation (363A.28, subd. 3) against current statute."
+    },
+    {
+      "topic": "final-pay",
+      "value": "Discharge: due within 24 hours of demand; resignation: next payday (or within 20 days)",
+      "summary": "Minnesota requires final wages of a discharged employee within 24 hours of demand, and a resigning employee's final wages by the next regular payday, with penalty wages up to 15 days for noncompliance.",
+      "citation": "Minn. Stat. 181.13; 181.14",
+      "sourceUrl": "https://www.revisor.mn.gov/statutes/cite/181.14",
+      "sourceAgency": "Minnesota Office of the Revisor of Statutes",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "181.13 governs discharge (immediate/within 24 hrs of demand); 181.14 governs resignation (next payday, generally within 20 days). Federal law has no such final-pay timing rule."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Minnesota Department of Labor and Industry",
+      "url": "https://www.dli.mn.gov"
+    },
+    "discrimination": {
+      "name": "Minnesota Department of Human Rights",
+      "url": "https://mn.gov/mdhr/"
+    }
+  }
+}

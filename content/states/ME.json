@@ -1,0 +1,126 @@
+{
+  "jurisdiction": "ME",
+  "name": "Maine",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "minimumWage.hourly",
+      "value": 15.10,
+      "summary": "Maine's minimum wage is $15.10 per hour effective January 1, 2026, well above the federal $7.25.",
+      "citation": "26 M.R.S. § 664(1)",
+      "sourceUrl": "https://www.maine.gov/labor/news_events/article.shtml?id=13338762",
+      "sourceAgency": "Maine Department of Labor",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Adjusted annually by the Maine DOL for CPI-W (Northeast). Service/tipped employee direct cash wage is $7.55/hr for 2026, with tips required to bring total to $15.10."
+    },
+    {
+      "topic": "overtime.daily",
+      "value": "no daily OT; higher salary floor than federal",
+      "summary": "Maine follows the federal 40-hour weekly overtime rule (1.5x) with no daily overtime, but sets a higher exempt salary floor.",
+      "citation": "26 M.R.S. §§ 664(3), 663(3)(K)",
+      "sourceUrl": "https://legislature.maine.gov/statutes/26/title26sec664.html",
+      "sourceAgency": "Maine Legislature (Maine Revised Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "No daily overtime requirement. Overtime is 1.5x after 40 hours/week, same as FLSA."
+    },
+    {
+      "topic": "overtime.salaryThreshold",
+      "value": 45300.32,
+      "summary": "For 2026 the salaried white-collar overtime exemption requires annual compensation exceeding $45,300.32 ($871.16/week), higher than the federal salary level.",
+      "citation": "26 M.R.S. § 663(3)(K)",
+      "sourceUrl": "https://legislature.maine.gov/statutes/26/title26sec663.html",
+      "sourceAgency": "Maine Legislature (Maine Revised Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Threshold is 3000 times the state minimum hourly wage (3000 x $15.10 = $45,300.32/yr = $871.16/wk), or the federal FLSA level, whichever is higher. Verify current-year figure against Maine DOL."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": ["sexual orientation", "gender identity", "ancestry", "familial status", "genetic predisposition (genetic information)", "protected whistleblower activity", "receipt of a final protection order", "prior workers' compensation claim"],
+      "summary": "The Maine Human Rights Act protects several classes beyond the federal set, including sexual orientation, gender identity, ancestry, familial status, and genetic information.",
+      "citation": "5 M.R.S. § 4572",
+      "sourceUrl": "https://legislature.maine.gov/legis/statutes/5/title5sec4572.html",
+      "sourceAgency": "Maine Human Rights Commission",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "These are in addition to federally protected race, color, national origin, religion, sex, age, and disability."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": 1,
+      "summary": "The Maine Human Rights Act covers employers of any size (any number of employees), far below the federal 15-employee threshold under Title VII/ADA.",
+      "citation": "5 M.R.S. § 4553(4)",
+      "sourceUrl": "https://legislature.maine.gov/legis/statutes/5/title5sec4553.html",
+      "sourceAgency": "Maine Human Rights Commission",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Statute defines employer as any person employing 'any number of employees.' Value 1 denotes coverage begins at a single employee. Narrow exemption for religious/fraternal organizations (except as to disability)."
+    },
+    {
+      "topic": "retaliation.whistleblower",
+      "value": "Maine Whistleblowers' Protection Act",
+      "summary": "Maine's Whistleblowers' Protection Act prohibits retaliation against employees who report, in good faith, illegal activity or conditions endangering health or safety, enforced through the Maine Human Rights Act.",
+      "citation": "26 M.R.S. §§ 831-840; enforcement via 26 M.R.S. § 833",
+      "sourceUrl": "https://legislature.maine.gov/statutes/26/title26sec833.html",
+      "sourceAgency": "Maine Legislature (Maine Revised Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Employee generally must first report the violation to a supervisor. Claims are pursued through the Maine Human Rights Commission process."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "300 days",
+      "summary": "Discrimination complaints must be filed with the Maine Human Rights Commission within 300 days of the alleged unlawful act.",
+      "citation": "5 M.R.S. § 4611",
+      "sourceUrl": "https://www.maine.gov/mhrc/file/faq",
+      "sourceAgency": "Maine Human Rights Commission",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Matches the federal 300-day EEOC deadline for deferral states. A subsequent civil action must be filed within the greater of 2 years of the act or 90 days of a right-to-sue/dismissal."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "6 years",
+      "summary": "Wage claims are governed by Maine's general 6-year statute of limitations for civil actions, as Title 26 sets no shorter period for private-sector wage claims.",
+      "citation": "14 M.R.S. § 752",
+      "sourceUrl": "https://legislature.maine.gov/statutes/14/title14sec752.html",
+      "sourceAgency": "Maine Legislature (Maine Revised Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "26 M.R.S. § 626 (final wages) sets no limitations period, so the general 6-year civil SOL applies. Note: overtime claims by state (executive/judicial) employees have a specific 2-year (3-year willful) limit under 26 M.R.S. § 670-A. Verify applicability per claim type."
+    },
+    {
+      "topic": "final-pay",
+      "value": "next established payday",
+      "summary": "A departing employee must be paid all wages in full no later than the next established payday, and accrued unused vacation must be paid out (except for employers with 10 or fewer employees or public employers).",
+      "citation": "26 M.R.S. § 626",
+      "sourceUrl": "https://legislature.maine.gov/statutes/26/title26sec626.html",
+      "sourceAgency": "Maine Legislature (Maine Revised Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Vacation payout applies to leave accrued on/after January 1, 2023. Violations can carry liquidated damages of twice the unpaid amount plus interest and attorney's fees."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Maine Department of Labor, Bureau of Labor Standards",
+      "url": "https://www.maine.gov/labor/labor_laws/wagehour.html"
+    },
+    "discrimination": {
+      "name": "Maine Human Rights Commission",
+      "url": "https://www.maine.gov/mhrc/"
+    }
+  }
+}

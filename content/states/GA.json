@@ -1,0 +1,90 @@
+{
+  "jurisdiction": "GA",
+  "name": "Georgia",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "overtime.daily",
+      "value": "follows federal FLSA",
+      "summary": "Georgia has no state overtime statute; the federal FLSA governs, requiring 1.5x pay after 40 hours in a workweek with no daily overtime and no higher state salary floor.",
+      "citation": "O.C.G.A. Title 34 (no state overtime provision); 29 U.S.C. 207",
+      "sourceUrl": "https://dol.georgia.gov/minimum-wage",
+      "sourceAgency": "Georgia Department of Labor",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Georgia enacts no state overtime law; the DOL page directs to the FLSA (29 U.S.C.) for wage-and-hour coverage. Verify no new state overtime rule each year."
+    },
+    {
+      "topic": "minimumWage.hourly",
+      "value": 5.15,
+      "summary": "Georgia's statutory minimum wage is $5.15/hour, but with limited exceptions the higher federal minimum wage of $7.25/hour applies to most covered employees.",
+      "citation": "O.C.G.A. § 34-4-3",
+      "sourceUrl": "https://dol.georgia.gov/minimum-wage",
+      "sourceAgency": "Georgia Department of Labor",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "State figure of $5.15 is below federal; employees covered by the FLSA must receive $7.25. State rate unchanged for years; confirm current-year figure."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": ["race", "color", "religion", "national origin", "sex (including sexual orientation)", "age", "disability"],
+      "summary": "Under Georgia's Fair Employment Practices Act the state (via GCEO) prohibits discrimination on race, color, religion, national origin, sex including sexual orientation, age, and disability.",
+      "citation": "O.C.G.A. § 45-19-29 (Fair Employment Practices Act)",
+      "sourceUrl": "https://gceo.georgia.gov/faqs/employment-faq",
+      "sourceAgency": "Georgia Commission on Equal Opportunity",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "GCEO lists sex 'including sexual orientation' consistent with Bostock. Classes largely mirror the federal set; the notable state feature is the narrow employer coverage (see discrimination.coverage), not additional classes."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": "state government employers only",
+      "summary": "Georgia's Fair Employment Practices Act reaches only State of Georgia government agencies; it does not cover private employers, counties, or municipalities, so private-sector discrimination claims proceed under federal law (EEOC).",
+      "citation": "O.C.G.A. § 45-19-20 et seq. (Fair Employment Practices Act)",
+      "sourceUrl": "https://gceo.georgia.gov/how-file-employment-complaint",
+      "sourceAgency": "Georgia Commission on Equal Opportunity",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "GCEO's Equal Employment Division enforces FEPA only for those seeking or holding employment within Georgia state government. FEPA statutorily applies to state agencies with 15 or more employees; GCEO pages do not restate the size threshold, so verify the 15-employee figure against O.C.G.A. § 45-19-22 before relying on it."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "180 days",
+      "summary": "A discrimination complaint under Georgia's Fair Employment Practices Act must be filed in writing (sworn) with the GCEO within 180 calendar days of the alleged unlawful employment practice.",
+      "citation": "O.C.G.A. § 45-19-20 et seq. (Fair Employment Practices Act)",
+      "sourceUrl": "https://gceo.georgia.gov/how-file-employment-complaint",
+      "sourceAgency": "Georgia Commission on Equal Opportunity",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "180-day deadline confirmed on GCEO filing pages. Applies to state-government employment claims only; private-sector claimants use the EEOC's 180/300-day federal deadlines."
+    },
+    {
+      "topic": "whistleblower",
+      "value": "Georgia Whistleblower Act (public employees)",
+      "summary": "Georgia's Whistleblower Act bars public employers from retaliating against public employees who disclose or refuse to participate in violations of law, rule, or regulation.",
+      "citation": "O.C.G.A. § 45-1-4",
+      "sourceUrl": "https://oig.georgia.gov/document/document/ocga-45-1-4/download",
+      "sourceAgency": "Georgia Office of the Inspector General",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Protects public (government) employees only; no equivalent general private-sector state whistleblower statute. Statute provides a civil action in superior court (reported as within 1 year of discovering the retaliation, or 3 years of the retaliation, whichever is earlier) - verify the exact limitation period in O.C.G.A. § 45-1-4(e) as the source PDF could not be machine-read."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Georgia Department of Labor",
+      "url": "https://dol.georgia.gov"
+    },
+    "discrimination": {
+      "name": "Georgia Commission on Equal Opportunity",
+      "url": "https://gceo.georgia.gov"
+    }
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "jurisdiction": "AR",
+  "name": "Arkansas",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "minimumWage.hourly",
+      "value": 11.00,
+      "summary": "Arkansas's state minimum wage is $11.00 per hour, higher than the federal $7.25.",
+      "citation": "Ark. Code Ann. §§ 11-4-201 et seq. (Arkansas Minimum Wage Act)",
+      "sourceUrl": "https://labor.arkansas.gov/labor/labor-standards/minimum-wage-and-overtime/",
+      "sourceAgency": "Arkansas Department of Labor and Licensing, Labor Standards Division",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "$11.00 since Jan 1, 2021; Arkansas has no scheduled annual increases. Tipped cash wage is $2.63/hr (tips must reach the applicable minimum). Verify no 2026 legislative change."
+    },
+    {
+      "topic": "minimumWage.coverage",
+      "value": 4,
+      "summary": "The Arkansas Minimum Wage Act applies to employers with four or more employees (lower than nothing in FLSA, which uses commerce tests).",
+      "citation": "Ark. Code Ann. §§ 11-4-201 et seq.",
+      "sourceUrl": "https://labor.arkansas.gov/labor/labor-standards/minimum-wage-and-overtime/",
+      "sourceAgency": "Arkansas Department of Labor and Licensing, Labor Standards Division",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Employers with fewer than 4 employees fall outside the state Act; FLSA may still apply. The higher of state or federal minimum wage governs for each employee."
+    },
+    {
+      "topic": "overtime.daily",
+      "value": "follows federal FLSA",
+      "summary": "Arkansas has no daily overtime; overtime is 1.5x pay after 40 hours in a workweek and white-collar exemptions track the federal FLSA salary level.",
+      "citation": "Ark. Code Ann. §§ 11-4-201 et seq.; AR DOL Minimum Wage & Overtime Rules",
+      "sourceUrl": "https://labor.arkansas.gov/labor/labor-standards/minimum-wage-and-overtime/",
+      "sourceAgency": "Arkansas Department of Labor and Licensing, Labor Standards Division",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "No daily OT rule. Weekly threshold is 40 hours actually worked (paid leave does not count). Executive/administrative/professional/outside-sales exemptions mirror the FLSA, including the $684/week salary level. Applies to employers with 4+ employees."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": ["race", "religion", "national origin/ancestry", "gender", "disability"],
+      "summary": "The Arkansas Civil Rights Act prohibits employment discrimination based on race, religion, national origin/ancestry, gender, and disability.",
+      "citation": "Ark. Code Ann. § 16-123-107 (Arkansas Civil Rights Act of 1993)",
+      "sourceUrl": "https://www.usccr.gov/files/pubs/sac/ar0201/ch2.htm",
+      "sourceAgency": "U.S. Commission on Civil Rights (review of the Arkansas Civil Rights Act)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Gender is generally read to include pregnancy. ACRA does NOT cover age (age claims proceed under federal ADEA), sexual orientation, or gender identity. Source is a 2001 federal review; confirm current classes against the live statute text of § 16-123-107."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "no state administrative agency (court filing only)",
+      "summary": "Arkansas has no state fair-employment agency; ACRA claims are filed directly in court (no state administrative charge deadline), while federal charges go to the EEOC.",
+      "citation": "Ark. Code Ann. § 16-123-107(c) (Arkansas Civil Rights Act of 1993)",
+      "sourceUrl": "https://www.usccr.gov/files/pubs/sac/ar0201/ch2.htm",
+      "sourceAgency": "U.S. Commission on Civil Rights (review of the Arkansas Civil Rights Act)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "There is no Arkansas FEPA; the ACRA is enforced through private lawsuits. Reported (aggregator) rule under § 16-123-107(c): an ACRA employment action must be brought within 1 year of the discrimination or within 90 days of an EEOC right-to-sue letter, whichever is later — verify against live statute. Federal EEOC charge deadline remains 180/300 days."
+    },
+    {
+      "topic": "whistleblower",
+      "value": "public employees only",
+      "summary": "The Arkansas Whistle-Blower Act protects public employees from retaliation for good-faith reporting of waste or violations of law; there is no general private-sector whistleblower statute.",
+      "citation": "Ark. Code Ann. §§ 21-1-601 to -610 (Arkansas Whistle-Blower Act)",
+      "sourceUrl": "https://sas.arkansas.gov/wp-content/uploads/2021/05/22-Whistle-Blower-Protection-5.20.2021.pdf",
+      "sourceAgency": "Arkansas Department of Transformation and Shared Services",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Covers public employers/employees only. Private-sector employees rely on federal statutes or the common-law public-policy exception to at-will employment. Official PDF could not be auto-parsed; citation corroborated by multiple Arkansas state sources — verify statute text."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "DOL investigates claims of $2,000 or less; ~3-year private-suit limitation",
+      "summary": "The Labor Standards Division administratively investigates wage claims of $2,000 or less (often final-paycheck disputes); private minimum-wage suits carry a judicially established 3-year limitations period.",
+      "citation": "Ark. Code Ann. §§ 11-4-201 et seq.; Douglas v. First Student, Inc. (Ark. 2011)",
+      "sourceUrl": "https://labor.arkansas.gov/labor/labor-standards/wage-claims/",
+      "sourceAgency": "Arkansas Department of Labor and Licensing, Labor Standards Division",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "DOL administrative wage claims are capped at $2,000 (confirmed on the DOL page). The 3-year statute of limitations for private Arkansas Minimum Wage Act suits is court-established (Douglas v. First Student) and not stated on an official code page — verify."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Arkansas Department of Labor and Licensing, Labor Standards Division",
+      "url": "https://labor.arkansas.gov/labor/labor-standards/"
+    },
+    "discrimination": {
+      "name": "No Arkansas state fair-employment agency; ACRA enforced via the courts, federal charges via the U.S. EEOC",
+      "url": "https://www.eeoc.gov/"
+    }
+  }
+}

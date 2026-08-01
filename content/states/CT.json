@@ -1,0 +1,123 @@
+{
+  "jurisdiction": "CT",
+  "name": "Connecticut",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "minimumWage.hourly",
+      "value": 16.94,
+      "summary": "Connecticut's minimum wage is $16.94 per hour effective January 1, 2026, well above the federal $7.25; it adjusts annually based on the federal employment cost index.",
+      "citation": "Conn. Gen. Stat. § 31-58; Public Act 19-4",
+      "sourceUrl": "https://www1.ctdol.state.ct.us/lmi/ctminimumwage.asp",
+      "sourceAgency": "Connecticut Department of Labor",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "$16.94 confirmed effective 1/1/2026 (up from $16.35). Indexed annually to the federal employment cost index; verify each year for the current figure."
+    },
+    {
+      "topic": "overtime.daily",
+      "value": "follows federal FLSA (1.5x after 40 hrs/week; no daily overtime; no higher salary floor)",
+      "summary": "Connecticut requires overtime at 1.5x the regular rate after 40 hours in a workweek, matching the federal weekly standard; there is no daily overtime requirement.",
+      "citation": "Conn. Gen. Stat. § 31-76c",
+      "sourceUrl": "https://portal.ct.gov/dol/divisions/wage-and-workplace-standards/wage-and-hour",
+      "sourceAgency": "Connecticut Department of Labor",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "CT has its own overtime statute (31-76c) but the trigger is the same 40 hrs/week as federal FLSA. CT applies executive/administrative/professional duties tests; no state-specific salary threshold higher than the federal level was found on an official source."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": [
+        "ancestry",
+        "marital status",
+        "sexual orientation",
+        "gender identity or expression",
+        "status as a veteran",
+        "status as a victim of domestic violence",
+        "learning disability",
+        "intellectual disability"
+      ],
+      "summary": "Connecticut's Fair Employment Practices Act protects several classes beyond the federal set, including ancestry, marital status, sexual orientation, gender identity or expression, veteran status, status as a victim of domestic violence, and learning/intellectual disability.",
+      "citation": "Conn. Gen. Stat. § 46a-60",
+      "sourceUrl": "https://portal.ct.gov/chro/complaint-process/complaint-process/who-is-protected",
+      "sourceAgency": "Connecticut Commission on Human Rights and Opportunities (CHRO)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "List captures classes ADDED beyond the federal set (race, color, religion, sex, national origin, age, disability, genetic info, pregnancy). CT also protects those federal classes."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": 3,
+      "summary": "Connecticut's anti-discrimination law covers employers with three or more employees, a lower threshold than Title VII's 15.",
+      "citation": "Conn. Gen. Stat. § 46a-51(10)",
+      "sourceUrl": "https://www.cga.ct.gov/current/pub/chap_814c.htm",
+      "sourceAgency": "Connecticut General Assembly (Chapter 814c)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "'Employer' means any person with three or more persons in employ (plus any employer of a domestic worker regardless of number). Verify subsection numbering, which may shift with amendments."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "300 days",
+      "summary": "A discrimination complaint must be filed with the CHRO within 300 days of the alleged discriminatory act.",
+      "citation": "Conn. Gen. Stat. § 46a-82(f)",
+      "sourceUrl": "https://portal.ct.gov/chro/complaint-process/complaint-process/how-to-file-a-discrimination-complaint",
+      "sourceAgency": "Connecticut Commission on Human Rights and Opportunities (CHRO)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Deadline extended from 180 to 300 days by P.A. 19-16 (effective 10/1/2019). Contacting CHRO or completing an inquiry form does not itself constitute filing. Verify exact subsection of 46a-82."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "2 years",
+      "summary": "Actions to recover unpaid wages generally must be brought within two years; the DOL also limits wage-complaint investigations to the two years preceding the complaint.",
+      "citation": "Conn. Gen. Stat. § 52-596; § 31-72",
+      "sourceUrl": "https://portal.ct.gov/dol/divisions/wage-and-workplace-standards/wage-complaint",
+      "sourceAgency": "Connecticut Department of Labor",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Two-year statute of limitations under § 52-596 for remuneration for employment. Successful claimants may recover double damages plus costs and attorney's fees under § 31-72 absent employer good-faith. Verify current limitations period."
+    },
+    {
+      "topic": "whistleblower",
+      "value": "Conn. Gen. Stat. § 31-51m",
+      "summary": "Connecticut law prohibits employers from disciplining or discharging an employee who reports a suspected violation of law or regulation to a public body; the employee may sue in Superior Court within 90 days after exhausting administrative remedies.",
+      "citation": "Conn. Gen. Stat. § 31-51m",
+      "sourceUrl": "https://www.cga.ct.gov/2022/rpt/pdf/2022-R-0005.pdf",
+      "sourceAgency": "Connecticut General Assembly (Office of Legislative Research)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Private-sector whistleblower protection. 90-day window to bring civil action after exhausting administrative remedies. Separate statutes cover public employees (§ 4-61dd) and health-care workers (§ 19a-532)."
+    },
+    {
+      "topic": "final-pay",
+      "value": "discharge: next business day; quit or layoff: next regular payday",
+      "summary": "A discharged employee must be paid all wages by the next business day, while an employee who quits or is laid off must be paid by the next regular payday.",
+      "citation": "Conn. Gen. Stat. § 31-71c",
+      "sourceUrl": "https://portal.ct.gov/dol/-/media/dol/2022-new-design-system/divisions/wage-and-workplace-standards/wagepaymentlaws_update12-2023.pdf",
+      "sourceAgency": "Connecticut Department of Labor",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Federal law sets no final-pay deadline, so this is a CT addition. Confirm the linked DOL PDF is the current version."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Connecticut Department of Labor, Wage & Workplace Standards Division",
+      "url": "https://portal.ct.gov/dol/divisions/wage-and-workplace-standards"
+    },
+    "discrimination": {
+      "name": "Connecticut Commission on Human Rights and Opportunities (CHRO)",
+      "url": "https://portal.ct.gov/chro"
+    }
+  }
+}

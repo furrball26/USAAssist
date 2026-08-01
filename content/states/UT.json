@@ -1,0 +1,114 @@
+{
+  "jurisdiction": "UT",
+  "name": "Utah",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "minimumWage.hourly",
+      "value": 7.25,
+      "summary": "Utah's minimum wage is $7.25 per hour, the same as the federal minimum wage.",
+      "citation": "Utah Code Ann. Sec. 34-40-101 et seq. (Utah Minimum Wage Act)",
+      "sourceUrl": "https://laborcommission.utah.gov/divisions/utah-antidiscrimination-and-labor-uald/wage-claim/",
+      "sourceAgency": "Utah Labor Commission, Antidiscrimination and Labor Division (UALD)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Utah adopts the federal rate and has not enacted a higher state minimum. Verify the current-year figure against the Labor Commission page."
+    },
+    {
+      "topic": "minimumWage.tipped",
+      "value": 2.13,
+      "summary": "Tipped employees may be paid $2.13 per hour so long as tips plus the base wage total at least $7.25 per hour.",
+      "citation": "Utah Code Ann. Sec. 34-40-101 et seq. (Utah Minimum Wage Act)",
+      "sourceUrl": "https://laborcommission.utah.gov/divisions/utah-antidiscrimination-and-labor-uald/wage-claim/",
+      "sourceAgency": "Utah Labor Commission, Antidiscrimination and Labor Division (UALD)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Mirrors the federal tip-credit floor. Applies to adults and minors."
+    },
+    {
+      "topic": "minimumWage.youth",
+      "value": 4.25,
+      "summary": "Minors under 18 may be paid a training wage of $4.25 per hour during their first 90 days of employment.",
+      "citation": "Utah Code Ann. Sec. 34-40-101 et seq. (Utah Minimum Wage Act)",
+      "sourceUrl": "https://laborcommission.utah.gov/divisions/utah-antidiscrimination-and-labor-uald/wage-claim/",
+      "sourceAgency": "Utah Labor Commission, Antidiscrimination and Labor Division (UALD)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Mirrors the federal youth-training wage; applies only to the first 90 consecutive calendar days."
+    },
+    {
+      "topic": "overtime.daily",
+      "value": "follows federal FLSA",
+      "summary": "Utah has no separate state overtime law; overtime is governed by the federal FLSA (time-and-a-half after 40 hours per week, no daily overtime).",
+      "citation": "Utah Code Ann. Sec. 34-40-101 et seq. (Utah Minimum Wage Act)",
+      "sourceUrl": "https://laborcommission.utah.gov/divisions/utah-antidiscrimination-and-labor-uald/wage-claim/",
+      "sourceAgency": "Utah Labor Commission, Antidiscrimination and Labor Division (UALD)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Utah's Minimum Wage Act does not impose a daily-overtime or higher salary threshold beyond federal law. Inferred from absence of a state overtime provision; confirm no separate rule applies to a specific industry."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": ["sexual orientation", "gender identity", "pregnancy, childbirth, or pregnancy-related conditions"],
+      "summary": "Beyond the federal protected classes, Utah's Antidiscrimination Act also prohibits employment discrimination based on sexual orientation, gender identity, and pregnancy/childbirth-related conditions.",
+      "citation": "Utah Code Ann. Sec. 34A-5-101 et seq. (Utah Antidiscrimination Act)",
+      "sourceUrl": "https://laborcommission.utah.gov/divisions/utah-antidiscrimination-and-labor-uald/employment-discrimination/",
+      "sourceAgency": "Utah Labor Commission, Antidiscrimination and Labor Division (UALD)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Full Utah list also includes race, color, religion, sex, age (40+), national origin, and disability, which overlap with federal law. Sexual orientation and gender identity were added by 2015 legislation."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": "15 employees",
+      "summary": "The Utah Antidiscrimination Act applies to employers with 15 or more employees, the same threshold as Title VII.",
+      "citation": "Utah Code Ann. Sec. 34A-5-102 (Utah Antidiscrimination Act)",
+      "sourceUrl": "https://laborcommission.utah.gov/divisions/utah-antidiscrimination-and-labor-uald/employment-discrimination/",
+      "sourceAgency": "Utah Labor Commission, Antidiscrimination and Labor Division (UALD)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Same as federal 15-employee threshold; not lower. Certain national-origin, citizenship, or equal-pay matters may have lower thresholds."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "180 days",
+      "summary": "A discrimination charge must be filed with UALD within 180 days of the last alleged discriminatory act.",
+      "citation": "Utah Code Ann. Sec. 34A-5-107 (Utah Antidiscrimination Act)",
+      "sourceUrl": "https://laborcommission.utah.gov/divisions/utah-antidiscrimination-and-labor-uald/employment-discrimination/",
+      "sourceAgency": "Utah Labor Commission, Antidiscrimination and Labor Division (UALD)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Shorter than the federal 300-day deadline. Charges filed between 180 and 300 days are forwarded to the EEOC rather than processed by UALD."
+    },
+    {
+      "topic": "final-pay",
+      "value": "involuntary: within 24 hours of separation; voluntary: next regular payday",
+      "summary": "An employee who is fired or laid off must be paid all wages within 24 hours of separation; an employee who resigns is paid on the next regular payday.",
+      "citation": "Utah Code Ann. Sec. 34-28-5 (Utah Payment of Wages Act)",
+      "sourceUrl": "https://laborcommission.utah.gov/divisions/utah-antidiscrimination-and-labor-uald/wage-claim/",
+      "sourceAgency": "Utah Labor Commission, Antidiscrimination and Labor Division (UALD)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "State of Utah government employees are exempted from the 24-hour rule. This is a state-specific requirement with no direct federal equivalent."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Utah Labor Commission, Antidiscrimination and Labor Division (UALD)",
+      "url": "https://laborcommission.utah.gov/divisions/utah-antidiscrimination-and-labor-uald/wage-claim/"
+    },
+    "discrimination": {
+      "name": "Utah Labor Commission, Antidiscrimination and Labor Division (UALD)",
+      "url": "https://laborcommission.utah.gov/divisions/utah-antidiscrimination-and-labor-uald/employment-discrimination/"
+    }
+  }
+}

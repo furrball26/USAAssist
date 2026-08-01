@@ -1,0 +1,102 @@
+{
+  "jurisdiction": "LA",
+  "name": "Louisiana",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "minimumWage.hourly",
+      "value": "follows federal $7.25",
+      "summary": "Louisiana has no state minimum wage law, so the federal FLSA rate of $7.25/hour applies, and state law bars local governments from setting a higher rate.",
+      "citation": "La. R.S. 23:642",
+      "sourceUrl": "https://legis.la.gov/Legis/Law.aspx?d=83958",
+      "sourceAgency": "Louisiana State Legislature",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Louisiana enacts no independent minimum wage; RS 23:642 preempts local minimum-wage ordinances so the federal $7.25 governs statewide. Verify the federal rate remains $7.25 for 2026."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": ["military status", "natural, protective, or cultural hairstyle"],
+      "summary": "Beyond the federal Title VII/ADA/ADEA classes, Louisiana's Employment Discrimination Law expressly protects military status and natural, protective, or cultural hairstyle (CROWN Act).",
+      "citation": "La. R.S. 23:332",
+      "sourceUrl": "https://legis.la.gov/legis/Law.aspx?d=83879",
+      "sourceAgency": "Louisiana State Legislature",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "RS 23:332 lists race, color, religion, sex, national origin, military status, and natural/protective/cultural hairstyle. Louisiana also protects sickle cell trait (RS 23:352) and pregnancy/childbirth (RS 23:341-342) in separate sections not verified via official URL here."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": 20,
+      "summary": "Louisiana's Employment Discrimination Law applies only to employers with 20 or more employees, a higher threshold than federal Title VII's 15.",
+      "citation": "La. R.S. 23:302",
+      "sourceUrl": "https://www.legis.la.gov/legis/LawPrint.aspx?d=83865",
+      "sourceAgency": "Louisiana State Legislature",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Covers employers with 20+ employees for each working day in 20+ calendar weeks in the current or preceding year. This is narrower than federal (15+), so smaller employers may still be reached only by federal law."
+    },
+    {
+      "topic": "retaliation.whistleblower",
+      "value": "La. R.S. 23:967 (general whistleblower protection)",
+      "summary": "Louisiana's whistleblower statute bars employer reprisal against an employee who, in good faith, discloses, testifies about, or refuses to participate in a workplace practice that violates state law.",
+      "citation": "La. R.S. 23:967",
+      "sourceUrl": "https://www.legis.la.gov/Legis/Law.aspx?d=84022",
+      "sourceAgency": "Louisiana State Legislature",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Remedies include compensatory damages, back pay, benefits, reinstatement, reasonable attorney fees, and court costs. Protection generally requires an actual violation of state law and prior notice to the employer."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "3 years",
+      "summary": "A suit to recover unpaid wages or salary is subject to a three-year liberative prescription (statute of limitations) under Louisiana Civil Code article 3494.",
+      "citation": "La. Civ. Code art. 3494",
+      "sourceUrl": "https://legis.la.gov/legis/Law.aspx?d=110518",
+      "sourceAgency": "Louisiana State Legislature",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Article 3494 sets a 3-year prescription for actions to recover compensation for services rendered, including salaries, wages, and commissions."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "1 year prescriptive period (suspended up to 6 months during EEOC/LCHR review)",
+      "summary": "A Louisiana employment-discrimination lawsuit must be filed within one year, but that period is suspended (tolled) during any EEOC or Louisiana Commission on Human Rights review for up to six additional months.",
+      "citation": "La. R.S. 23:303(D)",
+      "sourceUrl": "https://www.legis.la.gov/legis/Law.aspx?d=83866",
+      "sourceAgency": "Louisiana State Legislature",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "This is the deadline to file suit, not merely an administrative charge; RS 23:303(C) also requires 30 days' written notice to the employer before suit. Maximum suspension is 6 months. Federal EEOC 180/300-day charge deadlines still apply separately."
+    },
+    {
+      "topic": "final-pay",
+      "value": "next regular payday or within 15 days of separation, whichever is first",
+      "summary": "On discharge or resignation, Louisiana requires payment of final wages by the next regular payday or no later than 15 days after separation, whichever occurs first.",
+      "citation": "La. R.S. 23:631",
+      "sourceUrl": "https://legis.la.gov/Legis/Law.aspx?d=83945",
+      "sourceAgency": "Louisiana State Legislature",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Accrued, unused vacation counts as an amount due if the employee was eligible and it was earned. Failure to pay can trigger penalty wages and attorney fees under RS 23:632. Federal law has no comparable final-pay timing rule."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Louisiana Workforce Commission",
+      "url": "https://www.laworks.net"
+    },
+    "discrimination": {
+      "name": "Louisiana Commission on Human Rights",
+      "url": "https://gov.louisiana.gov/page/louisiana-commission-on-human-rights"
+    }
+  }
+}

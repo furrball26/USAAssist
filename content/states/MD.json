@@ -1,0 +1,114 @@
+{
+  "jurisdiction": "MD",
+  "name": "Maryland",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "overtime.daily",
+      "value": "follows federal FLSA (no daily overtime)",
+      "summary": "Maryland requires overtime at 1.5x the regular rate only after 40 hours in a 7-day week, with no daily overtime rule, mirroring federal FLSA.",
+      "citation": "Md. Code, Labor & Employment Art., Title 3, Subtitle 4 (§ 3-415)",
+      "sourceUrl": "https://www.labor.maryland.gov/labor/wages/wagehrfacts.shtml",
+      "sourceAgency": "Maryland Department of Labor, Division of Labor and Industry (Employment Standards Service)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Some occupations differ (e.g., certain agricultural workers get OT after 60 hrs/week). No higher salary floor than federal; state defers to federal EAP exemptions."
+    },
+    {
+      "topic": "minimumWage.hourly",
+      "value": 15.00,
+      "summary": "Maryland's statewide minimum wage is $15.00 per hour for all employers under the Fair Wage Act.",
+      "citation": "Md. Code, Labor & Employment Art., § 3-413",
+      "sourceUrl": "https://www.labor.maryland.gov/labor/wages/wagehrfacts.shtml",
+      "sourceAgency": "Maryland Department of Labor, Division of Labor and Industry (Employment Standards Service)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Higher local rates apply: Montgomery County (up to $18.00 for 51+ employees as of 7/1/2026), Howard County ($16.00), Prince George's County ($15.30 as of 1/1/2026). Employers may pay 85% of state rate to workers under 18. Verify current statewide figure annually."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": ["marital status", "sexual orientation", "gender identity", "military status", "race-associated traits/protective hairstyles (CROWN Act)"],
+      "summary": "Maryland prohibits employment discrimination on several bases beyond the federal set, including marital status, sexual orientation, gender identity, military status, and race-associated traits such as hairstyle (CROWN Act).",
+      "citation": "Md. Code, State Government Art., § 20-606",
+      "sourceUrl": "https://mccr.maryland.gov/know-your-rights/employment",
+      "sourceAgency": "Maryland Commission on Civil Rights (MCCR)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Full Maryland list also includes the federal bases (race, color, religion, ancestry/national origin, sex, age, disability, genetic information). Listed here are additions/expansions beyond the federal Title VII/ADA/ADEA set."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": "15+ employees for discrimination; 1+ employee for harassment",
+      "summary": "Maryland's general discrimination protections apply to employers with 15 or more employees (same as federal), but harassment claims may be brought against employers with just one or more employees.",
+      "citation": "Md. Code, State Government Art., § 20-601(d)",
+      "sourceUrl": "https://mccr.maryland.gov/know-your-rights/employment",
+      "sourceAgency": "Maryland Commission on Civil Rights (MCCR)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "The lowered 1-employee threshold for harassment (added by 2019 amendments) is the key state addition beyond the federal 15-employee floor."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "300 days (discrimination/retaliation); 2 years (harassment)",
+      "summary": "A discrimination or retaliation complaint must be filed with MCCR within 300 days of the alleged act, while harassment complaints have a 2-year filing window.",
+      "citation": "Md. Code, State Government Art., § 20-1004",
+      "sourceUrl": "https://mccr.maryland.gov/know-your-rights/employment",
+      "sourceAgency": "Maryland Commission on Civil Rights (MCCR)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "The 2-year harassment filing period exceeds the federal EEOC 300-day maximum and is a state-specific extension."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "3 years (court lawsuit); 2 years (administrative claim with ESS)",
+      "summary": "Unpaid-wage lawsuits under Maryland law have a 3-year statute of limitations, but an administrative wage claim filed with the Department of Labor's Employment Standards Service must be received within 2 years of the wages becoming due.",
+      "citation": "Md. Code, Labor & Employment Art., §§ 3-427, 3-507.2 (general 3-yr limitations under Cts. & Jud. Proc. § 5-101)",
+      "sourceUrl": "https://labor.maryland.gov/labor/wagepay/wpwageissues.shtml",
+      "sourceAgency": "Maryland Department of Labor, Division of Labor and Industry (Employment Standards Service)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Courts may award up to 3x wages plus attorney's fees for withholding not based on a bona fide dispute. Verify exact statutory cross-references."
+    },
+    {
+      "topic": "retaliation.whistleblower",
+      "value": "MOSH safety/health whistleblower protection; complaint within 30 days",
+      "summary": "Maryland prohibits employers from discharging or discriminating against employees for exercising occupational safety and health rights, with complaints filed to the MOSH Commissioner within 30 days of the alleged retaliation.",
+      "citation": "Md. Code, Labor & Employment Art., § 5-604",
+      "sourceUrl": "https://labor.maryland.gov/labor/mosh/discrim.shtml",
+      "sourceAgency": "Maryland Department of Labor, Maryland Occupational Safety and Health (MOSH)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "This covers safety/health retaliation. Maryland also has separate whistleblower statutes for state employees and health care workers; verify statute cross-reference for § 5-604."
+    },
+    {
+      "topic": "final-pay",
+      "value": "due by next regular payday after termination",
+      "summary": "Maryland requires an employer to pay all wages due to a separated employee on or before the regular payday on which the wages would have been paid had employment continued.",
+      "citation": "Md. Code, Labor & Employment Art., § 3-505",
+      "sourceUrl": "https://www.labor.maryland.gov/labor/wagepay/wppayonterm.shtml",
+      "sourceAgency": "Maryland Department of Labor, Division of Labor and Industry (Employment Standards Service)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Accrued unused vacation must be paid out unless the employer had a written forfeiture policy communicated at hire. Severance is not required unless promised by contract or policy."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Maryland Department of Labor, Division of Labor and Industry - Employment Standards Service",
+      "url": "https://www.labor.maryland.gov/labor/wages/"
+    },
+    "discrimination": {
+      "name": "Maryland Commission on Civil Rights (MCCR)",
+      "url": "https://mccr.maryland.gov/know-your-rights/employment"
+    }
+  }
+}

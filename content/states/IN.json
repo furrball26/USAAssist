@@ -1,0 +1,126 @@
+{
+  "jurisdiction": "IN",
+  "name": "Indiana",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "minimumWage.hourly",
+      "value": 7.25,
+      "summary": "Indiana's minimum wage is $7.25 per hour, adopting the federal rate by reference; it has not increased since 2009.",
+      "citation": "Ind. Code 22-2-2-4",
+      "sourceUrl": "https://www.in.gov/dol/files/updated-pdfs-4-7-2026/Indiana2009MinimumWage.pdf",
+      "sourceAgency": "Indiana Department of Labor",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Same as federal $7.25. Indiana has no scheduled increase. Tipped cash wage is $2.13 with tip credit."
+    },
+    {
+      "topic": "overtime.daily",
+      "value": "follows federal FLSA",
+      "summary": "Indiana requires overtime at 1.5x after 40 hours in a workweek and has no daily-overtime rule or higher salary floor than federal law.",
+      "citation": "Ind. Code 22-2-2-4(k)",
+      "sourceUrl": "https://www.in.gov/dol/files/updated-pdfs-4-7-2026/Indiana2009MinimumWage.pdf",
+      "sourceAgency": "Indiana Department of Labor",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "State Minimum Wage Law mirrors federal FLSA overtime; most employers are covered by FLSA directly. Exemptions are listed at Ind. Code 22-2-2-3."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": ["ancestry", "veteran status (employment)"],
+      "summary": "Indiana's civil rights law covers race, color, religion, sex, disability, national origin, plus ancestry and veteran status (the latter in employment).",
+      "citation": "Ind. Code 22-9-1-3",
+      "sourceUrl": "https://www.in.gov/icrc/know-your-rights/protected-classes",
+      "sourceAgency": "Indiana Civil Rights Commission",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Ancestry and veteran status are additions beyond the core federal set. Age is handled by a separate chapter (Ind. Code 22-9-2)."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": 6,
+      "summary": "The Indiana Civil Rights Law covers employers with six or more employees, lower than the federal 15-employee threshold.",
+      "citation": "Ind. Code 22-9-1-3(h)",
+      "sourceUrl": "https://iga.in.gov/laws/2025/ic/titles/22/articles/9/chapters/1",
+      "sourceAgency": "Indiana General Assembly / Indiana Civil Rights Commission",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Employers with 6-14 employees fall under state (ICRC) jurisdiction but below the federal 15-employee Title VII/ADA threshold. Verify subsection letter against current statute text; the six-employee figure is set in the 'employer' definition of Ind. Code 22-9-1-3."
+    },
+    {
+      "topic": "discrimination.age",
+      "value": "ages 40-75, employers with 1+ employees",
+      "summary": "Indiana's separate Age Discrimination Act protects workers aged 40-74 at employers with one or more employees, filling the gap below the federal ADEA (20+ employees).",
+      "citation": "Ind. Code 22-9-2-1, 22-9-2-2",
+      "sourceUrl": "https://www.in.gov/icrc/files/ch2.pdf",
+      "sourceAgency": "Indiana Civil Rights Commission",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Applies only to employers NOT subject to the federal ADEA, so it primarily covers small employers. Protects persons who have attained age 40 but not 75."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "180 days",
+      "summary": "A discrimination complaint must be filed with the Indiana Civil Rights Commission within 180 days of the alleged discriminatory act.",
+      "citation": "Ind. Code 22-9-1-3(p)",
+      "sourceUrl": "https://www.in.gov/icrc/file-a-discrimination-complaint/how-to-file",
+      "sourceAgency": "Indiana Civil Rights Commission",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "State deadline is 180 days, shorter than the EEOC's 300-day deferral-state deadline for federal charges. Verify subsection letter against statute text."
+    },
+    {
+      "topic": "final-pay",
+      "value": "next regular payday",
+      "summary": "Final wages (whether the employee quits or is discharged) are due on or before the next regularly scheduled payday.",
+      "citation": "Ind. Code 22-2-5-1, 22-2-9-2",
+      "sourceUrl": "https://secure.in.gov/dol/wage-and-hour/wage-and-hour-faqs/",
+      "sourceAgency": "Indiana Department of Labor",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Indiana has no requirement for immediate final pay upon discharge; regular payday timing applies. Regular pay must occur at least semi-monthly/biweekly."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "file with Indiana DOL; unpaid-wage civil actions generally within 2 years",
+      "summary": "Unpaid-wage claims are filed with the Indiana Department of Labor under the Wage Claims (former employees) and Wage Payment (current/voluntarily separated) statutes.",
+      "citation": "Ind. Code 22-2-9; Ind. Code 22-2-5",
+      "sourceUrl": "https://www.in.gov/dol/wage-and-hour/online-wage-claim-form/",
+      "sourceAgency": "Indiana Department of Labor",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "The DOL page does not state a filing deadline; the general 2-year civil statute of limitations for wage actions (Ind. Code 34-11-2-1) is commonly applied but was not confirmed on an official DOL page. Verify the 2-year figure before publishing."
+    },
+    {
+      "topic": "whistleblower",
+      "value": "protected (Ind. Code 22-5-3-3)",
+      "summary": "Indiana law protects employees who report a violation of federal, state, or local law or misuse of public resources from retaliation; violation is a Class A infraction.",
+      "citation": "Ind. Code 22-5-3-3",
+      "sourceUrl": "https://iga.in.gov/laws/2025/ic/titles/22/articles/5/chapters/3",
+      "sourceAgency": "Indiana General Assembly",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Strongest protections apply to employees of private employers under public contract and to public employees; report to the employer or an appropriate government official is required."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Indiana Department of Labor, Wage and Hour Division",
+      "url": "https://www.in.gov/dol/wage-and-hour/"
+    },
+    "discrimination": {
+      "name": "Indiana Civil Rights Commission",
+      "url": "https://www.in.gov/icrc/"
+    }
+  }
+}

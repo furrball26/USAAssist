@@ -1,0 +1,126 @@
+{
+  "jurisdiction": "MS",
+  "name": "Mississippi",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "minimumWage.hourly",
+      "value": "follows federal $7.25",
+      "summary": "Mississippi has no state minimum wage statute; the Legislature's stated intent is to implement the federal minimum wage, so the applicable rate is the federal $7.25 per hour.",
+      "citation": "Miss. Code Ann. § 25-3-40",
+      "sourceUrl": "https://www.sos.ms.gov/publications-external-affairs/mississippi-law",
+      "sourceAgency": "Mississippi Secretary of State (official Mississippi Code portal)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Section 25-3-40 declares the Legislature's intent to implement the federal minimum wage. Full section text is available through the SOS-designated official Mississippi Code (LexisNexis). 2026 bills (e.g., HB 108) proposing a $10 state minimum wage were introduced but had not become law as of this check; verify current session status."
+    },
+    {
+      "topic": "overtime.daily",
+      "value": "follows federal FLSA",
+      "summary": "Mississippi has no state overtime or daily-overtime law and no state salary floor; the federal FLSA (1.5x after 40 hours/week, $684/week salary level) governs.",
+      "citation": "No Mississippi statute (federal FLSA controls)",
+      "sourceUrl": "https://mdes.ms.gov/media/456617/mdes_lawsandregulation_web_02152024.pdf",
+      "sourceAgency": "Mississippi Department of Employment Security",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Mississippi Code Title 71 (Labor and Industry) contains no general private-sector wage-and-hour or overtime statute; there is no state daily-overtime rule and no higher state salary threshold. Confirmed against the official MDES publication of Title 71."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": "no additional protected classes beyond federal",
+      "summary": "Mississippi has no comprehensive private-sector anti-discrimination statute and adds no protected classes beyond federal law; the only state provision (for state-service employees) mirrors the federal classes.",
+      "citation": "Miss. Code Ann. § 25-9-149",
+      "sourceUrl": "https://www.mspb.ms.gov/state-agency-resources/hr-laws",
+      "sourceAgency": "Mississippi State Personnel Board",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Section 25-9-149 prohibits discrimination in state service on the basis of race, color, religion, sex, national origin, age, or handicap only, and applies solely to state-government employment. Private employees rely on federal law (Title VII/ADA/ADEA). Verify exact section text via the official Mississippi Code."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": "follows federal (no lower employer-size threshold; no state FEPA)",
+      "summary": "Mississippi has no state fair-employment-practices agency for private employers and no state coverage threshold lower than federal, so federal employer-size rules (Title VII 15+, ADEA 20+) apply.",
+      "citation": "No Mississippi statute (federal thresholds control)",
+      "sourceUrl": "https://www.mspb.ms.gov/state-agency-resources/hr-laws",
+      "sourceAgency": "Mississippi State Personnel Board",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Mississippi has no state civil-rights commission or FEPA covering private employers; the only anti-discrimination statute (§ 25-9-149) covers state-service employment. Private-sector coverage is governed entirely by federal thresholds."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "no state FEPA deadline; file with federal EEOC (180/300 days)",
+      "summary": "Because Mississippi has no state fair-employment-practices agency, there is no state discrimination-complaint filing deadline; charges are filed with the federal EEOC under the federal 180/300-day deadlines.",
+      "citation": "No Mississippi statute (federal EEOC process controls)",
+      "sourceUrl": "https://www.mspb.ms.gov/state-agency-resources/hr-laws",
+      "sourceAgency": "Mississippi State Personnel Board",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Mississippi is not a deferral (FEPA) state for private-sector discrimination; the standard federal EEOC deadline is 180 days (no state agency extends it to 300 in MS). Confirm current EEOC guidance for Mississippi."
+    },
+    {
+      "topic": "retaliation.whistleblower",
+      "value": "Mississippi Whistleblower Protection Act (public employees only)",
+      "summary": "Mississippi's whistleblower statute protects only public employees from reprisal for reporting improper governmental action to a state investigative body; there is no general private-sector whistleblower statute.",
+      "citation": "Miss. Code Ann. §§ 25-9-171 to 25-9-177",
+      "sourceUrl": "https://www.mspb.ms.gov/state-agency-resources/hr-laws",
+      "sourceAgency": "Mississippi State Personnel Board",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Sections 25-9-171 through 25-9-177 apply only to public/government employees who report to a state investigative body (Attorney General, State Auditor, Ethics Commission, PEER, legislative committees, or a district attorney). Private-sector retaliation relies on federal law or common-law public-policy claims. Verify exact section text via the official Mississippi Code."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "3 years (general limitations)",
+      "summary": "Mississippi has no dedicated wage-claim statute of limitations; unpaid-wage claims are contract claims governed by the general three-year limitations period.",
+      "citation": "Miss. Code Ann. § 15-1-49 (and § 15-1-29 for unwritten contracts)",
+      "sourceUrl": "https://www.sos.ms.gov/publications-external-affairs/mississippi-law",
+      "sourceAgency": "Mississippi Secretary of State (official Mississippi Code portal)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Section 15-1-49 sets a three-year catch-all limitations period for actions not otherwise specified; unwritten/employment contract claims fall under § 15-1-29 (three years). FLSA wage claims follow the federal 2-year (3-year willful) limit. Verify exact section text via the official Mississippi Code."
+    },
+    {
+      "topic": "final-pay",
+      "value": "no state final-pay statute (follows federal)",
+      "summary": "Mississippi has no statute setting a deadline for issuing a final paycheck after separation; final wages are generally paid on the next regular payday under federal FLSA practice.",
+      "citation": "No Mississippi statute (Title 71 has no final-pay provision)",
+      "sourceUrl": "https://mdes.ms.gov/media/456617/mdes_lawsandregulation_web_02152024.pdf",
+      "sourceAgency": "Mississippi Department of Employment Security",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Mississippi Code Title 71 contains no wage-payment-timing or final-paycheck statute for private employers; there is no state-mandated deadline. Confirmed against the official MDES publication of Title 71."
+    },
+    {
+      "topic": "disability.accommodation",
+      "value": "follows federal ADA",
+      "summary": "Mississippi has no state disability-accommodation or interactive-process statute for private employers beyond federal law; state-service employees are covered against 'handicap' discrimination under § 25-9-149.",
+      "citation": "Miss. Code Ann. § 25-9-149 (state service only); federal ADA otherwise",
+      "sourceUrl": "https://www.mspb.ms.gov/state-agency-resources/hr-laws",
+      "sourceAgency": "Mississippi State Personnel Board",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "No Mississippi statute adds accommodation duties beyond the federal ADA for private employers. Section 25-9-149 lists 'handicap' as a protected basis but applies only to state-government employment. Verify exact section text via the official Mississippi Code."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Mississippi Department of Employment Security (MDES)",
+      "url": "https://mdes.ms.gov"
+    },
+    "discrimination": {
+      "name": "U.S. Equal Employment Opportunity Commission (EEOC) - Mississippi has no state FEPA; state-service employment matters go to the Mississippi State Personnel Board",
+      "url": "https://www.mspb.ms.gov/state-agency-resources/hr-laws"
+    }
+  }
+}

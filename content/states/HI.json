@@ -1,0 +1,117 @@
+{
+  "jurisdiction": "HI",
+  "name": "Hawaii",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "minimumWage.hourly",
+      "value": 16.0,
+      "summary": "Hawaii's statewide minimum wage is $16.00 per hour effective January 1, 2026, higher than the federal $7.25; it is scheduled to rise to $18.00 on January 1, 2028.",
+      "citation": "HRS § 387-2",
+      "sourceUrl": "https://labor.hawaii.gov/hawai%CA%BBis-minimum-wage-increases-to-16-00-on-january-1/",
+      "sourceAgency": "Hawaii Department of Labor and Industrial Relations, Wage Standards Division",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Rate confirmed via DLIR news release. Next scheduled increase to $18.00 on 1/1/2028. A tip credit is permitted under HRS 387-2 subject to notice conditions."
+    },
+    {
+      "topic": "overtime.daily",
+      "value": "follows federal FLSA",
+      "summary": "Hawaii requires overtime at 1.5x after 40 hours in a workweek, mirroring federal FLSA; there is no general daily-overtime requirement (only public-construction work under Chapter 104 requires daily OT).",
+      "citation": "HRS § 387-3",
+      "sourceUrl": "https://labor.hawaii.gov/wsd/minimum-wage/",
+      "sourceAgency": "Hawaii Department of Labor and Industrial Relations, Wage Standards Division",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "General private-sector OT tracks the 40-hr/week federal standard. Daily OT (after 8 hrs) applies only to public works under HRS 104-2(c)."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": [
+        "race",
+        "sex (including gender identity or expression)",
+        "sexual orientation",
+        "age",
+        "religion",
+        "color",
+        "ancestry / national origin",
+        "disability",
+        "marital status",
+        "civil union status",
+        "pregnancy / childbirth-related conditions",
+        "credit history or credit report",
+        "arrest and court record",
+        "domestic or sexual violence victim status"
+      ],
+      "summary": "Hawaii's employment discrimination law (HRS ch. 378) protects many classes beyond the federal set, including sexual orientation, gender identity/expression, marital and civil-union status, credit history, arrest/court record, and domestic/sexual violence victim status.",
+      "citation": "HRS § 378-2; HRS § 378-1",
+      "sourceUrl": "https://www.capitol.hawaii.gov/hrscurrent/Vol07_Ch0346-0398/HRS0378/HRS_0378-0002.htm",
+      "sourceAgency": "Hawaii State Legislature (Hawaii Revised Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "List drawn from HRS 378-2 and the Hawaii Civil Rights Commission. Verify exact current enumerated classes against the statute text, as the legislature periodically adds bases."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": 1,
+      "summary": "Hawaii's discrimination law covers employers with one or more employees, far broader than the federal 15-employee threshold under Title VII/ADA.",
+      "citation": "HRS § 378-1",
+      "sourceUrl": "https://www.capitol.hawaii.gov/hrscurrent/Vol07_Ch0346-0398/HRS0378/HRS_0378-0001.HTM",
+      "sourceAgency": "Hawaii State Legislature (Hawaii Revised Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "HRS 378-1 defines 'employer' as any person having one or more employees (excluding the United States); the legislature intended employers of all sizes to be covered."
+    },
+    {
+      "topic": "whistleblower",
+      "value": "Hawaii Whistleblowers' Protection Act",
+      "summary": "Hawaii's Whistleblowers' Protection Act prohibits discharging, threatening, or discriminating against an employee who reports (or is about to report) a suspected violation of law to a government body or the employer.",
+      "citation": "HRS § 378-62",
+      "sourceUrl": "https://www.capitol.hawaii.gov/hrscurrent/vol07_ch0346-0398/HRS0378/HRS_0378-0062.htm",
+      "sourceAgency": "Hawaii State Legislature (Hawaii Revised Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Remedies (HRS 378-63/378-64) can include reinstatement, back wages, benefits, damages, and attorney's fees; violators may be fined up to $10,000."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "180 days",
+      "summary": "A discrimination complaint must be filed with the Hawaii Civil Rights Commission within 180 days of the alleged discriminatory act (or the last act in an ongoing practice).",
+      "citation": "HRS § 368-11",
+      "sourceUrl": "https://labor.hawaii.gov/hcrc/faqs/",
+      "sourceAgency": "Hawaii Civil Rights Commission (state FEPA)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "HCRC is Hawaii's Fair Employment Practices Agency; the federal EEOC deadline may be longer (up to 300 days) for dual-covered claims."
+    },
+    {
+      "topic": "final-pay",
+      "value": "next working day (discharge); next regular payday (quit without notice)",
+      "summary": "A discharged employee must be paid all wages in full at the time of discharge or by the next working day; an employee who quits without notice is paid by the next regular payday, or at the time of quitting if at least one pay period's notice was given.",
+      "citation": "HRS § 388-3",
+      "sourceUrl": "https://labor.hawaii.gov/wsd/unpaid-wages/",
+      "sourceAgency": "Hawaii Department of Labor and Industrial Relations, Wage Standards Division",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "HRS 388-2(b) also requires regular wages be paid within 7 days after the end of each pay period. No general state severance-pay mandate exists."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Hawaii Department of Labor and Industrial Relations, Wage Standards Division",
+      "url": "https://labor.hawaii.gov/wsd/"
+    },
+    "discrimination": {
+      "name": "Hawaii Civil Rights Commission",
+      "url": "https://labor.hawaii.gov/hcrc/"
+    }
+  }
+}

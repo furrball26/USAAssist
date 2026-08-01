@@ -1,0 +1,126 @@
+{
+  "jurisdiction": "NE",
+  "name": "Nebraska",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "minimumWage.hourly",
+      "value": 15.00,
+      "summary": "Nebraska's minimum wage is $15.00 per hour effective January 1, 2026, well above the federal $7.25.",
+      "citation": "Neb. Rev. Stat. 48-1203",
+      "sourceUrl": "https://dol.nebraska.gov/PressRelease/Details/338",
+      "sourceAgency": "Nebraska Department of Labor",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Applies to employers with 4+ employees. Tipped cash wage is $2.13/hr with tip credit. Beginning Jan 1, 2027 the rate adjusts annually by 1.75%; verify each year's published figure."
+    },
+    {
+      "topic": "overtime.daily",
+      "value": "follows federal FLSA",
+      "summary": "Nebraska has no state overtime statute; overtime is governed entirely by the federal FLSA (time-and-a-half after 40 hours/week, $684/week salary threshold).",
+      "citation": "Nebraska Wage and Hour Act, Neb. Rev. Stat. 48-1201 to 48-1209 (no OT provision)",
+      "sourceUrl": "https://dol.nebraska.gov/laborstandards",
+      "sourceAgency": "Nebraska Department of Labor",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "The Nebraska Wage and Hour Act addresses minimum wage but contains no daily or weekly overtime requirement, so FLSA controls. No higher state salary floor found."
+    },
+    {
+      "topic": "leave.paidSickTime",
+      "value": "1 hour per 30 hours worked; annual cap 40 hrs (employers 11-19 employees) or 56 hrs (employers 20+)",
+      "summary": "Nebraska adds a paid sick time mandate (no federal equivalent): employees accrue 1 hour of paid sick time per 30 hours worked, capped at 40 or 56 hours/year depending on employer size, effective October 1, 2025.",
+      "citation": "Nebraska Healthy Families and Workplaces Act",
+      "sourceUrl": "https://dol.nebraska.gov/LaborStandards/PaidSickTime/PSTFAQs",
+      "sourceAgency": "Nebraska Department of Labor",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Applies to employers with 11+ employees. Employees begin accruing after 80 hours of employment. State addition beyond federal law."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": ["marital status", "military or veteran status"],
+      "summary": "Beyond the federal set, Nebraska's Fair Employment Practice Act adds marital status and military/veteran status as protected characteristics.",
+      "citation": "Neb. Rev. Stat. 48-1104",
+      "sourceUrl": "https://nebraskalegislature.gov/laws/statutes.php?statute=48-1104",
+      "sourceAgency": "Nebraska Legislature (Nebraska Revised Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Section 48-1104 also lists race, color, religion, sex, disability, and national origin (matching federal). Age is covered under a separate Nebraska age-discrimination act, not FEPA."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": "follows federal (15 or more employees)",
+      "summary": "The Nebraska Fair Employment Practice Act covers employers with 15 or more employees, the same threshold as federal Title VII/ADA.",
+      "citation": "Neb. Rev. Stat. 48-1102",
+      "sourceUrl": "https://nebraskalegislature.gov/laws/statutes.php?statute=48-1102",
+      "sourceAgency": "Nebraska Legislature (Nebraska Revised Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "15+ employees for each working day in 20+ calendar weeks. Not lower than federal, so no added coverage. State and political subdivisions are covered regardless of size."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "300 days",
+      "summary": "A discrimination charge under the Nebraska Fair Employment Practice Act must be filed with the NEOC within 300 days of the alleged unlawful employment practice.",
+      "citation": "Neb. Rev. Stat. 48-1118",
+      "sourceUrl": "https://nebraskalegislature.gov/laws/statutes.php?statute=48-1118",
+      "sourceAgency": "Nebraska Legislature (Nebraska Revised Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Matches the federal 300-day deadline that applies in deferral (FEPA) states. Filed with the Nebraska Equal Opportunity Commission."
+    },
+    {
+      "topic": "wageClaim.suit",
+      "value": "suit permitted for wages unpaid 30+ days after payday; prevailing employee recovers wages, costs, and attorney fees",
+      "summary": "Under the Nebraska Wage Payment and Collection Act, an employee may sue for wages not paid within 30 days of the designated payday and, if successful, recover the full judgment plus costs and reasonable attorney fees.",
+      "citation": "Neb. Rev. Stat. 48-1231",
+      "sourceUrl": "https://nebraskalegislature.gov/laws/statutes.php?statute=48-1231",
+      "sourceAgency": "Nebraska Legislature (Nebraska Revised Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "The Wage Payment and Collection Act itself sets no statute of limitations; Nebraska's general contract limitations periods apply. The specific SOL number could not be confirmed from an official source and is omitted."
+    },
+    {
+      "topic": "finalPay.timing",
+      "value": "next regular payday or within two weeks of separation, whichever is sooner",
+      "summary": "On termination or separation, a private employer must pay final wages by the next regular payday or within two weeks, whichever comes first.",
+      "citation": "Neb. Rev. Stat. 48-1230",
+      "sourceUrl": "https://nebraskalegislature.gov/laws/statutes.php?statute=48-1230",
+      "sourceAgency": "Nebraska Legislature (Nebraska Revised Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Different timing rules apply to political subdivisions tied to governing-body meeting schedules. Federal law has no final-pay timing rule, so this is a state addition."
+    },
+    {
+      "topic": "whistleblower",
+      "value": "State Government Effectiveness Act protects state employees from retaliation for reporting government wrongdoing",
+      "summary": "Nebraska's State Government Effectiveness Act (the state whistleblower law) bars state agencies from retaliating against state employees who report gross inefficiency or misconduct.",
+      "citation": "Neb. Rev. Stat. 81-2701 to 81-2711",
+      "sourceUrl": "https://nebraskalegislature.gov/divisions/ombud-whistle.php",
+      "sourceAgency": "Nebraska Legislature / Office of Public Counsel (Ombudsman)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Limited to state-government employees; enforced through the Ombudsman's Office and State Personnel Board. Private-sector retaliation is addressed separately under FEPA (48-1114) and the Wage Payment and Collection Act."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Nebraska Department of Labor - Labor Standards",
+      "url": "https://dol.nebraska.gov/laborstandards"
+    },
+    "discrimination": {
+      "name": "Nebraska Equal Opportunity Commission (NEOC)",
+      "url": "https://neoc.nebraska.gov/"
+    }
+  }
+}

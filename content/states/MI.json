@@ -1,0 +1,114 @@
+{
+  "jurisdiction": "MI",
+  "name": "Michigan",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "minimumWage.hourly",
+      "value": 13.73,
+      "summary": "Michigan's minimum wage is $13.73 per hour effective January 1, 2026, higher than the federal $7.25.",
+      "citation": "Improved Workforce Opportunity Wage Act, MCL 408.934",
+      "sourceUrl": "https://www.michigan.gov/leo/news/2025/12/08/michigans-minimum-wage-set-to-increase-on-jan-1-2026",
+      "sourceAgency": "Michigan Dept of Labor & Economic Opportunity (LEO), Wage & Hour Division",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Rate is scheduled to rise to $15.00/hr on Jan 1, 2027; confirm no mid-year adjustment before relying on figure."
+    },
+    {
+      "topic": "overtime.daily",
+      "value": "follows federal FLSA",
+      "summary": "Michigan requires overtime at 1.5x after 40 hours in a 7-day workweek with no daily overtime rule, and uses FLSA-based exemptions, so it tracks federal law.",
+      "citation": "Improved Workforce Opportunity Wage Act, MCL 408.934a",
+      "sourceUrl": "https://www.michigan.gov/leo/bureaus-agencies/ber/wage-and-hour/min-wage",
+      "sourceAgency": "Michigan Dept of Labor & Economic Opportunity (LEO), Wage & Hour Division",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Michigan does not set a state salary floor separate from the federal FLSA salary-level test; exemptions mirror the FLSA."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": ["sexual orientation", "gender identity or expression", "height", "weight", "familial status", "marital status"],
+      "summary": "Michigan's Elliott-Larsen Civil Rights Act protects several classes beyond the federal set, including sexual orientation, gender identity or expression, height, weight, familial status, and marital status.",
+      "citation": "Elliott-Larsen Civil Rights Act, Act 453 of 1976, MCL 37.2202",
+      "sourceUrl": "https://www.legislature.mi.gov/Laws/MCL?objectName=mcl-37-2202",
+      "sourceAgency": "Michigan Legislature / Michigan Dept of Civil Rights (MDCR)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "These are in addition to religion, race, color, national origin, age, and sex, which overlap with federal protections."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": 1,
+      "summary": "The Elliott-Larsen Civil Rights Act defines an employer as anyone with 1 or more employees, far below the federal Title VII threshold of 15.",
+      "citation": "Elliott-Larsen Civil Rights Act, MCL 37.2201",
+      "sourceUrl": "https://www.legislature.mi.gov/Laws/MCL?objectName=mcl-37-2201",
+      "sourceAgency": "Michigan Legislature / Michigan Dept of Civil Rights (MDCR)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": ""
+    },
+    {
+      "topic": "disability.accommodation",
+      "value": "Persons with Disabilities Civil Rights Act (PWDCRA)",
+      "summary": "Michigan's Persons with Disabilities Civil Rights Act separately prohibits disability discrimination and requires accommodation, enforced by MDCR alongside the federal ADA.",
+      "citation": "Persons with Disabilities Civil Rights Act, Act 220 of 1976, MCL 37.1101 et seq.",
+      "sourceUrl": "https://www.michigan.gov/mdcr/enforcement/investigation/jurisdiction",
+      "sourceAgency": "Michigan Dept of Civil Rights (MDCR)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "PWDCRA applies more broadly than the federal ADA's 15-employee threshold; verify specific accommodation provisions in MCL 37.1102/37.1210 if precise language is needed."
+    },
+    {
+      "topic": "whistleblower",
+      "value": "Whistleblowers' Protection Act; 90-day filing deadline",
+      "summary": "Michigan's Whistleblowers' Protection Act bars retaliation against employees who report suspected legal violations to a public body, but a civil action must be filed within 90 days.",
+      "citation": "Whistleblowers' Protection Act, Act 469 of 1980, MCL 15.362-15.363",
+      "sourceUrl": "https://www.legislature.mi.gov/Laws/MCL?objectName=mcl-15-362",
+      "sourceAgency": "Michigan Legislature",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "The 90-day limitations period (MCL 15.363) is strict and shorter than most other Michigan employment deadlines."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "3 years (minimum wage/overtime)",
+      "summary": "A minimum wage or overtime complaint under the Improved Workforce Opportunity Wage Act must be filed within 3 years; unpaid-wages/fringe-benefit claims under Act 390 have a shorter 12-month administrative filing window.",
+      "citation": "Improved Workforce Opportunity Wage Act, MCL 408.934; Payment of Wages and Fringe Benefits Act, MCL 408.481",
+      "sourceUrl": "https://www.michigan.gov/leo/bureaus-agencies/ber/wage-and-hour/payment-of-wages-and-fringe-benefits-act-public-act-390-of-1978/statute-of-limitations",
+      "sourceAgency": "Michigan Dept of Labor & Economic Opportunity (LEO), Wage & Hour Division",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Deadlines differ by claim type: min wage/overtime = 3 years; Payment of Wages & Fringe Benefits Act administrative complaint = 12 months. Confirm which applies to a given claim."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "180 days (MDCR administrative filing)",
+      "summary": "A discrimination complaint must be filed with the Michigan Dept of Civil Rights within 180 days of the alleged act; a civil suit directly under Elliott-Larsen has a separate 3-year limitations period.",
+      "citation": "Elliott-Larsen Civil Rights Act, MCL 37.2602 (MDCR complaint procedures)",
+      "sourceUrl": "https://www.michigan.gov/mdcr/enforcement/investigation/jurisdiction",
+      "sourceAgency": "Michigan Dept of Civil Rights (MDCR)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "180 days is the administrative MDCR filing window; the 3-year figure for direct court actions comes from Michigan case law, not a statute section, so treat it as guidance."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Michigan Dept of Labor & Economic Opportunity (LEO), Bureau of Employment Relations - Wage & Hour Division",
+      "url": "https://www.michigan.gov/leo/bureaus-agencies/ber/wage-and-hour"
+    },
+    "discrimination": {
+      "name": "Michigan Dept of Civil Rights (MDCR)",
+      "url": "https://www.michigan.gov/mdcr"
+    }
+  }
+}

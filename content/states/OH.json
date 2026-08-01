@@ -1,0 +1,102 @@
+{
+  "jurisdiction": "OH",
+  "name": "Ohio",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "overtime.daily",
+      "value": "follows federal FLSA",
+      "summary": "Ohio has no daily overtime and no salary floor above federal law; overtime is 1.5x the regular rate for hours over 40 in a workweek, tracking the FLSA.",
+      "citation": "Ohio Rev. Code 4111.03",
+      "sourceUrl": "https://codes.ohio.gov/ohio-revised-code/section-4111.03",
+      "sourceAgency": "Ohio Revised Code (LSC)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Statute expressly incorporates the FLSA and contains no state minimum salary threshold. State OT coverage excludes employers with annual gross sales under $150,000, who default to FLSA coverage if otherwise applicable."
+    },
+    {
+      "topic": "minimumWage.hourly",
+      "value": "exceeds federal; inflation-adjusted annually (verify current 2026 dollar figure)",
+      "summary": "Ohio's minimum wage exceeds the federal $7.25 and is raised each January by CPI inflation under the state constitution; small employers below the gross-receipts threshold and workers under 16 pay the federal $7.25.",
+      "citation": "Ohio Const. art. II, section 34a",
+      "sourceUrl": "https://codes.ohio.gov/ohio-constitution/section-2.34a",
+      "sourceAgency": "Ohio Constitution (via Ohio Revised Code / LSC)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Base was $6.85 (2007), adjusted each Sept 30 by CPI (rounded to nearest 5 cents), effective the following Jan 1; the gross-receipts small-employer threshold (base $250,000) is inflation-adjusted the same way. Exact 2026 non-tipped/tipped dollar amounts and current threshold could NOT be sourced: com.ohio.gov (Dept of Commerce Wage & Hour poster) was unreachable and web search was unavailable. VERIFY the 2026 figure from the official Ohio Dept of Commerce minimum wage poster before publishing a number."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": ["military status", "ancestry"],
+      "summary": "Beyond the federal set, Ohio employment discrimination law expressly protects military status and ancestry (and treats pregnancy and related conditions as sex discrimination).",
+      "citation": "Ohio Rev. Code 4112.01, 4112.02",
+      "sourceUrl": "https://codes.ohio.gov/ohio-revised-code/section-4112.02",
+      "sourceAgency": "Ohio Revised Code (LSC)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Full Ohio list: race, color, religion, sex (incl. pregnancy), military status, national origin, disability, age, and ancestry. Military status and ancestry are the additions beyond federal Title VII/ADA/ADEA; familial status is a housing-context protection, not employment."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": 4,
+      "summary": "Ohio's anti-discrimination law covers employers with 4 or more employees, far lower than the federal 15-employee Title VII/ADA threshold and the 20-employee ADEA threshold.",
+      "citation": "Ohio Rev. Code 4112.01(A)(2)",
+      "sourceUrl": "https://codes.ohio.gov/ohio-revised-code/section-4112.01",
+      "sourceAgency": "Ohio Revised Code (LSC)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Definition of 'employer' includes the state, political subdivisions, and any person employing four or more persons within Ohio. This lower threshold also extends age discrimination protection (age 40+) to employers below the federal ADEA 20-employee floor."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "2 years",
+      "summary": "A charge of employment discrimination must be filed with the Ohio Civil Rights Commission within two years of the alleged unlawful practice; a civil lawsuit also has a two-year limit and generally requires exhausting the OCRC charge first.",
+      "citation": "Ohio Rev. Code 4112.051; 4112.052",
+      "sourceUrl": "https://codes.ohio.gov/ohio-revised-code/section-4112.051",
+      "sourceAgency": "Ohio Revised Code (LSC)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Charge deadline is 2 years (ORC 4112.051). Civil action deadline is also 2 years (ORC 4112.052, https://codes.ohio.gov/ohio-revised-code/section-4112.052), with administrative exhaustion required unless seeking only injunctive relief or after an EEOC right-to-sue. This 2-year framework reflects the 2021 H.B. 352 reforms."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "3 years",
+      "summary": "A minimum-wage / wage claim under Ohio's constitutional wage provisions must be brought within three years of the violation (or of when a continuing violation ceased), or within one year after final state disposition of a complaint, whichever is later.",
+      "citation": "Ohio Const. art. II, section 34a; Ohio Rev. Code 4111.14(K)",
+      "sourceUrl": "https://codes.ohio.gov/ohio-revised-code/section-4111.14",
+      "sourceAgency": "Ohio Revised Code (LSC)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Three-year limit is set by Ohio Const. art. II section 34a (https://codes.ohio.gov/ohio-constitution/section-2.34a) and implemented in ORC 4111.14(K). Overtime claims under ORC 4111.03/FLSA carry the separate federal 2- or 3-year FLSA limitations period; this fact covers the state wage/minimum-wage claim period."
+    },
+    {
+      "topic": "whistleblower",
+      "value": "protected; civil action within 180 days",
+      "summary": "Ohio's whistleblower statute protects employees from retaliation for reporting certain criminal, safety, environmental, or fraud violations, with a private civil action that must be brought within 180 days.",
+      "citation": "Ohio Rev. Code 4113.52",
+      "sourceUrl": "https://codes.ohio.gov/ohio-revised-code/section-4113.52",
+      "sourceAgency": "Ohio Revised Code (LSC)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Employee must generally report the violation (often in writing) and give the employer 24 hours to correct it to be protected. Remedies include reinstatement, back pay, benefits, costs, and attorney fees; the 180-day civil action window is short."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Ohio Department of Commerce, Division of Industrial Compliance, Bureau of Wage & Hour Administration",
+      "url": "https://com.ohio.gov"
+    },
+    "discrimination": {
+      "name": "Ohio Civil Rights Commission",
+      "url": "https://crc.ohio.gov"
+    }
+  }
+}

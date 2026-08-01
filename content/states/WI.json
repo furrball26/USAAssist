@@ -1,0 +1,112 @@
+{
+  "jurisdiction": "WI",
+  "name": "Wisconsin",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "minimumWage.hourly",
+      "value": 7.25,
+      "summary": "Wisconsin's minimum wage is $7.25 per hour, the same as the federal minimum wage.",
+      "citation": "Wis. Stat. § 104.035(1)(a)",
+      "sourceUrl": "https://docs.legis.wisconsin.gov/statutes/statutes/104",
+      "sourceAgency": "Wisconsin State Legislature",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Statute fixes the rate at $7.25; Wisconsin has not enacted increases above the federal floor. Verify no 2026 legislative change."
+    },
+    {
+      "topic": "overtime.daily",
+      "value": "follows federal FLSA",
+      "summary": "Wisconsin requires overtime at 1.5x the regular rate for hours worked over 40 in a week and imposes no daily overtime, mirroring federal law.",
+      "citation": "Wis. Admin. Code DWD § 274.03",
+      "sourceUrl": "https://docs.legis.wisconsin.gov/code/admin_code/dwd/270_279/274",
+      "sourceAgency": "Wisconsin Dept of Workforce Development (Equal Rights Division)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "No daily overtime requirement; weekly 40-hour threshold only. Salary/exemption tests track the federal FLSA."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": [
+        "ancestry",
+        "creed",
+        "marital status",
+        "sexual orientation",
+        "arrest record",
+        "conviction record",
+        "military service",
+        "use or nonuse of lawful products off duty",
+        "declining to attend employer meetings on religious or political matters"
+      ],
+      "summary": "The Wisconsin Fair Employment Act protects several classes beyond the federal set, including marital status, sexual orientation, arrest and conviction records, military service, and off-duty lawful product use.",
+      "citation": "Wis. Stat. § 111.321",
+      "sourceUrl": "https://docs.legis.wisconsin.gov/statutes/statutes/111/ii",
+      "sourceAgency": "Wisconsin State Legislature",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Full WFEA list also includes federally covered bases (age, race, color, disability, sex, national origin). Listed here are the state additions beyond the federal set."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": 1,
+      "summary": "The Wisconsin Fair Employment Act covers employers with at least one employee, far lower than the federal 15-employee threshold under Title VII/ADA.",
+      "citation": "Wis. Stat. § 111.32(6)(a)",
+      "sourceUrl": "https://docs.legis.wisconsin.gov/statutes/statutes/111/ii",
+      "sourceAgency": "Wisconsin State Legislature",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Definition of 'employer' reaches any person engaging in business employing at least one individual."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "300 days",
+      "summary": "A discrimination complaint under the Wisconsin Fair Employment Act must be filed with the Equal Rights Division no more than 300 days after the alleged discrimination.",
+      "citation": "Wis. Stat. § 111.39(1)",
+      "sourceUrl": "https://docs.legis.wisconsin.gov/statutes/statutes/111/ii/39",
+      "sourceAgency": "Wisconsin State Legislature",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Matches the federal 300-day deadline available in deferral states; filed with DWD Equal Rights Division (the state FEPA)."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "2 years",
+      "summary": "An action to recover unpaid wages or other compensation for personal services must be commenced within 2 years after the cause of action accrues.",
+      "citation": "Wis. Stat. § 893.44(1)",
+      "sourceUrl": "https://docs.legis.wisconsin.gov/statutes/statutes/893/iv/44",
+      "sourceAgency": "Wisconsin State Legislature",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Two-year limitation for wage/salary recovery actions; separate exceptions may apply under sub. (2)."
+    },
+    {
+      "topic": "retaliation",
+      "value": "prohibited under WFEA",
+      "summary": "The Wisconsin Fair Employment Act makes it unlawful to retaliate against an employee for opposing a discriminatory practice or for filing a complaint, testifying, or assisting in a WFEA proceeding.",
+      "citation": "Wis. Stat. § 111.322(3)",
+      "sourceUrl": "https://docs.legis.wisconsin.gov/statutes/statutes/111/ii",
+      "sourceAgency": "Wisconsin State Legislature",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "General anti-retaliation provision within the WFEA; separate whistleblower statutes exist for public employees (§§ 230.80-230.89) and health care workers (§ 146.997)."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Wisconsin Department of Workforce Development, Equal Rights Division (Labor Standards)",
+      "url": "https://dwd.wisconsin.gov/er/laborstandards/"
+    },
+    "discrimination": {
+      "name": "Wisconsin Department of Workforce Development, Equal Rights Division (state FEPA)",
+      "url": "https://dwd.wisconsin.gov/er/discrimination/"
+    }
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "jurisdiction": "NC",
+  "name": "North Carolina",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "minimumWage.hourly",
+      "value": 7.25,
+      "summary": "North Carolina's minimum wage is $7.25 per hour, the same as the federal minimum wage.",
+      "citation": "N.C. Gen. Stat. § 95-25.3",
+      "sourceUrl": "https://www.labor.nc.gov/workplace-rights/employee-rights-regarding-time-worked-and-wages-earned/minimum-wage-nc",
+      "sourceAgency": "North Carolina Department of Labor",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "NCGS 95-25.3 ties the state minimum to the federal FLSA rate; verify no legislative increase for the current year."
+    },
+    {
+      "topic": "overtime.daily",
+      "value": "follows federal FLSA",
+      "summary": "North Carolina requires time-and-one-half only after 40 hours in a workweek and has no daily overtime requirement; NCDOL has adopted the federal 29 CFR 541 exemptions.",
+      "citation": "N.C. Gen. Stat. § 95-25.4",
+      "sourceUrl": "https://www.labor.nc.gov/workplace-rights/employee-rights-regarding-time-worked-and-wages-earned/overtime-pay-salary-and-comp",
+      "sourceAgency": "North Carolina Department of Labor",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "State tracks federal FLSA; overtime is weekly, not daily. Seasonal amusement/recreation establishments have a limited state exception (OT after 45 hrs)."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "2 years",
+      "summary": "A lawsuit to recover unpaid wages under the North Carolina Wage and Hour Act must be brought within two years of the violation.",
+      "citation": "N.C. Gen. Stat. § 95-25.22(f)",
+      "sourceUrl": "https://www.ncleg.gov/EnactedLegislation/Statutes/HTML/ByArticle/Chapter_95/Article_2A.html",
+      "sourceAgency": "North Carolina General Assembly",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Two-year statute of limitations per NCGS 95-25.22(f)."
+    },
+    {
+      "topic": "final-pay",
+      "value": "next regular payday",
+      "summary": "Employees who separate for any reason must be paid all wages due on or before the next regular payday, through regular pay channels or by mail if the employee requests.",
+      "citation": "N.C. Gen. Stat. § 95-25.7",
+      "sourceUrl": "https://www.labor.nc.gov/workplace-rights/employee-rights-regarding-time-worked-and-wages-earned/payment-final-wages",
+      "sourceAgency": "North Carolina Department of Labor",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "No immediate-payment-on-termination rule; next regular payday applies. Bonuses/commissions payable on first regular payday after the amount is calculable."
+    },
+    {
+      "topic": "retaliation",
+      "value": "REDA protects complaints re: wage/hour, workplace safety (OSHA), workers' comp, and more; 180-day filing deadline with the Commissioner of Labor",
+      "summary": "The NC Retaliatory Employment Discrimination Act bars retaliation against employees who exercise rights under wage-and-hour, workplace safety, workers' compensation, and certain other laws; a written complaint must be filed with the Commissioner of Labor within 180 days.",
+      "citation": "N.C. Gen. Stat. §§ 95-240 to 95-245",
+      "sourceUrl": "https://www.ncleg.gov/EnactedLegislation/Statutes/HTML/ByArticle/Chapter_95/Article_21.html",
+      "sourceAgency": "North Carolina General Assembly",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "REDA (Article 21 of Chapter 95). Written complaint to NC Commissioner of Labor due within 180 days of the alleged retaliatory act (NCGS 95-242)."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": 15,
+      "summary": "The NC Equal Employment Practices Act applies to employers that regularly employ 15 or more employees, matching the federal Title VII threshold.",
+      "citation": "N.C. Gen. Stat. § 143-422.2",
+      "sourceUrl": "https://www.ncleg.gov/EnactedLegislation/Statutes/HTML/BySection/Chapter_143/GS_143-422.2.html",
+      "sourceAgency": "North Carolina General Assembly",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Same 15-employee threshold as Title VII; note the EEPA covers age and handicap at 15 employees, which is broader than federal ADEA (20 employees) for age coverage."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": ["race", "religion", "color", "national origin", "age", "sex", "handicap"],
+      "summary": "The NC Equal Employment Practices Act declares it state policy to protect the right to employment free of discrimination based on race, religion, color, national origin, age, sex, or handicap.",
+      "citation": "N.C. Gen. Stat. § 143-422.2",
+      "sourceUrl": "https://www.ncleg.gov/EnactedLegislation/Statutes/HTML/BySection/Chapter_143/GS_143-422.2.html",
+      "sourceAgency": "North Carolina General Assembly",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "The EEPA consolidates age and handicap (disability) with the Title VII classes in one statute but adds no classes beyond the combined federal set (no sexual orientation or gender identity). It is a declaration of public policy and does not create a state administrative charge process."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "North Carolina Department of Labor, Wage and Hour Bureau",
+      "url": "https://www.labor.nc.gov/workplace-rights/employee-rights-regarding-time-worked-and-wages-earned"
+    },
+    "discrimination": {
+      "name": "U.S. Equal Employment Opportunity Commission (Charlotte District Office); North Carolina has no state agency that processes private-sector employment discrimination charges under the Equal Employment Practices Act",
+      "url": "https://www.eeoc.gov/field-office/charlotte/location"
+    }
+  }
+}

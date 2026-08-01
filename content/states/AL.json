@@ -1,0 +1,138 @@
+{
+  "jurisdiction": "AL",
+  "name": "Alabama",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "overtime.daily",
+      "value": "follows federal FLSA",
+      "summary": "Alabama has no state overtime statute, so the federal FLSA rule (time-and-a-half after 40 hours per week) governs; there is no state daily overtime or higher salary floor.",
+      "citation": "No Alabama statute; FLSA 29 U.S.C. 207 applies",
+      "sourceUrl": "https://labor.alabama.gov",
+      "sourceAgency": "Alabama Department of Labor",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Alabama has enacted no wage-and-hour overtime law; wage/hour enforcement is handled federally by the U.S. DOL Wage and Hour Division. Verify no new state OT statute each cycle."
+    },
+    {
+      "topic": "minimumWage.hourly",
+      "value": "follows federal $7.25",
+      "summary": "Alabama has not enacted a state minimum wage, so the federal minimum wage of $7.25/hour applies statewide.",
+      "citation": "No Alabama minimum wage statute; FLSA 29 U.S.C. 206 applies",
+      "sourceUrl": "https://labor.alabama.gov",
+      "sourceAgency": "Alabama Department of Labor",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "No state minimum wage law as of July 2026. SB171 (2026) proposed a $10.00 state minimum wage effective 2027 but had not been enacted as of this check; re-verify in future cycles."
+    },
+    {
+      "topic": "minimumWage.localPreemption",
+      "value": "local minimum wage ordinances prohibited",
+      "summary": "The Alabama Uniform Minimum Wage and Right to Work Act bars any county or municipality from requiring employers to pay a wage or provide benefits beyond what state or federal law requires, voiding local minimum wage ordinances.",
+      "citation": "Ala. Code 25-7-41",
+      "sourceUrl": "https://alison.legislature.state.al.us/code-of-alabama?section=25-7-41",
+      "sourceAgency": "Alabama Legislature (Code of Alabama)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "This is an Alabama-specific addition (preemption) rather than a difference in the wage rate itself; enacted 2016 in response to a Birmingham local ordinance."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": "no additional classes beyond federal (age covered by separate state statute)",
+      "summary": "Alabama has no general state fair-employment statute adding protected classes; race, color, religion, sex, national origin, and disability claims rely on federal Title VII and the ADA, while age is separately protected by state law.",
+      "citation": "No general Alabama anti-discrimination statute; see Ala. Code 25-1-20 et seq. for age",
+      "sourceUrl": "https://alison.legislature.state.al.us/code-of-alabama?section=25-1-20",
+      "sourceAgency": "Alabama Legislature (Code of Alabama)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Alabama does not have a broad state FEPA; the only stand-alone state employment-discrimination statute is the age law. No state additions for sexual orientation/gender identity, etc."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": "no general state law; age statute covers employers with 20+ employees",
+      "summary": "Alabama has no general state anti-discrimination statute, so Title VII/ADA (15+ employees) govern most claims; the state Age Discrimination law applies only to employers with 20 or more employees, matching the federal ADEA.",
+      "citation": "Ala. Code 25-1-20",
+      "sourceUrl": "https://alison.legislature.state.al.us/code-of-alabama?section=25-1-20",
+      "sourceAgency": "Alabama Legislature (Code of Alabama)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Alabama does not lower the federal 15-employee threshold; the only state coverage threshold is 20 employees for age claims, the same as the federal ADEA."
+    },
+    {
+      "topic": "discrimination.ageDiscrimination",
+      "value": "age 40+ protected under state law (AADEA)",
+      "summary": "The Alabama Age Discrimination in Employment Act prohibits employment discrimination against persons age 40 and older by employers with 20 or more employees, providing a state cause of action parallel to the federal ADEA.",
+      "citation": "Ala. Code 25-1-20 to 25-1-29",
+      "sourceUrl": "https://alison.legislature.state.al.us/code-of-alabama?section=25-1-21",
+      "sourceAgency": "Alabama Legislature (Code of Alabama)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "AADEA mirrors federal ADEA coverage (age 40+, 20+ employees) but adds a state-court remedy. Statute spans sections 25-1-20 through 25-1-29."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "180 days (state age claim); no state FEPA otherwise",
+      "summary": "A state-court age-discrimination action under the AADEA must generally be brought within 180 days of the alleged discriminatory act; Alabama has no state fair-employment agency, so other discrimination claims follow the federal EEOC deadlines (180/300 days).",
+      "citation": "Ala. Code 25-1-29",
+      "sourceUrl": "https://alison.legislature.state.al.us/code-of-alabama?section=25-1-29",
+      "sourceAgency": "Alabama Legislature (Code of Alabama)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "180-day AADEA limitation drawn from secondary summaries citing Ala. Code 25-1-29; confirm exact limitation period and any EEOC-dismissal 90-day follow-on against primary statutory text before relying on it. Alabama has no state FEPA, so Title VII/ADA claims use EEOC's 180/300-day windows."
+    },
+    {
+      "topic": "whistleblower",
+      "value": "state (public) employees only",
+      "summary": "Alabama's State Employees Protection Act prohibits supervisors from retaliating against state employees who report violations of law, rule, or regulation to a public body; it does not cover private-sector employees.",
+      "citation": "Ala. Code 36-26A-1 et seq.",
+      "sourceUrl": "https://alison.legislature.state.al.us/code-of-alabama?section=36-26A-3",
+      "sourceAgency": "Alabama Legislature (Code of Alabama)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Protection is limited to state government employees. Alabama is a strict at-will state and courts do not recognize a general public-policy wrongful-discharge tort for private employees; private whistleblowers rely on federal statutes."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "6 years (written contract) / 3 years (open account)",
+      "summary": "Alabama has no dedicated wage-payment statute, so unpaid-wage claims are pursued as breach of contract, with a six-year limitations period for written contracts and three years for open or unwritten accounts.",
+      "citation": "Ala. Code 6-2-34; Ala. Code 6-2-37",
+      "sourceUrl": "https://alison.legislature.state.al.us/code-of-alabama?section=6-2-34",
+      "sourceAgency": "Alabama Legislature (Code of Alabama)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "These are the general contract statutes of limitations applied to wage claims because Alabama has no specific wage-claim statute or administrative wage-claim process; the applicable period depends on how the claim is characterized. Federal FLSA claims have their own 2/3-year limits."
+    },
+    {
+      "topic": "final-pay",
+      "value": "no state law; next regular payday (federal default)",
+      "summary": "Alabama has no statute setting a deadline for final wages after separation, so the FLSA default (payment by the next regular payday) applies, and payout of unused leave depends on employer policy or contract.",
+      "citation": "No Alabama final-pay statute; FLSA applies",
+      "sourceUrl": "https://labor.alabama.gov",
+      "sourceAgency": "Alabama Department of Labor",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "No state timing requirement for final paychecks and no state mandate to pay out accrued vacation absent a policy or contract."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Alabama Department of Labor",
+      "url": "https://labor.alabama.gov"
+    },
+    "discrimination": {
+      "name": "U.S. Equal Employment Opportunity Commission (Birmingham District Office) - Alabama has no state fair-employment agency",
+      "url": "https://www.eeoc.gov"
+    }
+  }
+}

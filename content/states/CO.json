@@ -1,0 +1,102 @@
+{
+  "jurisdiction": "CO",
+  "name": "Colorado",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "overtime.daily",
+      "value": "Overtime at 1.5x is owed after 40 hours/week, OR more than 12 hours/day, OR 12 consecutive hours (whichever yields the most pay).",
+      "summary": "Unlike federal law, Colorado requires daily overtime after 12 hours in a workday or 12 consecutive hours, in addition to the 40-hour weekly threshold.",
+      "citation": "7 CCR 1103-1 (COMPS Order), Rule 4",
+      "sourceUrl": "https://cdle.colorado.gov/dlss-home-page/colorado-overtime-minimum-pay-standards-comps-order",
+      "sourceAgency": "Colorado Dept of Labor & Employment, Division of Labor Standards and Statistics",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "COMPS Order is updated annually; confirm current order number for 2026."
+    },
+    {
+      "topic": "overtime.salaryThreshold",
+      "value": "$1,111.23/week ($57,784/year)",
+      "summary": "Colorado's 2026 salary threshold for the executive/administrative/professional (EAP) overtime exemption is higher than the federal $684/week floor.",
+      "citation": "7 CCR 1103-14 (2026 PAY CALC Order)",
+      "sourceUrl": "https://cdle.colorado.gov/sites/cdle/files/info_%231_2026_comps_&_paycalc_orders_12.18.25.pdf",
+      "sourceAgency": "Colorado Dept of Labor & Employment, Division of Labor Standards and Statistics",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Highly compensated employee threshold for 2026 is $130,014/yr (2.25x EAP). Source is CDLE INFO #1 summary of the adopted 2026 PAY CALC Order; verify weekly figure against the PAY CALC Order text."
+    },
+    {
+      "topic": "minimumWage.hourly",
+      "value": 15.16,
+      "summary": "Colorado's statewide minimum wage is $15.16/hour effective February 1, 2026, well above the federal $7.25; some localities (e.g., Denver) set higher rates.",
+      "citation": "Colo. Const. art. XVIII, sec. 15; 7 CCR 1103-1 (COMPS Order)",
+      "sourceUrl": "https://cdle.colorado.gov/sites/cdle/files/info_%231_2026_comps_&_paycalc_orders_12.18.25.pdf",
+      "sourceAgency": "Colorado Dept of Labor & Employment, Division of Labor Standards and Statistics",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Adjusted annually for CPI. Tipped minimum is $3.02 less. Local minimum wages may be higher (see CDLE INFO #19)."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": ["sexual orientation", "gender identity", "gender expression", "marital status", "ancestry", "creed", "pregnancy and related conditions"],
+      "summary": "The Colorado Anti-Discrimination Act protects several classes beyond the federal set, including sexual orientation, gender identity/expression, marital status, ancestry, and creed.",
+      "citation": "C.R.S. 24-34-402",
+      "sourceUrl": "https://ccrd.colorado.gov/discrimination",
+      "sourceAgency": "Colorado Civil Rights Division (DORA)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "List reflects CCRD's stated protected classes plus the federally-covered base classes (race, color, religion, national origin, sex, disability, age); verify exact statutory enumeration in C.R.S. 24-34-402."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": "1 or more employees (no minimum size threshold)",
+      "summary": "CADA covers essentially all Colorado employers regardless of size, far broader than the federal 15-employee threshold under Title VII/ADA.",
+      "citation": "C.R.S. 24-34-401(3)",
+      "sourceUrl": "https://ccrd.colorado.gov/discrimination",
+      "sourceAgency": "Colorado Civil Rights Division (DORA)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "CCRD states any employee working in Colorado is covered; certain religious organizations are excluded. Verify statutory 'employer' definition at C.R.S. 24-34-401(3)."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "2 years (3 years for willful violations)",
+      "summary": "A Colorado wage claim generally must be brought within 2 years of accrual, extended to 3 years if the employer's violation was willful.",
+      "citation": "C.R.S. 8-4-122",
+      "sourceUrl": "https://cdle.colorado.gov/sites/cdle/files/colorado_wage_act_revised_august_6,_2025.pdf",
+      "sourceAgency": "Colorado Dept of Labor & Employment, Division of Labor Standards and Statistics",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Colorado Wage Act. Willfulness means intentional or reckless disregard of the law."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "300 days",
+      "summary": "An employment discrimination charge with the Colorado Civil Rights Division must be filed within 300 days of the alleged discriminatory act, or it is barred.",
+      "citation": "C.R.S. 24-34-403",
+      "sourceUrl": "https://ccrd.colorado.gov/the-complaint-process",
+      "sourceAgency": "Colorado Civil Rights Division (DORA)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "CCRD cannot extend this statutory deadline. Intake submission alone does not constitute a filed formal complaint."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Colorado Dept of Labor & Employment, Division of Labor Standards and Statistics",
+      "url": "https://cdle.colorado.gov/dlss"
+    },
+    "discrimination": {
+      "name": "Colorado Civil Rights Division (Department of Regulatory Agencies)",
+      "url": "https://ccrd.colorado.gov/"
+    }
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "jurisdiction": "NH",
+  "name": "New Hampshire",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "overtime.daily",
+      "value": "follows federal FLSA",
+      "summary": "New Hampshire has no daily overtime and no higher salary floor; overtime is paid at 1.5x the regular rate for hours worked over 40 in a week, tracking the federal FLSA.",
+      "citation": "RSA 279:21",
+      "sourceUrl": "https://gc.nh.gov/rsa/html/XXIII/279/279-21.htm",
+      "sourceAgency": "New Hampshire General Court (state statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "RSA 279:21 expressly ties overtime to the FLSA (over 40 hours/week at time and one-half); no state daily-OT or higher salary threshold."
+    },
+    {
+      "topic": "minimumWage.hourly",
+      "value": "follows federal $7.25",
+      "summary": "New Hampshire pegs its minimum wage to the federal minimum wage, so the 2026 rate is $7.25 per hour.",
+      "citation": "RSA 279:21",
+      "sourceUrl": "https://gc.nh.gov/rsa/html/XXIII/279/279-21.htm",
+      "sourceAgency": "New Hampshire General Court (state statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "RSA 279:21 sets the wage at 'the federal minimum wage law, as amended.' Confirm $7.25 remains the federal rate for 2026."
+    },
+    {
+      "topic": "minimumWage.tipped",
+      "value": 3.27,
+      "summary": "Tipped employees who regularly receive more than $30/month in tips may be paid a cash wage of no less than $3.27/hour, provided tips plus cash wage meet the full minimum wage.",
+      "citation": "RSA 279:21",
+      "sourceUrl": "https://gc.nh.gov/rsa/html/XXIII/279/279-21.htm",
+      "sourceAgency": "New Hampshire General Court (state statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "State-specific tip credit figure; employer must make up any shortfall so total pay reaches the applicable minimum wage."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": ["sexual orientation", "gender identity", "marital status"],
+      "summary": "Beyond the federal protected classes, New Hampshire's Law Against Discrimination also prohibits employment discrimination based on sexual orientation, gender identity, and marital status.",
+      "citation": "RSA 354-A:7 (see also RSA 354-A:2)",
+      "sourceUrl": "https://gc.nh.gov/rsa/html/XXXI/354-A/354-A-7.htm",
+      "sourceAgency": "New Hampshire General Court (state statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Full state list also covers age, sex (incl. pregnancy), race, color, disability, religious creed, and national origin; the values here are the additions beyond the federal Title VII/ADA/ADEA set."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": 6,
+      "summary": "New Hampshire's anti-discrimination law covers employers with 6 or more employees, a lower threshold than the federal 15-employee minimum under Title VII.",
+      "citation": "RSA 354-A:2, VII",
+      "sourceUrl": "https://gc.nh.gov/rsa/html/XXXI/354-A/354-A-2.htm",
+      "sourceAgency": "New Hampshire General Court (state statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Statute excludes 'any employer with fewer than 6 persons in its employ,' so coverage begins at 6 employees."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "180 days",
+      "summary": "A discrimination complaint must be filed with the New Hampshire Commission for Human Rights within 180 days after the alleged discriminatory act.",
+      "citation": "RSA 354-A:21",
+      "sourceUrl": "https://gc.nh.gov/rsa/html/XXXI/354-A/354-A-mrg.htm",
+      "sourceAgency": "New Hampshire General Court (state statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "State FEPA (Commission for Human Rights) filing deadline is 180 days; a related superior court civil action must be brought within 3 years of the act."
+    },
+    {
+      "topic": "whistleblower",
+      "value": "RSA 275-E Whistleblowers' Protection Act",
+      "summary": "New Hampshire's Whistleblowers' Protection Act bars employers from discharging or discriminating against employees who in good faith report, or refuse to participate in, a suspected violation of law or rule.",
+      "citation": "RSA 275-E",
+      "sourceUrl": "https://gc.nh.gov/rsa/html/NHTOC/NHTOC-XXIII-275-E.htm",
+      "sourceAgency": "New Hampshire General Court (state statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Enforced by the NH Department of Labor; complaints filed on the DOL Whistleblowers' Complaint Form."
+    },
+    {
+      "topic": "final-pay",
+      "value": "discharge: 72 hours; quit: next regular payday",
+      "summary": "A discharged employee must be paid in full within 72 hours; an employee who quits must be paid by the next regular payday (or within 72 hours if they gave at least one pay period's notice).",
+      "citation": "RSA 275:44",
+      "sourceUrl": "https://gc.nh.gov/rsa/html/XXIII/275/275-44.htm",
+      "sourceAgency": "New Hampshire General Court (state statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Layoff/suspension pay is due no later than the next regular payday. Wage claims are enforced by the NH DOL Wage and Hour Bureau."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "New Hampshire Department of Labor, Wage and Hour Division",
+      "url": "https://www.dol.nh.gov/inspections/wage-and-hour"
+    },
+    "discrimination": {
+      "name": "New Hampshire Commission for Human Rights",
+      "url": "https://gc.nh.gov/rsa/html/XXXI/354-A/354-A-mrg.htm"
+    }
+  }
+}

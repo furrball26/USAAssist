@@ -1,0 +1,126 @@
+{
+  "jurisdiction": "VA",
+  "name": "Virginia",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "minimumWage.hourly",
+      "value": 12.77,
+      "summary": "Virginia's minimum wage is $12.77 per hour effective January 1, 2026 (or the federal minimum if higher), rising to $13.75 in 2027 and $15.00 in 2028.",
+      "citation": "Va. Code § 40.1-28.10",
+      "sourceUrl": "https://law.lis.virginia.gov/vacode/title40.1/chapter3/section40.1-28.10/",
+      "sourceAgency": "Virginia General Assembly (official Code of Virginia)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Higher than the federal $7.25. Figure is the statutory schedule amount for calendar year 2026; annual CPI-based adjustments begin in 2029."
+    },
+    {
+      "topic": "overtime.daily",
+      "value": "follows federal FLSA",
+      "summary": "Virginia has no daily overtime or higher salary floor; the Virginia Overtime Wage Act incorporates the federal FLSA overtime requirements, exemptions, and calculation methods by reference.",
+      "citation": "Va. Code § 40.1-29.2",
+      "sourceUrl": "https://law.lis.virginia.gov/vacode/title40.1/chapter3/section40.1-29.2/",
+      "sourceAgency": "Virginia General Assembly (official Code of Virginia)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "As amended, Virginia overtime tracks FLSA (OT after 40 hrs/week). State-law overtime actions have a 3-year statute of limitations."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": ["sexual orientation", "gender identity", "marital status", "pregnancy, childbirth or related medical conditions including lactation", "military status", "ethnic origin"],
+      "summary": "The Virginia Human Rights Act protects several classes beyond the federal set, including sexual orientation, gender identity, marital status, pregnancy/childbirth/lactation, military status, and ethnic origin.",
+      "citation": "Va. Code § 2.2-3905",
+      "sourceUrl": "https://law.lis.virginia.gov/vacode/title2.2/chapter39/section2.2-3905/",
+      "sourceAgency": "Virginia General Assembly (official Code of Virginia)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Full statutory list also includes race, color, religion, sex, age, disability, and national origin (federally covered). 'Age' is defined as 40 or older."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": 5,
+      "summary": "The Virginia Human Rights Act's core employment discrimination provisions cover employers with five or more employees (and employers of one or more domestic workers), lower than the federal 15-employee threshold under Title VII.",
+      "citation": "Va. Code § 2.2-3905",
+      "sourceUrl": "https://law.lis.virginia.gov/vacode/title2.2/chapter39/section2.2-3905/",
+      "sourceAgency": "Virginia General Assembly (official Code of Virginia)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Threshold is 5+ employees for each working day in each of 20+ calendar weeks in the current or preceding year; 1+ for domestic-worker employers. Some specific claims may have differing thresholds."
+    },
+    {
+      "topic": "disability.interactiveProcess",
+      "value": "required for employers with more than five employees",
+      "summary": "Virginia law requires employers to provide reasonable accommodation for a qualified person's known disability and to engage in a timely, good-faith interactive process when accommodation is requested.",
+      "citation": "Va. Code § 2.2-3905.1",
+      "sourceUrl": "https://law.lis.virginia.gov/vacode/title2.2/chapter39/section2.2-3905.1/",
+      "sourceAgency": "Virginia General Assembly (official Code of Virginia)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Applies to employers with more than five employees. The explicit statutory interactive-process mandate is an addition beyond the federal ADA framework."
+    },
+    {
+      "topic": "whistleblower",
+      "value": "Va. Code § 40.1-27.3 protects employees from retaliation",
+      "summary": "Virginia's whistleblower statute bars employers from discharging, disciplining, or otherwise retaliating against employees who report legal violations, participate in investigations, refuse illegal acts, or testify to government bodies.",
+      "citation": "Va. Code § 40.1-27.3",
+      "sourceUrl": "https://law.lis.virginia.gov/vacode/title40.1/chapter3/section40.1-27.3/",
+      "sourceAgency": "Virginia General Assembly (official Code of Virginia)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Employees must sue within one year; remedies include reinstatement, back pay with interest, attorney fees, and injunctive relief."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "3 years",
+      "summary": "A civil action for unpaid wages under Virginia's wage payment law must be commenced within three years after the cause of action accrued.",
+      "citation": "Va. Code § 40.1-29",
+      "sourceUrl": "https://law.lis.virginia.gov/vacode/title40.1/chapter3/section40.1-29/",
+      "sourceAgency": "Virginia General Assembly (official Code of Virginia)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "The limitations period is tolled while an administrative complaint is pending. The overtime action limitations period (§ 40.1-29.2) is also three years."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "2 years",
+      "summary": "An employment discrimination complaint under the Virginia Human Rights Act must be filed with the Office of Civil Rights no later than two years after the alleged discriminatory practice occurred.",
+      "citation": "Va. Code § 2.2-3907",
+      "sourceUrl": "https://law.lis.virginia.gov/vacode/title2.2/chapter39/section2.2-3907/",
+      "sourceAgency": "Office of Civil Rights, Virginia Office of the Attorney General (Department of Law)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Longer than the federal EEOC 180/300-day deadlines. Verify any separate shorter deadline that may apply to dual-filed EEOC charges."
+    },
+    {
+      "topic": "final-pay",
+      "value": "by the next regular payday",
+      "summary": "On termination, Virginia employers must pay all wages due for prior work on or before the date the employee would have been paid had employment continued (i.e., the next regular payday).",
+      "citation": "Va. Code § 40.1-29",
+      "sourceUrl": "https://law.lis.virginia.gov/vacode/title40.1/chapter3/section40.1-29/",
+      "sourceAgency": "Virginia General Assembly (official Code of Virginia)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Applies to both voluntary and involuntary separation. No immediate same-day final-pay requirement."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Virginia Department of Labor and Industry",
+      "url": "https://www.doli.virginia.gov"
+    },
+    "discrimination": {
+      "name": "Office of Civil Rights, Virginia Office of the Attorney General (Department of Law)",
+      "url": "https://www.oag.state.va.us"
+    }
+  }
+}

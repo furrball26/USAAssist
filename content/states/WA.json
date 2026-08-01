@@ -1,0 +1,122 @@
+{
+  "jurisdiction": "WA",
+  "name": "Washington",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "minimumWage.hourly",
+      "value": 17.13,
+      "summary": "Washington's minimum wage is $17.13 per hour effective January 1, 2026, far above the federal $7.25.",
+      "citation": "RCW 49.46.020",
+      "sourceUrl": "https://www.lni.wa.gov/workers-rights/wages/minimum-wage/",
+      "sourceAgency": "Washington State Department of Labor & Industries",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "State rate is adjusted annually for inflation each September 30, effective the following January 1. Some cities (e.g. Seattle, SeaTac, Tukwila) set higher local rates not captured here."
+    },
+    {
+      "topic": "overtime.daily",
+      "value": "no daily overtime required",
+      "summary": "Washington follows the federal weekly overtime model (1.5x after 40 hours/week) and does not require daily overtime, except on certain public works projects.",
+      "citation": "RCW 49.46.130; WAC 296-128",
+      "sourceUrl": "https://www.lni.wa.gov/workers-rights/wages/overtime/",
+      "sourceAgency": "Washington State Department of Labor & Industries",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "No daily OT threshold; the state difference from federal is the higher exempt salary floor recorded separately."
+    },
+    {
+      "topic": "overtime.salaryThreshold",
+      "value": 1541.70,
+      "summary": "To be overtime-exempt as an executive/administrative/professional employee in 2026, Washington requires a salary of at least 2.25x the state minimum wage ($1,541.70/week, about $80,168/year), well above the federal $684/week.",
+      "citation": "WAC 296-128-545",
+      "sourceUrl": "https://www.lni.wa.gov/workers-rights/wages/overtime/changes-to-overtime-rules",
+      "sourceAgency": "Washington State Department of Labor & Industries",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "For 2026 both small (1-50) and large (51+) employers use 2.25x minimum wage = $1,541.70/week. Verify the current-year multiplier and figure, as it steps up on the annual L&I schedule."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": [
+        "marital status",
+        "sexual orientation",
+        "gender identity",
+        "honorably discharged veteran or military status",
+        "citizenship or immigration status",
+        "HIV/AIDS or Hepatitis C status",
+        "use of a trained service animal"
+      ],
+      "summary": "Washington's Law Against Discrimination protects several classes beyond the federal set, including marital status, sexual orientation, gender identity, veteran/military status, citizenship/immigration status, and HIV/Hepatitis C status.",
+      "citation": "RCW 49.60.180; RCW 49.60.040",
+      "sourceUrl": "https://www.hum.wa.gov/employment",
+      "sourceAgency": "Washington State Human Rights Commission",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Listed classes are those in addition to the federally protected categories (race, color, national origin, sex, religion, age 40+, disability)."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": 8,
+      "summary": "The Washington Law Against Discrimination covers employers with 8 or more employees, a lower threshold than Title VII's 15.",
+      "citation": "RCW 49.60.040",
+      "sourceUrl": "https://app.leg.wa.gov/rcw/default.aspx?cite=49.60.040",
+      "sourceAgency": "Washington State Legislature (Revised Code of Washington)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Definition excludes nonprofit religious or sectarian organizations."
+    },
+    {
+      "topic": "retaliation",
+      "value": "prohibited under WLAD",
+      "summary": "It is an unfair practice to discharge, expel, or otherwise discriminate against a person for opposing discrimination or for filing a charge, testifying, or assisting in a proceeding under the Law Against Discrimination.",
+      "citation": "RCW 49.60.210",
+      "sourceUrl": "https://app.leg.wa.gov/rcw/default.aspx?cite=49.60.210",
+      "sourceAgency": "Washington State Legislature (Revised Code of Washington)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Separate retaliation protections exist for wage complaints and other statutes; this fact captures the WLAD anti-retaliation provision."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "3 years",
+      "summary": "L&I may not investigate or order payment for wage-payment violations that occurred more than three years before the wage complaint was filed.",
+      "citation": "RCW 49.48.083",
+      "sourceUrl": "https://app.leg.wa.gov/rcw/default.aspx?cite=49.48.083",
+      "sourceAgency": "Washington State Legislature (Revised Code of Washington)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Three-year lookback for L&I administrative wage complaints. Private civil actions for wages generally follow the RCW 4.16.080 three-year limitations period."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "6 months",
+      "summary": "A discrimination complaint must be filed with the Washington State Human Rights Commission within 6 months of the alleged harm (12 months for pregnancy-related discrimination).",
+      "citation": "RCW 49.60.230",
+      "sourceUrl": "https://www.hum.wa.gov/employment",
+      "sourceAgency": "Washington State Human Rights Commission",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "The full intake (submission, investigation, and signing of the perfected charge) must occur within the deadline. Longer periods apply to court actions."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Washington State Department of Labor & Industries",
+      "url": "https://www.lni.wa.gov"
+    },
+    "discrimination": {
+      "name": "Washington State Human Rights Commission",
+      "url": "https://www.hum.wa.gov"
+    }
+  }
+}

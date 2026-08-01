@@ -1,0 +1,114 @@
+{
+  "jurisdiction": "KS",
+  "name": "Kansas",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "overtime.daily",
+      "value": "follows federal FLSA (state 46-hr threshold applies only to non-FLSA-covered employers)",
+      "summary": "Kansas has no daily overtime and no higher salary floor; employers covered by the FLSA follow the federal 40-hour rule, while the state's own 46-hour weekly overtime threshold applies only to the small employers not covered by the FLSA.",
+      "citation": "K.S.A. 44-1204",
+      "sourceUrl": "https://ksrevisor.gov/statutes/chapters/ch44/044_012_0004.html",
+      "sourceAgency": "Kansas Office of Revisor of Statutes",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "K.S.A. 44-1204 requires 1.5x pay after 46 hrs/week but expressly excludes employees/employers covered by FLSA sec. 7, so in practice most Kansas workers follow the federal 40-hour standard."
+    },
+    {
+      "topic": "minimumWage.hourly",
+      "value": "follows federal $7.25",
+      "summary": "Kansas's minimum wage is $7.25 per hour, the same as the federal rate, unchanged since 2009.",
+      "citation": "K.S.A. 44-1203",
+      "sourceUrl": "https://www.dol.ks.gov/employers/workplace-laws",
+      "sourceAgency": "Kansas Department of Labor",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Verify current-year figure on the KDOL workplace-laws page; rate has been $7.25 since July 2009 and no 2026 increase was found."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": ["race", "religion", "color", "sex", "disability", "national origin", "ancestry"],
+      "summary": "The Kansas Act Against Discrimination prohibits employment discrimination based on race, religion, color, sex, disability, national origin, and ancestry; age (40+) is covered separately under the Kansas Age Discrimination in Employment Act.",
+      "citation": "K.S.A. 44-1009; K.S.A. 44-1002",
+      "sourceUrl": "https://ksrevisor.gov/statutes/chapters/ch44/044_010_0009.html",
+      "sourceAgency": "Kansas Office of Revisor of Statutes",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "KAAD list largely mirrors Title VII/ADA classes; sexual orientation and gender identity are not enumerated in the statute (KHRC applies sex protections consistent with Bostock). Age is a separate statute (see 44-1111 fact)."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": 4,
+      "summary": "The Kansas Act Against Discrimination covers employers with four or more employees, a lower threshold than the federal 15-employee minimum under Title VII and the ADA.",
+      "citation": "K.S.A. 44-1002(b)",
+      "sourceUrl": "https://ksrevisor.gov/statutes/chapters/ch44/044_010_0002.html",
+      "sourceAgency": "Kansas Office of Revisor of Statutes",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Definition of 'employer' is any person in the state employing four or more persons, plus the state and its political subdivisions; nonprofit fraternal/social associations are excluded."
+    },
+    {
+      "topic": "discrimination.protectedClasses.age",
+      "value": "age 40 and over (separate Kansas ADEA)",
+      "summary": "The Kansas Age Discrimination in Employment Act separately protects applicants and employees age 40 and older, enforced by the Kansas Human Rights Commission.",
+      "citation": "K.S.A. 44-1111 et seq.",
+      "sourceUrl": "https://ksrevisor.gov/statutes/chapters/ch44/044_011_0011.html",
+      "sourceAgency": "Kansas Office of Revisor of Statutes",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Federal ADEA covers employers with 20+ employees; the Kansas act is enforced through the KHRC. Confirm applicable employer-size threshold in 44-1112 if needed."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "6 months",
+      "summary": "A discrimination complaint under the Kansas Act Against Discrimination must be filed with the Kansas Human Rights Commission within six months of the discriminatory act (from the last act if it is a continuing pattern), which is shorter than the federal EEOC 300-day deadline.",
+      "citation": "K.S.A. 44-1005(i)",
+      "sourceUrl": "https://ksrevisor.gov/statutes/chapters/ch44/044_010_0005.html",
+      "sourceAgency": "Kansas Office of Revisor of Statutes",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Six months for employment/public-accommodation complaints; the parallel federal EEOC charge deadline (300 days in a deferral state like Kansas) is longer, so claimants should mind both."
+    },
+    {
+      "topic": "retaliation",
+      "value": "protected: testifying before or reporting to the Secretary of Labor",
+      "summary": "Kansas law makes it unlawful to discharge or discriminate against an employee for testifying before the Secretary of Labor, signing a complaint, or bringing a labor matter to the Secretary's attention.",
+      "citation": "K.S.A. 44-615",
+      "sourceUrl": "https://ksrevisor.gov/statutes/chapters/ch44/044_006_0015.html",
+      "sourceAgency": "Kansas Office of Revisor of Statutes",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Willful violation is a misdemeanor under K.S.A. 44-618. Kansas also recognizes common-law retaliatory-discharge claims (e.g., for filing workers' compensation) via case law, which are not codified here."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "3 years",
+      "summary": "The Kansas Wage Payment Act sets no limitations period of its own, so wage claims (as a liability created by statute or on an unwritten contract) are generally governed by the three-year statute of limitations; claims on a written contract carry a longer period.",
+      "citation": "K.S.A. 60-512",
+      "sourceUrl": "https://ksrevisor.gov/statutes/chapters/ch60/060_005_0012.html",
+      "sourceAgency": "Kansas Office of Revisor of Statutes",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Three years applies to liability created by statute and oral/implied contracts; written-contract wage claims fall under the 5-year period of K.S.A. 60-511. The 3-year application to KWPA claims rests on case-law interpretation, so verify against current precedent."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Kansas Department of Labor",
+      "url": "https://www.dol.ks.gov"
+    },
+    "discrimination": {
+      "name": "Kansas Human Rights Commission",
+      "url": "https://www.khrc.net"
+    }
+  }
+}

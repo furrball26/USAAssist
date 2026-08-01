@@ -1,0 +1,126 @@
+{
+  "jurisdiction": "NV",
+  "name": "Nevada",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "overtime.daily",
+      "value": "Daily overtime at 1.5x required after 8 hours worked in any 24-hour period for employees earning less than 1.5x the state minimum wage (below $18.00/hr as of July 2026); employees at or above that rate receive only weekly overtime after 40 hours.",
+      "summary": "Nevada adds daily overtime after 8 hours in a 24-hour period for lower-wage employees, unlike federal law which only requires overtime after 40 hours per week.",
+      "citation": "NRS 608.018",
+      "sourceUrl": "https://www.leg.state.nv.us/nrs/nrs-608.html",
+      "sourceAgency": "Nevada Legislature (Nevada Revised Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "The $18.00/hr daily-OT threshold is 1.5x the $12.00 minimum wage; verify if the minimum wage changes. A written mutual agreement for four 10-hour days can waive daily OT. Numerous occupational exemptions apply."
+    },
+    {
+      "topic": "minimumWage.hourly",
+      "value": 12.00,
+      "summary": "Nevada's minimum wage is $12.00 per hour, effective July 1, 2026, applying to all employees regardless of employer-offered health benefits.",
+      "citation": "Nev. Const. art. 15, § 16; NRS 608.250; AB 456 (2019)",
+      "sourceUrl": "https://labor.nv.gov/uploadedFiles/labornvgov/content/Employer/26.06.29%20-%202026%20Minimum%20Wage%20Bulletin.pdf",
+      "sourceAgency": "Nevada Office of the Labor Commissioner",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Ballot Question 2 (2022) eliminated the former two-tier (health-benefit) wage system as of July 1, 2024. Figure confirmed on the official 2026 Annual Minimum Wage Bulletin posted June 29, 2026."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": ["sexual orientation", "gender identity or expression", "discussion of wages", "hairstyles/traits historically associated with race (CROWN Act)"],
+      "summary": "Beyond the federal protected classes, Nevada also prohibits employment discrimination based on sexual orientation, gender identity or expression, discussing wages, and race-associated hairstyles.",
+      "citation": "NRS 613.330; NRS 613.310(7)-(8) (CROWN Act)",
+      "sourceUrl": "https://www.leg.state.nv.us/nrs/nrs-613.html",
+      "sourceAgency": "Nevada Legislature (Nevada Revised Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Federal base classes (race, color, religion, sex, national origin, age, disability) are also covered under NRS 613.330. Statute additionally addresses service animals and consideration of criminal history."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": "follows federal (15 or more employees)",
+      "summary": "Nevada's employment discrimination law applies to employers with 15 or more employees, the same threshold as federal Title VII.",
+      "citation": "NRS 613.310(2)",
+      "sourceUrl": "https://www.leg.state.nv.us/nrs/nrs-613.html",
+      "sourceAgency": "Nevada Legislature (Nevada Revised Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Defined as 15+ employees for each working day in 20+ calendar weeks in the current or preceding year; matches federal coverage."
+    },
+    {
+      "topic": "disability.accommodation",
+      "value": "Nevada Pregnant Workers' Fairness Act requires reasonable accommodation for conditions related to pregnancy, childbirth, or a related medical condition, unless the employer proves undue hardship.",
+      "summary": "Nevada separately mandates reasonable accommodation of pregnancy and childbirth-related conditions and bars adverse action for requesting such accommodation.",
+      "citation": "NRS 613.4353 to 613.4383",
+      "sourceUrl": "https://www.leg.state.nv.us/nrs/nrs-613.html",
+      "sourceAgency": "Nevada Legislature (Nevada Revised Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Applies to employers with 15+ employees. NRS 613.4374 sets the undue-hardship standard; NRS 613.438 prohibits adverse action for accommodation requests. Disability accommodation otherwise tracks federal ADA under NRS 613.330."
+    },
+    {
+      "topic": "retaliation",
+      "value": "Unlawful for an employer to discriminate against an employee or applicant because they opposed an unlawful employment practice or participated in a related investigation, proceeding, or hearing.",
+      "summary": "Nevada statute independently prohibits retaliation against workers who oppose discrimination or take part in discrimination proceedings.",
+      "citation": "NRS 613.340",
+      "sourceUrl": "https://www.leg.state.nv.us/nrs/nrs-613.html",
+      "sourceAgency": "Nevada Legislature (Nevada Revised Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Parallels federal Title VII anti-retaliation protection but exists as an independent state cause of action."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "2 years",
+      "summary": "An employee may bring a civil action for unpaid wages within 2 years of the employer's failure to pay.",
+      "citation": "NRS 608.135",
+      "sourceUrl": "https://www.leg.state.nv.us/nrs/nrs-608.html",
+      "sourceAgency": "Nevada Legislature (Nevada Revised Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Statute of limitations for private civil wage actions under Chapter 608."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "300 days",
+      "summary": "An employment discrimination charge must be filed with the Nevada Equal Rights Commission within 300 days of the alleged discriminatory act.",
+      "citation": "NRS 613.430; administered by NERC (NRS Chapter 233)",
+      "sourceUrl": "https://detr.nv.gov/Page/File_a_Charge_of_Discrimination",
+      "sourceAgency": "Nevada Equal Rights Commission (DETR)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "300-day figure confirmed via official DETR/NERC guidance; the direct PDF returned 403 but the deadline is stated on the official DETR File a Charge page. NRS 613.430 also sets limits on subsequent civil actions."
+    },
+    {
+      "topic": "final-pay",
+      "value": "Discharged employees must be paid all earned, unpaid wages immediately; employees who quit must be paid by the earlier of the next regular payday or 7 days after quitting. A waiting-time penalty of continued wages (up to 30 days) applies for late payment.",
+      "summary": "Nevada sets strict deadlines for final pay -- immediately on discharge and within 7 days (or next payday) on resignation -- with a penalty for late payment, unlike federal law which sets no final-pay timing.",
+      "citation": "NRS 608.020; NRS 608.030; NRS 608.040",
+      "sourceUrl": "https://www.leg.state.nv.us/nrs/nrs-608.html",
+      "sourceAgency": "Nevada Legislature (Nevada Revised Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "NRS 608.040 waiting-time penalty accrues at the employee's rate for up to 30 days when the employer fails to pay on time."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Nevada Office of the Labor Commissioner (Department of Business and Industry)",
+      "url": "https://labor.nv.gov"
+    },
+    "discrimination": {
+      "name": "Nevada Equal Rights Commission (Department of Employment, Training and Rehabilitation)",
+      "url": "https://detr.nv.gov/NERC"
+    }
+  }
+}

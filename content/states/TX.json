@@ -1,0 +1,150 @@
+{
+  "jurisdiction": "TX",
+  "name": "Texas",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "minimumWage.hourly",
+      "value": 7.25,
+      "summary": "Texas sets its state minimum wage equal to the federal minimum wage under the FLSA, so it is currently $7.25 per hour.",
+      "citation": "Tex. Labor Code § 62.051",
+      "sourceUrl": "https://statutes.capitol.texas.gov/Docs/LA/htm/LA.62.htm",
+      "sourceAgency": "Texas Legislature (Texas Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Section 62.051 expressly pegs the Texas minimum wage to the federal rate under Section 6, FLSA (29 U.S.C. 206). Figure moves automatically with the federal rate; verify the federal rate is still $7.25."
+    },
+    {
+      "topic": "overtime.daily",
+      "value": "follows federal FLSA",
+      "summary": "Texas has no state overtime or daily-overtime law and no higher salary floor; overtime is governed entirely by the federal FLSA.",
+      "citation": "Tex. Labor Code § 62.151",
+      "sourceUrl": "https://statutes.capitol.texas.gov/Docs/LA/htm/LA.62.htm",
+      "sourceAgency": "Texas Legislature (Texas Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Texas has no separate overtime statute. Section 62.151 excludes FLSA-covered persons from the state wage chapter, leaving FLSA's 40-hour/week overtime and salary-level rules to control."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "180 days",
+      "summary": "Under the Texas Payday Law, an employee must file a wage claim with the Texas Workforce Commission no later than the 180th day after the wages became due for payment.",
+      "citation": "Tex. Labor Code § 61.051(c)",
+      "sourceUrl": "https://statutes.capitol.texas.gov/Docs/LA/htm/LA.61.htm",
+      "sourceAgency": "Texas Legislature (Texas Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "The 180-day deadline is jurisdictional under the statute. This is the administrative TWC claim route; a separate 2-year limitations period applies to civil minimum-wage recovery actions (see final-pay fact)."
+    },
+    {
+      "topic": "final-pay.wageRecoveryLimitations",
+      "value": "2 years",
+      "summary": "A civil action to recover unpaid minimum wages plus liquidated damages under the Texas Minimum Wage Act must be brought within two years of when the wages were due and payable.",
+      "citation": "Tex. Labor Code § 62.202",
+      "sourceUrl": "https://statutes.capitol.texas.gov/Docs/LA/htm/LA.62.htm",
+      "sourceAgency": "Texas Legislature (Texas Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Applies to the private civil action for minimum-wage violations (Section 62.201 liability), distinct from the 180-day TWC Payday Law claim."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": ["race", "color", "disability", "religion", "sex (including pregnancy, childbirth, and related medical conditions)", "national origin", "age (40 or older)"],
+      "summary": "The Texas Commission on Human Rights Act bars employment discrimination on the same bases as federal law, consolidated into one state statute, with pregnancy expressly included within sex.",
+      "citation": "Tex. Labor Code §§ 21.051, 21.101, 21.106",
+      "sourceUrl": "https://statutes.capitol.texas.gov/Docs/LA/htm/LA.21.htm",
+      "sourceAgency": "Texas Legislature (Texas Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Mirrors the federal protected-class set (Title VII, ADA, ADEA). Age protection is limited to individuals 40+; pregnancy is included in sex under Section 21.106."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": "15 employees (general); age discrimination reaches employers with 15+ (broader than the federal ADEA's 20-employee floor); public employers covered regardless of size",
+      "summary": "The TCHRA generally covers employers with 15 or more employees, but because age claims fall under the same 15-employee threshold, Texas reaches smaller employers for age discrimination than the federal ADEA.",
+      "citation": "Tex. Labor Code § 21.002(8)",
+      "sourceUrl": "https://statutes.capitol.texas.gov/Docs/LA/htm/LA.21.htm",
+      "sourceAgency": "Texas Legislature (Texas Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Employer definition: 15+ employees for 20+ calendar weeks. Counties, municipalities, and state agencies/instrumentalities are covered regardless of employee count. Sexual harassment claims use a much broader definition (see sexual-harassment fact)."
+    },
+    {
+      "topic": "discrimination.sexualHarassment",
+      "value": "All employers with one or more employees; prompt corrective-action duty",
+      "summary": "A 2021 Texas amendment makes sexual harassment an unlawful employment practice for every employer with at least one employee, and requires immediate and appropriate corrective action once harassment is known or should be known.",
+      "citation": "Tex. Labor Code §§ 21.141, 21.142",
+      "sourceUrl": "https://statutes.capitol.texas.gov/Docs/LA/htm/LA.21.htm",
+      "sourceAgency": "Texas Legislature (Texas Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Added by Acts 2021, 87th Leg., S.B. 45. This is a Texas addition beyond federal Title VII's 15-employee floor; the filing deadline for sexual harassment complaints is also extended to 300 days (see discrimination-complaint deadline fact)."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "180 days (general); 300 days for sexual harassment",
+      "summary": "A discrimination complaint under the TCHRA must be filed with the TWC Civil Rights Division within 180 days of the alleged unlawful practice, extended to 300 days for sexual harassment complaints.",
+      "citation": "Tex. Labor Code § 21.202(a), (a-1)",
+      "sourceUrl": "https://statutes.capitol.texas.gov/Docs/LA/htm/LA.21.htm",
+      "sourceAgency": "Texas Legislature (Texas Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "State FEPA (TWC Civil Rights Division) deadline is 180 days, shorter than the 300-day federal EEOC deadline that applies in Texas as a deferral state. The commission must dismiss untimely complaints."
+    },
+    {
+      "topic": "disability.accommodation",
+      "value": "Reasonable accommodation required; good-faith effort defense codified",
+      "summary": "Texas law independently requires covered employers to make reasonable workplace accommodations for a known disability of a qualified individual unless it imposes undue hardship.",
+      "citation": "Tex. Labor Code § 21.128",
+      "sourceUrl": "https://statutes.capitol.texas.gov/Docs/LA/htm/LA.21.htm",
+      "sourceAgency": "Texas Legislature (Texas Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Parallels the federal ADA accommodation duty but is enforceable under state law through the TCHRA; Section 21.128 also provides a good-faith-effort defense to damages."
+    },
+    {
+      "topic": "retaliation",
+      "value": "Prohibited under TCHRA (opposition and participation activity)",
+      "summary": "The TCHRA makes it an unlawful employment practice to retaliate against a person who opposes discrimination, files a charge or complaint, or participates in an investigation or proceeding.",
+      "citation": "Tex. Labor Code § 21.055",
+      "sourceUrl": "https://statutes.capitol.texas.gov/Docs/LA/htm/LA.21.htm",
+      "sourceAgency": "Texas Legislature (Texas Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "State-law analog to Title VII retaliation, enforced through the same TCHRA complaint process and deadlines."
+    },
+    {
+      "topic": "whistleblower",
+      "value": "Public employees only; 90-day deadline to sue",
+      "summary": "The Texas Whistleblower Act protects public employees who in good faith report a legal violation by their governmental employer to an appropriate law enforcement authority, and requires suit within 90 days.",
+      "citation": "Tex. Gov't Code §§ 554.002, 554.005",
+      "sourceUrl": "https://statutes.capitol.texas.gov/Docs/GV/htm/GV.554.htm",
+      "sourceAgency": "Texas Legislature (Texas Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Applies only to state and local government employees, not private-sector employees. The 90-day limitation runs from when the violation occurred or was discovered through reasonable diligence."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Texas Workforce Commission",
+      "url": "https://www.twc.texas.gov"
+    },
+    "discrimination": {
+      "name": "Texas Workforce Commission - Civil Rights Division",
+      "url": "https://www.twc.texas.gov"
+    }
+  }
+}

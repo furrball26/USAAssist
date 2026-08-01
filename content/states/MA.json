@@ -1,0 +1,133 @@
+{
+  "jurisdiction": "MA",
+  "name": "Massachusetts",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "overtime.daily",
+      "value": "no daily overtime; 1.5x required after 40 hrs/week under state law",
+      "summary": "Massachusetts has no daily overtime; like federal law it requires 1.5x the regular rate for hours over 40 in a workweek, but under its own statute (with treble damages for violations) and with a narrower list of exemptions than the FLSA.",
+      "citation": "M.G.L. c. 151, s. 1A",
+      "sourceUrl": "https://malegislature.gov/Laws/GeneralLaws/PartI/TitleXXI/Chapter151/Section1A",
+      "sourceAgency": "Massachusetts Legislature (General Laws)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "No higher salary floor than federal; the 40-hour weekly threshold mirrors the FLSA. State overtime exemptions under c.151 s1A differ from FLSA exemptions."
+    },
+    {
+      "topic": "minimumWage.hourly",
+      "value": 15.00,
+      "summary": "Massachusetts's minimum wage is $15.00 per hour, well above the federal $7.25.",
+      "citation": "M.G.L. c. 151, s. 1",
+      "sourceUrl": "https://malegislature.gov/Laws/GeneralLaws/PartI/TitleXXI/Chapter151/Section1",
+      "sourceAgency": "Massachusetts Legislature (General Laws)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "$15.00 has been the rate since Jan 1, 2023 and no statutory increase is scheduled for 2026. Statute also requires the state rate stay at least $0.50 above the federal minimum. Verify no new legislation (e.g. pending S.1349) took effect."
+    },
+    {
+      "topic": "minimumWage.tipped",
+      "value": 6.75,
+      "summary": "Tipped employees may be paid a service rate of at least $6.75/hour, provided tips bring total pay to at least the $15.00 minimum wage.",
+      "citation": "M.G.L. c. 151, s. 7",
+      "sourceUrl": "https://malegislature.gov/Laws/GeneralLaws/PartI/TitleXXI/Chapter151/Section7",
+      "sourceAgency": "Massachusetts Legislature (General Laws)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Employer must make up the difference if tips plus service rate fall short of the full minimum wage."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": [
+        "sexual orientation",
+        "gender identity",
+        "ancestry",
+        "genetic information",
+        "pregnancy and pregnancy-related conditions (including lactation)",
+        "veteran/active military status"
+      ],
+      "summary": "Beyond the federal categories, Massachusetts's fair employment law expressly protects sexual orientation, gender identity, ancestry, genetic information, pregnancy-related conditions, and veteran/military status.",
+      "citation": "M.G.L. c. 151B, s. 4",
+      "sourceUrl": "https://malegislature.gov/Laws/GeneralLaws/PartI/TitleXXI/Chapter151B/Section4",
+      "sourceAgency": "Massachusetts Legislature (General Laws)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Also covers the federal classes (race, color, religion, national origin, sex, age, disability). Enforced by the MCAD."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": 6,
+      "summary": "Massachusetts anti-discrimination law covers employers with 6 or more employees, a lower threshold than the federal 15 (Title VII/ADA) or 20 (ADEA).",
+      "citation": "M.G.L. c. 151B, s. 1(5)",
+      "sourceUrl": "https://malegislature.gov/Laws/GeneralLaws/PartI/TitleXXI/Chapter151B/Section1",
+      "sourceAgency": "Massachusetts Legislature (General Laws)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Statute defines 'employer' to exclude those with fewer than six persons in their employ."
+    },
+    {
+      "topic": "disability.accommodation",
+      "value": "reasonable accommodation required for qualified handicapped persons",
+      "summary": "Chapter 151B requires employers to provide reasonable accommodation to a qualified person with a handicap who can perform the essential job functions, unless it would impose undue hardship.",
+      "citation": "M.G.L. c. 151B, ss. 1 & 4(16)",
+      "sourceUrl": "https://malegislature.gov/Laws/GeneralLaws/PartI/TitleXXI/Chapter151B/Section4",
+      "sourceAgency": "Massachusetts Legislature (General Laws)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Parallels the federal ADA duty but applies at the lower 6-employee coverage threshold. Chapter 151B also mandates reasonable accommodation for religious creed/observance."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "300 days",
+      "summary": "A discrimination complaint must be filed with the MCAD within 300 days of the alleged discriminatory act.",
+      "citation": "M.G.L. c. 151B, s. 5; 804 CMR 1.04(3)",
+      "sourceUrl": "https://www.mass.gov/info-details/deadline-for-filing-a-complaint-of-discrimination-at-the-mcad",
+      "sourceAgency": "Massachusetts Commission Against Discrimination (MCAD)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Limited case-by-case exceptions (e.g., equitable tolling) may extend the deadline."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "3 years",
+      "summary": "A civil action for unpaid wages or overtime under the Massachusetts Wage Act must be brought within 3 years of the violation.",
+      "citation": "M.G.L. c. 149, s. 150",
+      "sourceUrl": "https://malegislature.gov/Laws/GeneralLaws/PartI/TitleXXI/Chapter149/Section150",
+      "sourceAgency": "Massachusetts Legislature (General Laws)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "The 3-year period is tolled while the Attorney General reviews a filed complaint. Prevailing employees receive mandatory treble damages plus costs and attorney's fees."
+    },
+    {
+      "topic": "whistleblower",
+      "value": "public employees protected under c.149 s.185; wage-complaint retaliation barred for all employees under c.149 s.148A",
+      "summary": "Massachusetts's general whistleblower statute protects public employees who report legal, health, safety, or environmental violations; separately, retaliation against any employee for asserting Wage Act rights is prohibited.",
+      "citation": "M.G.L. c. 149, s. 185 (public employees); M.G.L. c. 149, s. 148A (wage retaliation)",
+      "sourceUrl": "https://www.mass.gov/info-details/mass-general-laws-c149-ss-185",
+      "sourceAgency": "Massachusetts Legislature (General Laws) / Mass.gov",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "The general whistleblower statute (s.185) applies only to public-sector employers. Private-sector wage/overtime retaliation is covered by c.149 s.148A."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Office of the Attorney General, Fair Labor Division",
+      "url": "https://www.mass.gov/orgs/the-attorney-generals-fair-labor-division"
+    },
+    "discrimination": {
+      "name": "Massachusetts Commission Against Discrimination (MCAD)",
+      "url": "https://www.mass.gov/orgs/massachusetts-commission-against-discrimination"
+    }
+  }
+}

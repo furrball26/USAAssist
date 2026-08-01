@@ -1,0 +1,126 @@
+{
+  "jurisdiction": "PA",
+  "name": "Pennsylvania",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "minimumWage.hourly",
+      "value": 7.25,
+      "summary": "Pennsylvania's minimum wage is $7.25 per hour, the same as the federal rate.",
+      "citation": "Pennsylvania Minimum Wage Act, Act 329 of 1968 (43 P.S. § 333.101 et seq.)",
+      "sourceUrl": "https://www.pa.gov/agencies/dli/resources/compliance-laws-and-regulations/labor-management-relations/pennsylvania-s-minimum-wage-act.html",
+      "sourceAgency": "Pennsylvania Department of Labor & Industry, Bureau of Labor Law Compliance",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Follows federal $7.25; PA has not enacted a higher state minimum wage. Verify no 2026 increase took effect."
+    },
+    {
+      "topic": "minimumWage.tippedCashWage",
+      "value": 2.83,
+      "summary": "Pennsylvania requires a tipped-employee cash wage of at least $2.83 per hour, higher than the federal $2.13.",
+      "citation": "Pennsylvania Minimum Wage Act (43 P.S. § 333.103); 34 Pa. Code Ch. 231",
+      "sourceUrl": "https://www.pa.gov/agencies/dli/resources/compliance-laws-and-regulations/labor-management-relations/pennsylvania-s-minimum-wage-act.html",
+      "sourceAgency": "Pennsylvania Department of Labor & Industry, Bureau of Labor Law Compliance",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "PA differs from/adds to federal: cash wage is $2.83 vs federal $2.13. PA also raised the tip threshold (tipped status applies at $135+/month in tips) under 2022 regulations; verify tip-credit and dual-jobs details."
+    },
+    {
+      "topic": "overtime.daily",
+      "value": "follows federal FLSA",
+      "summary": "Pennsylvania requires overtime at 1.5x after 40 hours in a workweek and has no daily overtime requirement, matching federal FLSA.",
+      "citation": "Pennsylvania Minimum Wage Act (43 P.S. § 333.104(c)); 34 Pa. Code Ch. 231",
+      "sourceUrl": "https://www.pa.gov/agencies/dli/resources/compliance-laws-and-regulations/labor-management-relations/pennsylvania-s-minimum-wage-act.html",
+      "sourceAgency": "Pennsylvania Department of Labor & Industry, Bureau of Labor Law Compliance",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "No daily OT. PA's separately elevated PMWA exempt salary threshold was repealed in 2021, so PA follows the federal salary level; PMWA duties tests may still differ. Verify current federal salary level referenced."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": ["race", "color", "religious creed", "ancestry", "age (40 and over)", "sex", "national origin", "familial status (housing only)", "disability", "use/handling/training of guide or support animals for disability", "retaliation"],
+      "summary": "The PA Human Relations Act adds protected classes beyond the federal set, including ancestry, religious creed, familial status (housing), and use/handling/training of guide or support animals.",
+      "citation": "Pennsylvania Human Relations Act, Act 222 of 1955 (43 P.S. § 951 et seq.; § 955)",
+      "sourceUrl": "https://www.pa.gov/en/agencies/phrc.html",
+      "sourceAgency": "Pennsylvania Human Relations Commission",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "List taken from PHRC official page. Sexual orientation/gender identity are covered by PHRC interpretation of 'sex' and a 2023 regulation; verify current regulatory status."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": 4,
+      "summary": "The PA Human Relations Act covers employers with four or more employees, a lower threshold than Title VII's 15.",
+      "citation": "Pennsylvania Human Relations Act, Act 222 of 1955, § 4 (43 P.S. § 954(b))",
+      "sourceUrl": "https://www.palegis.us/statutes/unconsolidated/law-information?sessYr=1955&sessInd=0&actNum=222",
+      "sourceAgency": "Pennsylvania Human Relations Commission / PA General Assembly",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "PHRA 'employer' means a person employing four or more persons within the Commonwealth. Verify exact 'four or more' wording against the full statute text (Section 4 definitions)."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "180 days",
+      "summary": "A discrimination complaint must be filed with the PA Human Relations Commission within 180 days of the alleged discrimination.",
+      "citation": "Pennsylvania Human Relations Act (43 P.S. § 959(h))",
+      "sourceUrl": "https://www.pa.gov/agencies/phrc/programs-and-services/file-a-complaint.html",
+      "sourceAgency": "Pennsylvania Human Relations Commission",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "180 days confirmed on PHRC file-a-complaint page (shorter than the federal 300-day EEOC deadline for dual-filed charges)."
+    },
+    {
+      "topic": "whistleblower",
+      "value": "Pennsylvania Whistleblower Law",
+      "summary": "Pennsylvania's Whistleblower Law protects employees who report or are about to report wrongdoing or waste from employer retaliation.",
+      "citation": "Whistleblower Law, Act 169 of 1986 (43 P.S. § 1421 et seq.)",
+      "sourceUrl": "https://www.palegis.us/statutes/unconsolidated/law-information?sessYr=1986&sessInd=0&actNum=169",
+      "sourceAgency": "Pennsylvania General Assembly",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Historically applied to employees of public bodies and entities receiving public funds; amended over time. Verify current scope of covered employers."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "3 years",
+      "summary": "Wage claims under the PA Wage Payment and Collection Law are generally subject to a three-year statute of limitations.",
+      "citation": "Wage Payment and Collection Law, Act 329 of 1961 (43 P.S. § 260.1 et seq.); 42 Pa. C.S. § 5525",
+      "sourceUrl": "https://www.palegis.us/statutes/unconsolidated/law-information?sessYr=1961&sessInd=0&actNum=329",
+      "sourceAgency": "Pennsylvania Department of Labor & Industry / PA General Assembly",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Three-year limitation derives from 42 Pa. C.S. § 5525 (contract actions). Verify the limitations period against current case law/statute."
+    },
+    {
+      "topic": "final-pay",
+      "value": "next regular payday",
+      "summary": "Under the PA Wage Payment and Collection Law, wages due to a separated employee must be paid by the next regular payday.",
+      "citation": "Wage Payment and Collection Law, Act 329 of 1961 (43 P.S. § 260.5)",
+      "sourceUrl": "https://www.palegis.us/statutes/unconsolidated/law-information?sessYr=1961&sessInd=0&actNum=329",
+      "sourceAgency": "Pennsylvania Department of Labor & Industry / PA General Assembly",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "WPCL requires final wages no later than the next regular payday on which they would have been paid. Verify exact timing language and liquidated-damages provisions in the full statute text."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Pennsylvania Department of Labor & Industry, Bureau of Labor Law Compliance",
+      "url": "https://www.pa.gov/agencies/dli/programs-services/labor-management-relations/labor-law-compliance.html"
+    },
+    "discrimination": {
+      "name": "Pennsylvania Human Relations Commission",
+      "url": "https://www.pa.gov/en/agencies/phrc.html"
+    }
+  }
+}

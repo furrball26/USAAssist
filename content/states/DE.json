@@ -1,0 +1,136 @@
+{
+  "jurisdiction": "DE",
+  "name": "Delaware",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "overtime.daily",
+      "value": "follows federal FLSA",
+      "summary": "Delaware has no state overtime statute and imposes no daily overtime or higher salary floor, so federal FLSA rules (1.5x after 40 hrs/week; $684/week salary level) apply.",
+      "citation": "No Title 19 overtime provision; FLSA 29 U.S.C. 207 controls",
+      "sourceUrl": "https://industrialaffairs.delaware.gov/wage-hour",
+      "sourceAgency": "Delaware Dept of Labor, Division of Industrial Affairs (Office of Wage & Hour Enforcement)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "The DOL Wage & Hour page describes Delaware wage rules but establishes no daily/weekly overtime standard; Delaware follows the federal FLSA for overtime. Verify no new state overtime legislation."
+    },
+    {
+      "topic": "minimumWage.hourly",
+      "value": 15.00,
+      "summary": "Delaware's minimum wage is $15.00 per hour effective January 1, 2025; no further increase is scheduled for 2026.",
+      "citation": "19 Del. C. § 902",
+      "sourceUrl": "https://delcode.delaware.gov/title19/c009/",
+      "sourceAgency": "Delaware Code (State of Delaware), Title 19 Chapter 9",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Statute sets 'not less than $15.00 per hour effective January 1, 2025.' No 2026 step-up in the schedule; confirm no mid-year legislative change."
+    },
+    {
+      "topic": "minimumWage.tippedCash",
+      "value": 2.23,
+      "summary": "Tipped employees may be paid a cash wage of $2.23 per hour, with the remainder made up by a tip credit to reach the $15.00 minimum.",
+      "citation": "19 Del. C. § 902(b)",
+      "sourceUrl": "https://delcode.delaware.gov/title19/c009/",
+      "sourceAgency": "Delaware Code (State of Delaware), Title 19 Chapter 9",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Cash tipped wage floor of $2.23/hr; tip credit brings total to the full state minimum. Higher than federal $2.13 tipped cash wage."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": [
+        "marital status",
+        "sexual orientation",
+        "gender identity",
+        "military status",
+        "housing status",
+        "reproductive health decisions",
+        "family responsibilities",
+        "victim of domestic violence, a sexual offense, or stalking",
+        "volunteer emergency responder status"
+      ],
+      "summary": "Beyond the federal protected classes, Delaware's Discrimination in Employment Act bars discrimination based on marital status, sexual orientation, gender identity, military status, housing status, reproductive health decisions, family responsibilities, and status as a victim of domestic violence/sexual offense/stalking.",
+      "citation": "19 Del. C. § 711 (incl. §§ 711(i), 711(k), 711(l))",
+      "sourceUrl": "https://delcode.delaware.gov/title19/c007/sc02/",
+      "sourceAgency": "Delaware Code (State of Delaware), Title 19 Chapter 7 Subchapter II",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Lists only classes ADDED beyond the federal set (race, color, religion, sex/pregnancy, national origin, age, disability, genetic info). Delaware also expressly covers those federal classes under § 711."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": 4,
+      "summary": "Delaware's employment discrimination law applies to employers with 4 or more employees in the state, a lower threshold than the federal 15-employee minimum under Title VII/ADA.",
+      "citation": "19 Del. C. § 710(7)",
+      "sourceUrl": "https://delcode.delaware.gov/title19/c007/sc02/",
+      "sourceAgency": "Delaware Code (State of Delaware), Title 19 Chapter 7 Subchapter II",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "'Employer' means any person employing 4 or more employees within the State at the time of the alleged violation."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "300 days",
+      "summary": "A discrimination charge must be filed with the Delaware Department of Labor within 300 days of the alleged unlawful employment practice or its discovery.",
+      "citation": "19 Del. C. § 712(c)(1)",
+      "sourceUrl": "https://delcode.delaware.gov/title19/c007/sc02/",
+      "sourceAgency": "Delaware Dept of Labor / Delaware Code, Title 19 Chapter 7 Subchapter II",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Delaware DOL is the state FEPA and administers the charge intake/investigation; 300-day state deadline aligns with the federal EEOC deferral-state deadline."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "2 years",
+      "summary": "A claim for unpaid wages, salary, or overtime must be brought within 2 years of the cause of action accruing.",
+      "citation": "10 Del. C. § 8111",
+      "sourceUrl": "https://delcode.delaware.gov/title10/c081/index.html",
+      "sourceAgency": "Delaware Code (State of Delaware), Title 10 Chapter 81",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "General 2-year limitations period covering wages, salary, overtime, and related damages/penalties. The Wage Payment and Collection Act (Ch. 11) provides remedies but no separate limitations period."
+    },
+    {
+      "topic": "whistleblower",
+      "value": "3 years",
+      "summary": "The Delaware Whistleblowers' Protection Act bars retaliation against employees who report, or refuse to participate in, violations of law, and a civil action must be brought within 3 years of the violation.",
+      "citation": "19 Del. C. §§ 1703, 1704",
+      "sourceUrl": "https://delcode.delaware.gov/title19/c017/",
+      "sourceAgency": "Delaware Code (State of Delaware), Title 19 Chapter 17",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "§ 1703 defines protected activity (reporting to a public body or supervisor, participating in investigations, refusing to violate the law); § 1704 sets the 3-year statute of limitations for a civil action."
+    },
+    {
+      "topic": "final-pay",
+      "value": "later of next regular payday or 3 business days after last day worked",
+      "summary": "When an employee quits, is discharged, or is laid off, final wages are due on the later of the next regular payday for the last worked period or 3 business days after the last day worked.",
+      "citation": "19 Del. C. § 1103(a)",
+      "sourceUrl": "https://delcode.delaware.gov/title19/c011/",
+      "sourceAgency": "Delaware Code (State of Delaware), Title 19 Chapter 11",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Failure to pay can trigger liquidated damages under § 1103(b) (up to 10% of unpaid wages per day, capped at the amount of unpaid wages)."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Delaware Department of Labor, Division of Industrial Affairs (Office of Wage & Hour Enforcement)",
+      "url": "https://industrialaffairs.delaware.gov/wage-hour"
+    },
+    "discrimination": {
+      "name": "Delaware Department of Labor, Division of Industrial Affairs (Anti-Discrimination Section / state FEPA)",
+      "url": "https://industrialaffairs.delaware.gov/anti-discrimination"
+    }
+  }
+}

@@ -1,0 +1,126 @@
+{
+  "jurisdiction": "ID",
+  "name": "Idaho",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "overtime.daily",
+      "value": "follows federal FLSA",
+      "summary": "Idaho has no state overtime law; overtime is governed solely by the federal FLSA (time-and-a-half after 40 hours per week), with no daily overtime requirement.",
+      "citation": "FLSA (no Idaho state OT statute)",
+      "sourceUrl": "https://www.labor.idaho.gov/businesses/labor-laws/labor-laws-faq/",
+      "sourceAgency": "Idaho Department of Labor",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Idaho defers to federal FLSA for overtime; no state daily OT or higher salary floor. Verify FAQ page language remains current."
+    },
+    {
+      "topic": "minimumWage.hourly",
+      "value": 7.25,
+      "summary": "Idaho's minimum wage is $7.25 per hour and by statute conforms to and tracks the federal minimum wage.",
+      "citation": "Idaho Code § 44-1502",
+      "sourceUrl": "https://legislature.idaho.gov/statutesrules/idstat/title44/t44ch15/sect44-1502/",
+      "sourceAgency": "Idaho State Legislature",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Statute ties Idaho rate to the federal minimum wage ($7.25 as of 2026). Idaho also allows a $4.25 training wage for employees under 20 for first 90 consecutive days."
+    },
+    {
+      "topic": "minimumWage.tipped",
+      "value": 3.35,
+      "summary": "Tipped employees must receive direct wages of at least $3.35 per hour, and the employer must make up any shortfall if tips plus direct wages do not reach the $7.25 minimum wage.",
+      "citation": "Idaho Code § 44-1502",
+      "sourceUrl": "https://legislature.idaho.gov/statutesrules/idstat/title44/t44ch15/sect44-1502/",
+      "sourceAgency": "Idaho State Legislature",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Idaho tip credit floor ($3.35) differs from the federal $2.13 direct-wage floor."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": ["race", "color", "religion", "sex", "national origin", "age (40+)", "disability"],
+      "summary": "The Idaho Human Rights Act prohibits employment discrimination based on race, color, religion, sex, national origin, age (40 and over), and disability, and does not add protected classes beyond the federal set (e.g., no statewide sexual orientation or gender identity protection).",
+      "citation": "Idaho Code § 67-5909",
+      "sourceUrl": "https://legislature.idaho.gov/statutesrules/idstat/title67/t67ch59/sect67-5909/",
+      "sourceAgency": "Idaho State Legislature",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Idaho's protected classes mirror federal law; no additional statewide classes found in statute."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": 5,
+      "summary": "The Idaho Human Rights Act covers employers with five or more employees for each working day in 20 or more calendar weeks in the current or preceding year, a lower threshold than the federal 15-employee minimum under Title VII/ADA.",
+      "citation": "Idaho Code § 67-5902",
+      "sourceUrl": "https://legislature.idaho.gov/statutesrules/idstat/title67/t67ch59/sect67-5902/",
+      "sourceAgency": "Idaho State Legislature",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "5-employee threshold is lower than federal 15 (Title VII/ADA); note federal ADEA age floor is 20 employees, so Idaho reaches smaller employers for age and disability as well."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "1 year",
+      "summary": "A complaint of discrimination must be filed with the Idaho Human Rights Commission within one year of the alleged unlawful discrimination.",
+      "citation": "Idaho Code § 67-5907(1)",
+      "sourceUrl": "https://legislature.idaho.gov/statutesrules/idstat/title67/t67ch59/sect67-5907/",
+      "sourceAgency": "Idaho State Legislature",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "One-year state filing deadline is longer than the EEOC 180/300-day deadline. After administrative dismissal, a complainant has 90 days to file a civil action (§ 67-5908(2))."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "2 years",
+      "summary": "A wage claim must be filed with the Department of Labor or in court within two years after the cause of action accrued; claims for additional wages for a pay period already partially paid must be brought within 12 months.",
+      "citation": "Idaho Code § 45-614",
+      "sourceUrl": "https://legislature.idaho.gov/statutesrules/idstat/title45/t45ch6/sect45-614/",
+      "sourceAgency": "Idaho State Legislature",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "General limit is 2 years; a shorter 12-month limit applies to claims for additional wages/penalties/liquidated damages for a partially-paid pay period."
+    },
+    {
+      "topic": "final-pay",
+      "value": "next payday or within 10 days",
+      "summary": "Upon separation for any reason, an employer must pay all wages due by the earlier of the next regularly scheduled payday or within 10 days (excluding weekends and holidays); if the employee makes written request, payment is due within 48 hours.",
+      "citation": "Idaho Code § 45-606",
+      "sourceUrl": "https://legislature.idaho.gov/statutesrules/idstat/title45/t45ch6/sect45-606/",
+      "sourceAgency": "Idaho State Legislature",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "No federal final-pay timing requirement exists, so this is a state addition. Verify the 48-hour written-request provision against current statute text."
+    },
+    {
+      "topic": "whistleblower",
+      "value": "public employees only (Idaho Protection of Public Employees Act)",
+      "summary": "Idaho's whistleblower statute (Protection of Public Employees Act) bars adverse action against public employees who in good faith report waste or a violation of law, but it does not cover private-sector employees.",
+      "citation": "Idaho Code §§ 6-2101 to 6-2109 (esp. § 6-2104)",
+      "sourceUrl": "https://legislature.idaho.gov/statutesrules/idstat/title6/t6ch21/sect6-2104/",
+      "sourceAgency": "Idaho State Legislature",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Statutory whistleblower protection is limited to public (government) employees; private-sector retaliation claims rely on common-law wrongful discharge, not this statute."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Idaho Department of Labor",
+      "url": "https://www.labor.idaho.gov"
+    },
+    "discrimination": {
+      "name": "Idaho Human Rights Commission",
+      "url": "https://humanrights.idaho.gov"
+    }
+  }
+}

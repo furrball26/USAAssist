@@ -1,0 +1,67 @@
+{
+  "jurisdiction": "WY",
+  "name": "Wyoming",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "overtime.daily",
+      "value": "follows federal FLSA",
+      "summary": "Wyoming has no state daily-overtime or higher salary threshold; the federal FLSA standard (1.5x after 40 hrs/week) applies.",
+      "citation": "29 U.S.C. § 207 (federal); Wyo. Stat. § 27-4-201 et seq.",
+      "sourceUrl": "https://dws.wyo.gov/dws-division/labor-standards/",
+      "sourceAgency": "Wyoming Dept of Workforce Services, Labor Standards",
+      "lastChecked": "2026-07-30",
+      "reviewed": false, "reviewedBy": null,
+      "notes": "Confirm no state OT overlay on the DWS Labor Standards page."
+    },
+    {
+      "topic": "minimumWage.hourly",
+      "value": "follows federal $7.25",
+      "summary": "Wyoming's statutory minimum wage is $5.15, but the federal $7.25 applies to employees covered by the FLSA, so $7.25 is effective for most workers.",
+      "citation": "Wyo. Stat. § 27-4-202; 29 U.S.C. § 206",
+      "sourceUrl": "https://www.dol.gov/agencies/whd/minimum-wage/state",
+      "sourceAgency": "U.S. Dept of Labor (state minimum-wage table)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false, "reviewedBy": null,
+      "notes": "Wyoming's own $5.15 figure is preempted by federal for FLSA-covered employers; verify on DWS."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": ["age 40+", "and the federal classes (via the Wyoming Fair Employment Practices Act)"],
+      "summary": "The Wyoming Fair Employment Practices Act prohibits discrimination on the federal bases and is enforced by the Wyoming Dept of Workforce Services.",
+      "citation": "Wyo. Stat. § 27-9-105",
+      "sourceUrl": "https://dws.wyo.gov/dws-division/labor-standards/discrimination/",
+      "sourceAgency": "Wyoming Dept of Workforce Services",
+      "lastChecked": "2026-07-30",
+      "reviewed": false, "reviewedBy": null,
+      "notes": "Verify the exact protected-class list and any state additions on the DWS page."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": "2+ employees",
+      "summary": "The Wyoming Fair Employment Practices Act applies to employers with two or more employees — broader than the federal 15-employee threshold.",
+      "citation": "Wyo. Stat. § 27-9-102",
+      "sourceUrl": "https://dws.wyo.gov/dws-division/labor-standards/discrimination/",
+      "sourceAgency": "Wyoming Dept of Workforce Services",
+      "lastChecked": "2026-07-30",
+      "reviewed": false, "reviewedBy": null,
+      "notes": "VERIFY employee-count threshold against the statute."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "follows federal FLSA (2 yr / 3 if willful)",
+      "summary": "Wyoming resolves wage claims through DWS; FLSA claims follow the federal 2-year (3 for willful) limit.",
+      "citation": "29 U.S.C. § 255(a); Wyo. Stat. § 27-4-104",
+      "sourceUrl": "https://dws.wyo.gov/dws-division/labor-standards/",
+      "sourceAgency": "Wyoming Dept of Workforce Services, Labor Standards",
+      "lastChecked": "2026-07-30",
+      "reviewed": false, "reviewedBy": null,
+      "notes": "Confirm any distinct state statute of limitations for wage claims."
+    }
+  ],
+  "agencies": {
+    "wageHour": { "name": "Wyoming Dept of Workforce Services, Labor Standards", "url": "https://dws.wyo.gov/dws-division/labor-standards/" },
+    "discrimination": { "name": "Wyoming Dept of Workforce Services (Fair Employment)", "url": "https://dws.wyo.gov/dws-division/labor-standards/discrimination/" }
+  }
+}

@@ -1,0 +1,133 @@
+{
+  "jurisdiction": "AK",
+  "name": "Alaska",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "overtime.daily",
+      "value": "Overtime after 8 hours/day AND after 40 hours/week",
+      "summary": "Alaska requires 1.5x pay for hours over 8 in a day, in addition to hours over 40 in a week, which is stricter than the federal FLSA (weekly-only) standard.",
+      "citation": "AS 23.10.060",
+      "sourceUrl": "https://labor.alaska.gov/lss/whfaq.htm",
+      "sourceAgency": "Alaska Department of Labor and Workforce Development, Wage and Hour Administration",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Daily and weekly OT hours are not double-counted. Certain categorical exemptions apply, including employers with fewer than 4 employees (AS 23.10.060)."
+    },
+    {
+      "topic": "overtime.salaryThreshold",
+      "value": "2x state minimum wage for a 40-hour week (approx $1,120/week at the $14.00 minimum wage effective July 1, 2026)",
+      "summary": "Alaska's white-collar (executive/administrative/professional) exemption requires a salary of at least two times the state minimum wage for the first 40 hours, a higher floor than the federal $684/week salary level.",
+      "citation": "AS 23.10.055(b)",
+      "sourceUrl": "https://labor.alaska.gov/lss/whhome.htm",
+      "sourceAgency": "Alaska Department of Labor and Workforce Development, Wage and Hour Administration",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Threshold floats with the state minimum wage (2x minimum wage x 40 hrs). At $14.00/hr this equals roughly $1,120/week. Verify the exact current weekly figure with Wage and Hour, as the base minimum wage adjusts annually beginning Jan 1, 2028."
+    },
+    {
+      "topic": "minimumWage.hourly",
+      "value": 14.00,
+      "summary": "Alaska's minimum wage is $14.00 per hour effective July 1, 2026, well above the federal $7.25; tip credits are not allowed.",
+      "citation": "AS 23.10.065",
+      "sourceUrl": "https://labor.alaska.gov/lss/whhome.htm",
+      "sourceAgency": "Alaska Department of Labor and Workforce Development, Wage and Hour Administration",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Scheduled to rise to $15.00 on July 1, 2027, then annual inflation adjustments starting Jan 1, 2028 (2024 Ballot Measure 1). Alaska prohibits a tip credit, so there is no separate tipped wage."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": [
+        "marital status",
+        "changes in marital status",
+        "pregnancy",
+        "parenthood",
+        "sexual orientation",
+        "gender identity or expression"
+      ],
+      "summary": "Beyond the federal categories, Alaska law also prohibits employment discrimination based on marital status, changes in marital status, pregnancy, parenthood, sexual orientation, and gender identity or expression.",
+      "citation": "AS 18.80.220",
+      "sourceUrl": "https://humanrights.alaska.gov/",
+      "sourceAgency": "Alaska State Commission for Human Rights",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Alaska also covers the federal classes (race, color, religion, sex, national origin, age, disability). Listed here are additions relative to the federal baseline."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": "1 or more employees",
+      "summary": "Alaska's anti-discrimination law applies to employers with at least one employee, far below the federal 15-employee threshold under Title VII/ADA.",
+      "citation": "AS 18.80.220; AS 18.80.300",
+      "sourceUrl": "https://humanrights.alaska.gov/wp-content/uploads/2021/02/Quick-Facts-for-Employers.pdf",
+      "sourceAgency": "Alaska State Commission for Human Rights",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Commission's Quick Facts for Employers states that having at least one employee brings an employer under AS 18.80.220."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "300 days",
+      "summary": "A discrimination complaint must be filed with the Alaska State Commission for Human Rights within 300 days of the alleged discriminatory act.",
+      "citation": "AS 18.80 (ASCHR complaint procedure)",
+      "sourceUrl": "https://humanrights.alaska.gov/services/complaints/",
+      "sourceAgency": "Alaska State Commission for Human Rights",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Commission's official page: complaint must be drafted, notarized, and filed within 300 days of the alleged act."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "2 years (unpaid overtime/minimum wage); 3 years (straight-time or promised wages/benefits)",
+      "summary": "Claims for unpaid overtime or minimum wage must be brought within two years, while straight-time wage or promised-benefit claims have a longer limitations period.",
+      "citation": "AS 23.10.130",
+      "sourceUrl": "https://labor.alaska.gov/lss/whfaq.htm",
+      "sourceAgency": "Alaska Department of Labor and Workforce Development, Wage and Hour Administration",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "AS 23.10.130 sets a 2-year limit for minimum wage/overtime/liquidated damages actions. The 3-year figure for straight-time/promised wages reflects the general contract limitations period as stated in the DOL FAQ; verify the applicable period for a specific claim type."
+    },
+    {
+      "topic": "finalPay",
+      "value": "Within 3 working days of employer termination; next regular payday (at least 3 days after notice) if employee quits",
+      "summary": "When an employer terminates an employee, all wages are due within three working days; when an employee quits, wages are due on the next regular payday at least three days after notice.",
+      "citation": "AS 23.05.140",
+      "sourceUrl": "https://labor.alaska.gov/lss/whfaq.htm",
+      "sourceAgency": "Alaska Department of Labor and Workforce Development, Wage and Hour Administration",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Working days exclude weekends and legal holidays. Late payment may trigger a penalty of the employee's regular wage from demand until payment, up to a maximum of 90 working days."
+    },
+    {
+      "topic": "retaliation.whistleblower",
+      "value": "Public employees protected under the Alaska Whistleblower Act; safety-complaint retaliation protection under AKOSH",
+      "summary": "Alaska's Whistleblower Act protects public employees who report matters of public concern, and AKOSH protects employees from retaliation for raising occupational safety and health complaints.",
+      "citation": "AS 39.90.100-39.90.150; AS 18.60.089",
+      "sourceUrl": "https://labor.alaska.gov/lss/whistleblower-fact-sheet.html",
+      "sourceAgency": "Alaska Department of Labor and Workforce Development (AKOSH); Alaska State Legislature",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "The Alaska Whistleblower Act (AS 39.90.100) applies to public employers/employees. Private-sector employees also have anti-retaliation protection for filing discrimination complaints (AS 18.80.220) and for occupational safety complaints (AKOSH). Verify statute cite for the specific retaliation context."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Alaska Department of Labor and Workforce Development, Wage and Hour Administration",
+      "url": "https://labor.alaska.gov/lss/whhome.htm"
+    },
+    "discrimination": {
+      "name": "Alaska State Commission for Human Rights",
+      "url": "https://humanrights.alaska.gov/"
+    }
+  }
+}

@@ -1,0 +1,138 @@
+{
+  "jurisdiction": "VT",
+  "name": "Vermont",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "minimumWage.hourly",
+      "value": 14.42,
+      "summary": "Vermont's minimum wage is $14.42 per hour effective January 1, 2026, well above the federal $7.25, and is adjusted annually by the smaller of 5% or CPI-U.",
+      "citation": "21 V.S.A. § 384(a)",
+      "sourceUrl": "https://labor.vermont.gov/document/minimum-wage-poster-2026",
+      "sourceAgency": "Vermont Department of Labor, Wage & Hour Program",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Figure taken from the official DOL 2026 Minimum Wage poster ($14.42 effective 01/01/2026; $14.01 in 2025; $13.67 in 2024). Rate re-indexes each January 1 under 21 V.S.A. § 384(a)(1)."
+    },
+    {
+      "topic": "minimumWage.tipped",
+      "value": 7.21,
+      "summary": "Vermont's basic (tipped/service) wage for hotel, motel, tourist-place, and restaurant tipped employees is $7.21 per hour effective January 1, 2026 — one-half the full minimum wage.",
+      "citation": "21 V.S.A. § 384(a)(2)",
+      "sourceUrl": "https://labor.vermont.gov/document/minimum-wage-poster-2026",
+      "sourceAgency": "Vermont Department of Labor, Wage & Hour Program",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Statute sets the tipped basic wage at one-half the minimum wage; a 'service or tipped employee' is one who customarily receives more than $120/month in tips. Higher than the federal $2.13 tipped cash wage."
+    },
+    {
+      "topic": "overtime.daily",
+      "value": "follows federal FLSA (1.5x after 40 hrs/week; no general daily overtime)",
+      "summary": "Vermont requires 1.5x pay after 40 hours in a workweek like federal law, with no general daily-overtime rule; state OT law exempts several industries though FLSA may still cover them.",
+      "citation": "21 V.S.A. § 384(b)",
+      "sourceUrl": "https://legislature.vermont.gov/statutes/section/21/005/00384",
+      "sourceAgency": "Vermont General Assembly (Vermont Statutes Online)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "State OT threshold matches federal (40 hrs/week). Vermont's OT law expressly does NOT apply to retail/service establishments and to hotels, motels, and restaurants (21 V.S.A. § 384(b)(1)-(3)); a daily-OT election exists only for certain healthcare facilities (§ 384(b)(4)). Federal FLSA overtime may still cover employees exempted from the state provision."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": ["sexual orientation", "gender identity", "ancestry", "place of birth", "crime victim status", "HIV/AIDS status"],
+      "summary": "Vermont's Fair Employment Practices Act protects several classes beyond the federal set, including sexual orientation, gender identity, ancestry, place of birth, crime victim status, and HIV-related test status.",
+      "citation": "21 V.S.A. § 495(a)",
+      "sourceUrl": "https://legislature.vermont.gov/statutes/section/21/005/00495",
+      "sourceAgency": "Vermont General Assembly (Vermont Statutes Online)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Full statutory list also includes race, color, religion, national origin, sex, age, and disability (mirroring federal). Vermont's age protection is not limited to workers 40+ as under the federal ADEA. HIV-related blood-test discrimination is separately barred at § 495(a)(5)-(6)."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": "1 or more employees",
+      "summary": "Vermont's anti-discrimination law covers any employer with one or more individuals performing services in the state, far below the federal 15-employee (Title VII/ADA) threshold.",
+      "citation": "21 V.S.A. § 495d(1)",
+      "sourceUrl": "https://legislature.vermont.gov/statutes/section/21/005/00495d",
+      "sourceAgency": "Vermont General Assembly (Vermont Statutes Online)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "The statutory 'employer' definition reaches any entity 'that has one or more individuals performing services for it within this State.'"
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "no administrative-charge deadline; private suit directly in Superior Court within the 6-year civil limitations period",
+      "summary": "Unlike the EEOC's 180/300-day charge deadline, Vermont lets an aggrieved employee sue directly in Superior Court without first filing an administrative charge, subject to the state's general 6-year statute of limitations.",
+      "citation": "21 V.S.A. § 495b(b); 12 V.S.A. § 511",
+      "sourceUrl": "https://legislature.vermont.gov/statutes/section/21/005/00495b",
+      "sourceAgency": "Vermont General Assembly (Vermont Statutes Online)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "§ 495b(b) grants a private right of action in Superior Court with no exhaustion requirement. The 6-year period comes from Vermont's general civil statute of limitations (12 V.S.A. § 511); confirm the applicable limitations period for a specific claim, as courts may apply a different period to some theories. The Attorney General or a State's Attorney may also enforce (§ 495b(a))."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "6 years",
+      "summary": "Wage claims in Vermont are governed by the state's general six-year civil statute of limitations.",
+      "citation": "12 V.S.A. § 511",
+      "sourceUrl": "https://legislature.vermont.gov/statutes/section/12/023/00511",
+      "sourceAgency": "Vermont General Assembly (Vermont Statutes Online)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Vermont's wage-and-hour subchapter has no dedicated limitations period, so the general 6-year civil SOL applies. Verify against current case law for the specific wage theory (e.g., minimum wage vs. contract-based claims)."
+    },
+    {
+      "topic": "retaliation",
+      "value": "prohibited for wage/hour complaints and cooperation",
+      "summary": "Vermont bars employers from discharging or retaliating against employees for lodging, or being expected to lodge, a wage-and-hour complaint or for cooperating in a Commissioner investigation.",
+      "citation": "21 V.S.A. § 397",
+      "sourceUrl": "https://legislature.vermont.gov/statutes/section/21/005/00397",
+      "sourceAgency": "Vermont General Assembly (Vermont Statutes Online)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Aggrieved employees may sue in Superior Court for compensatory and punitive damages, reinstatement, restitution, costs, and attorney's fees. Separate anti-retaliation protection for discrimination complaints exists at 21 V.S.A. § 495(a)(8)."
+    },
+    {
+      "topic": "discrimination.sexualHarassmentPolicy",
+      "value": "written anti-harassment policy required of all employers",
+      "summary": "Vermont requires every employer to adopt a written sexual-harassment policy meeting statutory content requirements — an obligation with no direct federal counterpart.",
+      "citation": "21 V.S.A. § 495h",
+      "sourceUrl": "https://legislature.vermont.gov/statutes/section/21/005/00495h",
+      "sourceAgency": "Vermont General Assembly (Vermont Statutes Online)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Policy must state that harassment is unlawful, describe examples and consequences, and (for employers with more than five employees) describe the complaint process. Statute also limits mandatory-arbitration and NDA provisions related to harassment."
+    },
+    {
+      "topic": "whistleblower",
+      "value": "protected for health care employees (hospitals and nursing homes)",
+      "summary": "Vermont provides statutory whistleblower protection to hospital and nursing-home employees who report improper quality of patient care or violations of law.",
+      "citation": "21 V.S.A. § 507",
+      "sourceUrl": "https://legislature.vermont.gov/statutes/section/21/005/00507",
+      "sourceAgency": "Vermont General Assembly (Vermont Statutes Online)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "This subchapter covers health care employees only (hospitals per 18 V.S.A. § 1902(1); nursing homes per 33 V.S.A. § 7102(7)). Vermont's general whistleblower statute for State employees is at 3 V.S.A. §§ 971-978 (not captured here). No single general private-sector whistleblower statute was located."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Vermont Department of Labor, Wage & Hour Program",
+      "url": "https://labor.vermont.gov/rights-and-wages/wage-and-hour"
+    },
+    "discrimination": {
+      "name": "Vermont Office of the Attorney General, Civil Rights Unit",
+      "url": "https://ago.vermont.gov/civil-rights"
+    }
+  }
+}

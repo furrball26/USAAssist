@@ -1,0 +1,126 @@
+{
+  "jurisdiction": "NJ",
+  "name": "New Jersey",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "minimumWage.hourly",
+      "value": 15.92,
+      "summary": "New Jersey's minimum wage is $15.92 per hour for most employees effective January 1, 2026, well above the federal $7.25; it is adjusted annually based on the Consumer Price Index.",
+      "citation": "N.J.S.A. 34:11-56a4",
+      "sourceUrl": "https://www.nj.gov/labor/lwdhome/press/2025/20251001_Minimum_Wage.shtml",
+      "sourceAgency": "New Jersey Department of Labor & Workforce Development",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "$15.92 confirmed effective 1/1/2026 (up $0.43 from $15.49). Lower tiers exist: seasonal/small employers (fewer than 6 employees) $15.23, agricultural $14.20, tipped cash wage $6.05 with a $9.87 tip credit, long-term care direct care staff $18.92. Indexed annually to CPI; verify each year."
+    },
+    {
+      "topic": "overtime.daily",
+      "value": "follows federal FLSA (1.5x after 40 hrs/week; no daily overtime; no higher salary floor)",
+      "summary": "New Jersey requires overtime at 1.5x the regular rate after 40 hours of actual work in a seven-day workweek, matching the federal weekly standard; there is no daily overtime requirement.",
+      "citation": "N.J.S.A. 34:11-56a4; N.J.A.C. 12:56-6.1",
+      "sourceUrl": "https://www.nj.gov/labor/wageandhour/support/faqs/wageandhourworkerfaqs.shtml",
+      "sourceAgency": "New Jersey Department of Labor & Workforce Development, Division of Wage & Hour Compliance",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "NJDOL FAQ: 'Overtime is paid at the rate of time and one half after forty hours of actual work in a seven-day workweek.' No daily/weekend/holiday premium is required. Executive, administrative, and professional employees may be exempt; no state salary threshold higher than the federal level was found on an official source."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": [
+        "creed",
+        "nationality",
+        "ancestry",
+        "affectional or sexual orientation",
+        "gender identity or expression",
+        "marital status",
+        "civil union status",
+        "domestic partnership status",
+        "liability for service in the Armed Forces",
+        "atypical hereditary cellular or blood trait",
+        "breastfeeding"
+      ],
+      "summary": "New Jersey's Law Against Discrimination (LAD) protects many classes beyond the federal set, including creed, nationality, ancestry, affectional or sexual orientation, gender identity or expression, marital/civil union/domestic partnership status, liability for military service, atypical hereditary cellular or blood trait, and breastfeeding.",
+      "citation": "N.J.S.A. 10:5-12",
+      "sourceUrl": "https://www.nj.gov/oag/dcr/downloads/fact_LAD.pdf",
+      "sourceAgency": "New Jersey Division on Civil Rights (DCR)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "List captures classes ADDED beyond the federal set (race, color, religion, sex, national origin, age, disability, genetic information, pregnancy). The LAD also protects those federal classes. 'Sex' under the LAD includes pregnancy and breastfeeding."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": 1,
+      "summary": "The LAD's definition of 'employer' includes all employers with no minimum employee count, so it covers even employers with a single employee, unlike Title VII's 15-employee threshold.",
+      "citation": "N.J.S.A. 10:5-5(e)",
+      "sourceUrl": "https://www.nj.gov/lps/dcr/downloads/NJ-Law-Against-Discrimination-Most-Updated.pdf",
+      "sourceAgency": "New Jersey Division on Civil Rights (DCR)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Statute text: '\"Employer\" includes all persons as defined in subsection a. of this section unless otherwise specifically exempt... and includes the State, any political or civil subdivision thereof.' No numerical employee minimum. Domestic-service employees are excluded from the definition of 'employee' at 10:5-5(f)."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "180 days",
+      "summary": "A complaint under the LAD must be filed with the NJ Division on Civil Rights within 180 days of the alleged discriminatory act.",
+      "citation": "N.J.S.A. 10:5-18",
+      "sourceUrl": "https://www.nj.gov/oag/dcr/downloads/fact_LAD.pdf",
+      "sourceAgency": "New Jersey Division on Civil Rights (DCR)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "DCR fact sheet: 'Anyone who believes their rights under the LAD have been violated may file a complaint with DCR within 180 days of the incident.' A claimant may alternatively file directly in Superior Court (case law sets a 2-year limitations period for the court option, not captured here)."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "6 years",
+      "summary": "New Jersey applies a six-year statute of limitations for claims of unpaid minimum wage, overtime, and other wage complaints, longer than the FLSA's 2-3 year federal period.",
+      "citation": "N.J.S.A. 34:11-56a25.1",
+      "sourceUrl": "https://www.nj.gov/labor/wageandhour/support/faqs/wageandhourworkerfaqs.shtml",
+      "sourceAgency": "New Jersey Department of Labor & Workforce Development, Division of Wage & Hour Compliance",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "NJDOL FAQ: 'There is a six (6) year statute of limitations on complaints for unpaid minimum wage, overtime and all other complaints.' The 6-year period was established by the 2019 Wage Theft Act. Statute citation (34:11-56a25.1) not shown on the FAQ page itself; verify."
+    },
+    {
+      "topic": "whistleblower",
+      "value": "N.J.S.A. 34:19-3 (Conscientious Employee Protection Act, CEPA)",
+      "summary": "New Jersey's Conscientious Employee Protection Act (CEPA) protects employees from retaliation for disclosing, objecting to, or refusing to participate in employer activities the employee reasonably believes are unlawful or fraudulent.",
+      "citation": "N.J.S.A. 34:19-1 et seq.; 34:19-3",
+      "sourceUrl": "https://www.nj.gov/labor/myworkrights/worker-protections/retaliation_protections/",
+      "sourceAgency": "New Jersey Department of Labor & Workforce Development",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "CEPA is one of the broadest whistleblower statutes in the U.S. and serves as a catch-all protection. NJDOL describes it as protecting 'employees who report employer practices that they believe to be unlawful.' A CEPA civil action has a 1-year limitations period (from case law, not shown on this page)."
+    },
+    {
+      "topic": "retaliation",
+      "value": "Retaliation prohibited under NJ wage, leave, and civil-rights statutes",
+      "summary": "New Jersey prohibits retaliation against employees who assert rights under a range of state statutes, including the Wage and Hour Law, Wage Payment Law, Earned Sick Leave Law, Family Leave Act, and Law Against Discrimination.",
+      "citation": "N.J.S.A. 34:11-56a24 (wage/hour); 34:11D-4 (earned sick leave); 34:11B-9 (family leave); 10:5-12(r) (LAD)",
+      "sourceUrl": "https://www.nj.gov/labor/myworkrights/worker-protections/retaliation_protections/",
+      "sourceAgency": "New Jersey Department of Labor & Workforce Development",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "NJDOL lists distinct anti-retaliation provisions across multiple statutes (wage & hour 34:11-56a24, wage payment 34:11-4.10, prevailing wage 34:11-56.39, earned sick leave 34:11D-4, family leave 34:11B-9, LAD 10:5-12(r), among others). Retaliation exposure is broader than the single-topic federal treatment."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "New Jersey Department of Labor & Workforce Development, Division of Wage & Hour Compliance",
+      "url": "https://www.nj.gov/labor/wageandhour/"
+    },
+    "discrimination": {
+      "name": "New Jersey Division on Civil Rights (DCR), Office of the Attorney General",
+      "url": "https://www.nj.gov/oag/dcr/"
+    }
+  }
+}

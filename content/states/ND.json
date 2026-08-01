@@ -1,0 +1,126 @@
+{
+  "jurisdiction": "ND",
+  "name": "North Dakota",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "minimumWage.hourly",
+      "value": 7.25,
+      "summary": "North Dakota's minimum wage is $7.25 per hour, the same as the federal minimum wage.",
+      "citation": "N.D.C.C. 34-06-22(1)(c)",
+      "sourceUrl": "https://ndlegis.gov/cencode/t34c06.pdf",
+      "sourceAgency": "North Dakota Legislative Branch (North Dakota Century Code)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Set at $7.25 effective July 24, 2009 and unchanged since; follows federal $7.25. The commissioner may adopt a different rate by rule (34-06-22(2)), so verify the current administrative rate periodically. N.D.C.C. 34-06-23 bars political subdivisions from enacting a local minimum/living wage above the state rate."
+    },
+    {
+      "topic": "overtime.daily",
+      "value": "follows federal FLSA",
+      "summary": "North Dakota requires overtime at 1.5x the regular rate only after 40 hours in a week, with no daily overtime and no state salary threshold higher than federal.",
+      "citation": "N.D. Admin. Code 46-02-07-02(4) (Minimum Wage and Work Conditions Order)",
+      "sourceUrl": "https://ndlegis.gov/information/acdata/pdf/46-02-07.pdf",
+      "sourceAgency": "North Dakota Department of Labor and Human Rights (Administrative Code)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Overtime is computed weekly (excess of 40 hours). No daily overtime provision and no higher state exempt-salary floor was found, so the federal FLSA salary level ($684/week) controls. Section number for the overtime subsection is approximate; the requirement text is confirmed."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": ["status with regard to marriage (marital status)", "status with regard to public assistance", "participation in lawful activity off the employer's premises during nonworking hours (lawful off-duty conduct)"],
+      "summary": "Beyond the federal characteristics, North Dakota's Human Rights Act protects marital status, status with regard to public assistance, and participation in lawful off-duty activity outside work.",
+      "citation": "N.D.C.C. 14-02.4-01, 14-02.4-02, 14-02.4-03",
+      "sourceUrl": "https://ndlegis.gov/cencode/t14c02-4.pdf",
+      "sourceAgency": "North Dakota Legislative Branch (North Dakota Century Code)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "The Act also lists race, color, religion, sex, national origin, age (40+), and physical or mental disability, matching federal categories. The three listed here are the additions beyond the federal set."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": "1 or more employees",
+      "summary": "North Dakota's Human Rights Act covers employers with one or more employees, far broader than the federal 15-employee threshold under Title VII/ADA.",
+      "citation": "N.D.C.C. 14-02.4-02(8)",
+      "sourceUrl": "https://ndlegis.gov/cencode/t14c02-4.pdf",
+      "sourceAgency": "North Dakota Legislative Branch (North Dakota Century Code)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Employer means a person within the state who employs one or more employees for more than one quarter of the year (or whose employees' services are partly/wholly performed in ND). This is a significant expansion over federal coverage for small employers."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "300 days",
+      "summary": "An employment discrimination complaint must be filed with the ND Department of Labor and Human Rights (or an action brought in district court) within 300 days of the alleged discriminatory act.",
+      "citation": "N.D.C.C. 14-02.4-19(2)",
+      "sourceUrl": "https://ndlegis.gov/cencode/t14c02-4.pdf",
+      "sourceAgency": "North Dakota Legislative Branch (North Dakota Century Code)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "The 300-day period applies to employment (and credit) claims; a shorter 180-day period applies to public-service/public-accommodation claims (14-02.4-19(1)). Matches the federal 300-day EEOC deadline in deferral states."
+    },
+    {
+      "topic": "discrimination.retaliation",
+      "value": "prohibited under the Human Rights Act",
+      "summary": "It is an unlawful discriminatory practice to retaliate against a person who opposed discrimination or filed, testified in, or participated in a proceeding under the Human Rights Act.",
+      "citation": "N.D.C.C. 14-02.4-18",
+      "sourceUrl": "https://ndlegis.gov/cencode/t14c02-4.pdf",
+      "sourceAgency": "North Dakota Legislative Branch (North Dakota Century Code)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Covers threats, retaliation, or discrimination for opposing an unlawful practice or good-faith participation in an investigation, hearing, or litigation. Enforced through the same complaint process and deadlines as other Human Rights Act claims."
+    },
+    {
+      "topic": "whistleblower",
+      "value": "private and public employees protected for reporting suspected legal violations",
+      "summary": "North Dakota's whistleblower statute bars any employer from discharging, disciplining, or penalizing an employee for good-faith reporting of a suspected violation of law, participating in a public investigation, or refusing an order the employee reasonably believes is illegal.",
+      "citation": "N.D.C.C. 34-01-20",
+      "sourceUrl": "https://ndlegis.gov/cencode/t34c01.pdf",
+      "sourceAgency": "North Dakota Legislative Branch (North Dakota Century Code)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "A civil action for reinstatement, back pay (up to 2 years), injunctive relief, and attorney's fees must be brought within 180 days of the violation (or completion of applicable proceedings). Alternatively a complaint may be filed with the Department of Labor and Human Rights within 300 days. Applies broadly to private and public employers, unlike many states' state-employee-only laws."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "2 years",
+      "summary": "Suits to recover unpaid wages, overtime, damages, fees, or penalties must be brought within two years after the claim accrues.",
+      "citation": "N.D.C.C. 34-01-13",
+      "sourceUrl": "https://ndlegis.gov/cencode/t34c01.pdf",
+      "sourceAgency": "North Dakota Legislative Branch (North Dakota Century Code)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Covers actions under the FLSA and 'all other similar acts' respecting payment of wages. The period is tolled while a wage claim is pending with the Labor Commissioner (34-14-08.1(3))."
+    },
+    {
+      "topic": "finalPay.timing",
+      "value": "due on the next regular payday established in advance",
+      "summary": "On discharge, voluntary separation, or suspension, an employee's unpaid wages become due on the regular paydays the employer set in advance for the periods worked; there is no immediate final-pay requirement.",
+      "citation": "N.D.C.C. 34-14-03",
+      "sourceUrl": "https://ndlegis.gov/cencode/t34c14.pdf",
+      "sourceAgency": "North Dakota Legislative Branch (North Dakota Century Code)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "When an employer discharges an employee it must send those wages by certified mail to the employee's designated address or as otherwise agreed. Federal law has no final-pay timing rule, so this is a state addition (though less onerous than states requiring immediate payment)."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "North Dakota Department of Labor and Human Rights - Wage and Hour Division",
+      "url": "https://www.nd.gov/labor/wage-and-hour-topics"
+    },
+    "discrimination": {
+      "name": "North Dakota Department of Labor and Human Rights - Human Rights Division",
+      "url": "https://www.nd.gov/labor/human-rights"
+    }
+  }
+}

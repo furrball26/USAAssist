@@ -1,0 +1,114 @@
+{
+  "jurisdiction": "SC",
+  "name": "South Carolina",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "minimumWage.hourly",
+      "value": "follows federal $7.25",
+      "summary": "South Carolina has no state minimum wage statute, so the federal minimum wage of $7.25 per hour applies to covered employers.",
+      "citation": "No SC statute (federal FLSA, 29 U.S.C. § 206 controls)",
+      "sourceUrl": "https://llr.sc.gov/wage/",
+      "sourceAgency": "South Carolina Department of Labor, Licensing and Regulation, Office of Wages and Child Labor",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "SC is one of a handful of states with no minimum wage law; the federal FLSA rate governs. Verify no state minimum wage legislation has been enacted for the current year."
+    },
+    {
+      "topic": "overtime.daily",
+      "value": "follows federal FLSA",
+      "summary": "South Carolina has no state overtime law and no daily overtime requirement; overtime is governed entirely by the federal FLSA (time-and-one-half after 40 hours in a workweek).",
+      "citation": "No SC statute (federal FLSA, 29 U.S.C. § 207 controls)",
+      "sourceUrl": "https://llr.sc.gov/wage/",
+      "sourceAgency": "South Carolina Department of Labor, Licensing and Regulation, Office of Wages and Child Labor",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "No state overtime statute or higher salary floor; federal FLSA exemptions and $684/week salary level apply. Confirm no new state overtime rule."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": ["race", "religion", "color", "sex", "age", "national origin", "disability", "pregnancy"],
+      "summary": "The South Carolina Human Affairs Law prohibits employment discrimination based on race, religion, color, sex, age, national origin, and disability, and expressly includes pregnancy, childbirth, and related medical conditions within sex discrimination.",
+      "citation": "S.C. Code Ann. § 1-13-30",
+      "sourceUrl": "https://www.scstatehouse.gov/code/t01c013.php",
+      "sourceAgency": "South Carolina Legislature (South Carolina Code of Laws)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Classes mirror the combined federal set (Title VII, ADEA, ADA) plus an explicit pregnancy provision (the Pregnancy Accommodations Act amendments); no sexual orientation or gender identity in the statute. The SC law covers age at the 15-employee threshold, broader than the federal ADEA (20 employees)."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": 15,
+      "summary": "The South Carolina Human Affairs Law applies to employers with 15 or more employees for each working day in 20 or more calendar weeks in the current or preceding year, matching the federal Title VII threshold.",
+      "citation": "S.C. Code Ann. § 1-13-30(e)",
+      "sourceUrl": "https://www.scstatehouse.gov/code/t01c013.php",
+      "sourceAgency": "South Carolina Legislature (South Carolina Code of Laws)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Same 15-employee threshold as Title VII, but state law reaches age discrimination at 15 employees whereas the federal ADEA requires 20."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "180 days",
+      "summary": "A charge of employment discrimination must be filed in writing, under oath, with the South Carolina Human Affairs Commission within 180 days after the alleged discriminatory practice occurred.",
+      "citation": "S.C. Code Ann. § 1-13-90(a)",
+      "sourceUrl": "https://www.scstatehouse.gov/code/t01c013.php",
+      "sourceAgency": "South Carolina Human Affairs Commission",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "SCHAC is South Carolina's FEPA and cross-files with the EEOC; the federal 300-day deadline may still apply through the work-sharing agreement, but the state statutory deadline is 180 days."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "3 years",
+      "summary": "A civil action to recover unpaid wages under the South Carolina Payment of Wages Act must be commenced within three years after the wages become due.",
+      "citation": "S.C. Code Ann. § 41-10-80(C)",
+      "sourceUrl": "https://www.scstatehouse.gov/code/t41c010.php",
+      "sourceAgency": "South Carolina Legislature (South Carolina Code of Laws)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Three-year statute of limitations. A prevailing employee may recover treble (three times) the unpaid wages plus costs and reasonable attorney's fees under § 41-10-80(C)."
+    },
+    {
+      "topic": "final-pay",
+      "value": "within 48 hours or by the next regular payday, not to exceed 30 days",
+      "summary": "On separation, an employer must pay all wages due within 48 hours of the time of separation or by the next regular payday, which may not exceed 30 days.",
+      "citation": "S.C. Code Ann. § 41-10-50",
+      "sourceUrl": "https://www.scstatehouse.gov/code/t41c010.php",
+      "sourceAgency": "South Carolina Legislature (South Carolina Code of Laws)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "This is a state-specific final-pay rule stricter than the federal baseline (which has none). Unpaid wages can expose the employer to treble damages under § 41-10-80(C)."
+    },
+    {
+      "topic": "whistleblower",
+      "value": "public employees only; report within 180 days, civil action within 1 year",
+      "summary": "South Carolina's whistleblower statute protects public-body employees from dismissal, suspension, demotion, or pay reduction for good-faith reports of wrongdoing; the report must be made within 180 days and any civil action filed within one year of accrual or exhaustion of remedies.",
+      "citation": "S.C. Code Ann. §§ 8-27-10 to 8-27-30",
+      "sourceUrl": "https://www.scstatehouse.gov/code/t08c027.php",
+      "sourceAgency": "South Carolina Legislature (South Carolina Code of Laws)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "This statutory whistleblower protection covers only public/governmental employees. Private-sector employees rely on the common-law public-policy exception to at-will employment (not codified) plus federal anti-retaliation provisions; no general private-sector whistleblower statute was located."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "South Carolina Department of Labor, Licensing and Regulation, Office of Wages and Child Labor",
+      "url": "https://llr.sc.gov/wage/"
+    },
+    "discrimination": {
+      "name": "South Carolina Human Affairs Commission (SCHAC)",
+      "url": "https://schac.sc.gov/"
+    }
+  }
+}

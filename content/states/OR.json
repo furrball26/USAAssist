@@ -1,0 +1,134 @@
+{
+  "jurisdiction": "OR",
+  "name": "Oregon",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "overtime.daily",
+      "value": "No general daily OT; manufacturing establishments must pay 1.5x for hours over 10/day (and over 40/week generally)",
+      "summary": "Oregon follows the federal 40-hour weekly overtime rule, but additionally requires daily overtime (1.5x) for employees in manufacturing establishments who work more than 10 hours in a single day.",
+      "citation": "ORS 652.020",
+      "sourceUrl": "https://www.oregonlegislature.gov/bills_laws/ors/ors652.html",
+      "sourceAgency": "Oregon State Legislature (Oregon Revised Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Manufacturing daily OT is an Oregon addition beyond federal FLSA. Oregon has no statewide salary threshold above the federal white-collar exemption; verify against current OAR 839-020."
+    },
+    {
+      "topic": "minimumWage.hourly",
+      "value": 15.55,
+      "summary": "Oregon's standard minimum wage is $15.55/hour effective July 1, 2026; the Portland metro rate is $16.80 and the non-urban (rural) county rate is $14.55, all well above the federal $7.25.",
+      "citation": "ORS 653.025",
+      "sourceUrl": "https://www.oregon.gov/boli/workers/pages/minimum-wage.aspx",
+      "sourceAgency": "Oregon Bureau of Labor & Industries (BOLI)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Oregon uses a three-tier geographic system. Rates adjust each July 1 based on CPI. Confirm the exact 2026-2027 figures ($15.55 standard / $16.80 Portland metro / $14.55 non-urban) on the BOLI minimum-wage schedule page before publishing."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": [
+        "sexual orientation",
+        "gender identity",
+        "gender expression",
+        "marital status",
+        "family relationship",
+        "uniformed/military service status",
+        "age 18 and older"
+      ],
+      "summary": "Beyond the federal protected classes, Oregon law prohibits employment discrimination based on sexual orientation, gender identity and expression, marital status, family relationship, uniformed service status, and age (18 and older, broader than the federal 40+).",
+      "citation": "ORS 659A.030",
+      "sourceUrl": "https://www.oregon.gov/boli/workers/Pages/discrimination-at-work.aspx",
+      "sourceAgency": "Oregon Bureau of Labor & Industries (BOLI)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Oregon also protects race, color, religion, sex, national origin, disability, and retaliation (which overlap with federal). Age protection begins at 18 rather than 40."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": 1,
+      "summary": "Oregon's core anti-discrimination protections apply to employers with one or more employees, far lower than the federal 15-employee threshold under Title VII/ADA.",
+      "citation": "ORS 659A.030; ORS 659A.001",
+      "sourceUrl": "https://www.oregon.gov/boli/workers/Pages/discrimination-at-work.aspx",
+      "sourceAgency": "Oregon Bureau of Labor & Industries (BOLI)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Coverage varies by protected class: 1+ employees for most classes; disability and pregnancy accommodation require 6+ employees."
+    },
+    {
+      "topic": "disability.accommodation",
+      "value": "Disability discrimination and reasonable-accommodation duties apply to employers with 6 or more employees; pregnancy-related accommodation also required",
+      "summary": "Oregon requires reasonable accommodation for disability for employers with six or more employees (lower than the federal ADA's 15), and separately mandates reasonable accommodation for pregnancy, childbirth, and related conditions.",
+      "citation": "ORS 659A.112; ORS 659A.147",
+      "sourceUrl": "https://www.oregon.gov/boli/workers/Pages/discrimination-at-work.aspx",
+      "sourceAgency": "Oregon Bureau of Labor & Industries (BOLI)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Six-employee threshold for disability is lower than federal ADA (15). Verify pregnancy accommodation specifics under the Oregon Employer Accommodation for Pregnancy Act."
+    },
+    {
+      "topic": "retaliation.whistleblower",
+      "value": "Prohibits retaliation against employees who in good faith report suspected violations of state/federal law or who oppose unlawful practices",
+      "summary": "Oregon law bars employers from taking adverse action (discharge, demotion, suspension, pay cuts) against workers who in good faith report or oppose conduct they reasonably believe violates state or federal law.",
+      "citation": "ORS 659A.199; ORS 659A.203; ORS 659A.030(1)(f)",
+      "sourceUrl": "https://www.oregon.gov/boli/civil-rights/Pages/whistleblowing-protections.aspx",
+      "sourceAgency": "Oregon Bureau of Labor & Industries (BOLI)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "ORS 659A.199 covers private employers; ORS 659A.203 covers public and nonprofit employers. Worker need not be correct, only hold a good-faith belief. Remedies include reinstatement, back pay, and attorney fees via ORS 659A.885."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "5 years",
+      "summary": "For incidents on or after September 29, 2019, an employee has up to five years to file an unlawful-employment-practice complaint with BOLI or a civil lawsuit, much longer than the federal EEOC 180/300-day charge deadline.",
+      "citation": "ORS 659A.875",
+      "sourceUrl": "https://www.oregon.gov/boli/workers/Pages/discrimination-at-work.aspx",
+      "sourceAgency": "Oregon Bureau of Labor & Industries (BOLI)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Five-year window applies to incidents on/after Sept 29, 2019 (following SB 726). Some claim types may carry shorter periods; verify ORS 659A.875 subsections for the specific claim."
+    },
+    {
+      "topic": "final-pay",
+      "value": "Due end of next business day if fired/laid off; within 5 business days or next payday (whichever first) if quit without 48 hrs notice; on last day if 48+ hrs notice",
+      "summary": "Oregon sets strict final-paycheck deadlines and imposes penalty wages of up to 8x the employee's daily rate for each day wages remain unpaid, capped at 30 days.",
+      "citation": "ORS 652.140; ORS 652.150",
+      "sourceUrl": "https://www.oregon.gov/boli/workers/Pages/paychecks.aspx",
+      "sourceAgency": "Oregon Bureau of Labor & Industries (BOLI)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Penalty-wage safe harbor caps liability if unpaid wages are paid within 12 days of written notice. Federal law has no comparable final-pay timing rule."
+    },
+    {
+      "topic": "equalPay",
+      "value": "Equal pay required for work of comparable character across protected classes; claims must be filed within 1 year",
+      "summary": "Oregon's Equal Pay Act requires equal compensation for work of comparable character regardless of protected class (broader than the federal Equal Pay Act's sex-only scope) and bars asking about salary history.",
+      "citation": "ORS 652.210-652.235; ORS 659A.357",
+      "sourceUrl": "https://www.oregon.gov/boli/workers/Pages/equal-pay.aspx",
+      "sourceAgency": "Oregon Bureau of Labor & Industries (BOLI)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Covers race, color, religion, sex, sexual orientation, gender identity, national origin, marital status, veteran status, disability, and age. Equal Pay Act claims carry a 1-year statute of limitations under ORS 652.230."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Oregon Bureau of Labor & Industries (BOLI) - Wage and Hour Division",
+      "url": "https://www.oregon.gov/boli/workers/Pages/default.aspx"
+    },
+    "discrimination": {
+      "name": "Oregon Bureau of Labor & Industries (BOLI) - Civil Rights Division",
+      "url": "https://www.oregon.gov/boli/civil-rights/Pages/default.aspx"
+    }
+  }
+}

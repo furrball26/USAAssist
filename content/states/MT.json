@@ -1,0 +1,114 @@
+{
+  "jurisdiction": "MT",
+  "name": "Montana",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "overtime.daily",
+      "value": "follows federal FLSA",
+      "summary": "Montana requires overtime at 1.5x the hourly rate for hours worked over 40 in a workweek and has no daily overtime requirement, mirroring the federal standard.",
+      "citation": "Mont. Code Ann. § 39-3-405",
+      "sourceUrl": "https://mca.legmt.gov/bills/mca/title_0390/chapter_0030/part_0040/section_0050/0390-0030-0040-0050.html",
+      "sourceAgency": "Montana Legislature (Montana Code Annotated)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Weekly OT only; no daily OT. Farm workers are exempt and seasonal amusement/recreation students use a 48-hour threshold. Montana does not use a separate higher salary floor for exemptions."
+    },
+    {
+      "topic": "minimumWage.hourly",
+      "value": 10.85,
+      "summary": "Montana's minimum wage is $10.85 per hour effective January 1, 2026, higher than the federal $7.25, and it is adjusted annually for inflation.",
+      "citation": "Mont. Code Ann. § 39-3-409",
+      "sourceUrl": "https://erd.dli.mt.gov/labor-standards/wage-and-hour-payment-act/state-minimum-wage",
+      "sourceAgency": "Montana Department of Labor & Industry, Employment Relations Division",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "No tip credit, meal credit, or training wage is allowed in Montana. A very small non-FLSA business with gross annual sales of $110,000 or less may pay $4.00/hr. Rate receives a CPI-based cost-of-living adjustment by Sept. 30 each year; verify the current-year figure annually via the official 2026 minimum wage determination letter/poster."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": ["marital status", "creed", "age (all ages, not limited to 40+)", "vaccination status"],
+      "summary": "Beyond the federal protected classes, Montana law also prohibits employment discrimination based on marital status, creed, age without a lower-age floor, and (per HB 702) vaccination status.",
+      "citation": "Mont. Code Ann. § 49-2-303; § 49-2-312 (vaccination status)",
+      "sourceUrl": "https://mca.legmt.gov/bills/mca/title_0490/chapter_0020/part_0030/section_0030/0490-0020-0030-0030.html",
+      "sourceAgency": "Montana Legislature (Montana Code Annotated) / Montana Human Rights Bureau",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Section 49-2-303 lists race, creed, religion, color, national origin, age, physical or mental disability, marital status, and sex. Montana's age protection is not limited to workers 40+ (broader than federal ADEA). Vaccination status protection was added by HB 702 (2021), codified at § 49-2-312; see also https://erd.dli.mt.gov/human-rights/human-rights-laws/employment-discrimination/hb-702. Political-ideas protection applies to governmental services, not general private employment."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": 1,
+      "summary": "The Montana Human Rights Act applies to any employer of one or more persons, far lower than the federal 15-employee threshold for Title VII/ADA.",
+      "citation": "Mont. Code Ann. § 49-2-101(11)",
+      "sourceUrl": "https://mca.legmt.gov/bills/mca/title_0490/chapter_0020/part_0010/section_0010/0490-0020-0010-0010.html",
+      "sourceAgency": "Montana Legislature (Montana Code Annotated)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "'Employer' means an employer of one or more persons, excluding certain fraternal, charitable, or religious associations not organized for private profit. Subsection number may shift with recodification; verify current subsection."
+    },
+    {
+      "topic": "retaliation",
+      "value": "Wrongful Discharge From Employment Act protects against retaliatory and non-good-cause discharge",
+      "summary": "Montana is not a pure at-will state: after an employee completes the probationary period, discharge is wrongful if it was retaliation for refusing to violate or for reporting a violation of public policy, was not for good cause, or violated the employer's written personnel policy.",
+      "citation": "Mont. Code Ann. § 39-2-904",
+      "sourceUrl": "https://mca.legmt.gov/bills/mca/title_0390/chapter_0020/part_0090/section_0040/0390-0020-0090-0040.html",
+      "sourceAgency": "Montana Legislature (Montana Code Annotated)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Montana is the only state with a general good-cause discharge statute (the WDEA). Default probationary period is 12 months absent a specified period. During probation employment remains at will."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "180 days to file; recover up to 2 years (3 years for repeated violations)",
+      "summary": "An employee must file a wage claim within 180 days of the default or delay in payment and may recover wages and penalties for the prior 2 years (3 years for repeated violations).",
+      "citation": "Mont. Code Ann. § 39-3-207",
+      "sourceUrl": "https://mca.legmt.gov/bills/mca/title_0390/chapter_0030/part_0020/section_0070/0390-0030-0020-0070.html",
+      "sourceAgency": "Montana Legislature (Montana Code Annotated)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "180-day filing deadline for the administrative complaint; the 2-/3-year window governs the lookback period for recoverable wages and penalties."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "180 days",
+      "summary": "A discrimination complaint must be filed with the Montana Human Rights Bureau within 180 days after the alleged discriminatory act occurred or was discovered.",
+      "citation": "Mont. Code Ann. § 49-2-501",
+      "sourceUrl": "https://mca.legmt.gov/bills/mca/title_0490/chapter_0020/part_0050/section_0010/0490-0020-0050-0010.html",
+      "sourceAgency": "Montana Legislature (Montana Code Annotated) / Montana Human Rights Bureau",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Extension available where a grievance procedure under a CBA/contract/policy is used: up to 300 days if the grievance procedure extends beyond 120 days. This state deadline is shorter than the EEOC's 300-day deferral-state deadline; claimants should watch both."
+    },
+    {
+      "topic": "final-pay",
+      "value": "Involuntary: immediately (or per written policy, next payday or within 15 days, whichever is first); Voluntary: next payday or within 15 days, whichever is first",
+      "summary": "On involuntary separation, final wages are due immediately unless a written personnel policy extends payment to the next payday or within 15 days; employees who quit are paid on the next regular payday or within 15 days, whichever comes first.",
+      "citation": "Mont. Code Ann. § 39-3-205",
+      "sourceUrl": "https://mca.legmt.gov/bills/mca/title_0390/chapter_0030/part_0020/section_0050/0390-0030-0020-0050.html",
+      "sourceAgency": "Montana Legislature (Montana Code Annotated)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Late-payment penalties are set by § 39-3-206 (penalty up to 110% of wages due). Section URL constructed from the MCA Part 2 index for § 39-3-205; verify the exact section page."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Montana Department of Labor & Industry, Employment Relations Division (Wage & Hour / Compliance and Investigations Bureau)",
+      "url": "https://erd.dli.mt.gov/labor-standards/wage-and-hour-payment-act/"
+    },
+    "discrimination": {
+      "name": "Montana Human Rights Bureau, Department of Labor & Industry",
+      "url": "https://erd.dli.mt.gov/human-rights/"
+    }
+  }
+}

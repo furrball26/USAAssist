@@ -1,0 +1,127 @@
+{
+  "jurisdiction": "IL",
+  "name": "Illinois",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "overtime.daily",
+      "value": "follows federal FLSA",
+      "summary": "Illinois requires overtime at 1.5x after 40 hours in a workweek and has no daily overtime rule, mirroring the federal FLSA standard.",
+      "citation": "820 ILCS 105/4a",
+      "sourceUrl": "https://labor.illinois.gov/faqs/minimum-wage-overtime-faq.html",
+      "sourceAgency": "Illinois Department of Labor",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Illinois follows the federal 40-hour weekly threshold; no state daily overtime. Illinois applies its own exemption rules under the Minimum Wage Law in addition to federal FLSA exemptions."
+    },
+    {
+      "topic": "minimumWage.hourly",
+      "value": 15.00,
+      "summary": "Illinois's minimum wage is $15.00 per hour for workers 18 and older, well above the federal $7.25.",
+      "citation": "820 ILCS 105/4",
+      "sourceUrl": "https://labor.illinois.gov/laws-rules/fls/minimum-wage-law.html",
+      "sourceAgency": "Illinois Department of Labor",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Rate reached $15.00 on Jan 1, 2025 and remains in effect for 2026 per IDOL. Tipped minimum is $9.00/hr and youth (under 18, under 650 hrs/yr) is $13.00/hr. Some localities (e.g., Chicago, Cook County) set higher rates."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": [
+        "ancestry",
+        "marital status",
+        "sexual orientation",
+        "gender identity",
+        "military status",
+        "unfavorable military discharge",
+        "order of protection status",
+        "arrest record",
+        "conviction record",
+        "citizenship status",
+        "work authorization status",
+        "source of income"
+      ],
+      "summary": "The Illinois Human Rights Act protects several classes beyond the federal set, including sexual orientation, gender identity, marital status, ancestry, military status, arrest/conviction record, citizenship/work authorization status, and order of protection status.",
+      "citation": "775 ILCS 5/1-103",
+      "sourceUrl": "https://hrc.illinois.gov/rights.html",
+      "sourceAgency": "Illinois Human Rights Commission / Illinois Department of Human Rights",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Listed classes are those beyond the federal baseline (race, color, religion, sex, national origin, age 40+, disability, pregnancy, genetic info). Some listed classes apply in specific contexts (e.g., source of income primarily in housing/real estate). Verify context-specific applicability against 775 ILCS 5."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": 1,
+      "summary": "The Illinois Human Rights Act covers employers with 1 or more employees, far broader than the federal 15-employee threshold under Title VII/ADA.",
+      "citation": "775 ILCS 5/2-101(B)",
+      "sourceUrl": "https://www.ilga.gov/legislation/ilcs/ilcs4.asp?DocName=077500050HArt.+2&ActID=2266&ChapterID=64&SeqStart=600000&SeqEnd=1393750",
+      "sourceAgency": "Illinois General Assembly (Illinois Compiled Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Effective July 1, 2020 the Act's employer definition was broadened to 1+ employee for most purposes; certain provisions (e.g., some disability accommodation counts) may have had prior thresholds. Verify exact subsection wording."
+    },
+    {
+      "topic": "retaliation.whistleblower",
+      "value": "Illinois Whistleblower Act",
+      "summary": "Illinois's Whistleblower Act bars employers from retaliating against employees who disclose (or refuse to participate in) activity they reasonably believe violates a state or federal law, rule, or regulation or poses a danger to public health or safety.",
+      "citation": "740 ILCS 174/",
+      "sourceUrl": "https://www.ilga.gov/legislation/ilcs/ilcs3.asp?ActID=2495",
+      "sourceAgency": "Illinois General Assembly (Illinois Compiled Statutes)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Act was substantially amended effective Jan 1, 2025, broadening protected disclosures and defining 'adverse employment action.' Additional anti-retaliation provisions exist in the Minimum Wage Law and Wage Payment and Collection Act."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "1 year to file with IDOL",
+      "summary": "A wage or final-compensation claim must be filed with the Illinois Department of Labor within one year after the wages became due.",
+      "citation": "820 ILCS 115/",
+      "sourceUrl": "https://labor.illinois.gov/faqs/wage-payment-faq.html",
+      "sourceAgency": "Illinois Department of Labor",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "One-year deadline applies to administrative claims filed with IDOL under the Wage Payment and Collection Act. A separate 10-year limitations period generally applies to private civil suits on written contracts (735 ILCS 5/13-206); verify if civil-suit deadline is needed."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "2 years",
+      "summary": "A discrimination charge for employment (and most non-housing contexts) must be filed with the Illinois Department of Human Rights within 2 years of the alleged violation.",
+      "citation": "775 ILCS 5/7A-102",
+      "sourceUrl": "https://dhr.illinois.gov/about-us/news-and-media/all-news/2024-12-30-idhr-extends-statute-of-limitations.html",
+      "sourceAgency": "Illinois Department of Human Rights",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Extended from 300 days to 2 years effective Jan 1, 2025 (Public Act 103-0973). Housing violations remain 1 year. Longer than the federal EEOC 180/300-day deadlines."
+    },
+    {
+      "topic": "final-pay",
+      "value": "next regular payday",
+      "summary": "Illinois requires an employer to pay a separated employee's final compensation in full at the time of separation if possible, but no later than the next regularly scheduled payday.",
+      "citation": "820 ILCS 115/5",
+      "sourceUrl": "https://labor.illinois.gov/faqs/wage-payment-faq.html",
+      "sourceAgency": "Illinois Department of Labor",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Final compensation includes earned wages, salary, commissions, bonuses, and the monetary equivalent of earned but unused vacation. Applies regardless of whether separation is voluntary or involuntary."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "Illinois Department of Labor",
+      "url": "https://labor.illinois.gov"
+    },
+    "discrimination": {
+      "name": "Illinois Department of Human Rights",
+      "url": "https://dhr.illinois.gov"
+    }
+  }
+}

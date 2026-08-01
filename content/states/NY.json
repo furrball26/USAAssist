@@ -1,0 +1,118 @@
+{
+  "jurisdiction": "NY",
+  "name": "New York",
+  "reviewed": false,
+  "lastChecked": "2026-07-30",
+  "facts": [
+    {
+      "topic": "minimumWage.hourly",
+      "value": 17.00,
+      "summary": "New York's minimum wage in 2026 is $17.00/hour in New York City, Long Island, and Westchester County, and $16.00/hour in the remainder of the state, well above the federal $7.25.",
+      "citation": "N.Y. Labor Law art. 19 (Minimum Wage Act); 12 NYCRR 142",
+      "sourceUrl": "https://dol.ny.gov/minimum-wage-0",
+      "sourceAgency": "New York State Department of Labor",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Two-tier rate: $17.00 NYC/Long Island/Westchester, $16.00 rest of state, effective Jan 1, 2026. Starting 2027 the wage is indexed to inflation. Verify regional figure applicable to the worker's county."
+    },
+    {
+      "topic": "discrimination.protectedClasses",
+      "value": [
+        "age",
+        "race",
+        "creed",
+        "color",
+        "national origin",
+        "citizenship or immigration status",
+        "sexual orientation",
+        "gender identity or expression",
+        "military status",
+        "sex",
+        "disability",
+        "predisposing genetic characteristics",
+        "familial status",
+        "marital status",
+        "status as a victim of domestic violence"
+      ],
+      "summary": "New York's Human Rights Law bars employment discrimination on many bases beyond federal law, including sexual orientation, gender identity or expression, marital and familial status, military status, predisposing genetic characteristics, citizenship/immigration status, and domestic-violence-victim status.",
+      "citation": "N.Y. Executive Law § 296",
+      "sourceUrl": "https://www.nysenate.gov/legislation/laws/EXC/296",
+      "sourceAgency": "New York State (official consolidated laws)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "List reflects Executive Law § 296(1)(a). Federal Title VII covers race, color, religion, sex, national origin; the ADEA covers age; NY adds the remaining categories listed here."
+    },
+    {
+      "topic": "discrimination.coverage",
+      "value": "all employers (no minimum employee count)",
+      "summary": "The New York Human Rights Law applies to all employers in the state regardless of size, unlike federal Title VII/ADA which require 15+ employees (ADEA 20+).",
+      "citation": "N.Y. Executive Law § 292(5)",
+      "sourceUrl": "https://www.nysenate.gov/legislation/laws/EXC/292",
+      "sourceAgency": "New York State (official consolidated laws)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Section 292(5) defines 'employer' as 'all employers within the state.' The former four-or-more-employee threshold was eliminated by 2019 amendments (effective Feb 8, 2020)."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "3 years",
+      "summary": "A discrimination complaint may be filed with the New York State Division of Human Rights within three years of the most recent discriminatory act, longer than the EEOC's 180/300-day windows.",
+      "citation": "N.Y. Executive Law § 297(5)",
+      "sourceUrl": "https://dhr.ny.gov/complaint",
+      "sourceAgency": "New York State Division of Human Rights (FEPA)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Three-year deadline applies to unlawful discriminatory acts occurring on or after Feb 15, 2024; for acts before that date only workplace sexual harassment retained a three-year window and other claims were subject to the prior one-year deadline. Verify which deadline applies to the specific act date."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "6 years",
+      "summary": "An action to recover unpaid wages under the New York Labor Law must be commenced within six years, and back wages accrue for the entire six-year period.",
+      "citation": "N.Y. Labor Law § 198(3)",
+      "sourceUrl": "https://www.nysenate.gov/legislation/laws/LAB/198",
+      "sourceAgency": "New York State (official consolidated laws)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Six-year statute of limitations is longer than the federal FLSA's two/three-year period."
+    },
+    {
+      "topic": "whistleblower",
+      "value": "Labor Law § 740 (2-year limitations period)",
+      "summary": "New York's whistleblower statute protects private employees from retaliation for disclosing, objecting to, or refusing to participate in activity they reasonably believe violates law or poses a substantial danger to public health or safety; suit must be brought within two years.",
+      "citation": "N.Y. Labor Law § 740",
+      "sourceUrl": "https://www.nysenate.gov/legislation/laws/LAB/740",
+      "sourceAgency": "New York State (official consolidated laws)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "2021 amendments broadened coverage (reasonable belief standard, former employees and independent contractors). Remedies include reinstatement, back pay, attorney's fees, and civil penalties up to $10,000. Public-sector employees are covered separately under Civil Service Law § 75-b."
+    },
+    {
+      "topic": "final-pay",
+      "value": "by the regular payday for the pay period of termination",
+      "summary": "When employment ends, New York requires the employer to pay all wages owed no later than the regular payday for the pay period during which the termination occurred (by mail if the employee requests).",
+      "citation": "N.Y. Labor Law § 191(3)",
+      "sourceUrl": "https://www.nysenate.gov/legislation/laws/LAB/191",
+      "sourceAgency": "New York State (official consolidated laws)",
+      "lastChecked": "2026-07-30",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Federal law sets no final-pay deadline, so this is a New York addition. Section 191 also sets pay-frequency rules (e.g., weekly for manual workers)."
+    }
+  ],
+  "agencies": {
+    "wageHour": {
+      "name": "New York State Department of Labor",
+      "url": "https://dol.ny.gov"
+    },
+    "discrimination": {
+      "name": "New York State Division of Human Rights",
+      "url": "https://dhr.ny.gov"
+    }
+  }
+}
