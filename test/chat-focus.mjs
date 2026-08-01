@@ -10,7 +10,7 @@ await new Promise(r=>srv.listen(0,r));const PORT=srv.address().port;
 const chrome=execSync(`find "${ROOT}chrome-headless-shell" -type f -name 'chrome-headless-shell'|head -1`).toString().trim();
 const b=await puppeteer.launch({executablePath:chrome,headless:true,args:['--no-sandbox']});
 const pg=await b.newPage(); await pg.setViewport({width:430,height:840,deviceScaleFactor:1});
-await pg.evaluateOnNewDocument(()=>localStorage.setItem('worklaw.case.v1',JSON.stringify({onboarded:true,stateSel:'Texas',county:'Travis County',issue:'Unpaid overtime or wages',profile:{name:'',employer:'',payType:'',rate:''},caseOpened:new Date().toISOString(),entries:[],done:{},messages:[]})));
+await pg.evaluateOnNewDocument(()=>localStorage.setItem('worklaw.case.v2',JSON.stringify({onboarded:true,stateSel:'Texas',county:'Travis County',issue:'Unpaid overtime or wages',profile:{name:'',employer:'',payType:'',rate:''},caseOpened:new Date().toISOString(),entries:[],done:{},messages:[]})));
 await pg.goto(`http://127.0.0.1:${PORT}/index.html`,{waitUntil:'networkidle0'});
 await new Promise(r=>setTimeout(r,500));
 await pg.evaluate(()=>{const e=[...document.querySelectorAll('button')].find(x=>x.textContent.includes('Ask AI'));e&&e.click();});

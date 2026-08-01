@@ -170,7 +170,7 @@ const ADA_REPLY = { text:'Put it in writing, plainly: describe your limitation a
 /* ── Dynamic case model ───────────────────────────────────────────── */
 
 // localStorage-backed case, so a case survives reload (single blob, best-effort).
-const STORE_KEY = 'worklaw.case.v1';
+const STORE_KEY = 'worklaw.case.v2';
 function loadCase(){
   try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; }
   catch(e){ return {}; }
@@ -208,14 +208,14 @@ const GENERIC_ISSUE = {
 };
 const ISSUES = {
   'Unpaid overtime or wages': {
-    key:'wage', caseTitle:'Unpaid overtime & wages', primaryTool:'wizard', letterKind:'wage-demand',
-    action:'Get your last 12 weeks of pay stubs.',
-    actionWhy:'Your employer must give you copies within the window your state sets. We drafted the request for you.',
+    key:'wage', caseTitle:'Unpaid overtime & wages', primaryTool:'letter', letterKind:'classification-request',
+    action:'Ask HR for your overtime classification in writing.',
+    actionWhy:'Confirming whether you are exempt or non-exempt is the first step — it decides whether you are owed overtime before you demand anything. We drafted the request for you.',
     steps:[
+      'Ask HR, in writing, for your overtime (FLSA) classification and its basis',
+      'Run the overtime-exemption self-check to see if that classification looks right',
       'Log every unpaid or off-the-clock hour you can remember',
-      'Request your pay stubs and time records in writing',
-      'Run the overtime-exemption check',
-      'Save any messages about hours, breaks or pay',
+      'If you are owed overtime, send a wage-demand letter',
     ],
     chatSeed:'You mentioned unpaid hours or overtime. Tell me your job title and how you are paid — salary or hourly — and I will explain which overtime rules apply where you work.',
   },
@@ -298,6 +298,14 @@ function caseStrength(entries){
 const MONTHS_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 function fmtDate(d){ d = d || new Date(); return MONTHS_FULL[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear(); }
 
+// Which letter templates an issue offers. Wage claims get two, in order:
+// confirm your classification first, then demand unpaid wages.
+const LETTER_LABELS = { 'classification-request':'Classification request', 'wage-demand':'Wage demand', 'complaint':'Complaint letter', 'records-request':'Records request' };
+function letterKindsFor(issueKey, cfgLetterKind){
+  if (issueKey === 'wage') return ['classification-request', 'wage-demand'];
+  return [cfgLetterKind || 'records-request'];
+}
+
 // Generate a self-send letter from the user's real inputs (no fabricated persona).
 function buildLetter(ctx){
   const name = (ctx.youName || '').trim() || '[Your name]';
@@ -307,6 +315,17 @@ function buildLetter(ctx){
   const st = (ctx.stateData && ctx.stateData.facts) || [];
   const cite = (arr, topic, fallback) => { const f = factByTopic(arr, topic); return (f && f.citation) || fallback; };
   const kind = ctx.kind || 'records-request';
+
+  if (kind === 'classification-request') {
+    const subject = 'Request for my FLSA overtime classification';
+    const body = date + '\n\n' + emp + '\nAttn: Human Resources / Payroll\n\nRe: ' + subject + '\n\nTo whom it may concern:\n\n' +
+      'I am requesting, in writing, the following about my position:\n\n' +
+      '1. Whether I am classified as exempt or non-exempt from overtime under the federal Fair Labor Standards Act (29 U.S.C. §§ 201 et seq.).\n' +
+      '2. If I am classified as exempt, which exemption the company relies on (for example: executive, administrative, professional, computer, or outside sales) and the basis for it.\n' +
+      '3. A copy of the written job description and the job duties the company relies on for that classification.\n\n' +
+      'My classification determines whether I am owed overtime for hours worked over 40 in a workweek. Under the FLSA, exempt status turns on my actual salary and job duties, not my job title (29 C.F.R. § 541.2). Please respond in writing within 14 days.\n\nSincerely,\n' + name;
+    return { title: 'Overtime classification request', subject, body };
+  }
 
   if (kind === 'wage-demand') {
     const fedCite = cite(fed, 'overtime.basicRule', '29 U.S.C. § 207');
@@ -410,8 +429,8 @@ function App(){
   const [onboarded, setOnboarded] = useState(() => !!saved.onboarded);
   const [screen, setScreen] = useState(() => saved.onboarded ? 'home' : 'onboarding');
   const [onbStep, setOnbStep] = useState(1);
-  const [stateSel, setStateSel] = useState(() => saved.stateSel || 'California');
-  const [county, setCounty] = useState(() => saved.county !== undefined ? saved.county : 'Alameda County');
+  const [stateSel, setStateSel] = useState(() => saved.stateSel || '');
+  const [county, setCounty] = useState(() => saved.county || '');
   const [countyQuery, setCountyQuery] = useState('');
   const [issue, setIssue] = useState(() => saved.issue || null);
   const [profile, setProfile] = useState(() => Object.assign({ name:'', employer:'', payType:'', rate:'' }, saved.profile));
@@ -427,6 +446,7 @@ function App(){
   const [logNote, setLogNote] = useState('');
   const [logHours, setLogHours] = useState('');
   const [letterEdit, setLetterEdit] = useState(null); // null = generated view; string = editing
+  const [letterType, setLetterType] = useState(null); // chosen letter kind (wage issue offers two)
   const [docName, setDocName] = useState('');
   const [consultSent, setConsultSent] = useState('');
   const [wizNode, setWizNode] = useState('start');
@@ -493,8 +513,8 @@ function App(){
   };
 
   const stateAbbr = US_STATE_ABBR[stateSel] || '';
-  const locationLabel = county ? county + (stateAbbr ? ', ' + stateAbbr : '') : stateSel;
-  const countyShort = county ? county.replace(/\s+(County|Parish|Borough|Census Area|Municipio|Municipality|city)$/i, '') : stateSel;
+  const locationLabel = county ? county + (stateAbbr ? ', ' + stateAbbr : '') : (stateSel || 'your location');
+  const countyShort = county ? county.replace(/\s+(County|Parish|Borough|Census Area|Municipio|Municipality|city)$/i, '') : (stateSel || 'your area');
   const showTabs = screen !== 'onboarding';
 
   // ── Derived, input-driven case values (no hardcoded persona) ──
@@ -530,7 +550,8 @@ function App(){
       {onbStep === 1 &&
         <div style={css("display:flex;flex-direction:column;gap:14px")}>
           <label htmlFor="onb-state" style={css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em")}>STATE</label>
-          <select id="onb-state" value={stateSel} onChange={e => { setStateSel(e.target.value); setCounty(null); setCountyQuery(''); }} style={css("width:100%;padding:15px;border-radius:12px;border:2px solid #14181F;background:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer;appearance:menulist;-webkit-appearance:menulist")}>
+          <select id="onb-state" value={stateSel} onChange={e => { setStateSel(e.target.value); setCounty(''); setCountyQuery(''); }} style={css("width:100%;padding:15px;border-radius:12px;border:2px solid #14181F;background:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer;appearance:menulist;-webkit-appearance:menulist")}>
+            <option value="">Select your state…</option>
             {US_STATES.map(n => <option key={n} value={n}>{n}</option>)}
           </select>
         </div>
@@ -595,7 +616,7 @@ function App(){
       </div>
 
       {(() => {
-        const blocked = (onbStep === 2 && !county) || (onbStep === 3 && !issue);
+        const blocked = (onbStep === 1 && !stateSel) || (onbStep === 2 && !county) || (onbStep === 3 && !issue);
         const go = () => {
           if (blocked) return;
           if (onbStep < 4) setOnbStep(onbStep + 1);
@@ -782,7 +803,7 @@ function App(){
     <div style={css("display:flex;flex-direction:column;min-height:100%")}>
       <div style={css("padding:6px 22px 14px;border-bottom:2px solid rgba(20,24,31,.1)")}>
         <h1 style={css("margin:0 0 4px;font:700 26px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Ask about your rights</h1>
-        <p style={css("margin:0;font:400 15px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>General information for {stateSel} — not legal advice. Responses in this preview are sample answers.</p>
+        <p style={css("margin:0;font:400 15px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>General information for {stateSel || 'your state'} — not legal advice. Responses in this preview are sample answers.</p>
       </div>
       <div style={css("flex:1;padding:18px 22px;display:flex;flex-direction:column;gap:14px")}>
         {messages.map((m, idx) => {
@@ -871,7 +892,7 @@ function App(){
               {result.cites.map((c, ci) => <span key={ci} style={css("padding:8px 12px;border-radius:8px;background:#fff;border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace")}>{c}</span>)}
             </div>
             {result.v === 'non' &&
-              <button onClick={nav('letter')} style={css("padding:18px;border-radius:16px;border:none;background:#2B3AA8;color:#fff;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Draft a wage demand letter</button>
+              <button onClick={() => { setLetterType('wage-demand'); setLetterEdit(null); setScreen('letter'); }} style={css("padding:18px;border-radius:16px;border:none;background:#2B3AA8;color:#fff;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Draft a wage demand letter</button>
             }
             {result.v !== 'non' &&
               <button onClick={nav('chat')} style={css("padding:18px;border-radius:16px;border:none;background:#2B3AA8;color:#fff;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Ask the AI about your classification</button>
@@ -979,18 +1000,31 @@ function App(){
   );
 
   const Letter = () => {
+    const kinds = letterKindsFor(cfg.key, cfg.letterKind);
+    const activeKind = kinds.indexOf(letterType) >= 0 ? letterType : kinds[0];
     const gen = buildLetter({
-      kind: cfg.letterKind, issueKey: cfg.key, youName, employerName, stateSel,
+      kind: activeKind, issueKey: cfg.key, youName, employerName, stateSel,
       unpaidHours, owedEstimate, rateNum, federal, stateData, entries,
     });
     const editing = letterEdit != null;
     const text = editing ? letterEdit : gen.body;
-    const built = cfg.key === 'wage' && (evidenceCount > 0 || unpaidHours > 0)
+    const isClass = activeKind === 'classification-request';
+    const built = isClass
+      ? 'Confirm your overtime classification before demanding anything — this is the first step.'
+      : cfg.key === 'wage' && (evidenceCount > 0 || unpaidHours > 0)
       ? 'Built from your log: ' + evidenceCount + ' ' + (evidenceCount === 1 ? 'entry' : 'entries') + (unpaidHours > 0 ? ', ' + unpaidHours + ' unpaid hours' : '') + '.'
       : 'Built from your case details for ' + locationLabel + '.';
     return (
     <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
       <button onClick={nav('home')} style={css("align-self:flex-start;background:none;border:none;padding:6px 0;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}>← Dashboard</button>
+      {kinds.length > 1 &&
+        <div style={css("display:flex;gap:8px")}>
+          {kinds.map((k, i) => {
+            const on = k === activeKind;
+            return <button key={k} onClick={() => { setLetterType(k); setLetterEdit(null); }} style={css('flex:1;padding:12px 10px;border-radius:12px;border:2px solid #14181F;background:' + (on ? '#2B3AA8' : '#fff') + ';color:' + (on ? '#fff' : '#14181F') + ";font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{(i === 0 ? '1. ' : '2. ') + LETTER_LABELS[k]}</button>;
+          })}
+        </div>
+      }
       <h1 style={css("margin:0;font:700 26px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{gen.title}</h1>
       <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{built}</p>
       {(!youName || !employerName) &&

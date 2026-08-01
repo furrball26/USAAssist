@@ -98,8 +98,13 @@ try {
   await page.goto(BASE + '/index.html', { waitUntil: 'networkidle0', timeout: 20000 });
   await new Promise(r => setTimeout(r, 400));
   assert(/Where do you work/i.test(await bodyText()), 'fresh load did not show onboarding');
-  await clickText('Continue');                 // step 1 → 2 (state)
-  await clickText('Continue');                 // step 2 → 3 (county default present)
+  // step 1 now requires an explicit state selection (no demo default)
+  await page.select('#onb-state', 'California');
+  await new Promise(r => setTimeout(r, 150));
+  await clickText('Continue');                 // step 1 → 2 (state selected)
+  await page.select('#onb-county', (await page.$$eval('#onb-county option', o => o.map(x => x.value).filter(Boolean)))[0]);
+  await new Promise(r => setTimeout(r, 150));
+  await clickText('Continue');                 // step 2 → 3 (county selected)
   assert(await clickText('Harassment or a hostile workplace'), 'issue option not found on step 3');
   await clickText('Continue');                 // step 3 → 4 (issue now selected)
   assert(/case details/i.test(await bodyText()), 'step 4 (case details) not reached');

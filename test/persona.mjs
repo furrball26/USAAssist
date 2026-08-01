@@ -48,7 +48,7 @@ for (const c of CASES) {
     entries: c.hours ? [{ date:'JAN 5, 2026 · 9:00 AM', title:'Unpaid or extra hours', body:'covered a shift', color:'#EF7B22', tag:'Wage & hour', hours:c.hours }] : [],
     done:{}, messages:[],
   };
-  await pg.evaluateOnNewDocument((s) => localStorage.setItem('worklaw.case.v1', JSON.stringify(s)), seed);
+  await pg.evaluateOnNewDocument((s) => localStorage.setItem('worklaw.case.v2', JSON.stringify(s)), seed);
   await pg.goto(`http://127.0.0.1:${PORT}/index.html`, { waitUntil:'networkidle0', timeout:20000 });
   await new Promise(r => setTimeout(r, 600));
 
