@@ -892,7 +892,7 @@ function App() {
   const chatEnd = useRef(null);
   useEffect(() => () => clearTimeout(timer.current), []);
   useEffect(() => {
-    if (screen === "chat" && chatEnd.current) chatEnd.current.scrollIntoView({ behavior: "smooth" });
+    if (screen === "chat" && chatEnd.current) chatEnd.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [messages, typing, screen]);
   useEffect(() => {
     saveCase({ onboarded, stateSel, county, issue, profile, caseOpened, homeMode, done, messages, entries });
@@ -1173,7 +1173,7 @@ function App() {
   const altHome = screen === "home" ? homeMode : null;
   const screenBg = altHome === "action" ? "#2B3AA8" : altHome === "plain" ? "#FFFFFF" : "#FFFDF8";
   const statusColor = altHome === "action" ? "#fff" : "#14181F";
-  return /* @__PURE__ */ React.createElement("div", { className: "device" }, /* @__PURE__ */ React.createElement("div", { className: "screen", style: css("background:" + screenBg) }, /* @__PURE__ */ React.createElement("div", { className: "statusbar", style: css("color:" + statusColor) }, /* @__PURE__ */ React.createElement("span", null, "9:41"), /* @__PURE__ */ React.createElement("span", { style: css("letter-spacing:2px") }, "\u25AE\u25AE\u25AE \u1BE4 \u25B0")), /* @__PURE__ */ React.createElement("div", { className: "scrollarea" }, /* @__PURE__ */ React.createElement(Current, null)), showTabs && /* @__PURE__ */ React.createElement("div", { style: css("flex:none;border-top:2px solid rgba(20,24,31,.14);background:#FFFDF8;padding:10px 12px 26px;display:grid;grid-template-columns:repeat(5,1fr);gap:4px") }, TAB_DEFS.map(
+  return /* @__PURE__ */ React.createElement("div", { className: "device" }, /* @__PURE__ */ React.createElement("div", { className: "screen", style: css("background:" + screenBg) }, /* @__PURE__ */ React.createElement("div", { className: "statusbar", style: css("color:" + statusColor) }, /* @__PURE__ */ React.createElement("span", null, "9:41"), /* @__PURE__ */ React.createElement("span", { style: css("letter-spacing:2px") }, "\u25AE\u25AE\u25AE \u1BE4 \u25B0")), /* @__PURE__ */ React.createElement("div", { className: "scrollarea" }, Current()), showTabs && /* @__PURE__ */ React.createElement("div", { style: css("flex:none;border-top:2px solid rgba(20,24,31,.14);background:#FFFDF8;padding:10px 12px 26px;display:grid;grid-template-columns:repeat(5,1fr);gap:4px") }, TAB_DEFS.map(
     ([k, icon, label]) => /* @__PURE__ */ React.createElement("button", { key: k, onClick: nav(k), style: css("display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 2px;border-radius:12px;border:2px solid " + (screen === k ? "#14181F" : "transparent") + ";background:" + (screen === k ? "#FFF4D6" : "transparent") + ";color:#14181F;cursor:pointer;min-height:56px") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 19px 'IBM Plex Mono',monospace") }, icon), /* @__PURE__ */ React.createElement("span", { style: css("font:700 12px 'Atkinson Hyperlegible',sans-serif") }, label))
   ))));
 }
