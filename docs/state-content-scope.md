@@ -45,7 +45,7 @@ content/
   _federal.json         // FLSA, Title VII, ADA, NLRA, ADEA — applies everywhere
   states/CA.json        // overtime overlay, protected classes (FEHA), SOL, thresholds, rights cards
   states/NY.json
-  ...                   // 50 + DC + PR
+  ...                   // 50 states
   local/CA/alameda.json // min wage, local ordinances (optional overrides)
 ```
 
@@ -111,7 +111,7 @@ Both need backends and are independent of the static content work — can run in
 | --- | --- | --- |
 | **0 — Guardrail (now)** | Federal-only fallback + "content is illustrative / not yet reviewed for {state}" banner for any non-reviewed state; keep CA as the fully-authored example. Ships today, removes the trust risk. | ~half a day |
 | **1 — Schema + baseline** | Extract federal content to `_federal.json`; build the merge layer; author + attorney-review **5 states** (CA, NY, TX, FL, IL ≈ 40% of workforce). | ~1–2 wks + legal review |
-| **2 — Breadth** | State layer for the remaining 45 (+DC, PR), reviewed. Pace gated by legal review throughput or a licensed dataset. | weeks–months (or license) |
+| **2 — Breadth** | State layer for the remaining 45 states, reviewed. Pace gated by legal review throughput or a licensed dataset. | weeks–months (or license) |
 | **3 — Local** | County/city minimum wage + ordinances for major metros. | ~1 wk + data source |
 | **4 — Dynamic** | Real AI consult (jurisdiction-aware, guarded) + live attorney directory. | separate backend project |
 

@@ -68,13 +68,13 @@
       "topic": "deadlines.wageClaim",
       "value": "3 years",
       "summary": "Actions to recover unpaid wages under the New Mexico Minimum Wage Act must be commenced within three years.",
-      "citation": "NMSA 1978, Section 50-4-32 (Minimum Wage Act limitation)",
+      "citation": "NMSA 1978, Section 50-4-26 (Minimum Wage Act enforcement/limitation); see also Section 37-1-5",
       "sourceUrl": "https://nmonesource.com/nmos/en/nav.do",
       "sourceAgency": "New Mexico Compilation Commission (official NMSA 1978 statutes)",
-      "lastChecked": "2026-07-30",
+      "lastChecked": "2026-08-01",
       "reviewed": false,
       "reviewedBy": null,
-      "notes": "Three-year statute of limitations for Minimum Wage Act claims. Written-contract wage claims may use the longer general limitations periods (Section 37-1-3). Statute text could not be re-fetched (403); verify Section 50-4-32 on nmonesource.com."
+      "notes": "Corrected citation: the three-year statute of limitations for wage claims under Chapter 50, Article 4 is codified in Section 50-4-26 ('a civil action to enforce any provision of Chapter 50, Article 4 NMSA 1978 shall be commenced within three years after a violation last occurs'), not the previously cited Section 50-4-32, which does not exist. The general wage-and-hour limitations statute is Section 37-1-5. Three-year value confirmed via official statute text."
     },
     {
       "topic": "whistleblower",

@@ -59,7 +59,7 @@ const ALL_52 = {
   NJ:"New Jersey",NM:"New Mexico",NY:"New York",NC:"North Carolina",ND:"North Dakota",OH:"Ohio",
   OK:"Oklahoma",OR:"Oregon",PA:"Pennsylvania",RI:"Rhode Island",SC:"South Carolina",SD:"South Dakota",
   TN:"Tennessee",TX:"Texas",UT:"Utah",VT:"Vermont",VA:"Virginia",WA:"Washington",WV:"West Virginia",
-  WI:"Wisconsin",WY:"Wyoming",DC:"District of Columbia",PR:"Puerto Rico"
+  WI:"Wisconsin",WY:"Wyoming"
 };
 const C = "../content/";
 const esc = s => String(s==null?"":s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
@@ -105,7 +105,7 @@ async function load(){
   const withSource = allFacts.filter(f=>f.sourceUrl).length;
 
   document.getElementById("stats").innerHTML = `
-    <div class="stat"><b>${states.length+1}</b><span>jurisdictions authored (of 53 incl. federal)</span></div>
+    <div class="stat"><b>${states.length+1}</b><span>jurisdictions authored (of 51 incl. federal)</span></div>
     <div class="stat"><b>${allFacts.length}</b><span>total facts</span></div>
     <div class="stat"><b>${withSource}</b><span>with source URL</span></div>
     <div class="stat"><b>${reviewedFacts}</b><span>counsel-reviewed</span></div>`;

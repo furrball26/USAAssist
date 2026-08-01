@@ -17,7 +17,7 @@ to be confirmed at build time (the pipeline machine-checks that every `sourceUrl
 | FMLA | DOL WHD | https://www.dol.gov/agencies/whd/fmla |
 | State minimum-wage table (cross-check) | DOL | https://www.dol.gov/agencies/whd/minimum-wage/state |
 
-## States, DC & Puerto Rico — primary labor/wage agency
+## States — primary labor/wage agency (50 states)
 
 Discrimination claims in many states go through a separate Fair Employment Practices Agency
 (FEPA); those are added per-state in the JSON where relevant.
@@ -74,8 +74,6 @@ Discrimination claims in many states go through a separate Fair Employment Pract
 | WV | West Virginia | Division of Labor | https://labor.wv.gov |
 | WI | Wisconsin | Dept of Workforce Development | https://dwd.wisconsin.gov |
 | WY | Wyoming | Dept of Workforce Services | https://dws.wyo.gov |
-| DC | District of Columbia | Dept of Employment Services (DOES) | https://does.dc.gov |
-| PR | Puerto Rico | Depto. del Trabajo y Recursos Humanos | https://www.trabajo.pr.gov |
 
 ## State discrimination agencies (FEPAs) — added per state as authored
 

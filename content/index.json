@@ -50,9 +50,7 @@
     "WA",
     "WV",
     "WI",
-    "WY",
-    "DC",
-    "PR"
+    "WY"
   ],
   "note": "states[] lists jurisdictions with an authored data file. reviewed:true (per file) gates authoritative rendering in the app."
 }

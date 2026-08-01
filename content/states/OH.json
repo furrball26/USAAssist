@@ -18,15 +18,15 @@
     },
     {
       "topic": "minimumWage.hourly",
-      "value": "exceeds federal; inflation-adjusted annually (verify current 2026 dollar figure)",
-      "summary": "Ohio's minimum wage exceeds the federal $7.25 and is raised each January by CPI inflation under the state constitution; small employers below the gross-receipts threshold and workers under 16 pay the federal $7.25.",
+      "value": 11.00,
+      "summary": "Ohio's minimum wage is $11.00 per hour in 2026 (tipped: $5.50 per hour), above the federal $7.25 and raised each January by CPI inflation under the state constitution; employers with annual gross receipts below the threshold and workers under 16 pay the federal $7.25.",
       "citation": "Ohio Const. art. II, section 34a",
       "sourceUrl": "https://codes.ohio.gov/ohio-constitution/section-2.34a",
       "sourceAgency": "Ohio Constitution (via Ohio Revised Code / LSC)",
-      "lastChecked": "2026-07-30",
+      "lastChecked": "2026-08-01",
       "reviewed": false,
       "reviewedBy": null,
-      "notes": "Base was $6.85 (2007), adjusted each Sept 30 by CPI (rounded to nearest 5 cents), effective the following Jan 1; the gross-receipts small-employer threshold (base $250,000) is inflation-adjusted the same way. Exact 2026 non-tipped/tipped dollar amounts and current threshold could NOT be sourced: com.ohio.gov (Dept of Commerce Wage & Hour poster) was unreachable and web search was unavailable. VERIFY the 2026 figure from the official Ohio Dept of Commerce minimum wage poster before publishing a number."
+      "notes": "2026 rate: $11.00/hr non-tipped, $5.50/hr tipped (effective Jan 1, 2026), a 2.8% CPI-W increase over the 2025 $10.70 rate. Base was $6.85 (2007), adjusted each Sept 30 by CPI (rounded to nearest 5 cents), effective the following Jan 1. The gross-receipts small-employer threshold is $405,000 for 2026 (also inflation-adjusted); employers below it and workers under 16 default to the federal $7.25. 2026 dollar figure confirmed via WebSearch; re-verify against the official Ohio Dept of Commerce minimum wage poster (com.ohio.gov) at publish time."
     },
     {
       "topic": "discrimination.protectedClasses",
