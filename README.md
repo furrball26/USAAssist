@@ -11,10 +11,25 @@ wired in as switchable display modes.
 
 ## Screens
 
-Onboarding (state → county dropdowns + issue picker) · Dashboard · AI consult chat ·
+Onboarding (state → county → issue → case details) · Dashboard · AI consult chat ·
 Overtime-exemption wizard (FLSA §541 decision tree) · Incident log · Document
 review · Wage-demand letter · Case strength · Rights library · Attorney referrals.
 Five-tab bottom navigation; home has Standard / Action-first / Plain modes.
+
+## Your case (input-driven, persisted)
+
+There is **no hardcoded persona** — the whole app is generated from what the user enters:
+
+- **Onboarding** captures location, the chosen issue, and optional case details (name,
+  employer, pay type/rate). The **issue** drives the dashboard title, next-steps checklist,
+  action-mode flow, plain-mode framing, chat opener, and letter type.
+- **Incident log** starts empty; entries (with optional unpaid-hours) are the source of
+  truth. **Case strength** is computed from the evidence actually logged.
+- **Wage-demand letter** is generated from the profile + logged hours + the state/federal
+  overtime citations in `content/` (e.g. a Texas case cites Tex. Labor Code, not California).
+  It is editable and exports via a print window (Save as PDF) with a `.txt` fallback.
+- **Referrals** "Export case file" builds a portable case-file summary from the real inputs.
+- The case is persisted to `localStorage` (`worklaw.case.v1`), so it survives reload.
 
 ## State-aware content
 
@@ -33,22 +48,29 @@ commit-pinned jsDelivr URL (served with open CORS).
 
 ## Stack
 
-A single self-contained React app — no build step or server required to run.
+A single self-contained React app. `index.html` runs with **zero network requests**;
+`index.dev.html` is the JSX source of truth.
 
-- **`index.html`** — production build. Fully self-contained: React + ReactDOM and the
-  compiled app are inlined, and the Atkinson Hyperlegible / IBM Plex Mono fonts are
-  embedded as base64. **Zero network requests** — open it directly in a browser or
-  host the file anywhere.
-- **`index.dev.html`** — editable source. Same app authored as JSX, compiled in the
-  browser via Babel standalone and loading React from a CDN. Edit this, then rebuild.
+- **`index.dev.html`** — **editable source**. The app authored as JSX, compiled in the
+  browser via Babel standalone and loading React from a CDN. **Edit this file only.**
+- **`index.html`** — generated production build. Fully self-contained: React + ReactDOM
+  and the compiled app are inlined, and the Atkinson Hyperlegible / IBM Plex Mono fonts
+  are embedded as base64. Open it directly in a browser or host the file anywhere.
+- **`assets/app.js`** — generated minified bundle for jsDelivr / the Vercel shell.
 
-## Rebuilding `index.html` from `index.dev.html`
+## Build & test
 
-The production file is generated from the dev file (JSX precompiled, runtime + fonts
-inlined). The build script lives in the working scratchpad used during development;
-to regenerate, precompile the `<script type="text/babel">` block with the Babel
-`react` preset, inline `react`/`react-dom` UMD bundles, and embed the Google Fonts
-woff2 files as `data:` URIs.
+The build regenerates the two artifacts from `index.dev.html` (JSX → `React.createElement`
+via esbuild) and splices the app block into `index.html` — the React/font inlining is left
+untouched. A headless smoke test and a multi-state persona test guard against regressions.
+
+```sh
+npm install        # esbuild + puppeteer-core (dev-only; see package.json)
+npm run build      # index.dev.html → index.html + assets/app.js
+npm test           # headless smoke test (all screens, home modes, persistence)
+node test/persona.mjs   # multi-state / multi-issue consistency + no-leakage check
+npm run verify     # build + smoke in one step
+```
 
 ## Deployment
 
@@ -65,8 +87,8 @@ Live at **https://worklaw.app** and **https://furrball26.github.io/USAAssist/**.
 ### Updating a live change
 
 1. Edit `index.dev.html` (the JSX source).
-2. Rebuild the artifacts: self-contained `index.html` (for Pages) and minified
-   `assets/app.js` (for jsDelivr / the Vercel shell).
+2. `npm run verify` — rebuilds `index.html` (for Pages) + `assets/app.js` (for jsDelivr /
+   the Vercel shell) and runs the smoke test.
 3. `git push`. **GitHub Pages** (furrball26.github.io/USAAssist) updates automatically.
 4. For **worklaw.app**, redeploy the Vercel shell with the script `src` pinned to the new
    commit SHA (`git rev-parse HEAD`). Pinning to the SHA avoids all CDN/browser cache lag —
@@ -85,6 +107,10 @@ interactive cards for non-color affordance; 44px+ hit targets.
 
 ## Notes
 
-- The chat AI, legal content, and case data are illustrative/canned in this build.
-  Production would need persistence plus real AI and legal-content backends.
+- Case data is real and user-driven (persisted locally). The **chat AI responses** are
+  still canned sample answers, and **attorney listings are labeled samples** — production
+  would wire a real AI backend and a licensed-attorney directory. State legal content stays
+  behind the `reviewed: false` draft banner until counsel signs off.
+- Document review shows a clearly-labeled **example** clause analysis; automated parsing of
+  an uploaded file is not available in this build.
 - Icons are unicode glyphs from the prototype; swap for a matched icon set in production.

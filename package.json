@@ -1,0 +1,16 @@
+{
+  "name": "worklaw",
+  "version": "1.0.0",
+  "private": true,
+  "description": "WorkLaw — build + smoke-test tooling for the self-contained app",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node test/smoke.mjs",
+    "verify": "node build.mjs && node test/smoke.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.1",
+    "puppeteer-core": "^24.0.0"
+  }
+}
