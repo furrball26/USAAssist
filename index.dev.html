@@ -75,6 +75,8 @@ function topicKicker(topic){
   return m[p] || p.replace(/([A-Z])/g, ' $1').replace(/^./, c => c.toUpperCase()).toUpperCase();
 }
 function factValStr(v){ return Array.isArray(v) ? v.join(', ') : (v == null ? '' : String(v)); }
+function factByTopic(facts, topic){ return (facts || []).find(f => f.topic === topic); }
+function factsByPrefix(facts, prefix){ return (facts || []).filter(f => String(f.topic || '').split('.')[0] === prefix); }
 
 /* Parse a CSS declaration string into a React style object.
    Lets us reuse the design's exact inline-style strings verbatim. */
@@ -471,7 +473,7 @@ function App(){
     <div style={css("display:flex;flex-direction:column;min-height:100%")}>
       <div style={css("padding:6px 22px 14px;border-bottom:2px solid rgba(20,24,31,.1)")}>
         <h1 style={css("margin:0 0 4px;font:700 26px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Ask about your rights</h1>
-        <p style={css("margin:0;font:400 15px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Answers cite the exact law for {locationLabel}. Not legal advice.</p>
+        <p style={css("margin:0;font:400 15px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>General information for {stateSel} — not legal advice. Responses in this preview are sample answers.</p>
       </div>
       <div style={css("flex:1;padding:18px 22px;display:flex;flex-direction:column;gap:14px")}>
         {messages.map((m, idx) => {
@@ -539,11 +541,23 @@ function App(){
               <p style={css("margin:0 0 12px;font:700 26px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{result.title}</p>
               <p style={css("margin:0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#25302B")}>{result.body}</p>
             </div>
-            <div style={css("padding:18px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF")}>
-              <p style={css("margin:0 0 10px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>What applies where you are</p>
-              <p style={css("margin:0 0 8px;font:400 16px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}><strong>Federal (FLSA):</strong> time-and-a-half past 40 hours in a week. Exemption requires passing the salary-basis, salary-level ($684/week) and duties tests — failing any one means overtime is owed.</p>
-              <p style={css("margin:0;font:400 16px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}><strong>California:</strong> also daily overtime past 8 hours, double time past 12, and a higher salary floor — $1,352/week in 2026. Passing the federal test but failing California's still means overtime.</p>
-            </div>
+            {(() => {
+              const fedF = (federal && federal.facts) || [];
+              const stF = (stateData && stateData.facts) || [];
+              const stRev = !!(stateData && stateData.reviewed === true);
+              const fedOT = [factByTopic(fedF,'overtime.basicRule'), factByTopic(fedF,'overtime.salaryLevelWeekly')].filter(Boolean);
+              const stOT = factsByPrefix(stF,'overtime').concat([factByTopic(stF,'minimumWage.hourly')].filter(Boolean));
+              const line = f => <p key={f.topic} style={css("margin:0 0 8px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{f.summary} {f.sourceUrl ? <a href={f.sourceUrl} target="_blank" rel="noopener" style={css("color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null}</p>;
+              return (
+                <div style={css("padding:18px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF")}>
+                  <p style={css("margin:0 0 10px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>What applies in {stateSel}</p>
+                  <p style={css("margin:0 0 4px;font:700 13px 'IBM Plex Mono',monospace;color:#1B2778;letter-spacing:.04em")}>FEDERAL</p>
+                  {fedOT.length ? fedOT.map(line) : <p style={css("margin:0 0 8px;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>Loading…</p>}
+                  <p style={css("margin:10px 0 4px;font:700 13px 'IBM Plex Mono',monospace;color:#1B2778;letter-spacing:.04em")}>{stateSel.toUpperCase()}{stRev ? '' : ' (DRAFT)'}</p>
+                  {stOT.length ? stOT.map(line) : <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{stateSel} follows the federal overtime standard.</p>}
+                </div>
+              );
+            })()}
             <div style={css("display:flex;flex-wrap:wrap;gap:8px")}>
               {result.cites.map((c, ci) => <span key={ci} style={css("padding:8px 12px;border-radius:8px;background:#fff;border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace")}>{c}</span>)}
             </div>
@@ -650,10 +664,21 @@ function App(){
           </div>
         )}
       </div>
-      <div style={css("padding:18px;border-radius:16px;background:#FFE7EC;border:2px solid #14181F")}>
-        <p style={css("margin:0 0 6px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Deadline watch</p>
-        <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>Federal wage claims generally must be filed within 2 years (3 if willful). California allows 3 years. Your earliest logged hours age out in <strong>Mar 2029</strong>.</p>
-      </div>
+      {(() => {
+        const fedF = (federal && federal.facts) || [];
+        const stF = (stateData && stateData.facts) || [];
+        const fedDL = factByTopic(fedF, 'deadlines.flsaWageClaim');
+        const stDL = factByTopic(stF, 'deadlines.wageClaim');
+        const src = f => f && f.sourceUrl ? <a href={f.sourceUrl} target="_blank" rel="noopener" style={css("color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null;
+        return (
+          <div style={css("padding:18px;border-radius:16px;background:#FFE7EC;border:2px solid #14181F")}>
+            <p style={css("margin:0 0 8px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Deadline watch — {stateSel}</p>
+            <p style={css("margin:0 0 6px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}><strong>Federal:</strong> {fedDL ? fedDL.summary : 'FLSA wage claims: 2 years, or 3 if willful.'} {src(fedDL)}</p>
+            <p style={css("margin:0 0 8px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}><strong>{stateSel}:</strong> {stDL ? stDL.summary : (stateData === undefined ? 'Loading…' : 'See the federal deadline above; a state limit may also apply.')} {src(stDL)}</p>
+            <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Act well before the earliest deadline — a claim filed late is usually barred. Confirm your exact date with an attorney.</p>
+          </div>
+        );
+      })()}
     </div>
   );
 
@@ -708,7 +733,25 @@ function App(){
   const Lawyers = () => (
     <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
       <h1 style={css("margin:0;font:700 26px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Talk to a real attorney</h1>
-      <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Licensed in California, practicing in {countyShort}. WorkLaw takes no referral fee.</p>
+      <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Attorneys licensed in {stateSel}, near {countyShort}. WorkLaw takes no referral fee.</p>
+      {(() => {
+        const ag = (stateData && stateData.agencies) || {};
+        const links = [];
+        if (ag.wageHour && ag.wageHour.url) links.push(['Wage & hour — ' + (ag.wageHour.name || stateSel), ag.wageHour.url]);
+        if (ag.discrimination && ag.discrimination.url) links.push(['Discrimination — ' + (ag.discrimination.name || stateSel), ag.discrimination.url]);
+        links.push(['Federal — EEOC (discrimination)', 'https://www.eeoc.gov/filing-charge-discrimination']);
+        links.push(['Federal — U.S. DOL Wage & Hour', 'https://www.dol.gov/agencies/whd/contact/local-offices']);
+        return (
+          <div style={css("padding:16px 18px;border-radius:14px;background:#E8F6EE;border:2px solid #14181F;display:flex;flex-direction:column;gap:8px")}>
+            <p style={css("margin:0;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>File directly with the enforcing agencies — free</p>
+            <p style={css("margin:0 0 2px;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#25302B")}>You can bring a complaint to the government agencies that enforce these laws in {stateSel}, at no cost:</p>
+            {links.map(([label, url], i) => <a key={i} href={url} target="_blank" rel="noopener" style={css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#136B3C;text-decoration:underline")}>{label} ↗</a>)}
+          </div>
+        );
+      })()}
+      <div style={css("padding:16px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F")}>
+        <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>The attorney listings below are <strong>sample examples</strong> showing how a referral would work — not real firms or endorsements. A production version would connect to a licensed-attorney directory for {stateSel}.</p>
+      </div>
       <div style={css("padding:16px;border-radius:14px;background:#E8F6EE;border:2px solid #14181F")}>
         <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#25302B")}>Your case file — timeline, documents, and the exemption analysis — exports as one PDF you control.</p>
       </div>
