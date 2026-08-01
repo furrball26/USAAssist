@@ -11,10 +11,25 @@ wired in as switchable display modes.
 
 ## Screens
 
-Onboarding (state/county + issue pickers) · Dashboard · AI consult chat ·
+Onboarding (state → county dropdowns + issue picker) · Dashboard · AI consult chat ·
 Overtime-exemption wizard (FLSA §541 decision tree) · Incident log · Document
 review · Wage-demand letter · Case strength · Rights library · Attorney referrals.
 Five-tab bottom navigation; home has Standard / Action-first / Plain modes.
+
+## State-aware content
+
+Onboarding covers the **50 states** (dropdowns; county list includes parishes/boroughs).
+The app fetches the source-cited dataset in [`content/`](content/) at runtime and renders
+jurisdiction-specific guidance on the **Rights library** (federal + state facts with official
+Source links), the **overtime wizard** ("What applies in {state}"), the **Deadline watch**
+(statute-of-limitations), and **Referrals** (official state wage/discrimination agencies + EEOC/DOL).
+
+Every state datum is `reviewed: false` until counsel signs off, so state guidance renders behind a
+**"pending attorney review"** draft banner that auto-clears when a state's file is marked
+`reviewed: true`. See [`content/README.md`](content/README.md) and the counsel review view at
+[`docs/legal-content-review.html`](docs/legal-content-review.html). Content loads same-origin on
+GitHub Pages / locally; on worklaw.app the Vercel shell sets `window.CONTENT_BASE` to a
+commit-pinned jsDelivr URL (served with open CORS).
 
 ## Stack
 
