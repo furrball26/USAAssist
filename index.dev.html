@@ -62,6 +62,20 @@
 <script type="text/babel" data-presets="react">
 const { useState, useRef, useEffect, useCallback } = React;
 
+// Base for fetching the content/ dataset. Empty = same-origin (GitHub Pages / local).
+// On worklaw.app the Vercel shell sets window.CONTENT_BASE to a jsDelivr URL pinned to the commit.
+const CONTENT_BASE = (typeof window !== 'undefined' && window.CONTENT_BASE) || '';
+
+function topicKicker(topic){
+  const p = String(topic || '').split('.')[0];
+  const m = { overtime:'OVERTIME', minimumWage:'MINIMUM WAGE', discrimination:'DISCRIMINATION',
+    disability:'DISABILITY · ADA', retaliation:'RETALIATION', payDiscussion:'PAY TRANSPARENCY',
+    payTransparency:'PAY TRANSPARENCY', deadlines:'DEADLINES', leave:'LEAVE', severance:'SEVERANCE',
+    wages:'WAGES', termination:'TERMINATION', compensation:'COMPENSATION' };
+  return m[p] || p.replace(/([A-Z])/g, ' $1').replace(/^./, c => c.toUpperCase()).toUpperCase();
+}
+function factValStr(v){ return Array.isArray(v) ? v.join(', ') : (v == null ? '' : String(v)); }
+
 /* Parse a CSS declaration string into a React style object.
    Lets us reuse the design's exact inline-style strings verbatim. */
 function css(str){
@@ -184,6 +198,9 @@ function App(){
   const [county, setCounty] = useState('Alameda County');
   const [countyQuery, setCountyQuery] = useState('');
   const [issue, setIssue] = useState(null);
+  const [federal, setFederal] = useState(null);
+  const [stateData, setStateData] = useState(undefined); // undefined = loading, null = none, object = loaded
+  const [contentErr, setContentErr] = useState(false);
   const [homeMode, setHomeMode] = useState('standard');
   const [done, setDone] = useState({});
   const [draft, setDraft] = useState('');
@@ -203,6 +220,20 @@ function App(){
   const chatEnd = useRef(null);
   useEffect(() => () => clearTimeout(timer.current), []);
   useEffect(() => { if(screen === 'chat' && chatEnd.current) chatEnd.current.scrollIntoView({ behavior:'smooth' }); }, [messages, typing, screen]);
+
+  // Load the source-cited legal-content dataset (federal once; state on selection change).
+  useEffect(() => {
+    fetch(CONTENT_BASE + 'content/_federal.json').then(r => r.ok ? r.json() : null)
+      .then(d => { if (d) setFederal(d); else setContentErr(true); })
+      .catch(() => setContentErr(true));
+  }, []);
+  useEffect(() => {
+    const ab = US_STATE_ABBR[stateSel];
+    if (!ab) { setStateData(null); return; }
+    setStateData(undefined);
+    fetch(CONTENT_BASE + 'content/states/' + ab + '.json').then(r => r.ok ? r.json() : null)
+      .then(setStateData).catch(() => setStateData(null));
+  }, [stateSel]);
 
   const nav = useCallback(k => () => setScreen(k), []);
 
@@ -626,25 +657,53 @@ function App(){
     </div>
   );
 
-  const RightsLib = () => (
-    <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
-      <h1 style={css("margin:0;font:700 26px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Rights library</h1>
-      <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Filtered to {locationLabel}. County rules shown where they beat the state.</p>
-      <div style={css("display:flex;flex-direction:column;gap:12px")}>
-        {RIGHTS.map((r, i) =>
-          <div key={i} style={css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff")}>
-            <p style={css("margin:0 0 4px;font:600 13px 'IBM Plex Mono',monospace;color:#4A5162;letter-spacing:.04em")}>{r.kicker}</p>
-            <p style={css("margin:0 0 8px;font:700 19px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{r.title}</p>
-            <p style={css("margin:0 0 12px;font:400 16px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{r.body}</p>
-            <div style={css("display:flex;gap:8px;flex-wrap:wrap")}>
-              <span style={css("padding:7px 11px;border-radius:8px;background:#EEF1FF;font:600 13px 'IBM Plex Mono',monospace;color:#1B2778")}>{r.cite}</span>
-              <span style={css('padding:7px 11px;border-radius:8px;background:' + r.tone + ";border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace;color:#14181F")}>{r.scope}</span>
-            </div>
-          </div>
-        )}
+  const factCard = (f, i, scopeLabel, scopeTone) => (
+    <div key={scopeLabel + i} style={css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff")}>
+      <p style={css("margin:0 0 6px;font:600 13px 'IBM Plex Mono',monospace;color:#4A5162;letter-spacing:.04em")}>{topicKicker(f.topic)}</p>
+      <p style={css("margin:0 0 12px;font:400 16px/1.5 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{f.summary}</p>
+      <div style={css("display:flex;gap:8px;flex-wrap:wrap;align-items:center")}>
+        {f.citation ? <span style={css("padding:7px 11px;border-radius:8px;background:#EEF1FF;font:600 13px 'IBM Plex Mono',monospace;color:#1B2778")}>{f.citation}</span> : null}
+        {f.sourceUrl ? <a href={f.sourceUrl} target="_blank" rel="noopener" style={css("padding:7px 11px;border-radius:8px;background:#fff;border:2px solid #2B3AA8;font:600 13px 'IBM Plex Mono',monospace;color:#2B3AA8;text-decoration:none")}>Source ↗</a> : null}
+        <span style={css('padding:7px 11px;border-radius:8px;background:' + scopeTone + ";border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace;color:#14181F")}>{scopeLabel}</span>
       </div>
     </div>
   );
+
+  const RightsLib = () => {
+    const stName = stateSel;
+    const stAbbr = US_STATE_ABBR[stName] || '';
+    const fedFacts = (federal && federal.facts) || [];
+    const stFacts = (stateData && stateData.facts) || [];
+    const stReviewed = !!(stateData && stateData.reviewed === true);
+    return (
+      <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
+        <h1 style={css("margin:0;font:700 26px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Rights library</h1>
+        <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Federal protections apply everywhere; {stName} rules are layered on top. Each item links to its official source.</p>
+
+        {contentErr ? <div style={css("padding:16px;border-radius:14px;background:#FFE7EC;border:2px solid #14181F")}><p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Couldn’t load the rights dataset. Check your connection and reopen.</p></div> : null}
+        {!federal && !contentErr ? <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Loading…</p> : null}
+
+        {stateData && !stReviewed ?
+          <div style={css("padding:16px 18px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F")}>
+            <p style={css("margin:0 0 4px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Draft — {stName} guidance is pending attorney review</p>
+            <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>These state items are compiled from official sources but not yet verified by counsel. The federal protections below apply nationwide.</p>
+          </div> : null}
+        {stateData === undefined ? <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Loading {stName} rules…</p> : null}
+
+        {stFacts.length ?
+          <div style={css("display:flex;flex-direction:column;gap:12px")}>
+            <p style={css("margin:2px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em")}>{stName.toUpperCase()}{stReviewed ? '' : ' (DRAFT)'}</p>
+            {stFacts.map((f, i) => factCard(f, i, stAbbr || stName.toUpperCase(), '#EEF1FF'))}
+          </div> : null}
+
+        {fedFacts.length ?
+          <div style={css("display:flex;flex-direction:column;gap:12px")}>
+            <p style={css("margin:6px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em")}>FEDERAL — APPLIES NATIONWIDE</p>
+            {fedFacts.map((f, i) => factCard(f, i, 'FEDERAL', '#F0EDE5'))}
+          </div> : null}
+      </div>
+    );
+  };
 
   const Lawyers = () => (
     <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
