@@ -81,12 +81,12 @@
       "value": "New Mexico Whistleblower Protection Act (public employers) plus NMHRA anti-retaliation",
       "summary": "New Mexico's Whistleblower Protection Act protects public employees who report unlawful or improper government acts, and the Human Rights Act separately prohibits retaliation against those who oppose discrimination.",
       "citation": "NMSA 1978, Sections 10-16C-1 to 10-16C-6 (Whistleblower Protection Act); NMSA 1978, Section 28-1-7(I) (NMHRA retaliation)",
-      "sourceUrl": "https://nmonesource.com/nmos/en/nav.do",
+      "sourceUrl": "https://nmonesource.com/w/nmos/Chapter-10-NMSA-1978.pdf",
       "sourceAgency": "New Mexico Compilation Commission (official NMSA 1978 statutes)",
-      "lastChecked": "2026-07-30",
+      "lastChecked": "2026-08-02",
       "reviewed": false,
       "reviewedBy": null,
-      "notes": "The Whistleblower Protection Act applies to public (government) employers only; private-sector whistleblowers rely on common-law retaliatory-discharge protection. Statute text could not be re-fetched (403); verify Chapter 10, Article 16C and Section 28-1-7(I) on nmonesource.com."
+      "notes": "Narrowed sourceUrl from the nmonesource.com portal homepage to the Compilation Commission's own Chapter 10 (Public Officers and Employees) PDF, which contains Article 16C; content could not be re-fetched to confirm the exact 10-16C-1 to 10-16C-6 text (403 to automated fetch on this domain), so this remains unverified -- verify Article 16C therein and Section 28-1-7(I) (Chapter 28) separately on nmonesource.com."
     },
     {
       "topic": "final-pay",
