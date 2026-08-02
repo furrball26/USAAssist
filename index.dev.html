@@ -500,14 +500,21 @@ function App(){
   const send = (text) => {
     if(!text.trim()) return;
     const lower = text.toLowerCase();
+    // Route by question content (keyword match), not by message position —
+    // otherwise a first-time user can get a reply about an unrelated topic.
     const isAda = lower.includes('accommodation') || lower.includes('ada') || lower.includes('disab');
+    const isRetaliation = lower.includes('retaliat') || lower.includes('fired') || lower.includes('terminat') || lower.includes('pushed out') || lower.includes('let go');
+    const isSeverance = lower.includes('severance') || lower.includes('sign') || lower.includes('release');
+    const isOvertime = lower.includes('overtime') || lower.includes('unpaid') || lower.includes('off the clock') || lower.includes('off-the-clock') || lower.includes('wage');
+    const matched = isAda ? ADA_REPLY : isRetaliation ? REPLIES[1] : isSeverance ? REPLIES[2] : isOvertime ? REPLIES[0] : null;
     setMessages(prev => {
+      // Fallback for free-form questions that match no known topic.
       const i = prev.filter(m => m.role === 'user').length % REPLIES.length;
       const next = prev.concat([{ role:'user', text }]);
       clearTimeout(timer.current);
       timer.current = setTimeout(() => {
         setTyping(false);
-        setMessages(p => p.concat([Object.assign({ role:'ai' }, isAda ? ADA_REPLY : REPLIES[i])]));
+        setMessages(p => p.concat([Object.assign({ role:'ai' }, matched || REPLIES[i])]));
       }, 900);
       return next;
     });
