@@ -330,7 +330,10 @@ function buildLetter(ctx){
   if (kind === 'wage-demand') {
     const fedCite = cite(fed, 'overtime.basicRule', '29 U.S.C. § 207');
     const stOT = factsByPrefix(st, 'overtime')[0];
-    const stClause = (stOT && stOT.citation) ? ' ' + ctx.stateSel + ' law (' + stOT.citation + ') provides additional overtime protection that may increase what I am owed.' : '';
+    const stFollowsFederalOnly = !!(stOT && typeof stOT.value === 'string' && /^follows federal flsa/i.test(stOT.value.trim()));
+    const stClause = (stOT && stOT.citation && !stFollowsFederalOnly)
+      ? ' ' + ctx.stateSel + ' law (' + stOT.citation + ') provides additional overtime protection that may increase what I am owed.'
+      : '';
     const hrs = ctx.unpaidHours > 0 ? ctx.unpaidHours : '[number]';
     const amountLine = ctx.owedEstimate > 0
       ? 'Based on my regular rate of ' + money(ctx.rateNum) + ' per hour, the unpaid overtime premium totals approximately ' + money(ctx.owedEstimate) + '.'
