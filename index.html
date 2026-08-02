@@ -673,6 +673,9 @@ const GENERIC_ISSUE = {
   action: "Tell us what is going on at work.",
   actionWhy: "Pick the issue that fits best so we can show the rules that apply to you.",
   steps: ["Log what happened, with dates and names", "Save any related documents or messages", "Note anyone who witnessed it", "Ask a question in the AI consult"],
+  // Screen each step actually leads to (index-matched to `steps`), so "Do this step" / the
+  // Plain-mode primary CTA lands where the step text says, not on a single issue-wide tool.
+  stepScreens: ["log", "log", "log", "chat"],
   chatSeed: "Tell me what is going on at work and I will explain the rules where you are. This preview gives general information, not legal advice."
 };
 const ISSUES = {
@@ -689,6 +692,8 @@ const ISSUES = {
       "Log every unpaid or off-the-clock hour you can remember",
       "If you are owed overtime, send a wage-demand letter"
     ],
+    stepScreens: ["letter", "wizard", "log", "letter"],
+    stepLetterTypes: ["classification-request", null, null, "wage-demand"],
     chatSeed: "You mentioned unpaid hours or overtime. Tell me your job title and how you are paid \u2014 salary or hourly \u2014 and I will explain which overtime rules apply where you work."
   },
   "Harassment or a hostile workplace": {
@@ -704,6 +709,7 @@ const ISSUES = {
       "Note whether you reported it, to whom, and what happened",
       "Identify coworkers who witnessed the conduct"
     ],
+    stepScreens: ["log", "log", "log", "log"],
     chatSeed: "You mentioned harassment or a hostile workplace. Tell me what has been happening and whether it is tied to a protected characteristic, and I will explain what the law covers where you work."
   },
   "Discrimination": {
@@ -719,6 +725,7 @@ const ISSUES = {
       "Save reviews, pay records and comparably-situated coworkers",
       "Record any complaint you made and the response"
     ],
+    stepScreens: ["log", "log", "log", "log"],
     chatSeed: "You mentioned discrimination. Tell me the protected characteristic involved and what happened, and I will explain the federal and state protections where you work."
   },
   "Fired or pushed out": {
@@ -734,6 +741,7 @@ const ISSUES = {
       "Save any protected activity that preceded it (complaints, leave, injury)",
       "Note anything said about why you were let go, and by whom"
     ],
+    stepScreens: ["log", "letter", "log", "log"],
     chatSeed: "You mentioned being fired or pushed out. Tell me the reason you were given and what happened in the weeks before, and I will explain wrongful-termination and retaliation rules where you work."
   },
   "A document to review": {
@@ -749,6 +757,7 @@ const ISSUES = {
       "Note the consideration and revocation deadlines",
       "Ask about anything you are giving up before signing"
     ],
+    stepScreens: ["doc", "doc", "doc", "doc"],
     chatSeed: "You have a document to review \u2014 an offer, NDA, severance or PIP. Tell me which, and what you are worried about, and I will walk through it in plain language."
   }
 };
@@ -790,6 +799,11 @@ const LETTER_LABELS = { "classification-request": "Classification request", "wag
 function letterKindsFor(issueKey, cfgLetterKind) {
   if (issueKey === "wage") return ["classification-request", "wage-demand"];
   return [cfgLetterKind || "records-request"];
+}
+function stepTarget(cfg, idx) {
+  const screen = cfg.stepScreens && cfg.stepScreens[idx] || cfg.primaryTool;
+  const letterType = cfg.stepLetterTypes && cfg.stepLetterTypes[idx] || null;
+  return { screen, letterType };
 }
 function buildLetter(ctx) {
   const name = (ctx.youName || "").trim() || "[Your name]";
@@ -1070,8 +1084,11 @@ function App() {
     const dl = pickDeadlineFact(stF, cfg.key) || pickDeadlineFact(fedF, cfg.key);
     return dl ? /* @__PURE__ */ React.createElement("button", { onClick: nav("strength"), style: css("text-align:left;padding:14px 16px;border-radius:12px;border:2px solid rgba(255,255,255,.4);background:rgba(255,255,255,.14);cursor:pointer;display:flex;flex-direction:column;gap:4px") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 12px 'IBM Plex Mono',monospace;color:#FFE7EC;letter-spacing:.05em") }, "\u23F1 DEADLINE WATCH"), /* @__PURE__ */ React.createElement("span", { style: css("font:700 16px/1.3 'Atkinson Hyperlegible',sans-serif;color:#fff") }, dl.value || dl.summary)) : null;
   })(), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:12px") }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
-    setDone((p) => Object.assign({}, p, { [Math.min(doneCount, cfg.steps.length - 1)]: true }));
-    setScreen(cfg.letterKind ? "letter" : cfg.primaryTool);
+    const stepIdx = Math.min(doneCount, cfg.steps.length - 1);
+    const target = stepTarget(cfg, stepIdx);
+    setDone((p) => Object.assign({}, p, { [stepIdx]: true }));
+    if (target.letterType) setLetterType(target.letterType);
+    setScreen(target.screen);
   }, style: css("padding:20px;border-radius:16px;border:none;background:#FFF4D6;color:#14181F;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, "Do this step"), /* @__PURE__ */ React.createElement("button", { onClick: () => setDone((p) => Object.assign({}, p, { [Math.min(doneCount, cfg.steps.length - 1)]: true })), style: css("padding:20px;border-radius:16px;border:2px solid #fff;background:transparent;color:#fff;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, "Mark it done"), /* @__PURE__ */ React.createElement("button", { onClick: nav("rights"), style: css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.4);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, "Why this matters")), /* @__PURE__ */ React.createElement("div", { style: css("margin-top:auto;display:flex;flex-direction:column;gap:12px") }, /* @__PURE__ */ React.createElement("div", { style: css("padding:16px;border-radius:14px;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.35)") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 4px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#fff") }, "Done so far"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#DDE2FF") }, ["Set your location: " + locationLabel, evidenceCount + " " + (evidenceCount === 1 ? "entry" : "entries") + " logged", doneCount + " of " + cfg.steps.length + " steps done"].join(" \xB7 "))), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#C9D0FF") }, "Legal information, not legal advice.")));
   const HomePlain = () => /* @__PURE__ */ React.createElement("div", { style: css("padding:14px 22px 28px;display:flex;flex-direction:column;gap:16px;min-height:100%") }, /* @__PURE__ */ React.createElement(ModeSwitch, { theme: "light" }), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;gap:3px;height:6px;border-radius:3px;overflow:hidden") }, /* @__PURE__ */ React.createElement("div", { style: css("flex:1;background:#E0322F") }), /* @__PURE__ */ React.createElement("div", { style: css("flex:1;background:#EF7B22") }), /* @__PURE__ */ React.createElement("div", { style: css("flex:1;background:#E3B505") }), /* @__PURE__ */ React.createElement("div", { style: css("flex:1;background:#1F8A4C") }), /* @__PURE__ */ React.createElement("div", { style: css("flex:1;background:#2B3AA8") }), /* @__PURE__ */ React.createElement("div", { style: css("flex:1;background:#7A3AA8") })), (() => {
     const K = cfg.key;
@@ -1098,8 +1115,17 @@ function App() {
       bigLine = "You have rights where you work.";
       sub = map[K] || map.general + " Open Rights to see the exact law for " + stateSel + ".";
     }
-    const primary = K === "wage" ? ["Ask for the money", "letter"] : cfg.letterKind ? ["Start my letter", "letter"] : ["Do the next step", cfg.primaryTool];
-    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("h1", { style: css("margin:0;font:700 30px/1.15 'Atkinson Hyperlegible',sans-serif;color:#000") }, heads[K] || heads.general), /* @__PURE__ */ React.createElement("div", { style: css("padding:20px;border-radius:0;background:#FFEB6B;border:4px solid #000") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 10px;font:700 24px/1.25 'Atkinson Hyperlegible',sans-serif;color:#000") }, bigLine), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 20px/1.5 'Atkinson Hyperlegible',sans-serif;color:#000") }, sub)), /* @__PURE__ */ React.createElement("button", { onClick: nav(primary[1]), style: css("padding:22px;border:4px solid #000;background:#000;color:#fff;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, primary[0]), /* @__PURE__ */ React.createElement("button", { onClick: nav("log"), style: css("padding:22px;border:4px solid #000;background:#fff;color:#000;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, K === "wage" ? "Add hours I worked" : "Add to my log"), /* @__PURE__ */ React.createElement("button", { onClick: nav("lawyers"), style: css("padding:22px;border:4px solid #000;background:#fff;color:#000;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, "Talk to a lawyer"));
+    const stepIdx = Math.min(doneCount, cfg.steps.length - 1);
+    const target = stepTarget(cfg, stepIdx);
+    const screenLabels = { log: "Log what happened", wizard: "Check my classification", doc: "Review my document", chat: "Ask a question", letter: "Start my letter", rights: "See my rights", strength: "See my case strength" };
+    let primaryLabel = screenLabels[target.screen] || "Do the next step";
+    if (K === "wage" && target.screen === "letter") primaryLabel = target.letterType === "wage-demand" ? "Ask for the money" : "Confirm my classification";
+    const primary = [primaryLabel, target.screen];
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("h1", { style: css("margin:0;font:700 30px/1.15 'Atkinson Hyperlegible',sans-serif;color:#000") }, heads[K] || heads.general), /* @__PURE__ */ React.createElement("div", { style: css("padding:20px;border-radius:0;background:#FFEB6B;border:4px solid #000") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 10px;font:700 24px/1.25 'Atkinson Hyperlegible',sans-serif;color:#000") }, bigLine), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 20px/1.5 'Atkinson Hyperlegible',sans-serif;color:#000") }, sub)), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+      setDone((p) => Object.assign({}, p, { [stepIdx]: true }));
+      if (target.letterType) setLetterType(target.letterType);
+      setScreen(target.screen);
+    }, style: css("padding:22px;border:4px solid #000;background:#000;color:#fff;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, primary[0]), /* @__PURE__ */ React.createElement("button", { onClick: nav("log"), style: css("padding:22px;border:4px solid #000;background:#fff;color:#000;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, K === "wage" ? "Add hours I worked" : "Add to my log"), /* @__PURE__ */ React.createElement("button", { onClick: nav("lawyers"), style: css("padding:22px;border:4px solid #000;background:#fff;color:#000;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, "Talk to a lawyer"));
   })(), /* @__PURE__ */ React.createElement("div", { style: css("margin-top:auto;padding:18px;border:4px solid #000;background:#fff") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 18px/1.45 'Atkinson Hyperlegible',sans-serif;color:#000") }, "This app explains the law. It is not your lawyer.")));
   const HomeScreen = () => homeMode === "action" ? /* @__PURE__ */ React.createElement(HomeAction, null) : homeMode === "plain" ? /* @__PURE__ */ React.createElement(HomePlain, null) : /* @__PURE__ */ React.createElement(HomeStandard, null);
   const Chat = () => /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;min-height:100%") }, /* @__PURE__ */ React.createElement("div", { style: css("padding:6px 22px 14px;border-bottom:2px solid rgba(20,24,31,.1)") }, /* @__PURE__ */ React.createElement("h1", { style: css("margin:0 0 4px;font:700 26px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Ask about your rights"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "General information for ", stateSel || "your state", " \u2014 not legal advice. Responses in this preview are sample answers.")), /* @__PURE__ */ React.createElement("div", { style: css("flex:1;padding:18px 22px;display:flex;flex-direction:column;gap:14px") }, messages.map((m, idx) => {
