@@ -78,6 +78,8 @@ function topicKicker(topic){
 function factValStr(v){ return Array.isArray(v) ? v.join(', ') : (v == null ? '' : String(v)); }
 function factByTopic(facts, topic){ return (facts || []).find(f => f.topic === topic); }
 function factsByPrefix(facts, prefix){ return (facts || []).filter(f => String(f.topic || '').split('.')[0] === prefix); }
+// First matching fact across a list of candidate topic names, in priority order (varies by state).
+function stateFactFor(facts, topics){ for (const t of topics) { const f = factByTopic(facts, t); if (f) return f; } return null; }
 
 // Which deadline topics matter most for a given issue type, in priority order.
 // Falls back to the first deadline fact available so something always surfaces.
@@ -183,10 +185,12 @@ const ONB_BODIES = {
 
 const REPLIES = [
   { text:'No. Even where an employer can discipline you for working unapproved overtime, it must still pay for every hour you actually worked. "Not approved" is not a defense to nonpayment. Your state may add stronger rules — see the Rights tab.', cites:['29 U.S.C. §207'] },
-  { text:'Retaliation means a negative action — firing, demotion, cut hours, a sudden bad review — taken because you did something protected, like complaining about wages or reporting harassment. Timing matters, so your log entries are useful evidence.', cites:['Lab. Code §1102.5'] },
+  // cites resolved per-user-state in send() from stateData facts — see retaliationReply.
+  { text:'Retaliation means a negative action — firing, demotion, cut hours, a sudden bad review — taken because you did something protected, like complaining about wages or reporting harassment. Timing matters, so your log entries are useful evidence.', cites:[] },
   { text:'Not today. You have 21 days to consider it and 7 days to revoke after signing. Two clauses in your copy are worth negotiating — open Review a document to see them side by side.', cites:['29 U.S.C. §626(f)'] }
 ];
-const ADA_REPLY = { text:'Put it in writing, plainly: describe your limitation and what change would help — no legal terms required. Your employer must then start an interactive process with you. I can draft that request from a template and add it to your case file.', cites:['42 U.S.C. §12112','Gov. Code §12940(n)'] };
+// cites resolved per-user-state in send() from stateData facts — see adaReply.
+const ADA_REPLY = { text:'Put it in writing, plainly: describe your limitation and what change would help — no legal terms required. Your employer must then start an interactive process with you. I can draft that request from a template and add it to your case file.', cites:['42 U.S.C. §12112'] };
 
 /* ── Dynamic case model ───────────────────────────────────────────── */
 
@@ -544,15 +548,30 @@ function App(){
     const isRetaliation = lower.includes('retaliat') || lower.includes('fired') || lower.includes('terminat') || lower.includes('pushed out') || lower.includes('let go');
     const isSeverance = lower.includes('severance') || lower.includes('sign') || lower.includes('release');
     const isOvertime = lower.includes('overtime') || lower.includes('unpaid') || lower.includes('off the clock') || lower.includes('off-the-clock') || lower.includes('wage');
-    const matched = isAda ? ADA_REPLY : isRetaliation ? REPLIES[1] : isSeverance ? REPLIES[2] : isOvertime ? REPLIES[0] : null;
+    // Cite the caller's actual loaded state law, not a fixed persona's state — fall back to a
+    // state-neutral pointer to Rights when no state-specific fact is on file for that topic.
+    const stFacts = (stateData && stateData.facts) || [];
+    const retaliationFact = stateFactFor(stFacts, ['retaliation', 'retaliation.whistleblower', 'discrimination.retaliation']);
+    const adaFact = stateFactFor(stFacts, ['disability.accommodation', 'disability.interactiveProcess']);
+    const stateNote = " Check your state's specific rule in Rights.";
+    const retaliationReply = {
+      text: REPLIES[1].text + (retaliationFact ? '' : stateNote),
+      cites: retaliationFact && retaliationFact.citation ? [retaliationFact.citation] : []
+    };
+    const adaReply = {
+      text: ADA_REPLY.text + (adaFact ? '' : stateNote),
+      cites: adaFact && adaFact.citation ? ['42 U.S.C. §12112', adaFact.citation] : ['42 U.S.C. §12112']
+    };
+    const repliesResolved = [REPLIES[0], retaliationReply, REPLIES[2]];
+    const matched = isAda ? adaReply : isRetaliation ? repliesResolved[1] : isSeverance ? repliesResolved[2] : isOvertime ? repliesResolved[0] : null;
     setMessages(prev => {
       // Fallback for free-form questions that match no known topic.
-      const i = prev.filter(m => m.role === 'user').length % REPLIES.length;
+      const i = prev.filter(m => m.role === 'user').length % repliesResolved.length;
       const next = prev.concat([{ role:'user', text }]);
       clearTimeout(timer.current);
       timer.current = setTimeout(() => {
         setTyping(false);
-        setMessages(p => p.concat([Object.assign({ role:'ai' }, matched || REPLIES[i])]));
+        setMessages(p => p.concat([Object.assign({ role:'ai' }, matched || repliesResolved[i])]));
       }, 900);
       return next;
     });

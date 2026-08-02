@@ -532,6 +532,13 @@ function factByTopic(facts, topic) {
 function factsByPrefix(facts, prefix) {
   return (facts || []).filter((f) => String(f.topic || "").split(".")[0] === prefix);
 }
+function stateFactFor(facts, topics) {
+  for (const t of topics) {
+    const f = factByTopic(facts, t);
+    if (f) return f;
+  }
+  return null;
+}
 function deadlineKeywordsFor(issueKey) {
   switch (issueKey) {
     case "wage":
@@ -624,10 +631,11 @@ const ONB_BODIES = {
 };
 const REPLIES = [
   { text: 'No. Even where an employer can discipline you for working unapproved overtime, it must still pay for every hour you actually worked. "Not approved" is not a defense to nonpayment. Your state may add stronger rules \u2014 see the Rights tab.', cites: ["29 U.S.C. \xA7207"] },
-  { text: "Retaliation means a negative action \u2014 firing, demotion, cut hours, a sudden bad review \u2014 taken because you did something protected, like complaining about wages or reporting harassment. Timing matters, so your log entries are useful evidence.", cites: ["Lab. Code \xA71102.5"] },
+  // cites resolved per-user-state in send() from stateData facts — see retaliationReply.
+  { text: "Retaliation means a negative action \u2014 firing, demotion, cut hours, a sudden bad review \u2014 taken because you did something protected, like complaining about wages or reporting harassment. Timing matters, so your log entries are useful evidence.", cites: [] },
   { text: "Not today. You have 21 days to consider it and 7 days to revoke after signing. Two clauses in your copy are worth negotiating \u2014 open Review a document to see them side by side.", cites: ["29 U.S.C. \xA7626(f)"] }
 ];
-const ADA_REPLY = { text: "Put it in writing, plainly: describe your limitation and what change would help \u2014 no legal terms required. Your employer must then start an interactive process with you. I can draft that request from a template and add it to your case file.", cites: ["42 U.S.C. \xA712112", "Gov. Code \xA712940(n)"] };
+const ADA_REPLY = { text: "Put it in writing, plainly: describe your limitation and what change would help \u2014 no legal terms required. Your employer must then start an interactive process with you. I can draft that request from a template and add it to your case file.", cites: ["42 U.S.C. \xA712112"] };
 const STORE_KEY = "worklaw.case.v2";
 function loadCase() {
   try {
@@ -983,14 +991,27 @@ function App() {
     const isRetaliation = lower.includes("retaliat") || lower.includes("fired") || lower.includes("terminat") || lower.includes("pushed out") || lower.includes("let go");
     const isSeverance = lower.includes("severance") || lower.includes("sign") || lower.includes("release");
     const isOvertime = lower.includes("overtime") || lower.includes("unpaid") || lower.includes("off the clock") || lower.includes("off-the-clock") || lower.includes("wage");
-    const matched = isAda ? ADA_REPLY : isRetaliation ? REPLIES[1] : isSeverance ? REPLIES[2] : isOvertime ? REPLIES[0] : null;
+    const stFacts = stateData && stateData.facts || [];
+    const retaliationFact = stateFactFor(stFacts, ["retaliation", "retaliation.whistleblower", "discrimination.retaliation"]);
+    const adaFact = stateFactFor(stFacts, ["disability.accommodation", "disability.interactiveProcess"]);
+    const stateNote = " Check your state's specific rule in Rights.";
+    const retaliationReply = {
+      text: REPLIES[1].text + (retaliationFact ? "" : stateNote),
+      cites: retaliationFact && retaliationFact.citation ? [retaliationFact.citation] : []
+    };
+    const adaReply = {
+      text: ADA_REPLY.text + (adaFact ? "" : stateNote),
+      cites: adaFact && adaFact.citation ? ["42 U.S.C. \xA712112", adaFact.citation] : ["42 U.S.C. \xA712112"]
+    };
+    const repliesResolved = [REPLIES[0], retaliationReply, REPLIES[2]];
+    const matched = isAda ? adaReply : isRetaliation ? repliesResolved[1] : isSeverance ? repliesResolved[2] : isOvertime ? repliesResolved[0] : null;
     setMessages((prev) => {
-      const i = prev.filter((m) => m.role === "user").length % REPLIES.length;
+      const i = prev.filter((m) => m.role === "user").length % repliesResolved.length;
       const next = prev.concat([{ role: "user", text }]);
       clearTimeout(timer.current);
       timer.current = setTimeout(() => {
         setTyping(false);
-        setMessages((p) => p.concat([Object.assign({ role: "ai" }, matched || REPLIES[i])]));
+        setMessages((p) => p.concat([Object.assign({ role: "ai" }, matched || repliesResolved[i])]));
       }, 900);
       return next;
     });
