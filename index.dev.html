@@ -888,7 +888,7 @@ function App(){
           {PROMPT_TEXTS.map(t => <button key={t} onClick={() => send(t)} style={css("flex:none;padding:11px 14px;border-radius:999px;border:2px solid #14181F;background:#FFF;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer")}>{t}</button>)}
         </div>
         <div style={css("display:flex;gap:10px;align-items:center")}>
-          <input value={draft} onChange={e => setDraft(e.target.value)} onKeyDown={e => { if(e.key === 'Enter' && draft.trim()) send(draft); }} placeholder="Type your question" style={css("flex:1;padding:16px;border-radius:14px;border:2px solid #14181F;background:#fff;font:400 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
+          <input aria-label="Your question" value={draft} onChange={e => setDraft(e.target.value)} onKeyDown={e => { if(e.key === 'Enter' && draft.trim()) send(draft); }} placeholder="Type your question" style={css("flex:1;padding:16px;border-radius:14px;border:2px solid #14181F;background:#fff;font:400 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
           <button onClick={() => send(draft)} style={css("padding:16px 20px;border-radius:14px;border:none;background:#2B3AA8;color:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Send</button>
         </div>
         <p style={css("margin:0;font:400 13px/1.35 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>AI can be wrong. Verify anything important with an attorney — tap Referrals in the tab bar.</p>
@@ -985,7 +985,7 @@ function App(){
             <input id="log-hours" type="number" min="0" step="0.5" value={logHours} onChange={e => setLogHours(e.target.value)} placeholder="e.g. 6.5" style={css("width:110px;padding:11px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif")} />
           </div>
         }
-        <textarea value={logNote} onChange={e => setLogNote(e.target.value)} rows={2} placeholder="What happened? Date, who was there, what was said…" style={css("width:100%;box-sizing:border-box;padding:12px;border-radius:10px;border:2px solid #14181F;font:400 16px/1.4 'Atkinson Hyperlegible',sans-serif;resize:vertical")} />
+        <textarea aria-label="What happened" value={logNote} onChange={e => setLogNote(e.target.value)} rows={2} placeholder="What happened? Date, who was there, what was said…" style={css("width:100%;box-sizing:border-box;padding:12px;border-radius:10px;border:2px solid #14181F;font:400 16px/1.4 'Atkinson Hyperlegible',sans-serif;resize:vertical")} />
         <button onClick={submit} style={css("align-self:flex-start;padding:12px 18px;border-radius:12px;border:none;background:#2B3AA8;color:#fff;font:700 16px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Add to log</button>
       </div>
 
