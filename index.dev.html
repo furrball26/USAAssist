@@ -146,8 +146,8 @@ const TREE = {
 
 const CLAUSES = [
   { title:'Release of claims', level:'READ CLOSELY', quote:'…releases all claims arising from employment, known or unknown…', plain:'You give up the right to sue for anything that already happened. In many states, wages you already earned generally cannot be waived — even by signing this.', tone:'#FFE7EC', badge:'#E0322F' },
-  { title:'Non-disparagement', level:'NEGOTIABLE', quote:'…shall not make any statement that reflects negatively on the Company…', plain:'As written this is broad. Many states protect your ability to describe unlawful conduct you experienced; that carve-out is missing here.', tone:'#FFF4D6', badge:'#B57900' },
-  { title:'Severance amount', level:'STANDARD', quote:'…eight (8) weeks of base salary, less withholdings…', plain:'Eight weeks is within a normal range for your tenure. It is separate from wages you are already owed.', tone:'#E8F6EE', badge:'#1F8A4C' }
+  { title:'Non-disparagement', level:'NEGOTIABLE', quote:'…shall not make any statement that reflects negatively on the Company…', plain:'As written this is broad. Many states protect your ability to describe unlawful conduct you experienced; that carve-out is missing here.', tone:'#FFF4D6', badge:'#8A5A00' },
+  { title:'Severance amount', level:'STANDARD', quote:'…eight (8) weeks of base salary, less withholdings…', plain:'Eight weeks is within a normal range for your tenure. It is separate from wages you are already owed.', tone:'#E8F6EE', badge:'#136B3C' }
 ];
 
 const LAWYERS = [
@@ -308,7 +308,7 @@ function caseStrength(entries){
     dim('Employer statements', by['Statement'] || 0, 45, 20, c => c + ' statement ' + (c === 1 ? 'recorded' : 'recorded') + '.', 'No manager or employer statements logged yet.'),
   ];
   factors.forEach(f => {
-    f.color = f.pct >= 65 ? '#1F8A4C' : f.pct >= 40 ? '#B57900' : '#B3264F';
+    f.color = f.pct >= 65 ? '#136B3C' : f.pct >= 40 ? '#8A5A00' : '#B3264F';
     f.status = f.pct >= 65 ? 'STRONG' : f.pct >= 40 ? 'PARTIAL' : 'THIN';
   });
   const score = Math.round(factors.reduce((s, f) => s + f.pct, 0) / factors.length);
@@ -922,7 +922,7 @@ function App(){
               {wizPath.map((a, ai) => <span key={ai} style={css("padding:8px 12px;border-radius:999px;background:#F0EDE5;border:2px solid rgba(20,24,31,.25);font:600 13px 'IBM Plex Mono',monospace;color:#14181F")}>{a}</span>)}
             </div>
             <div style={css('padding:22px;border-radius:18px;border:3px solid #14181F;background:' + (result.v === 'non' ? '#E8F6EE' : result.v === 'ex' ? '#FFE7EC' : '#FFF4D6'))}>
-              <p style={css("margin:0 0 8px;font:700 14px 'IBM Plex Mono',monospace;letter-spacing:.05em;color:" + (result.v === 'non' ? '#136B3C' : result.v === 'ex' ? '#B3264F' : '#B57900'))}>RESULT</p>
+              <p style={css("margin:0 0 8px;font:700 14px 'IBM Plex Mono',monospace;letter-spacing:.05em;color:" + (result.v === 'non' ? '#136B3C' : result.v === 'ex' ? '#B3264F' : '#8A5A00'))}>RESULT</p>
               <p style={css("margin:0 0 12px;font:700 26px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{result.title}</p>
               <p style={css("margin:0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#25302B")}>{result.body}</p>
             </div>
