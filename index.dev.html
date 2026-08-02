@@ -79,6 +79,27 @@ function factValStr(v){ return Array.isArray(v) ? v.join(', ') : (v == null ? ''
 function factByTopic(facts, topic){ return (facts || []).find(f => f.topic === topic); }
 function factsByPrefix(facts, prefix){ return (facts || []).filter(f => String(f.topic || '').split('.')[0] === prefix); }
 
+// Which deadline topics matter most for a given issue type, in priority order.
+// Falls back to the first deadline fact available so something always surfaces.
+function deadlineKeywordsFor(issueKey){
+  switch (issueKey) {
+    case 'wage': return ['wageclaim', 'equalpayact'];
+    case 'harassment': return ['eeoccharge', 'discriminationcomplaint', 'fehacomplaint'];
+    case 'discrimination': return ['eeoccharge', 'discriminationcomplaint', 'fehacomplaint'];
+    case 'termination': return ['eeoccharge', 'discriminationcomplaint', 'fehacomplaint', 'wageclaim'];
+    default: return [];
+  }
+}
+function pickDeadlineFact(facts, issueKey){
+  const dl = factsByPrefix(facts, 'deadlines');
+  if (!dl.length) return null;
+  for (const kw of deadlineKeywordsFor(issueKey)) {
+    const hit = dl.find(f => String(f.topic || '').toLowerCase().includes(kw));
+    if (hit) return hit;
+  }
+  return dl[0];
+}
+
 /* Parse a CSS declaration string into a React style object.
    Lets us reuse the design's exact inline-style strings verbatim. */
 function css(str){
@@ -667,6 +688,19 @@ function App(){
         <p style={css("margin:0;font:400 17px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{employerName ? employerName + ' · ' : ''}Opened {openedLabel} · {evidenceCount} evidence {evidenceCount === 1 ? 'item' : 'items'}</p>
       </div>
 
+      {(() => {
+        const fedF = (federal && federal.facts) || [];
+        const stF = (stateData && stateData.facts) || [];
+        const dl = pickDeadlineFact(stF, cfg.key) || pickDeadlineFact(fedF, cfg.key);
+        return dl ? (
+          <button onClick={nav('strength')} style={css("text-align:left;padding:16px 18px;border-radius:14px;border:2px solid #14181F;background:#FFE7EC;cursor:pointer;display:flex;flex-direction:column;gap:4px")}>
+            <span style={css("font:700 13px 'IBM Plex Mono',monospace;color:#14181F;letter-spacing:.04em")}>⏱ DEADLINE WATCH</span>
+            <span style={css("font:700 18px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{dl.value || dl.summary}</span>
+            <span style={css("font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{dl.summary}</span>
+          </button>
+        ) : null;
+      })()}
+
       <button onClick={nav('strength')} style={css("text-align:left;padding:20px;border-radius:18px;border:2px solid #14181F;background:#E8F6EE;cursor:pointer;display:flex;flex-direction:column;gap:14px")}>
         <div style={css("display:flex;align-items:baseline;justify-content:space-between")}>
           <span style={css("font:700 15px 'IBM Plex Mono',monospace;color:#14181F;letter-spacing:.04em")}>CASE STRENGTH</span>
@@ -736,6 +770,17 @@ function App(){
       <p style={css("margin:0;font:700 14px 'IBM Plex Mono',monospace;color:#C9D0FF;letter-spacing:.05em")}>STEP {Math.min(doneCount + 1, cfg.steps.length)} OF {cfg.steps.length} · {cfg.caseTitle.toUpperCase()}</p>
       <h1 style={css("margin:0;font:700 40px/1.08 'Atkinson Hyperlegible',sans-serif;color:#fff;text-wrap:pretty")}>{cfg.steps[Math.min(doneCount, cfg.steps.length - 1)]}.</h1>
       <p style={css("margin:0;font:400 19px/1.5 'Atkinson Hyperlegible',sans-serif;color:#DDE2FF")}>{cfg.actionWhy}</p>
+      {(() => {
+        const fedF = (federal && federal.facts) || [];
+        const stF = (stateData && stateData.facts) || [];
+        const dl = pickDeadlineFact(stF, cfg.key) || pickDeadlineFact(fedF, cfg.key);
+        return dl ? (
+          <button onClick={nav('strength')} style={css("text-align:left;padding:14px 16px;border-radius:12px;border:2px solid rgba(255,255,255,.4);background:rgba(255,255,255,.14);cursor:pointer;display:flex;flex-direction:column;gap:4px")}>
+            <span style={css("font:700 12px 'IBM Plex Mono',monospace;color:#FFE7EC;letter-spacing:.05em")}>⏱ DEADLINE WATCH</span>
+            <span style={css("font:700 16px/1.3 'Atkinson Hyperlegible',sans-serif;color:#fff")}>{dl.value || dl.summary}</span>
+          </button>
+        ) : null;
+      })()}
       <div style={css("display:flex;flex-direction:column;gap:12px")}>
         <button onClick={() => { setDone(p => Object.assign({}, p, { [Math.min(doneCount, cfg.steps.length - 1)]: true })); setScreen(cfg.letterKind ? 'letter' : cfg.primaryTool); }} style={css("padding:20px;border-radius:16px;border:none;background:#FFF4D6;color:#14181F;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Do this step</button>
         <button onClick={() => setDone(p => Object.assign({}, p, { [Math.min(doneCount, cfg.steps.length - 1)]: true }))} style={css("padding:20px;border-radius:16px;border:2px solid #fff;background:transparent;color:#fff;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Mark it done</button>
@@ -1088,13 +1133,13 @@ function App(){
       {(() => {
         const fedF = (federal && federal.facts) || [];
         const stF = (stateData && stateData.facts) || [];
-        const fedDL = factByTopic(fedF, 'deadlines.flsaWageClaim');
-        const stDL = factByTopic(stF, 'deadlines.wageClaim');
+        const fedDL = pickDeadlineFact(fedF, cfg.key);
+        const stDL = pickDeadlineFact(stF, cfg.key);
         const src = f => f && f.sourceUrl ? <a href={f.sourceUrl} target="_blank" rel="noopener" style={css("color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null;
         return (
           <div style={css("padding:18px;border-radius:16px;background:#FFE7EC;border:2px solid #14181F")}>
             <p style={css("margin:0 0 8px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Deadline watch — {stateSel}</p>
-            <p style={css("margin:0 0 6px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}><strong>Federal:</strong> {fedDL ? fedDL.summary : 'FLSA wage claims: 2 years, or 3 if willful.'} {src(fedDL)}</p>
+            <p style={css("margin:0 0 6px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}><strong>Federal:</strong> {fedDL ? fedDL.summary : 'Loading the deadline that applies to your claim…'} {src(fedDL)}</p>
             <p style={css("margin:0 0 8px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}><strong>{stateSel}:</strong> {stDL ? stDL.summary : (stateData === undefined ? 'Loading…' : 'See the federal deadline above; a state limit may also apply.')} {src(stDL)}</p>
             <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Act well before the earliest deadline — a claim filed late is usually barred. Confirm your exact date with an attorney.</p>
           </div>
