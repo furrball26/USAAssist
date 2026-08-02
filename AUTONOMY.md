@@ -24,19 +24,44 @@ and every subagent read it before acting. It defines **what may be done autonomo
 
 ## Roster (see .claude/agents/*.md)
 
-- **wl-qa** — extends + runs the headless suite; reports failures as findings. Does not fix.
-- **wl-ux** — screenshots key screens; audits disclaimers, consistency, a11y, dead ends. Reports.
-- **wl-content** — validates `content/` integrity; audits `sourceUrl`s vs official domains;
-  may add `reviewed:false` facts from official sources. Never edits app logic.
-- **wl-builder** — implements ONE engineering/UX fix in `index.dev.html`, rebuilds, green-gates,
-  commits to `auto/agents`. The only agent that writes app code.
+Each agent is a subject-matter expert in its field. They run **autonomously and in parallel**,
+grouped into teams. The **auditors report only**; the **implementers** are the only agents that
+write in their file domain.
 
-## Orchestration loop (see orchestrator.mjs)
+**SME auditors (report → hand findings to an implementer):**
+- **wl-content** *(Legal & Data — also an implementer for `content/`)* — US employment-law SME
+  (FLSA, Title VII, ADA, ADEA, EPA, NLRA, FMLA + state codes). Validates `content/` integrity,
+  audits `sourceUrl`s vs official `.gov`/court domains, may ADD `reviewed:false` facts from official
+  sources. Never app logic, never flips `reviewed:true`.
+- **wl-qa** *(Quality — also the test implementer)* — QA/test-automation engineer; owns/extends the
+  headless Puppeteer suite and reports functional gaps. Commits tests only.
+- **wl-usertest** *(Experience)* — user-research/usability SME; persona-driven, task-based
+  walkthroughs; reports where real users fail their goal and comprehension/trust gaps.
+- **wl-ux** *(Experience)* — UX & accessibility SME (WCAG 2.2 AA); disclaimers, contrast, hit
+  targets, focus, honest copy, empty/error states.
+- **wl-design** *(Experience)* — visual & interaction design SME; design-system consistency,
+  hierarchy, tone; token-level fixes.
+- **wl-security** *(Security)* — appsec & privacy SME; XSS/injection, localStorage case-data
+  privacy, CDN supply-chain (SHA-pin, SRI, CSP). Produces a threat model.
 
-Each iteration: run **wl-qa + wl-ux + wl-content in parallel** → dedupe findings →
-**wl-builder** fixes the highest-value SAFE items one at a time (verify+commit each) →
-append a dated entry to `AUTONOMY-STATUS.md`. Repeat until the safe backlog is drained or
-the iteration budget is hit. Then stop and wait for the human.
+**Implementers (the only agents that write; each stays in its file domain):**
+- **wl-builder** — senior front-end React engineer; the **only** agent that writes app code
+  (`index.dev.html`). Implements one fix, rebuilds, green-gates, commits.
+- **wl-content** — also writes `content/` (see above).
+- **wl-qa** — also writes `test/` (see above).
+- **wl-backend** — backend/platform engineer; owns `build.mjs`, `automation/`, data-integrity
+  tooling, and the DOCUMENTED future-backend design (AI proxy + attorney directory). No deploy,
+  no live services, never edits app UI or legal facts.
+
+## Orchestration loop (see automation/orchestrator.workflow.mjs)
+
+Each iteration: the **SME panel audits IN PARALLEL, report-only** (wl-content, wl-qa, wl-usertest,
+wl-ux, wl-design, wl-security, wl-backend) → findings are deduped, ranked, and each safe item is
+tagged with a `domain` → the loop **routes each fix to the right specialist implementer**
+(app→wl-builder, content→wl-content, test→wl-qa, infra→wl-backend), applied **sequentially**
+(shared working tree — never two writers at once), verify+commit each → append a dated entry to
+`AUTONOMY-STATUS.md`. Repeat until the safe backlog is drained or the iteration budget is hit.
+Then stop and wait for the human.
 
 ## Backlog — SAFE to automate (engineering / quality)
 
