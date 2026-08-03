@@ -522,8 +522,20 @@ function App(){
 
   const timer = useRef(null);
   const chatEnd = useRef(null);
+  const mainRef = useRef(null);
+  const firstRender = useRef(true);
   useEffect(() => () => clearTimeout(timer.current), []);
   useEffect(() => { if(screen === 'chat' && chatEnd.current) chatEnd.current.scrollIntoView({ behavior:'smooth', block:'nearest' }); }, [messages, typing, screen]);
+  // On navigation, move focus (and scroll) to the top of the main region so
+  // keyboard/screen-reader users land on the new screen instead of being stranded
+  // where the just-unmounted button was. Skip the initial mount and the chat screen
+  // (chat manages its own input focus). Runs only on screen change, never on keystroke.
+  useEffect(() => {
+    if (firstRender.current) { firstRender.current = false; return; }
+    if (screen === 'chat') return;
+    const el = mainRef.current;
+    if (el) { el.scrollTop = 0; el.focus({ preventScroll: true }); }
+  }, [screen]);
 
   // Persist the case whenever anything meaningful changes.
   useEffect(() => {
@@ -964,7 +976,7 @@ function App(){
         <h1 style={css("margin:0 0 4px;font:700 26px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Ask about your rights</h1>
         <p style={css("margin:0;font:400 15px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>General information for {stateSel || 'your state'} — not legal advice. Responses in this preview are sample answers.</p>
       </div>
-      <div style={css("flex:1;padding:18px 22px;display:flex;flex-direction:column;gap:14px")}>
+      <div role="log" aria-live="polite" aria-label="Conversation" style={css("flex:1;padding:18px 22px;display:flex;flex-direction:column;gap:14px")}>
         {messages.map((m, idx) => {
           const cites = m.cites || [];
           return (
@@ -979,8 +991,8 @@ function App(){
           );
         })}
         {typing &&
-          <div style={css("align-self:flex-start;padding:14px 18px;border-radius:18px 18px 18px 4px;background:#F0EDE5;border:2px solid rgba(20,24,31,.14);display:flex;gap:6px")}>
-            <span style={css("width:9px;height:9px;border-radius:50%;background:#14181F;animation:blink 1.2s infinite")}></span>
+          <div role="status" aria-label="Assistant is typing" style={css("align-self:flex-start;padding:14px 18px;border-radius:18px 18px 18px 4px;background:#F0EDE5;border:2px solid rgba(20,24,31,.14);display:flex;gap:6px")}>
+            <span aria-hidden="true" style={css("width:9px;height:9px;border-radius:50%;background:#14181F;animation:blink 1.2s infinite")}></span>
             <span style={css("width:9px;height:9px;border-radius:50%;background:#14181F;animation:blink 1.2s .2s infinite")}></span>
             <span style={css("width:9px;height:9px;border-radius:50%;background:#14181F;animation:blink 1.2s .4s infinite")}></span>
           </div>
@@ -1377,10 +1389,10 @@ function App(){
   return (
     <div className="device">
       <div className="screen" style={css('background:' + screenBg)}>
-        <div className="statusbar" style={css('color:' + statusColor)}>
+        <div className="statusbar" aria-hidden="true" style={css('color:' + statusColor)}>
           <span>9:41</span><span style={css("letter-spacing:2px")}>▮▮▮ ᯤ ▰</span>
         </div>
-        <div className="scrollarea">
+        <main className="scrollarea" ref={mainRef} tabIndex={-1} style={css("outline:none")}>
           {/* Call the screen as a function (not <Current/>) so it inlines into this
               stable tree instead of remounting on every keystroke — remounting was
               destroying the chat/onboarding/letter inputs and jumping scroll. */}
@@ -1394,16 +1406,16 @@ function App(){
               </div>
             );
           })()}
-        </div>
+        </main>
         {showTabs &&
-          <div style={css("flex:none;border-top:2px solid rgba(20,24,31,.14);background:#FFFDF8;padding:10px 12px 26px;display:grid;grid-template-columns:repeat(5,1fr);gap:4px")}>
+          <nav aria-label="Primary" style={css("flex:none;border-top:2px solid rgba(20,24,31,.14);background:#FFFDF8;padding:10px 12px 26px;display:grid;grid-template-columns:repeat(5,1fr);gap:4px")}>
             {TAB_DEFS.map(([k, icon, label]) =>
-              <button key={k} onClick={nav(k)} style={css('display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 2px;border-radius:12px;border:2px solid ' + (screen === k ? '#14181F' : 'transparent') + ';background:' + (screen === k ? '#FFF4D6' : 'transparent') + ';color:#14181F;cursor:pointer;min-height:56px')}>
-                <span style={css("font:700 19px 'IBM Plex Mono',monospace")}>{icon}</span>
+              <button key={k} onClick={nav(k)} aria-current={screen === k ? 'page' : undefined} style={css('display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 2px;border-radius:12px;border:2px solid ' + (screen === k ? '#14181F' : 'transparent') + ';background:' + (screen === k ? '#FFF4D6' : 'transparent') + ';color:#14181F;cursor:pointer;min-height:56px')}>
+                <span aria-hidden="true" style={css("font:700 19px 'IBM Plex Mono',monospace")}>{icon}</span>
                 <span style={css("font:700 12px 'Atkinson Hyperlegible',sans-serif")}>{label}</span>
               </button>
             )}
-          </div>
+          </nav>
         }
       </div>
     </div>
