@@ -998,6 +998,33 @@ function App() {
     };
   }, [stateSel]);
   const nav = useCallback((k) => () => setScreen(k), []);
+  const clearCase = useCallback(() => {
+    if (typeof window !== "undefined" && window.confirm && !window.confirm("Delete your case from this device? This erases your inputs, log entries, chat and saved documents from this browser and cannot be undone.")) return;
+    try {
+      localStorage.removeItem(STORE_KEY);
+    } catch (e) {
+    }
+    setStateSel("");
+    setCounty("");
+    setIssue(null);
+    setProfile({ name: "", employer: "", payType: "", rate: "" });
+    setHomeMode("standard");
+    setDone({});
+    setEntries([]);
+    setMessages([{ role: "ai", text: issueCfg(null).chatSeed }]);
+    setDraft("");
+    setLogNote("");
+    setLogHours("");
+    setLetterEdit(null);
+    setLetterType(null);
+    setDocName("");
+    setConsultSent("");
+    setWizNode("start");
+    setWizPath([]);
+    setOnbStep(1);
+    setOnboarded(false);
+    setScreen("onboarding");
+  }, []);
   useEffect(() => {
     setMessages((m) => m.length === 1 && m[0].role === "ai" ? [{ role: "ai", text: issueCfg(issue).chatSeed }] : m);
   }, [issue]);
@@ -1305,7 +1332,10 @@ function App() {
   const altHome = screen === "home" ? homeMode : null;
   const screenBg = altHome === "action" ? "#2B3AA8" : altHome === "plain" ? "#FFFFFF" : "#FFFDF8";
   const statusColor = altHome === "action" ? "#fff" : "#14181F";
-  return /* @__PURE__ */ React.createElement("div", { className: "device" }, /* @__PURE__ */ React.createElement("div", { className: "screen", style: css("background:" + screenBg) }, /* @__PURE__ */ React.createElement("div", { className: "statusbar", style: css("color:" + statusColor) }, /* @__PURE__ */ React.createElement("span", null, "9:41"), /* @__PURE__ */ React.createElement("span", { style: css("letter-spacing:2px") }, "\u25AE\u25AE\u25AE \u1BE4 \u25B0")), /* @__PURE__ */ React.createElement("div", { className: "scrollarea" }, Current()), showTabs && /* @__PURE__ */ React.createElement("div", { style: css("flex:none;border-top:2px solid rgba(20,24,31,.14);background:#FFFDF8;padding:10px 12px 26px;display:grid;grid-template-columns:repeat(5,1fr);gap:4px") }, TAB_DEFS.map(
+  return /* @__PURE__ */ React.createElement("div", { className: "device" }, /* @__PURE__ */ React.createElement("div", { className: "screen", style: css("background:" + screenBg) }, /* @__PURE__ */ React.createElement("div", { className: "statusbar", style: css("color:" + statusColor) }, /* @__PURE__ */ React.createElement("span", null, "9:41"), /* @__PURE__ */ React.createElement("span", { style: css("letter-spacing:2px") }, "\u25AE\u25AE\u25AE \u1BE4 \u25B0")), /* @__PURE__ */ React.createElement("div", { className: "scrollarea" }, Current(), screen === "home" && (() => {
+    const dark = altHome === "action";
+    return /* @__PURE__ */ React.createElement("div", { style: css("margin:0 22px 30px;padding-top:16px;border-top:1px solid " + (dark ? "rgba(255,255,255,.25)" : "rgba(20,24,31,.14)")) }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 10px;font:400 13px/1.5 'Atkinson Hyperlegible',sans-serif;color:" + (dark ? "#DDE2FF" : "#4A5162")) }, "Everything you enter stays in this browser on this device \u2014 nothing is uploaded. On a shared or work computer, delete your case when you\u2019re done."), /* @__PURE__ */ React.createElement("button", { onClick: clearCase, style: css("padding:12px 16px;border-radius:12px;border:2px solid " + (dark ? "rgba(255,255,255,.55)" : "#B3264F") + ";background:transparent;color:" + (dark ? "#fff" : "#B3264F") + ";font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;min-height:44px") }, "Delete my case & start over"));
+  })()), showTabs && /* @__PURE__ */ React.createElement("div", { style: css("flex:none;border-top:2px solid rgba(20,24,31,.14);background:#FFFDF8;padding:10px 12px 26px;display:grid;grid-template-columns:repeat(5,1fr);gap:4px") }, TAB_DEFS.map(
     ([k, icon, label]) => /* @__PURE__ */ React.createElement("button", { key: k, onClick: nav(k), style: css("display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 2px;border-radius:12px;border:2px solid " + (screen === k ? "#14181F" : "transparent") + ";background:" + (screen === k ? "#FFF4D6" : "transparent") + ";color:#14181F;cursor:pointer;min-height:56px") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 19px 'IBM Plex Mono',monospace") }, icon), /* @__PURE__ */ React.createElement("span", { style: css("font:700 12px 'Atkinson Hyperlegible',sans-serif") }, label))
   ))));
 }
