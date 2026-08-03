@@ -93,6 +93,30 @@
       "notes": "2021 amendments broadened coverage (reasonable belief standard, former employees and independent contractors). Remedies include reinstatement, back pay, attorney's fees, and civil penalties up to $10,000. Public-sector employees are covered separately under Civil Service Law § 75-b."
     },
     {
+      "topic": "overtime.salaryLevelWeekly.nycLIWestchester",
+      "value": 1275.00,
+      "summary": "For New York's executive and administrative overtime exemptions, employers in New York City, Nassau, Suffolk, and Westchester counties must pay at least $1,275.00/week ($66,300/yr) — well above the federal EAP salary floor of $684/week.",
+      "citation": "12 NYCRR § 142-2.14",
+      "sourceUrl": "https://dol.ny.gov/system/files/documents/2025/10/cr142.pdf",
+      "sourceAgency": "New York State Department of Labor",
+      "lastChecked": "2026-08-02",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Effective Jan 1, 2026. Applies to the state executive and administrative exemptions only; New York sets no separate state salary threshold for the professional exemption, which continues to use the federal $684/week floor. The threshold rises annually — VERIFY 2027 figure when published. The primary PDF blocks automated fetch; figure cross-confirmed via multiple secondary legal-industry sources citing this NYSDOL wage order (12 NYCRR Part 142) before entry — re-verify against the primary source."
+    },
+    {
+      "topic": "overtime.salaryLevelWeekly.restOfState",
+      "value": 1199.10,
+      "summary": "For New York's executive and administrative overtime exemptions, employers outside New York City, Nassau, Suffolk, and Westchester counties must pay at least $1,199.10/week ($62,353.20/yr) — above the federal EAP salary floor of $684/week.",
+      "citation": "12 NYCRR § 142-2.14",
+      "sourceUrl": "https://dol.ny.gov/system/files/documents/2025/10/cr142.pdf",
+      "sourceAgency": "New York State Department of Labor",
+      "lastChecked": "2026-08-02",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Effective Jan 1, 2026. Applies to the state executive and administrative exemptions only; New York sets no separate state salary threshold for the professional exemption, which continues to use the federal $684/week floor. The threshold rises annually — VERIFY 2027 figure when published. The primary PDF blocks automated fetch; figure cross-confirmed via multiple secondary legal-industry sources citing this NYSDOL wage order (12 NYCRR Part 142) before entry — re-verify against the primary source."
+    },
+    {
       "topic": "final-pay",
       "value": "by the regular payday for the pay period of termination",
       "summary": "When employment ends, New York requires the employer to pay all wages owed no later than the regular payday for the pay period during which the termination occurred (by mail if the employee requests).",
