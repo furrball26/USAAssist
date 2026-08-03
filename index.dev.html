@@ -102,6 +102,23 @@ function pickDeadlineFact(facts, issueKey){
   }
   return null;
 }
+// Resolve the single most-relevant deadline across BOTH state and federal facts.
+// Keyword priority is the OUTER loop so a higher-priority keyword found in federal
+// (e.g. the EEOC charge window) beats a lower-priority keyword in the state file
+// (e.g. a wage-claim deadline). Within a keyword, prefer the state's own fact.
+// Without this, `pickDeadlineFact(stF) || pickDeadlineFact(fedF)` let a low-priority
+// state wage deadline suppress the operative federal discrimination-charge deadline.
+function pickDeadlineFactAcross(stateFacts, fedFacts, issueKey){
+  const stDl = factsByPrefix(stateFacts, 'deadlines');
+  const fedDl = factsByPrefix(fedFacts, 'deadlines');
+  for (const kw of deadlineKeywordsFor(issueKey)) {
+    const stHit = stDl.find(f => String(f.topic || '').toLowerCase().includes(kw));
+    if (stHit) return stHit;
+    const fedHit = fedDl.find(f => String(f.topic || '').toLowerCase().includes(kw));
+    if (fedHit) return fedHit;
+  }
+  return null;
+}
 
 /* Parse a CSS declaration string into a React style object.
    Lets us reuse the design's exact inline-style strings verbatim. */
@@ -730,7 +747,7 @@ function App(){
       {(() => {
         const fedF = (federal && federal.facts) || [];
         const stF = (stateData && stateData.facts) || [];
-        const dl = pickDeadlineFact(stF, cfg.key) || pickDeadlineFact(fedF, cfg.key);
+        const dl = pickDeadlineFactAcross(stF, fedF, cfg.key);
         return dl ? (
           <button onClick={nav('strength')} style={css("text-align:left;padding:16px 18px;border-radius:14px;border:2px solid #14181F;background:#FFE7EC;cursor:pointer;display:flex;flex-direction:column;gap:4px")}>
             <span style={css("font:700 13px 'IBM Plex Mono',monospace;color:#14181F;letter-spacing:.04em")}>⏱ DEADLINE WATCH</span>
@@ -812,7 +829,7 @@ function App(){
       {(() => {
         const fedF = (federal && federal.facts) || [];
         const stF = (stateData && stateData.facts) || [];
-        const dl = pickDeadlineFact(stF, cfg.key) || pickDeadlineFact(fedF, cfg.key);
+        const dl = pickDeadlineFactAcross(stF, fedF, cfg.key);
         return dl ? (
           <button onClick={nav('strength')} style={css("text-align:left;padding:14px 16px;border-radius:12px;border:2px solid rgba(255,255,255,.4);background:rgba(255,255,255,.14);cursor:pointer;display:flex;flex-direction:column;gap:4px")}>
             <span style={css("font:700 12px 'IBM Plex Mono',monospace;color:#FFE7EC;letter-spacing:.05em")}>⏱ DEADLINE WATCH</span>
