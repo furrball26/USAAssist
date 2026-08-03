@@ -641,7 +641,10 @@ function App(){
   // Estimated overtime owed: only when we have both hours and a pay rate (1.5×).
   const owedEstimate = (unpaidHours > 0 && rateNum > 0) ? unpaidHours * rateNum * 1.5 : 0;
   const strength = caseStrength(entries);
-  const strengthFill = Math.max(evidenceCount > 0 ? 1 : 0, Math.round(strength.score / 20));
+  // Show 0 filled bars when nothing is logged. Each strength dimension floors at
+  // pct 12, so score is ~12 even with no evidence — Math.round(12/20) would light
+  // one bar under the "Not started" label. Only fill bars once there's real evidence.
+  const strengthFill = evidenceCount > 0 ? Math.max(1, Math.round(strength.score / 20)) : 0;
   const doneCount = cfg.steps.filter((_, i) => done[i]).length;
   const youName = (profile.name || '').trim();
   const employerName = (profile.employer || '').trim();
@@ -1228,7 +1231,8 @@ function App(){
       <h1 style={css("margin:0;font:700 26px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>What makes your case</h1>
       <div style={css("padding:16px 18px;border-radius:14px;background:#E8F6EE;border:2px solid #14181F")}>
         <p style={css("margin:0 0 4px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Overall: {strength.label}</p>
-        <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{evidenceCount === 0 ? 'This updates as you add entries to your incident log.' : 'Based on ' + evidenceCount + ' logged ' + (evidenceCount === 1 ? 'item' : 'items') + '. Add more to strengthen the thin areas below.'}</p>
+        <p style={css("margin:0 0 8px;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{evidenceCount === 0 ? 'This updates as you add entries to your incident log.' : 'Based on ' + evidenceCount + ' logged ' + (evidenceCount === 1 ? 'item' : 'items') + '. Add more to strengthen the thin areas below.'}</p>
+        <p style={css("margin:0;font:400 13px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>This measures how well-documented your case is — not the merits or your odds of winning. Only an attorney can assess that.</p>
       </div>
       <div style={css("display:flex;flex-direction:column;gap:12px")}>
         {strength.factors.map((f, i) =>
