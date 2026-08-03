@@ -1021,14 +1021,17 @@ function App() {
       cites: adaFact && adaFact.citation ? ["42 U.S.C. \xA712112", adaFact.citation] : ["42 U.S.C. \xA712112"]
     };
     const repliesResolved = [REPLIES[0], retaliationReply, REPLIES[2]];
+    const fallbackReply = {
+      text: "I can only give sample answers on a few topics: unpaid overtime and wages, discrimination and harassment, termination and retaliation, and severance or documents you've been asked to sign. Try rephrasing toward one of those. For anything else, your state labor agency or a local attorney (see Referrals) is the best next step.",
+      cites: []
+    };
     const matched = isAda ? adaReply : isRetaliation ? repliesResolved[1] : isSeverance ? repliesResolved[2] : isOvertime ? repliesResolved[0] : null;
     setMessages((prev) => {
-      const i = prev.filter((m) => m.role === "user").length % repliesResolved.length;
       const next = prev.concat([{ role: "user", text }]);
       clearTimeout(timer.current);
       timer.current = setTimeout(() => {
         setTyping(false);
-        setMessages((p) => p.concat([Object.assign({ role: "ai" }, matched || repliesResolved[i])]));
+        setMessages((p) => p.concat([Object.assign({ role: "ai" }, matched || fallbackReply)]));
       }, 900);
       return next;
     });
