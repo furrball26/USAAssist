@@ -17,6 +17,18 @@
       "notes": "Louisiana enacts no independent minimum wage; RS 23:642 preempts local minimum-wage ordinances so the federal $7.25 governs statewide. Verify the federal rate remains $7.25 for 2026."
     },
     {
+      "topic": "overtime.daily",
+      "value": "follows federal FLSA",
+      "summary": "Louisiana has no state overtime law, so the federal FLSA standard governs: non-exempt employees are owed 1.5x pay for hours over 40 in a workweek, and there is no daily overtime.",
+      "citation": "29 U.S.C. § 207(a) (no Louisiana state overtime statute)",
+      "sourceUrl": "https://www.dol.gov/agencies/whd/overtime",
+      "sourceAgency": "U.S. Department of Labor, Wage and Hour Division",
+      "lastChecked": "2026-08-03",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Louisiana enacts no independent overtime statute; the federal FLSA weekly-overtime rule and white-collar exemptions (including the federal salary level) apply statewide. Verify no legislative change for 2026."
+    },
+    {
       "topic": "discrimination.protectedClasses",
       "value": ["military status", "natural, protective, or cultural hairstyle"],
       "summary": "Beyond the federal Title VII/ADA/ADEA classes, Louisiana's Employment Discrimination Law expressly protects military status and natural, protective, or cultural hairstyle (CROWN Act).",
