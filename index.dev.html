@@ -165,7 +165,7 @@ const TREE = {
 };
 
 const CLAUSES = [
-  { title:'Release of claims', level:'READ CLOSELY', quote:'…releases all claims arising from employment, known or unknown…', plain:'You give up the right to sue for anything that already happened. In many states, wages you already earned generally cannot be waived — even by signing this.', tone:'#FFE7EC', badge:'#E0322F' },
+  { title:'Release of claims', level:'READ CLOSELY', quote:'…releases all claims arising from employment, known or unknown…', plain:'You give up the right to sue for anything that already happened. In many states, wages you already earned generally cannot be waived — even by signing this.', tone:'#FFE7EC', badge:'#C81E1B' },
   { title:'Non-disparagement', level:'NEGOTIABLE', quote:'…shall not make any statement that reflects negatively on the Company…', plain:'As written this is broad. Many states protect your ability to describe unlawful conduct you experienced; that carve-out is missing here.', tone:'#FFF4D6', badge:'#8A5A00' },
   { title:'Severance amount', level:'STANDARD', quote:'…eight (8) weeks of base salary, less withholdings…', plain:'Eight weeks is within a normal range for your tenure. It is separate from wages you are already owed.', tone:'#E8F6EE', badge:'#136B3C' }
 ];
@@ -700,9 +700,9 @@ function App(){
       }
 
       {onbStep === 3 &&
-        <div style={css("display:flex;flex-direction:column;gap:12px")}>
+        <div role="radiogroup" aria-label="What brings you here?" style={css("display:flex;flex-direction:column;gap:12px")}>
           {ISSUE_LIST.map(([name, desc]) =>
-            <button key={name} onClick={() => setIssue(name)}
+            <button key={name} onClick={() => setIssue(name)} role="radio" aria-checked={issue === name}
               style={css('text-align:left;display:flex;flex-direction:column;gap:5px;padding:18px;border-radius:16px;border:2px solid ' + (issue === name ? '#2B3AA8' : '#14181F') + ';background:' + (issue === name ? '#EEF1FF' : '#fff') + ';cursor:pointer')}>
               <span style={css("font:700 18px 'Atkinson Hyperlegible',sans-serif")}>{name}</span>
               <span style={css("font:400 15px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{desc}</span>
@@ -722,10 +722,10 @@ function App(){
             <input id="onb-emp" value={profile.employer} onChange={e => setProfile(p => Object.assign({}, p, { employer:e.target.value }))} placeholder="Company name" style={css("padding:14px;border-radius:12px;border:2px solid #14181F;font:400 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
           </div>
           <div style={css("display:flex;flex-direction:column;gap:6px")}>
-            <label style={css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>HOW ARE YOU PAID?</label>
-            <div style={css("display:flex;gap:8px")}>
+            <label id="paytype-label" style={css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>HOW ARE YOU PAID?</label>
+            <div role="group" aria-labelledby="paytype-label" style={css("display:flex;gap:8px")}>
               {['Hourly','Salary'].map(t =>
-                <button key={t} onClick={() => setProfile(p => Object.assign({}, p, { payType:t }))} style={css('flex:1;padding:13px;border-radius:12px;border:2px solid #14181F;background:' + (profile.payType === t ? '#2B3AA8' : '#fff') + ';color:' + (profile.payType === t ? '#fff' : '#14181F') + ";font:700 16px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{t}</button>
+                <button key={t} onClick={() => setProfile(p => Object.assign({}, p, { payType:t }))} aria-pressed={profile.payType === t} style={css('flex:1;padding:13px;border-radius:12px;border:2px solid #14181F;background:' + (profile.payType === t ? '#2B3AA8' : '#fff') + ';color:' + (profile.payType === t ? '#fff' : '#14181F') + ";font:700 16px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{t}</button>
               )}
             </div>
           </div>
@@ -746,12 +746,18 @@ function App(){
 
       {(() => {
         const blocked = (onbStep === 1 && !stateSel) || (onbStep === 2 && !county) || (onbStep === 3 && !issue);
+        const need = onbStep === 1 ? 'Select the state where you work to continue.' : onbStep === 2 ? 'Select your county to continue.' : onbStep === 3 ? 'Pick the issue that fits best to continue.' : '';
         const go = () => {
           if (blocked) return;
           if (onbStep < 4) setOnbStep(onbStep + 1);
           else { setOnboarded(true); setScreen('home'); }
         };
-        return <button onClick={go} style={css("width:100%;padding:20px;border:none;border-radius:16px;background:#2B3AA8;color:#fff;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:" + (blocked ? 'not-allowed' : 'pointer') + ";opacity:" + (blocked ? '.5' : '1'))}>{onbStep === 4 ? 'Open my dashboard' : 'Continue'}</button>;
+        return (
+          <div style={css("display:flex;flex-direction:column;gap:8px")}>
+            <button onClick={go} aria-disabled={blocked} style={css("width:100%;padding:20px;border:none;border-radius:16px;background:#2B3AA8;color:#fff;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:" + (blocked ? 'not-allowed' : 'pointer') + ";opacity:" + (blocked ? '.5' : '1'))}>{onbStep === 4 ? 'Open my dashboard' : 'Continue'}</button>
+            {blocked && <p role="status" style={css("margin:0;text-align:center;font:600 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>{need}</p>}
+          </div>
+        );
       })()}
       <button onClick={() => { setOnboarded(true); setScreen('home'); }} style={css("align-self:center;background:none;border:none;padding:6px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;text-decoration:underline;cursor:pointer")}>Skip to dashboard</button>
     </div>
@@ -761,13 +767,13 @@ function App(){
     const dark = theme === 'dark';
     const modes = [['standard','Standard'],['action','Action-first'],['plain','Plain']];
     return (
-      <div style={css("display:flex;gap:6px;margin-bottom:4px")}>
+      <div role="group" aria-label="Dashboard view" style={css("display:flex;gap:6px;margin-bottom:4px")}>
         {modes.map(([k, label]) => {
           const on = homeMode === k;
           const border = dark ? '#fff' : '#14181F';
           const bg = on ? (dark ? '#FFF4D6' : '#14181F') : 'transparent';
           const color = on ? (dark ? '#14181F' : '#fff') : (dark ? '#fff' : '#14181F');
-          return <button key={k} onClick={() => setHomeMode(k)} style={css('flex:1;min-height:44px;padding:13px 6px;border-radius:999px;border:2px solid ' + border + ';background:' + bg + ';color:' + color + ";font:700 13px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{label}</button>;
+          return <button key={k} onClick={() => setHomeMode(k)} aria-pressed={on} style={css('flex:1;min-height:44px;padding:13px 6px;border-radius:999px;border:2px solid ' + border + ';background:' + bg + ';color:' + color + ";font:700 13px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{label}</button>;
         })}
       </div>
     );
@@ -805,7 +811,7 @@ function App(){
           <span style={css("font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#136B3C")}>View →</span>
         </div>
         <div style={css("font:700 26px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{strength.label}</div>
-        <div style={css("display:flex;gap:5px;height:14px")}>
+        <div aria-hidden="true" style={css("display:flex;gap:5px;height:14px")}>
           {[0,1,2,3,4].map(i => <div key={i} style={css("flex:1;border-radius:7px;background:" + (i < strengthFill ? '#1F8A4C' : 'rgba(20,24,31,.14)'))}></div>)}
         </div>
         <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#25302B")}>{evidenceCount === 0 ? 'No evidence logged yet. Start with the incident log — the earlier you begin, the stronger your record.' : evidenceCount + ' evidence ' + (evidenceCount === 1 ? 'item' : 'items') + ' logged. ' + (strength.factors.find(f => f.pct < 40) ? strength.factors.find(f => f.pct < 40).name + ' would help most next.' : 'Keep adding detail as it happens.')}</p>
@@ -818,8 +824,9 @@ function App(){
             const on = !!done[i];
             return (
               <button key={i} onClick={() => setDone(p => Object.assign({}, p, { [i]: !p[i] }))}
+                role="checkbox" aria-checked={on}
                 style={css('display:flex;align-items:center;gap:14px;text-align:left;padding:16px;border-radius:14px;border:2px solid #14181F;background:' + (on ? '#E8F6EE' : '#fff') + ';cursor:pointer')}>
-                <span style={css('flex:none;width:30px;height:30px;border-radius:8px;border:2px solid #14181F;background:' + (on ? '#1F8A4C' : '#fff') + ';color:#fff;display:flex;align-items:center;justify-content:center;font:700 17px sans-serif')}>{on ? '✓' : ''}</span>
+                <span aria-hidden="true" style={css('flex:none;width:30px;height:30px;border-radius:8px;border:2px solid #14181F;background:' + (on ? '#1F8A4C' : '#fff') + ';color:#fff;display:flex;align-items:center;justify-content:center;font:700 17px sans-serif')}>{on ? '✓' : ''}</span>
                 <span style={css("font:700 17px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-decoration:" + (on ? 'line-through' : 'none'))}>{text}</span>
               </button>
             );
@@ -1048,7 +1055,7 @@ function App(){
               const stRev = !!(stateData && stateData.reviewed === true);
               const fedOT = [factByTopic(fedF,'overtime.basicRule'), factByTopic(fedF,'overtime.salaryLevelWeekly')].filter(Boolean);
               const stOT = factsByPrefix(stF,'overtime').concat([factByTopic(stF,'minimumWage.hourly')].filter(Boolean));
-              const line = f => <p key={f.topic} style={css("margin:0 0 8px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{f.summary} {f.sourceUrl ? <a href={f.sourceUrl} target="_blank" rel="noopener" style={css("color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null}</p>;
+              const line = f => <p key={f.topic} style={css("margin:0 0 8px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{f.summary} {f.sourceUrl ? <a href={f.sourceUrl} target="_blank" rel="noopener noreferrer" style={css("color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null}</p>;
               return (
                 <div style={css("padding:18px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF")}>
                   <p style={css("margin:0 0 10px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>What applies in {stateSel}</p>
@@ -1103,9 +1110,9 @@ function App(){
       <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Contemporaneous notes carry real weight. Each entry is timestamped and kept on your device.</p>
 
       <div style={css("padding:16px;border-radius:16px;border:2px solid #14181F;background:#fff;display:flex;flex-direction:column;gap:12px")}>
-        <div style={css("display:flex;gap:8px;flex-wrap:wrap")}>
+        <div role="group" aria-label="Entry type" style={css("display:flex;gap:8px;flex-wrap:wrap")}>
           {LOG_KINDS.map(k =>
-            <button key={k.tag} onClick={() => setLogKind(k.tag)} style={css('padding:10px 13px;border-radius:999px;border:2px solid #14181F;background:' + (logKind === k.tag ? '#14181F' : '#fff') + ';color:' + (logKind === k.tag ? '#fff' : '#14181F') + ";font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{k.label.replace('+ ','')}</button>
+            <button key={k.tag} onClick={() => setLogKind(k.tag)} aria-pressed={logKind === k.tag} style={css('padding:10px 13px;border-radius:999px;border:2px solid #14181F;background:' + (logKind === k.tag ? '#14181F' : '#fff') + ';color:' + (logKind === k.tag ? '#fff' : '#14181F') + ";font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{k.label.replace('+ ','')}</button>
           )}
         </div>
         {kind.asksHours &&
@@ -1202,10 +1209,10 @@ function App(){
     <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
       <button onClick={nav('home')} style={css("align-self:flex-start;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}>← Dashboard</button>
       {kinds.length > 1 &&
-        <div style={css("display:flex;gap:8px")}>
+        <div role="group" aria-label="Letter type" style={css("display:flex;gap:8px")}>
           {kinds.map((k, i) => {
             const on = k === activeKind;
-            return <button key={k} onClick={() => { setLetterType(k); setLetterEdit(null); }} style={css('flex:1;padding:12px 10px;border-radius:12px;border:2px solid #14181F;background:' + (on ? '#2B3AA8' : '#fff') + ';color:' + (on ? '#fff' : '#14181F') + ";font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{(i === 0 ? '1. ' : '2. ') + LETTER_LABELS[k]}</button>;
+            return <button key={k} onClick={() => { setLetterType(k); setLetterEdit(null); }} aria-pressed={on} style={css('flex:1;padding:12px 10px;border-radius:12px;border:2px solid #14181F;background:' + (on ? '#2B3AA8' : '#fff') + ';color:' + (on ? '#fff' : '#14181F') + ";font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{(i === 0 ? '1. ' : '2. ') + LETTER_LABELS[k]}</button>;
           })}
         </div>
       }
@@ -1265,7 +1272,7 @@ function App(){
         const stF = (stateData && stateData.facts) || [];
         const fedDL = pickDeadlineFact(fedF, cfg.key);
         const stDL = pickDeadlineFact(stF, cfg.key);
-        const src = f => f && f.sourceUrl ? <a href={f.sourceUrl} target="_blank" rel="noopener" style={css("color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null;
+        const src = f => f && f.sourceUrl ? <a href={f.sourceUrl} target="_blank" rel="noopener noreferrer" style={css("color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null;
         return (
           <div style={css("padding:18px;border-radius:16px;background:#FFE7EC;border:2px solid #14181F")}>
             <p style={css("margin:0 0 8px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Deadline watch — {stateSel}</p>
@@ -1286,7 +1293,7 @@ function App(){
       <p style={css("margin:0 0 12px;font:400 16px/1.5 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{f.summary}</p>
       <div style={css("display:flex;gap:8px;flex-wrap:wrap;align-items:center")}>
         {f.citation ? <span style={css("padding:7px 11px;border-radius:8px;background:#EEF1FF;font:600 13px 'IBM Plex Mono',monospace;color:#1B2778")}>{f.citation}</span> : null}
-        {f.sourceUrl ? <a href={f.sourceUrl} target="_blank" rel="noopener" style={css("padding:7px 11px;border-radius:8px;background:#fff;border:2px solid #2B3AA8;font:600 13px 'IBM Plex Mono',monospace;color:#2B3AA8;text-decoration:none")}>Source ↗</a> : null}
+        {f.sourceUrl ? <a href={f.sourceUrl} target="_blank" rel="noopener noreferrer" style={css("padding:7px 11px;border-radius:8px;background:#fff;border:2px solid #2B3AA8;font:600 13px 'IBM Plex Mono',monospace;color:#2B3AA8;text-decoration:none")}>Source ↗</a> : null}
         <span style={css('padding:7px 11px;border-radius:8px;background:' + scopeTone + ";border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace;color:#14181F")}>{scopeLabel}</span>
       </div>
     </div>
@@ -1344,7 +1351,7 @@ function App(){
           <div style={css("padding:16px 18px;border-radius:14px;background:#E8F6EE;border:2px solid #14181F;display:flex;flex-direction:column;gap:8px")}>
             <p style={css("margin:0;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>File directly with the enforcing agencies — free</p>
             <p style={css("margin:0 0 2px;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#25302B")}>You can bring a complaint to the government agencies that enforce these laws in {stateSel}, at no cost:</p>
-            {links.map(([label, url], i) => <a key={i} href={url} target="_blank" rel="noopener" style={css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#136B3C;text-decoration:underline")}>{label} ↗</a>)}
+            {links.map(([label, url], i) => <a key={i} href={url} target="_blank" rel="noopener noreferrer" style={css("display:flex;align-items:center;min-height:44px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#136B3C;text-decoration:underline")}>{label} ↗</a>)}
           </div>
         );
       })()}
