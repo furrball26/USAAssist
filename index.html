@@ -982,7 +982,10 @@ function App() {
     let ignore = false;
     setStateData(void 0);
     setStateErr(false);
-    fetch(CONTENT_BASE + "content/states/" + ab + ".json").then((r) => r.ok ? r.json() : null).then((d) => {
+    fetch(CONTENT_BASE + "content/states/" + ab + ".json").then((r) => {
+      if (!r.ok) throw new Error("http " + r.status);
+      return r.json();
+    }).then((d) => {
       if (!ignore) setStateData(d);
     }).catch(() => {
       if (!ignore) {
