@@ -560,7 +560,7 @@ function pickDeadlineFact(facts, issueKey) {
     const hit = dl.find((f) => String(f.topic || "").toLowerCase().includes(kw));
     if (hit) return hit;
   }
-  return dl[0];
+  return null;
 }
 function css(str) {
   const out = {};

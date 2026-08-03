@@ -82,7 +82,8 @@ function factsByPrefix(facts, prefix){ return (facts || []).filter(f => String(f
 function stateFactFor(facts, topics){ for (const t of topics) { const f = factByTopic(facts, t); if (f) return f; } return null; }
 
 // Which deadline topics matter most for a given issue type, in priority order.
-// Falls back to the first deadline fact available so something always surfaces.
+// If none of these topics are present, pickDeadlineFact returns null rather than
+// guessing at an unrelated deadline — callers fall back to the federal fact/banner.
 function deadlineKeywordsFor(issueKey){
   switch (issueKey) {
     case 'wage': return ['wageclaim', 'equalpayact'];
@@ -99,7 +100,7 @@ function pickDeadlineFact(facts, issueKey){
     const hit = dl.find(f => String(f.topic || '').toLowerCase().includes(kw));
     if (hit) return hit;
   }
-  return dl[0];
+  return null;
 }
 
 /* Parse a CSS declaration string into a React style object.
