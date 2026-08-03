@@ -1144,14 +1144,14 @@ function App(){
     <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
       <button onClick={nav('home')} style={css("align-self:flex-start;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}>← Dashboard</button>
       <h1 style={css("margin:0;font:700 26px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Review a document</h1>
+      <div style={css("padding:14px 16px;border-radius:12px;background:#FFF4D6;border:2px solid #14181F")}>
+        <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Automated clause analysis is not available in this preview, so <strong>your document is not uploaded or read</strong> — the picker only notes the file name. The <strong>example review</strong> below shows how flags will work. Bring your actual document to an attorney before signing.</p>
+      </div>
       <label style={css("display:flex;flex-direction:column;gap:8px;padding:20px;border-radius:16px;border:2px dashed #2B3AA8;background:#EEF1FF;cursor:pointer;text-align:center")}>
-        <span style={css("font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{docName ? 'Selected: ' + docName : 'Upload the document you were asked to sign'}</span>
-        <span style={css("font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>Offer, contract, NDA, severance or PIP · PDF, Word or text</span>
+        <span style={css("font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{docName ? 'Noted: ' + docName + ' (not analyzed)' : 'See how document review works'}</span>
+        <span style={css("font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>Offer, contract, NDA, severance or PIP · your file stays on your device</span>
         <input type="file" accept=".pdf,.doc,.docx,.txt,.rtf" onChange={e => setDocName(e.target.files && e.target.files[0] ? e.target.files[0].name : '')} style={css("display:none")} />
       </label>
-      <div style={css("padding:14px 16px;border-radius:12px;background:#FFF4D6;border:2px solid #14181F")}>
-        <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Automated clause analysis is not available in this preview. Below is an <strong>example review</strong> of a typical severance agreement so you can see how flags work. Bring your actual document to an attorney before signing.</p>
-      </div>
       <p style={css("margin:0;font:600 14px 'IBM Plex Mono',monospace;color:#4A5162")}>EXAMPLE · severance agreement · 3 clauses flagged</p>
       <div style={css("display:flex;flex-direction:column;gap:12px")}>
         {CLAUSES.map((cl, i) =>
