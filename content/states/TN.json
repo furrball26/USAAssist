@@ -111,6 +111,18 @@
       "reviewed": false,
       "reviewedBy": null,
       "notes": "State addition beyond federal law, which does not mandate meal or rest breaks."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "3 years (for causes of action arising on or after July 1, 2024)",
+      "summary": "Tennessee added an explicit 3-year statute of limitations for unpaid-wage claims - hours worked, overtime, minimum wage, salary, bonuses, commissions, or other compensation - effective for claims arising on or after July 1, 2024.",
+      "citation": "Tenn. Code Ann. § 28-3-105(4)",
+      "sourceUrl": "https://www.capitol.tn.gov/Bills/113/Bill/HB2113.pdf",
+      "sourceAgency": "Tennessee General Assembly",
+      "lastChecked": "2026-08-02",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Enacted 2024 Pub. Ch. 747 (HB 2113/SB 2017), adding subdivision (4) to Tenn. Code Ann. § 28-3-105, which already sets a 3-year period for 'property tort actions [and] statutory liabilities.' Applies to causes of action accruing on/after 7/1/2024; wage claims accruing before that date may be governed by a different (e.g., general contract) limitations period - verify for pre-2024 claims."
     }
   ],
   "agencies": {

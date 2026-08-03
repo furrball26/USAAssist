@@ -75,6 +75,18 @@
       "reviewed": false,
       "reviewedBy": null,
       "notes": "Page states verbatim: 'South Dakota law does not cover age discrimination, but this is prohibited under federal law.'"
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "6 years",
+      "summary": "South Dakota has no dedicated statute of limitations for wage claims; the general 6-year period under SDCL 15-2-13 for actions on a contract, obligation, or liability (including a liability created by statute) applies to unpaid-wage and overtime claims.",
+      "citation": "SDCL 15-2-13; SDCL 60-11-1 et seq. (South Dakota Minimum Wage law, no dedicated limitations period)",
+      "sourceUrl": "https://sdlegislature.gov/api/Statutes/15-2-13.html",
+      "sourceAgency": "South Dakota Legislative Research Council (South Dakota Codified Laws)",
+      "lastChecked": "2026-08-02",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "SDCL Title 60 sets no dedicated statute of limitations for a wage or overtime claim; SDCL 15-2-13 provides a general 6-year period for 'an action upon a contract, obligation or liability, express or implied' and for 'a liability created by statute,' which is the period ordinarily applied to South Dakota wage claims."
     }
   ],
   "agencies": {

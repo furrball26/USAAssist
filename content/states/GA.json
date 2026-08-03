@@ -75,6 +75,18 @@
       "reviewed": false,
       "reviewedBy": null,
       "notes": "Protects public (government) employees only; no equivalent general private-sector state whistleblower statute. Statute provides a civil action in superior court (reported as within 1 year of discovering the retaliation, or 3 years of the retaliation, whichever is earlier) - verify the exact limitation period in O.C.G.A. § 45-1-4(e) as the source PDF could not be machine-read."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "no dedicated overtime/wage-claim limitations period under state law; a separate 3-year civil action exists only for underpayment below Georgia's own (lower) statutory minimum wage",
+      "summary": "Georgia has no general state wage-and-hour statute or limitations period; unpaid-wage and overtime claims in Georgia are almost always brought under the federal FLSA. A narrow state action for paying an employee less than Georgia's own statutory minimum wage must be brought within 3 years.",
+      "citation": "O.C.G.A. § 34-4-6 (state minimum-wage shortfall action only); 29 U.S.C. § 255 (FLSA, generally applicable in Georgia)",
+      "sourceUrl": "https://dol.georgia.gov/minimum-wage",
+      "sourceAgency": "Georgia Department of Labor",
+      "lastChecked": "2026-08-02",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Georgia has no state overtime law and no dedicated wage-claim statute of limitations; most wage/overtime disputes are litigated under the federal FLSA (2 years, 3 if willful - see the federal deadlines.wageClaim fact). O.C.G.A. § 34-4-6 separately allows a 3-year civil action to recover the shortfall when an employer pays less than Georgia's own (lower, $5.15) statutory minimum wage, but the Department of Labor's page does not display the statute text itself; the 3-year figure could not be confirmed on a directly linkable official government page and should be verified against the Official Code of Georgia before relying on it."
     }
   ],
   "agencies": {

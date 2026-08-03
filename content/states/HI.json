@@ -102,6 +102,18 @@
       "reviewed": false,
       "reviewedBy": null,
       "notes": "HRS 388-2(b) also requires regular wages be paid within 7 days after the end of each pay period. No general state severance-pay mandate exists."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "6 years for a private wage lawsuit (general contract/debt limitation); the Dept. of Labor will only accept an assignment of a wage claim for administrative collection within 1 year of when the wages became due",
+      "summary": "Hawaii's wage-payment law sets no dedicated limitations period for a private lawsuit to recover unpaid wages, so the general 6-year period for actions on a contract or liability applies; separately, the Director of Labor and Industrial Relations may not accept an assigned wage claim for administrative collection more than 1 year after the wages became due.",
+      "citation": "HRS § 657-1(1) (six-year limitation for actions upon a contract, obligation, or liability); HRS § 388-11(b) (1-year window for the Director to accept an assigned wage claim)",
+      "sourceUrl": "https://data.capitol.hawaii.gov/hrscurrent/Vol13_Ch0601-0676/HRS0657/HRS_0657-0001.htm",
+      "sourceAgency": "Hawaii State Legislature (Hawaii Revised Statutes)",
+      "lastChecked": "2026-08-02",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "HRS Chapter 388 (Payment of Wages) does not itself specify a limitations period for an employee's private civil action under HRS 388-11(a); the general 6-year 'debt founded upon contract' catchall in HRS 657-1(1) is the period commonly applied. The 1-year figure in HRS 388-11(b) governs only the Director's acceptance of an assigned claim for the state to pursue on the employee's behalf, not a private lawsuit deadline."
     }
   ],
   "agencies": {

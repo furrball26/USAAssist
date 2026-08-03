@@ -99,6 +99,18 @@
       "reviewed": false,
       "reviewedBy": null,
       "notes": "Layoff/suspension pay is due no later than the next regular payday. Wage claims are enforced by the NH DOL Wage and Hour Bureau."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "36 months (3 years)",
+      "summary": "A New Hampshire wage claim, whether filed by the employee or by the Department of Labor, must be filed no later than 36 months (3 years) from the date the wages were due.",
+      "citation": "RSA 275:51",
+      "sourceUrl": "https://www.gc.nh.gov/rsa/html/XXIII/275/275-51.htm",
+      "sourceAgency": "New Hampshire General Court (state statutes)",
+      "lastChecked": "2026-08-02",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "RSA 275:51 states a wage claim 'may be filed by an employee or by the department on its own motion no later than 36 months from the date the wages were due.' This is the administrative wage-claim filing deadline with the NH Department of Labor; a private civil action may be subject to a different period."
     }
   ],
   "agencies": {

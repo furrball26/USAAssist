@@ -119,6 +119,18 @@
       "reviewed": false,
       "reviewedBy": null,
       "notes": "Covers race, color, religion, sex, sexual orientation, gender identity, national origin, marital status, veteran status, disability, and age. Equal Pay Act claims carry a 1-year statute of limitations under ORS 652.230."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "6 years for unpaid regular wages",
+      "summary": "Oregon applies a 6-year statute of limitations (under ORS 12.080) to claims for unpaid regular wages under the state wage-collection law.",
+      "citation": "ORS 12.080",
+      "sourceUrl": "https://www.oregon.gov/boli/about/Documents/wage-collection-32-35.pdf",
+      "sourceAgency": "Oregon Bureau of Labor & Industries (BOLI)",
+      "lastChecked": "2026-08-02",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "BOLI's published case-law digest states: 'the statute of limitations for wage claims for regular wages is six years' (citing ORS 12.080), rejecting a shorter-period defense in In the Matter of Brown's Architectural Sheetmetal, Inc., 35 BOLI 68 (2016). Separate, shorter deadlines apply to civil penalty wages (ORS 652.150, notice/30-day accrual) and the Oregon Equal Pay Act (1 year, ORS 652.230 - see the equalPay fact)."
     }
   ],
   "agencies": {

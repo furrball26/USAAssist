@@ -99,6 +99,18 @@
       "reviewed": false,
       "reviewedBy": null,
       "notes": "State of Utah government employees are exempted from the 24-hour rule. This is a state-specific requirement with no direct federal equivalent."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "1 year to file an administrative wage claim with the Labor Commission ($50-$10,000 claims); for a private lawsuit on larger or aggregated claims the Payment of Wages Act sets no explicit deadline, and the general 3-year 'liability created by statute' period is understood to apply",
+      "summary": "Utah requires a wage claim filed with the Labor Commission to be filed within 1 year of when the wages were earned. For a private court lawsuit under the Payment of Wages Act (available for claims over $10,000 or aggregated claims), the Act does not itself state a deadline; Utah's general 3-year limitations period for a liability created by statute is the period commonly applied.",
+      "citation": "Utah Code Ann. § 34-28-9(1)(e); § 34-28-9.5 (private cause of action); § 78B-2-305(1)(a)(iv) (general 3-year statutory-liability limitation)",
+      "sourceUrl": "https://le.utah.gov/xcode/Title34/Chapter28/C34-28_1800010118000101.pdf",
+      "sourceAgency": "Utah State Legislature (Utah Code); Utah Labor Commission",
+      "lastChecked": "2026-08-02",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "A 2026 bill, S.B. 213, would have added an explicit 1-year (as introduced) or 2-year (House-amended) limitations period for a private Utah Payment of Wages Act lawsuit; the bill failed in the 2026 General Session (did not pass), so no dedicated statutory deadline for a private UPWA court action currently exists in the Utah Code - verify in case a future session enacts one."
     }
   ],
   "agencies": {

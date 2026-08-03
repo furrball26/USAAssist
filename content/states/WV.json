@@ -99,6 +99,18 @@
       "reviewed": false,
       "reviewedBy": null,
       "notes": "2015 amendment changed the old 72-hour rule to the next regular payday. Liquidated damages of 2x unpaid wages apply for noncompliance under §21-5-4(e)."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "5 years",
+      "summary": "West Virginia's Wage Payment and Collection Act sets no limitations period of its own; the West Virginia Supreme Court of Appeals has held that unpaid-wage claims are governed by the general 5-year limitations period for actions on an express or implied contract.",
+      "citation": "W. Va. Code § 21-5-1 et seq. (Wage Payment and Collection Act, no explicit limitations period); W. Va. Code § 55-2-6 (5-year limitation for actions on other express or implied contracts), applied to WPCA claims in Goodwin v. Willard, 406 S.E.2d 752 (W. Va. 1991)",
+      "sourceUrl": "https://code.wvlegislature.gov/55-2-6/",
+      "sourceAgency": "West Virginia Legislature (WV Code)",
+      "lastChecked": "2026-08-02",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Article 21-5 (the WPCA) does not state its own statute of limitations for an employee's civil action; W. Va. Code § 55-2-6 sets 5 years for 'other express or implied contracts,' and West Virginia courts have applied that period to WPCA wage claims (Goodwin v. Willard). Some secondary sources describe a shorter (e.g., 2-year) look-back on the amount recoverable in a WPCA suit; that specific figure could not be confirmed in the statute's official text as fetched and is omitted - verify before relying on it."
     }
   ],
   "agencies": {

@@ -75,6 +75,18 @@
       "reviewed": false,
       "reviewedBy": null,
       "notes": "Statute does not distinguish discharge vs. resignation; both are paid at the next regular payday. Failure-to-pay exposes employer to liquidated damages (2% of unpaid wages per day, capped at the total unpaid amount)."
+    },
+    {
+      "topic": "deadlines.wageClaim",
+      "value": "3 years",
+      "summary": "Oklahoma's Payment of Wages Act sets no limitations period of its own; the general Oklahoma statute of limitations for a liability created by statute (3 years) governs wage and overtime claims.",
+      "citation": "40 O.S. § 165.9 (no limitations period specified); 12 O.S. § 95(A)(2) (general 3-year limitation for a liability created by statute)",
+      "sourceUrl": "https://www.oscn.net/applications/oscn/DeliverDocument.asp?CiteID=439150",
+      "sourceAgency": "Oklahoma State Courts Network (Oklahoma Statutes, Title 12)",
+      "lastChecked": "2026-08-02",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "12 O.S. § 95(A)(2) allows 'an action upon a liability created by statute other than a forfeiture or penalty' within 3 years; because the Oklahoma Payment of Wages Act (40 O.S. § 165.1 et seq.) does not set its own limitations period, this general 3-year statutory-liability period is understood to apply to Oklahoma wage claims."
     }
   ],
   "agencies": {

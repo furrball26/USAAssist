@@ -77,7 +77,7 @@
       "notes": "Matches the federal 300-day deadline that applies in deferral (FEPA) states. Filed with the Nebraska Equal Opportunity Commission."
     },
     {
-      "topic": "wageClaim.suit",
+      "topic": "deadlines.wageClaim",
       "value": "suit permitted for wages unpaid 30+ days after payday; prevailing employee recovers wages, costs, and attorney fees",
       "summary": "Under the Nebraska Wage Payment and Collection Act, an employee may sue for wages not paid within 30 days of the designated payday and, if successful, recover the full judgment plus costs and reasonable attorney fees.",
       "citation": "Neb. Rev. Stat. 48-1231",
