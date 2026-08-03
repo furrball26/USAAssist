@@ -483,6 +483,7 @@ function App(){
   const [federal, setFederal] = useState(null);
   const [stateData, setStateData] = useState(undefined); // undefined = loading, null = none, object = loaded
   const [contentErr, setContentErr] = useState(false);
+  const [stateErr, setStateErr] = useState(false); // true = state dataset fetch failed (distinct from "no extra state rule")
   const [homeMode, setHomeMode] = useState(() => saved.homeMode || 'standard');
   const [done, setDone] = useState(() => saved.done || {});
   const [draft, setDraft] = useState('');
@@ -519,12 +520,13 @@ function App(){
   }, []);
   useEffect(() => {
     const ab = US_STATE_ABBR[stateSel];
-    if (!ab) { setStateData(null); return; }
+    if (!ab) { setStateData(null); setStateErr(false); return; }
     let ignore = false;
     setStateData(undefined);
+    setStateErr(false);
     fetch(CONTENT_BASE + 'content/states/' + ab + '.json').then(r => r.ok ? r.json() : null)
       .then(d => { if (!ignore) setStateData(d); })
-      .catch(() => { if (!ignore) setStateData(null); });
+      .catch(() => { if (!ignore) { setStateData(null); setStateErr(true); } });
     return () => { ignore = true; };
   }, [stateSel]);
 
@@ -991,9 +993,15 @@ function App(){
                 <div style={css("padding:18px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF")}>
                   <p style={css("margin:0 0 10px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>What applies in {stateSel}</p>
                   <p style={css("margin:0 0 4px;font:700 13px 'IBM Plex Mono',monospace;color:#1B2778;letter-spacing:.04em")}>FEDERAL</p>
-                  {fedOT.length ? fedOT.map(line) : <p style={css("margin:0 0 8px;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>Loading…</p>}
+                  {fedOT.length ? fedOT.map(line) : contentErr ?
+                    <p style={css("margin:0 0 8px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load federal rules. Check your connection and reopen.</p> :
+                    <p style={css("margin:0 0 8px;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>Loading…</p>}
                   <p style={css("margin:10px 0 4px;font:700 13px 'IBM Plex Mono',monospace;color:#1B2778;letter-spacing:.04em")}>{stateSel.toUpperCase()}{stRev ? '' : ' (DRAFT)'}</p>
-                  {stOT.length ? stOT.map(line) : <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{stateSel} follows the federal overtime standard.</p>}
+                  {stOT.length ? stOT.map(line) : stateErr ?
+                    <p style={css("margin:0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load {stateSel} rules. Check your connection and reopen — this is not a confirmation that no extra state rule applies.</p> :
+                    stateData === undefined ?
+                    <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>Loading…</p> :
+                    <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{stateSel} follows the federal overtime standard.</p>}
                 </div>
               );
             })()}
@@ -1193,8 +1201,10 @@ function App(){
         return (
           <div style={css("padding:18px;border-radius:16px;background:#FFE7EC;border:2px solid #14181F")}>
             <p style={css("margin:0 0 8px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Deadline watch — {stateSel}</p>
-            <p style={css("margin:0 0 6px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}><strong>Federal:</strong> {fedDL ? fedDL.summary : 'Loading the deadline that applies to your claim…'} {src(fedDL)}</p>
-            <p style={css("margin:0 0 8px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}><strong>{stateSel}:</strong> {stDL ? stDL.summary : (stateData === undefined ? 'Loading…' : 'See the federal deadline above; a state limit may also apply.')} {src(stDL)}</p>
+            {contentErr ? <p style={css("margin:0 0 8px;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load the federal deadline. Check your connection and reopen — do not assume you have time to spare.</p> : null}
+            {!contentErr && <p style={css("margin:0 0 6px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}><strong>Federal:</strong> {fedDL ? fedDL.summary : 'Loading the deadline that applies to your claim…'} {src(fedDL)}</p>}
+            {stateErr ? <p style={css("margin:0 0 8px;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load the {stateSel} deadline. Check your connection and reopen — this is not a confirmation that no shorter state deadline applies.</p> :
+              <p style={css("margin:0 0 8px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}><strong>{stateSel}:</strong> {stDL ? stDL.summary : (stateData === undefined ? 'Loading…' : 'See the federal deadline above; a state limit may also apply.')} {src(stDL)}</p>}
             <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Act well before the earliest deadline — a claim filed late is usually barred. Confirm your exact date with an attorney.</p>
           </div>
         );
