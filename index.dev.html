@@ -1026,8 +1026,15 @@ function App(){
             <div style={css("display:flex;flex-wrap:wrap;gap:8px")}>
               {result.cites.map((c, ci) => <span key={ci} style={css("padding:8px 12px;border-radius:8px;background:#fff;border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace")}>{c}</span>)}
             </div>
-            {result.v === 'non' &&
+            {/* The wage-demand letter only exists for the wage issue (letterKindsFor).
+                For a non-wage issue (e.g. discrimination/termination) the Letter screen
+                would silently fall back to a complaint letter, so route to chat instead
+                of promising a wage-demand letter the user can't actually get here. */}
+            {result.v === 'non' && cfg.key === 'wage' &&
               <button onClick={() => { setLetterType('wage-demand'); setLetterEdit(null); setScreen('letter'); }} style={css("padding:18px;border-radius:16px;border:none;background:#2B3AA8;color:#fff;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Draft a wage demand letter</button>
+            }
+            {result.v === 'non' && cfg.key !== 'wage' &&
+              <button onClick={nav('chat')} style={css("padding:18px;border-radius:16px;border:none;background:#2B3AA8;color:#fff;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Ask the AI about unpaid overtime</button>
             }
             {result.v !== 'non' &&
               <button onClick={nav('chat')} style={css("padding:18px;border-radius:16px;border:none;background:#2B3AA8;color:#fff;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Ask the AI about your classification</button>
