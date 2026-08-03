@@ -157,7 +157,7 @@ const RESULTS = {
 
 const TREE = {
   start: { q:'How are you paid?', help:'Most exemptions require a fixed salary — this is the salary-basis test.', opts:[['A fixed salary every period','salaryLevel','SALARY'],['Hourly','hourlyType','HOURLY'],['Commission or piece rate','r_commission','COMMISSION'],['I am an outside salesperson','outsideSales','OUTSIDE SALES']] },
-  salaryLevel: { q:'Is your salary at least $684 per week?', help:'That is $35,568/year — the federal salary-level test. California sets a higher floor ($1,352/week in 2026); we flag both.', opts:[['Yes, $684/week or more','duties','≥ $684/WK'],['No, less than that','r_salary_low','< $684/WK'],['Not sure','duties','SALARY ?']] },
+  salaryLevel: { q:'Is your salary at least $684 per week?', help:'That is $35,568/year — the federal salary-level test. Some states set a higher salary floor; the panel below shows your state’s figure alongside the federal one.', opts:[['Yes, $684/week or more','duties','≥ $684/WK'],['No, less than that','r_salary_low','< $684/WK'],['Not sure','duties','SALARY ?']] },
   duties: { q:'What do you mainly do all day?', help:'The duties test looks at your real work, not your job title. Pick the closest.', opts:[['Manage two or more employees','execAuth','MANAGES 2+'],['Office work with independent judgment on significant matters','r_admin','ADMIN DUTIES'],['Work requiring an advanced degree (law, engineering, medicine…)','r_prof','PROFESSIONAL'],['Original creative or artistic work','r_creative','CREATIVE'],['Systems analysis, software design or programming','r_comp','COMPUTER'],['Follow set procedures and tasks','r_duties_none','ROUTINE TASKS']] },
   execAuth: { q:'Can you hire or fire — or do your recommendations carry real weight?', help:'The executive exemption requires genuine authority over other employees’ jobs, not just scheduling shifts.', opts:[['Yes, I have that authority','r_exec','HIRE/FIRE: YES'],['No, I just supervise the work','r_exec_no','HIRE/FIRE: NO']] },
   hourlyType: { q:'Do you mainly do computer systems work at $27.63/hour or more?', help:'Hourly workers are almost always owed overtime — the one big exception is computer employees at or above $27.63/hour.', opts:[['Yes, both of those','r_comp','COMPUTER $27.63+'],['No','r_hourly','HOURLY, OTHER']] },
@@ -396,8 +396,8 @@ function buildLetter(ctx){
       : '';
     const hrs = ctx.unpaidHours > 0 ? ctx.unpaidHours : '[number]';
     const amountLine = ctx.owedEstimate > 0
-      ? 'Based on my regular rate of ' + money(ctx.rateNum) + ' per hour, the unpaid overtime premium totals approximately ' + money(ctx.owedEstimate) + '.'
-      : 'I request payment of the overtime premium owed for these hours at one-and-one-half times my regular rate of pay.';
+      ? 'Based on my regular rate of ' + money(ctx.rateNum) + ' per hour, the overtime pay owed for these hours (at one-and-one-half times my regular rate) totals approximately ' + money(ctx.owedEstimate) + '.'
+      : 'I request payment for these hours at one-and-one-half times my regular rate of pay.';
     const subject = 'Demand for unpaid overtime wages';
     const body = date + '\n\n' + emp + '\nAttn: Payroll / Human Resources\n\nRe: ' + subject + '\n\nTo whom it may concern:\n\n' +
       'I am writing to request payment of overtime wages I earned and was not paid. My records show ' + hrs + ' hours worked beyond 40 in a workweek that were not paid at the required overtime rate.\n\n' +
@@ -639,6 +639,7 @@ function App(){
   };
 
   const stateAbbr = US_STATE_ABBR[stateSel] || '';
+  const stateLabel = stateSel || 'your state'; // fall back when onboarding was skipped without a state
   const locationLabel = county ? county + (stateAbbr ? ', ' + stateAbbr : '') : (stateSel || 'your location');
   const countyShort = county ? county.replace(/\s+(County|Parish|Borough|Census Area|Municipio|Municipality|city)$/i, '') : (stateSel || 'your area');
   const showTabs = screen !== 'onboarding';
@@ -1058,7 +1059,7 @@ function App(){
               const line = f => <p key={f.topic} style={css("margin:0 0 8px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{f.summary} {f.sourceUrl ? <a href={f.sourceUrl} target="_blank" rel="noopener noreferrer" style={css("color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null}</p>;
               return (
                 <div style={css("padding:18px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF")}>
-                  <p style={css("margin:0 0 10px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>What applies in {stateSel}</p>
+                  <p style={css("margin:0 0 10px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>What applies in {stateLabel}</p>
                   <p style={css("margin:0 0 4px;font:700 13px 'IBM Plex Mono',monospace;color:#1B2778;letter-spacing:.04em")}>FEDERAL</p>
                   {fedOT.length ? fedOT.map(line) : contentErr ?
                     <p style={css("margin:0 0 8px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load federal rules. Check your connection and reopen.</p> :
@@ -1275,11 +1276,11 @@ function App(){
         const src = f => f && f.sourceUrl ? <a href={f.sourceUrl} target="_blank" rel="noopener noreferrer" style={css("color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null;
         return (
           <div style={css("padding:18px;border-radius:16px;background:#FFE7EC;border:2px solid #14181F")}>
-            <p style={css("margin:0 0 8px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Deadline watch — {stateSel}</p>
+            <p style={css("margin:0 0 8px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Deadline watch — {stateLabel}</p>
             {contentErr ? <p style={css("margin:0 0 8px;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load the federal deadline. Check your connection and reopen — do not assume you have time to spare.</p> : null}
             {!contentErr && <p style={css("margin:0 0 6px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}><strong>Federal:</strong> {fedDL ? fedDL.summary : 'Loading the deadline that applies to your claim…'} {src(fedDL)}</p>}
             {stateErr ? <p style={css("margin:0 0 8px;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load the {stateSel} deadline. Check your connection and reopen — this is not a confirmation that no shorter state deadline applies.</p> :
-              <p style={css("margin:0 0 8px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}><strong>{stateSel}:</strong> {stDL ? stDL.summary : (stateData === undefined ? 'Loading…' : 'See the federal deadline above; a state limit may also apply.')} {src(stDL)}</p>}
+              <p style={css("margin:0 0 8px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}><strong>{stateLabel}:</strong> {stDL ? stDL.summary : (stateData === undefined ? 'Loading…' : 'See the federal deadline above; a state limit may also apply.')} {src(stDL)}</p>}
             <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Act well before the earliest deadline — a claim filed late is usually barred. Confirm your exact date with an attorney.</p>
           </div>
         );
@@ -1300,7 +1301,7 @@ function App(){
   );
 
   const RightsLib = () => {
-    const stName = stateSel;
+    const stName = stateSel || 'your state';
     const stAbbr = US_STATE_ABBR[stName] || '';
     const fedFacts = (federal && federal.facts) || [];
     const stFacts = (stateData && stateData.facts) || [];
@@ -1339,7 +1340,7 @@ function App(){
   const Lawyers = () => (
     <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
       <h1 style={css("margin:0;font:700 26px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Talk to a real attorney</h1>
-      <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Attorneys licensed in {stateSel}, near {countyShort}. WorkLaw takes no referral fee.</p>
+      <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Attorneys licensed in {stateLabel}, near {countyShort}. WorkLaw takes no referral fee.</p>
       {(() => {
         const ag = (stateData && stateData.agencies) || {};
         const links = [];
@@ -1350,13 +1351,13 @@ function App(){
         return (
           <div style={css("padding:16px 18px;border-radius:14px;background:#E8F6EE;border:2px solid #14181F;display:flex;flex-direction:column;gap:8px")}>
             <p style={css("margin:0;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>File directly with the enforcing agencies — free</p>
-            <p style={css("margin:0 0 2px;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#25302B")}>You can bring a complaint to the government agencies that enforce these laws in {stateSel}, at no cost:</p>
+            <p style={css("margin:0 0 2px;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#25302B")}>You can bring a complaint to the government agencies that enforce these laws in {stateLabel}, at no cost:</p>
             {links.map(([label, url], i) => <a key={i} href={url} target="_blank" rel="noopener noreferrer" style={css("display:flex;align-items:center;min-height:44px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#136B3C;text-decoration:underline")}>{label} ↗</a>)}
           </div>
         );
       })()}
       <div style={css("padding:16px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F")}>
-        <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>The attorney listings below are <strong>sample examples</strong> showing how a referral would work — not real firms or endorsements. A production version would connect to a licensed-attorney directory for {stateSel}.</p>
+        <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>The attorney listings below are <strong>sample examples</strong> showing how a referral would work — not real firms or endorsements. A production version would connect to a licensed-attorney directory for {stateLabel}.</p>
       </div>
       <div style={css("padding:16px;border-radius:14px;background:#E8F6EE;border:2px solid #14181F")}>
         <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#25302B")}>Your case file — timeline, documents, and the exemption analysis — exports as one PDF you control.</p>
