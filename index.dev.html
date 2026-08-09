@@ -291,6 +291,17 @@ function stamp(d){
   return MONTHS[d.getMonth()].toUpperCase() + ' ' + d.getDate() + ', ' + d.getFullYear() + ' · ' + h + ':' + m + ' ' + ap;
 }
 function money(n){ return '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 }); }
+// FLSA's default method for converting a fixed weekly/annual salary to an hourly-
+// equivalent regular rate assumes the salary covers a standard 40-hour workweek
+// (29 C.F.R. § 778.113). Used only to give a SALARIED worker an owed-amount
+// estimate if misclassified as exempt — the exemption wizard's whole point —
+// since profile.rate (hourly) was previously never collected for Salary users,
+// so owedEstimate was always 0 for the population that tool targets. Not a
+// substitute for confirming the actual agreed workweek with an attorney.
+function hourlyEquivFromSalary(annualSalary){
+  const n = Number(annualSalary) || 0;
+  return n > 0 ? n / 52 / 40 : 0;
+}
 // Sunday-start key for the workweek an ISO timestamp falls in, so multi-week logs
 // aren't billed as if every logged hour fell inside a single ">40 hrs" workweek.
 function weekStartKey(iso){
@@ -508,8 +519,15 @@ function buildLetter(ctx){
       : bd.straightHrs > 0 && bd.unpaidHrs === 0
       ? ' (the one-half-time overtime differential owed on hours already paid straight-time)'
       : ' (at one-and-one-half times my regular rate)';
+    // A salaried worker's "regular rate" here is an hourly-equivalent derived from
+    // their stated annual salary (see hourlyEquivFromSalary) — say so, since it's
+    // an assumption (a standard 40-hour workweek, 29 C.F.R. § 778.113), not a
+    // rate the employer already quoted in hourly terms.
+    const salaryNote = ctx.payType === 'Salary' && ctx.rateNum > 0
+      ? ' (an hourly-equivalent of my salary, assuming a standard 40-hour workweek)'
+      : '';
     const amountLine = bd.owedEstimate > 0
-      ? 'Based on my regular rate of ' + money(ctx.rateNum) + ' per hour, the overtime pay owed for these hours' + rateNote + ' totals approximately ' + money(bd.owedEstimate) + '.'
+      ? 'Based on my regular rate of ' + money(ctx.rateNum) + ' per hour' + salaryNote + ', the overtime pay owed for these hours' + rateNote + ' totals approximately ' + money(bd.owedEstimate) + '.'
       : 'I request payment for these hours at the overtime rate required by law.';
     const subject = 'Demand for unpaid overtime wages';
     const body = date + '\n\n' + emp + '\nAttn: Payroll / Human Resources\n\nRe: ' + subject + '\n\nTo whom it may concern:\n\n' +
@@ -623,7 +641,7 @@ function App(){
   const [county, setCounty] = useState(() => saved.county || '');
   const [countyQuery, setCountyQuery] = useState('');
   const [issue, setIssue] = useState(() => saved.issue || null);
-  const [profile, setProfile] = useState(() => Object.assign({ name:'', employer:'', payType:'', rate:'' }, saved.profile));
+  const [profile, setProfile] = useState(() => Object.assign({ name:'', employer:'', payType:'', rate:'', salary:'' }, saved.profile));
   const [caseOpened, setCaseOpened] = useState(() => saved.caseOpened || new Date().toISOString());
   const [federal, setFederal] = useState(null);
   const [stateData, setStateData] = useState(undefined); // undefined = loading, null = none, object = loaded
@@ -823,7 +841,11 @@ function App(){
   const openedDays = daysAgo(caseOpened);
   const openedLabel = openedDays === 0 ? 'today' : openedDays === 1 ? 'yesterday' : openedDays + ' days ago';
   const evidenceCount = entries.length;
-  const rateNum = Number(profile.rate) || 0;
+  // Salaried users never had a way to enter a rate, so owedEstimate was always 0
+  // for them — even though the exemption wizard exists specifically to catch
+  // misclassified SALARIED workers. Derive an hourly-equivalent from their stated
+  // annual salary (see hourlyEquivFromSalary) when payType is Salary.
+  const rateNum = profile.payType === 'Salary' ? hourlyEquivFromSalary(profile.salary) : (Number(profile.rate) || 0);
   // Owed-amount estimate: distinguishes hours paid $0 (1.5×) from hours already
   // paid straight-time but denied the overtime premium (0.5× differential), and
   // groups logged hours by workweek — see computeOwedBreakdown.
@@ -933,6 +955,16 @@ function App(){
               <span style={css("font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Used to estimate overtime owed in your demand letter.</span>
               {Number(dProfile.rate) > RATE_WARN_MAX &&
                 <p role="alert" style={css("margin:0;padding:10px 12px;border-radius:10px;background:#FFF4D6;border:2px solid #14181F;font:700 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#6B4B00")}>That’s an unusually high hourly rate ({money(Number(dProfile.rate))}/hr) — double-check it. It feeds directly into your owed-amount estimate and letters.</p>
+              }
+            </div>
+          }
+          {dProfile.payType === 'Salary' &&
+            <div style={css("display:flex;flex-direction:column;gap:6px")}>
+              <label htmlFor="onb-salary" style={css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>ANNUAL SALARY (OPTIONAL)</label>
+              <input id="onb-salary" type="number" min="0" step="500" value={dProfile.salary} onChange={e => setDProfile(p => Object.assign({}, p, { salary:e.target.value }))} placeholder="e.g. 52000" style={css("width:180px;padding:14px;border-radius:12px;border:2px solid #14181F;font:400 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
+              <span style={css("font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>If your classification check finds you should have been paid overtime, we estimate an hourly-equivalent rate assuming a standard 40-hour workweek (29 C.F.R. § 778.113) — {dProfile.salary && Number(dProfile.salary) > 0 ? 'currently ' + money(hourlyEquivFromSalary(dProfile.salary)) + '/hr equivalent.' : 'not a substitute for confirming your actual pay structure with an attorney.'}</span>
+              {hourlyEquivFromSalary(dProfile.salary) > RATE_WARN_MAX &&
+                <p role="alert" style={css("margin:0;padding:10px 12px;border-radius:10px;background:#FFF4D6;border:2px solid #14181F;font:700 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#6B4B00")}>That’s an unusually high salary (hourly-equivalent {money(hourlyEquivFromSalary(dProfile.salary))}/hr) — double-check it. It feeds directly into your owed-amount estimate and letters.</p>
               }
             </div>
           }
@@ -1477,7 +1509,7 @@ function App(){
     const activeKind = kinds.indexOf(letterType) >= 0 ? letterType : kinds[0];
     const gen = buildLetter({
       kind: activeKind, issueKey: cfg.key, youName, employerName, stateSel: stateLabel,
-      unpaidHours, owedEstimate, rateNum, federal, stateData, entries,
+      unpaidHours, owedEstimate, rateNum, federal, stateData, entries, payType: profile.payType,
     });
     const editing = letterEdit != null;
     const text = editing ? letterEdit : gen.body;
