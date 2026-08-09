@@ -2,7 +2,7 @@
   "jurisdiction": "CA",
   "name": "California",
   "reviewed": false,
-  "lastChecked": "2026-07-30",
+  "lastChecked": "2026-08-08",
   "facts": [
     {
       "topic": "overtime.daily",
@@ -12,7 +12,9 @@
       "sourceUrl": "https://www.dir.ca.gov/dlse/faq_overtime.htm",
       "sourceAgency": "California Dept of Industrial Relations, DLSE",
       "lastChecked": "2026-07-30",
-      "reviewed": false, "reviewedBy": null, "notes": ""
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": ""
     },
     {
       "topic": "overtime.salaryFloorWeekly",
@@ -21,40 +23,53 @@
       "citation": "Cal. Lab. Code § 515(a); IWC Wage Orders",
       "sourceUrl": "https://www.dir.ca.gov/dlse/faq_overtimeexemptions.htm",
       "sourceAgency": "California Dept of Industrial Relations, DLSE",
-      "lastChecked": "2026-07-30",
-      "reviewed": false, "reviewedBy": null,
-      "notes": "Derived as 2 x state minimum wage x 40 hrs x 52 / 12. VERIFY exact 2026 figure against the current CA minimum wage."
+      "lastChecked": "2026-08-08",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Re-verified 2026-08-08: derived as 2 x state minimum wage x 40 hrs x 52 / 12 = 2 x $16.90 x 40 x 52 / 12 = $1,352.00/week, using the confirmed-current $16.90 state minimum wage (see minimumWage.hourly, sourced to DIR News Release 2025-118). Figure checks out arithmetically against the confirmed rate."
     },
     {
       "topic": "overtime.computerExemption",
-      "value": "higher CA pay floor",
-      "summary": "California's computer-professional exemption sets a much higher pay floor than the federal $27.63/hour; a worker exempt federally may still be owed overtime under California law.",
+      "value": "$58.85/hr, $10,214.44/mo, or $122,573.13/yr",
+      "summary": "California's computer-professional exemption sets a much higher pay floor than the federal $27.63/hour: for 2026 the exemption requires at least $58.85/hour (or $10,214.44/month, or $122,573.13/year) in salary/wages; a worker exempt federally may still be owed overtime under California law if paid below this rate.",
       "citation": "Cal. Lab. Code § 515.5",
-      "sourceUrl": "https://www.dir.ca.gov/dlse/faq_overtimeexemptions.htm",
-      "sourceAgency": "California Dept of Industrial Relations, DLSE",
-      "lastChecked": "2026-07-30",
-      "reviewed": false, "reviewedBy": null, "notes": "VERIFY current-year computer-exemption rate."
+      "sourceUrl": "https://dir.ca.gov/oprl/ComputerSoftware.htm",
+      "sourceAgency": "California Dept of Industrial Relations, Office of Policy, Research and Legislation",
+      "lastChecked": "2026-08-08",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Confirmed directly from DIR's own computer-software-exemption page: DIR adjusted the rate from $56.97 to $58.85/hr (monthly $9,888.13 to $10,214.44; annual $118,657.43 to $122,573.13), effective January 1, 2026, reflecting the CPI-W increase. DIR re-adjusts this rate every October 1 for the following January 1 -- re-check annually."
     },
     {
       "topic": "minimumWage.hourly",
-      "value": 16.90,
+      "value": 16.9,
       "summary": "California state minimum wage (indexed annually). Many localities set a higher wage that applies instead.",
       "citation": "Cal. Lab. Code § 1182.12",
-      "sourceUrl": "https://www.dir.ca.gov/dlse/faq_minimumwage.htm",
-      "sourceAgency": "California Dept of Industrial Relations, DLSE",
-      "lastChecked": "2026-07-30",
-      "reviewed": false, "reviewedBy": null,
-      "notes": "VERIFY 2026 figure; provisional based on indexing from 2025 $16.50."
+      "sourceUrl": "https://www.dir.ca.gov/DIRNews/2025/2025-118.html",
+      "sourceAgency": "California Dept of Industrial Relations",
+      "lastChecked": "2026-08-08",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Re-verified 2026-08-08 directly against DIR News Release No. 2025-118, confirming the state minimum wage increased from $16.50 to $16.90/hour effective January 1, 2026 (indexed under Labor Code 1182.12). No longer provisional. Many localities set a higher local minimum wage that applies instead -- re-check annually as this is indexed for inflation."
     },
     {
       "topic": "discrimination.protectedClasses",
-      "value": ["+ marital status", "ancestry", "medical condition", "military/veteran status", "gender expression", "and more (in addition to federal classes)"],
+      "value": [
+        "+ marital status",
+        "ancestry",
+        "medical condition",
+        "military/veteran status",
+        "gender expression",
+        "and more (in addition to federal classes)"
+      ],
       "summary": "California's FEHA covers all federal protected classes plus additional categories, and applies to more employers than federal law.",
       "citation": "Cal. Gov. Code § 12940",
       "sourceUrl": "https://calcivilrights.ca.gov/employment/",
       "sourceAgency": "California Civil Rights Department",
       "lastChecked": "2026-07-30",
-      "reviewed": false, "reviewedBy": null, "notes": ""
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": ""
     },
     {
       "topic": "discrimination.coverage",
@@ -64,7 +79,9 @@
       "sourceUrl": "https://calcivilrights.ca.gov/employment/",
       "sourceAgency": "California Civil Rights Department",
       "lastChecked": "2026-07-30",
-      "reviewed": false, "reviewedBy": null, "notes": ""
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": ""
     },
     {
       "topic": "disability.interactiveProcess",
@@ -74,7 +91,9 @@
       "sourceUrl": "https://calcivilrights.ca.gov/employment/",
       "sourceAgency": "California Civil Rights Department",
       "lastChecked": "2026-07-30",
-      "reviewed": false, "reviewedBy": null, "notes": ""
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": ""
     },
     {
       "topic": "retaliation.whistleblower",
@@ -84,7 +103,9 @@
       "sourceUrl": "https://www.dir.ca.gov/dlse/",
       "sourceAgency": "California Dept of Industrial Relations, DLSE",
       "lastChecked": "2026-07-30",
-      "reviewed": false, "reviewedBy": null, "notes": ""
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": ""
     },
     {
       "topic": "deadlines.wageClaim",
@@ -94,7 +115,9 @@
       "sourceUrl": "https://www.dir.ca.gov/dlse/HowToFileWageClaim.htm",
       "sourceAgency": "California Dept of Industrial Relations, DLSE",
       "lastChecked": "2026-07-30",
-      "reviewed": false, "reviewedBy": null, "notes": ""
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": ""
     },
     {
       "topic": "deadlines.fehaComplaint",
@@ -104,7 +127,9 @@
       "sourceUrl": "https://calcivilrights.ca.gov/complaintprocess/",
       "sourceAgency": "California Civil Rights Department",
       "lastChecked": "2026-07-30",
-      "reviewed": false, "reviewedBy": null, "notes": ""
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": ""
     },
     {
       "topic": "severance.wageWaiver",
@@ -114,11 +139,19 @@
       "sourceUrl": "https://www.dir.ca.gov/dlse/",
       "sourceAgency": "California Dept of Industrial Relations, DLSE",
       "lastChecked": "2026-07-30",
-      "reviewed": false, "reviewedBy": null, "notes": ""
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": ""
     }
   ],
   "agencies": {
-    "wageHour": { "name": "California DIR / Division of Labor Standards Enforcement", "url": "https://www.dir.ca.gov/dlse/" },
-    "discrimination": { "name": "California Civil Rights Department", "url": "https://calcivilrights.ca.gov/" }
+    "wageHour": {
+      "name": "California DIR / Division of Labor Standards Enforcement",
+      "url": "https://www.dir.ca.gov/dlse/"
+    },
+    "discrimination": {
+      "name": "California Civil Rights Department",
+      "url": "https://calcivilrights.ca.gov/"
+    }
   }
 }

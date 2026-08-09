@@ -2,7 +2,7 @@
   "jurisdiction": "KS",
   "name": "Kansas",
   "reviewed": false,
-  "lastChecked": "2026-07-30",
+  "lastChecked": "2026-08-08",
   "facts": [
     {
       "topic": "overtime.daily",
@@ -30,7 +30,15 @@
     },
     {
       "topic": "discrimination.protectedClasses",
-      "value": ["race", "religion", "color", "sex", "disability", "national origin", "ancestry"],
+      "value": [
+        "race",
+        "religion",
+        "color",
+        "sex",
+        "disability",
+        "national origin",
+        "ancestry"
+      ],
       "summary": "The Kansas Act Against Discrimination prohibits employment discrimination based on race, religion, color, sex, disability, national origin, and ancestry; age (40+) is covered separately under the Kansas Age Discrimination in Employment Act.",
       "citation": "K.S.A. 44-1009; K.S.A. 44-1002",
       "sourceUrl": "https://ksrevisor.gov/statutes/chapters/ch44/044_010_0009.html",

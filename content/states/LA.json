@@ -2,7 +2,7 @@
   "jurisdiction": "LA",
   "name": "Louisiana",
   "reviewed": false,
-  "lastChecked": "2026-07-30",
+  "lastChecked": "2026-08-08",
   "facts": [
     {
       "topic": "minimumWage.hourly",
@@ -30,7 +30,10 @@
     },
     {
       "topic": "discrimination.protectedClasses",
-      "value": ["military status", "natural, protective, or cultural hairstyle"],
+      "value": [
+        "military status",
+        "natural, protective, or cultural hairstyle"
+      ],
       "summary": "Beyond the federal Title VII/ADA/ADEA classes, Louisiana's Employment Discrimination Law expressly protects military status and natural, protective, or cultural hairstyle (CROWN Act).",
       "citation": "La. R.S. 23:332",
       "sourceUrl": "https://legis.la.gov/legis/Law.aspx?d=83879",

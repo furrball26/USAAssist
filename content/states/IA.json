@@ -2,7 +2,7 @@
   "jurisdiction": "IA",
   "name": "Iowa",
   "reviewed": false,
-  "lastChecked": "2026-07-30",
+  "lastChecked": "2026-08-08",
   "facts": [
     {
       "topic": "overtime.daily",
@@ -42,7 +42,18 @@
     },
     {
       "topic": "discrimination.protectedClasses",
-      "value": ["age", "race", "creed", "color", "sex", "sexual orientation", "national origin", "religion", "disability (physical and mental)", "pregnancy"],
+      "value": [
+        "age",
+        "race",
+        "creed",
+        "color",
+        "sex",
+        "sexual orientation",
+        "national origin",
+        "religion",
+        "disability (physical and mental)",
+        "pregnancy"
+      ],
       "summary": "The Iowa Civil Rights Act prohibits employment discrimination based on age, race, creed, color, sex, sexual orientation, national origin, religion, and physical or mental disability, adding creed and (explicitly) sexual orientation beyond the core federal categories.",
       "citation": "Iowa Code 216.6(1)",
       "sourceUrl": "https://www.legis.iowa.gov/docs/code/216.6.pdf",

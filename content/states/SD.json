@@ -2,7 +2,7 @@
   "jurisdiction": "SD",
   "name": "South Dakota",
   "reviewed": false,
-  "lastChecked": "2026-07-30",
+  "lastChecked": "2026-08-08",
   "facts": [
     {
       "topic": "overtime.daily",
@@ -20,61 +20,64 @@
       "topic": "minimumWage.hourly",
       "value": 11.85,
       "summary": "South Dakota's minimum wage is $11.85/hour effective January 1, 2026, higher than the federal $7.25.",
-      "citation": "SDCL 60-11-3",
-      "sourceUrl": "https://dlr.sd.gov/employment_laws/minimum_wage.aspx",
+      "citation": "SDCL 60-11-3 (base minimum wage provision); SDCL 60-11-3.2 (annual CPI adjustment and publication authority)",
+      "sourceUrl": "https://dlr.sd.gov/news/releases25/2025-10-23-nr-minimum-wage-increase.pdf",
       "sourceAgency": "South Dakota Department of Labor & Regulation",
-      "lastChecked": "2026-07-30",
+      "lastChecked": "2026-08-08",
       "reviewed": false,
       "reviewedBy": null,
-      "notes": "Effective Jan. 1, 2026. Exact statutory section for the amount not shown on page; page lists SDCL 60-11-3 among governing wage statutes. Verify precise section on sdlegislature.gov."
+      "notes": "Confirmed against both the DLR's Oct. 23, 2025 press release (rate rising from $11.50 to $11.85/hr effective Jan. 1, 2026) and the primary statute text on sdlegislature.gov. Note: SDCL 60-11-3's own codified text still states the original $8.50/hr floor set by Initiated Measure 18 (2014); the current $11.85 figure is the CPI-adjusted rate the Secretary of Labor & Regulation is required to publish annually by Oct. 15 under SDCL 60-11-3.2, not literally written into 60-11-3's codified text -- so 60-11-3.2 is now cited alongside 60-11-3 for accuracy."
     },
     {
       "topic": "minimumWage.tipped",
       "value": 5.925,
       "summary": "South Dakota's tipped-employee minimum cash wage is $5.925/hour effective January 1, 2026 (half the standard minimum wage).",
       "citation": "SDCL 60-11-3.1",
-      "sourceUrl": "https://dlr.sd.gov/employment_laws/minimum_wage.aspx",
+      "sourceUrl": "https://dlr.sd.gov/news/releases25/2025-10-23-nr-minimum-wage-increase.pdf",
       "sourceAgency": "South Dakota Department of Labor & Regulation",
-      "lastChecked": "2026-07-30",
+      "lastChecked": "2026-08-08",
       "reviewed": false,
       "reviewedBy": null,
-      "notes": "Effective Jan. 1, 2026; set at half the standard minimum wage. Section number inferred from statutes listed on the page; verify on sdlegislature.gov."
+      "notes": "Confirmed directly against the primary statute text (SDCL 60-11-3.1, 'Minimum wage for tipped employees') on sdlegislature.gov, which sets the tipped cash wage at not less than 50% of the § 60-11-3 minimum wage, and against DLR's Oct. 23, 2025 press release confirming $5.925/hr effective Jan. 1, 2026 (half of $11.85)."
     },
     {
       "topic": "minimumWage.adjustment",
       "value": "annual CPI adjustment",
       "summary": "South Dakota's minimum wage is adjusted annually for cost of living using the Consumer Price Index, rounded up to the nearest 5 cents, and can never decrease.",
-      "citation": "SDCL ch. 60-11",
-      "sourceUrl": "https://dlr.sd.gov/employment_laws/minimum_wage.aspx",
-      "sourceAgency": "South Dakota Department of Labor & Regulation",
-      "lastChecked": "2026-07-30",
+      "citation": "SDCL 60-11-3.2",
+      "sourceUrl": "https://sdlegislature.gov/api/Statutes/60-11-3.2.html",
+      "sourceAgency": "South Dakota Legislative Research Council (South Dakota Codified Laws)",
+      "lastChecked": "2026-08-08",
       "reviewed": false,
       "reviewedBy": null,
-      "notes": "Page states the wage is 'annually adjusted by any increase in cost of living, as measured by the Consumer Price Index'; increases rounded up to nearest 5 cents. Exact section not shown; verify on sdlegislature.gov."
+      "notes": "Confirmed directly against the primary statute text: SDCL 60-11-3.2 ('Annual minimum wage adjustment') requires the wage to be adjusted each January 1 by the August-over-August percentage increase in the CPI-U (or successor index), rounded up to the nearest 5 cents, with a floor of no decrease, and requires DLR to publish the adjusted rate by October 15 each year. Enacted by the same 2014 ballot measure (Initiated Measure 18) as § 60-11-3."
     },
     {
       "topic": "discrimination.protectedClasses",
-      "value": ["creed", "ancestry"],
+      "value": [
+        "creed",
+        "ancestry"
+      ],
       "summary": "South Dakota employment discrimination law covers race, color, creed, religion, sex, national origin, ancestry, and disability, adding creed and ancestry beyond the federal Title VII set.",
-      "citation": "SDCL ch. 20-13",
-      "sourceUrl": "https://dlr.sd.gov/human_rights/discrimination.aspx",
-      "sourceAgency": "South Dakota Division of Human Rights",
-      "lastChecked": "2026-07-30",
+      "citation": "SDCL 20-13-10",
+      "sourceUrl": "https://sdlegislature.gov/api/Statutes/20-13-10.html",
+      "sourceAgency": "South Dakota Legislative Research Council (South Dakota Codified Laws)",
+      "lastChecked": "2026-08-08",
       "reviewed": false,
       "reviewedBy": null,
-      "notes": "Full covered set per page: race, color, creed, religion, sex, national origin, ancestry, disability. 'Creed' and 'ancestry' are the additions relative to Title VII (race, color, religion, sex, national origin). Chapter cite (SDCL 20-13) not shown on page; verify exact section on sdlegislature.gov."
+      "notes": "Confirmed directly against the primary statute text: SDCL 20-13-10 ('Unfair or discriminatory practices') lists race, color, creed, religion, sex, ancestry, disability, and national origin verbatim. 'Creed' and 'ancestry' are the additions relative to the federal Title VII set (race, color, religion, sex, national origin)."
     },
     {
       "topic": "discrimination.ageCoverage",
       "value": "not covered by state law; only federal ADEA applies",
       "summary": "Unlike federal law, South Dakota's human rights law does not prohibit age discrimination; age is covered only under the federal ADEA.",
-      "citation": "SDCL ch. 20-13",
-      "sourceUrl": "https://dlr.sd.gov/human_rights/discrimination.aspx",
-      "sourceAgency": "South Dakota Division of Human Rights",
-      "lastChecked": "2026-07-30",
+      "citation": "SDCL 20-13-10",
+      "sourceUrl": "https://sdlegislature.gov/api/Statutes/20-13-10.html",
+      "sourceAgency": "South Dakota Legislative Research Council (South Dakota Codified Laws)",
+      "lastChecked": "2026-08-08",
       "reviewed": false,
       "reviewedBy": null,
-      "notes": "Page states verbatim: 'South Dakota law does not cover age discrimination, but this is prohibited under federal law.'"
+      "notes": "Confirmed by the absence of 'age' from the protected-class list in the primary statute text of SDCL 20-13-10 (race, color, creed, religion, sex, ancestry, disability, national origin -- no age); the DLR's own consumer-facing page states this verbatim as well ('South Dakota law does not cover age discrimination, but this is prohibited under federal law')."
     },
     {
       "topic": "deadlines.wageClaim",
