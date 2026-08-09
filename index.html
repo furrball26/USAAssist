@@ -555,13 +555,13 @@ function stateFactFor(facts, topics) {
 function deadlineKeywordsFor(issueKey) {
   switch (issueKey) {
     case "wage":
-      return ["wageclaim", "equalpayact"];
+      return [["wageclaim", "equalpayact"]];
     case "harassment":
-      return ["eeoccharge", "discriminationcomplaint", "fehacomplaint"];
+      return [["eeoccharge", "discriminationcomplaint", "fehacomplaint"]];
     case "discrimination":
-      return ["eeoccharge", "discriminationcomplaint", "fehacomplaint"];
+      return [["eeoccharge", "discriminationcomplaint", "fehacomplaint"]];
     case "termination":
-      return ["eeoccharge", "discriminationcomplaint", "fehacomplaint", "wageclaim"];
+      return [["eeoccharge", "discriminationcomplaint", "fehacomplaint"], ["wageclaim"]];
     default:
       return [];
   }
@@ -569,8 +569,8 @@ function deadlineKeywordsFor(issueKey) {
 function pickDeadlineFact(facts, issueKey) {
   const dl = factsByPrefix(facts, "deadlines");
   if (!dl.length) return null;
-  for (const kw of deadlineKeywordsFor(issueKey)) {
-    const hit = dl.find((f) => String(f.topic || "").toLowerCase().includes(kw));
+  for (const tier of deadlineKeywordsFor(issueKey)) {
+    const hit = dl.find((f) => tier.some((kw) => String(f.topic || "").toLowerCase().includes(kw)));
     if (hit) return hit;
   }
   return null;
@@ -578,10 +578,10 @@ function pickDeadlineFact(facts, issueKey) {
 function pickDeadlineFactAcross(stateFacts, fedFacts, issueKey) {
   const stDl = factsByPrefix(stateFacts, "deadlines");
   const fedDl = factsByPrefix(fedFacts, "deadlines");
-  for (const kw of deadlineKeywordsFor(issueKey)) {
-    const stHit = stDl.find((f) => String(f.topic || "").toLowerCase().includes(kw));
+  for (const tier of deadlineKeywordsFor(issueKey)) {
+    const stHit = stDl.find((f) => tier.some((kw) => String(f.topic || "").toLowerCase().includes(kw)));
     if (stHit) return stHit;
-    const fedHit = fedDl.find((f) => String(f.topic || "").toLowerCase().includes(kw));
+    const fedHit = fedDl.find((f) => tier.some((kw) => String(f.topic || "").toLowerCase().includes(kw)));
     if (fedHit) return fedHit;
   }
   return null;

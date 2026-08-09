@@ -102,40 +102,51 @@ function factsByPrefix(facts, prefix){ return (facts || []).filter(f => String(f
 // First matching fact across a list of candidate topic names, in priority order (varies by state).
 function stateFactFor(facts, topics){ for (const t of topics) { const f = factByTopic(facts, t); if (f) return f; } return null; }
 
-// Which deadline topics matter most for a given issue type, in priority order.
-// If none of these topics are present, pickDeadlineFact returns null rather than
-// guessing at an unrelated deadline — callers fall back to the federal fact/banner.
+// Which deadline topics matter most for a given issue type, grouped into priority
+// TIERS (array of arrays). Topics within the same tier are jurisdiction-equivalent —
+// e.g. the federal "eeocCharge" fact and a state's own "discriminationComplaint" /
+// "fehaComplaint" fact are the SAME deadline concept (the discrimination-charge
+// window), just named differently per file. They must therefore compete on equal
+// footing (state wins ties), not on keyword-list position, or a federal fact
+// earlier in a flat list always beats the state's own same-tier fact.
+// If no tier matches, pickDeadlineFact returns null rather than guessing at an
+// unrelated deadline — callers fall back to the federal fact/banner.
 function deadlineKeywordsFor(issueKey){
   switch (issueKey) {
-    case 'wage': return ['wageclaim', 'equalpayact'];
-    case 'harassment': return ['eeoccharge', 'discriminationcomplaint', 'fehacomplaint'];
-    case 'discrimination': return ['eeoccharge', 'discriminationcomplaint', 'fehacomplaint'];
-    case 'termination': return ['eeoccharge', 'discriminationcomplaint', 'fehacomplaint', 'wageclaim'];
+    case 'wage': return [['wageclaim', 'equalpayact']];
+    case 'harassment': return [['eeoccharge', 'discriminationcomplaint', 'fehacomplaint']];
+    case 'discrimination': return [['eeoccharge', 'discriminationcomplaint', 'fehacomplaint']];
+    case 'termination': return [['eeoccharge', 'discriminationcomplaint', 'fehacomplaint'], ['wageclaim']];
     default: return [];
   }
 }
 function pickDeadlineFact(facts, issueKey){
   const dl = factsByPrefix(facts, 'deadlines');
   if (!dl.length) return null;
-  for (const kw of deadlineKeywordsFor(issueKey)) {
-    const hit = dl.find(f => String(f.topic || '').toLowerCase().includes(kw));
+  for (const tier of deadlineKeywordsFor(issueKey)) {
+    const hit = dl.find(f => tier.some(kw => String(f.topic || '').toLowerCase().includes(kw)));
     if (hit) return hit;
   }
   return null;
 }
 // Resolve the single most-relevant deadline across BOTH state and federal facts.
-// Keyword priority is the OUTER loop so a higher-priority keyword found in federal
-// (e.g. the EEOC charge window) beats a lower-priority keyword in the state file
-// (e.g. a wage-claim deadline). Within a keyword, prefer the state's own fact.
-// Without this, `pickDeadlineFact(stF) || pickDeadlineFact(fedF)` let a low-priority
-// state wage deadline suppress the operative federal discrimination-charge deadline.
+// Tier priority is the OUTER loop so a higher-priority tier (e.g. the
+// discrimination-charge window) beats a lower-priority tier in either file (e.g. a
+// wage-claim deadline). WITHIN a tier the state's own fact wins over federal — a
+// state's "discriminationComplaint"/"fehaComplaint" fact is that state's version of
+// the federal "eeocCharge" fact, not a lesser concern, so it must not be hidden
+// behind the federal fact merely because "eeoccharge" heads the topic list.
+// Without tiering, `pickDeadlineFact(stF) || pickDeadlineFact(fedF)` let a low-priority
+// state wage deadline suppress the operative federal discrimination-charge deadline —
+// and a flat keyword-priority list let the federal charge fact suppress a state's own
+// (same-tier) charge-deadline fact, disagreeing with the Case Strength screen.
 function pickDeadlineFactAcross(stateFacts, fedFacts, issueKey){
   const stDl = factsByPrefix(stateFacts, 'deadlines');
   const fedDl = factsByPrefix(fedFacts, 'deadlines');
-  for (const kw of deadlineKeywordsFor(issueKey)) {
-    const stHit = stDl.find(f => String(f.topic || '').toLowerCase().includes(kw));
+  for (const tier of deadlineKeywordsFor(issueKey)) {
+    const stHit = stDl.find(f => tier.some(kw => String(f.topic || '').toLowerCase().includes(kw)));
     if (stHit) return stHit;
-    const fedHit = fedDl.find(f => String(f.topic || '').toLowerCase().includes(kw));
+    const fedHit = fedDl.find(f => tier.some(kw => String(f.topic || '').toLowerCase().includes(kw)));
     if (fedHit) return fedHit;
   }
   return null;
