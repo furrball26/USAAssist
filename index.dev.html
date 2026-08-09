@@ -177,6 +177,27 @@ function pickDeadlineFactAcross(stateFacts, fedFacts, issueKey){
   return null;
 }
 
+// F4 — a worker fired/pushed out for reporting a safety hazard has a SEPARATE,
+// much shorter federal deadline (OSHA Section 11(c) whistleblower complaint,
+// 30 days — deadlines.oshaWhistleblower) than the EEOC discrimination-charge
+// window (180/300 days) the termination Deadline Watch otherwise surfaces. We
+// only treat a case as safety-retaliation when the ISSUE is a termination AND
+// the user's own words (log entries, chat messages they typed) actually name a
+// safety/hazard/OSHA/whistleblower concern — issue type alone is never enough,
+// so an ordinary firing is never mislabeled as a safety complaint.
+const SAFETY_RETALIATION_RE = /\b(osha|whistleblow\w*|workplace\s+safety|safety\s+(complaint|violation|hazard|concern|issue)|unsafe\s+(condition|working)|reported?\s+(a\s+|an\s+|the\s+)?(safety|hazard)|hazardous\s+condition)\b/i;
+function caseTextForSafetyCheck(entries, messages){
+  const entryText = (entries || []).map(e => (e.body || '') + ' ' + (e.title || '')).join(' ');
+  // Only the user's own typed messages — never the AI's sample replies, which may
+  // themselves use the word "safety" while discussing an unrelated topic.
+  const userMsgText = (messages || []).filter(m => m.role === 'user').map(m => m.text || '').join(' ');
+  return entryText + ' ' + userMsgText;
+}
+function isSafetyRetaliationCase(issueKey, entries, messages){
+  if (issueKey !== 'termination') return false;
+  return SAFETY_RETALIATION_RE.test(caseTextForSafetyCheck(entries, messages));
+}
+
 /* Parse a CSS declaration string into a React style object.
    Lets us reuse the design's exact inline-style strings verbatim. */
 function css(str){
@@ -930,8 +951,32 @@ function App(){
   // one bar under the "Not started" label. Only fill bars once there's real evidence.
   const strengthFill = evidenceCount > 0 ? Math.max(1, Math.round(strength.score / 20)) : 0;
   const doneCount = cfg.steps.filter((_, i) => done[i]).length;
+  // F4 — surface the much shorter OSHA §11(c) whistleblower deadline (30 days)
+  // alongside the regular termination deadline for the subset of termination
+  // cases the user's own words identify as safety-retaliation. See
+  // isSafetyRetaliationCase for the detection rule.
+  const safetyRetaliation = isSafetyRetaliationCase(cfg.key, entries, messages);
+  const oshaFact = safetyRetaliation ? factByTopic((federal && federal.facts) || [], 'deadlines.oshaWhistleblower') : null;
   const youName = (profile.name || '').trim();
   const employerName = (profile.employer || '').trim();
+
+  // F4 — the OSHA whistleblower deadline card, shown ALONGSIDE (never instead
+  // of) the regular Deadline Watch card so a user who also has a discrimination
+  // angle still sees that longer window too. Clearly labeled and visually
+  // distinct (red) so the much shorter 30-day clock isn't mistaken for the
+  // slower EEOC one above it.
+  const OshaWatch = ({ dark }) => {
+    if (!oshaFact) return null;
+    return (
+      <button onClick={nav('strength')} style={css(dark
+        ? "text-align:left;padding:14px 16px;border-radius:12px;border:2px solid #FFB4C4;background:rgba(179,38,79,.35);cursor:pointer;display:flex;flex-direction:column;gap:4px"
+        : "text-align:left;padding:16px 18px;border-radius:14px;border:2px solid #B3264F;background:#FFE7EC;cursor:pointer;display:flex;flex-direction:column;gap:4px")}>
+        <span style={css("font:700 " + (dark ? '12px' : '13px') + " 'IBM Plex Mono',monospace;color:" + (dark ? '#FFE3EA' : '#8A1438') + ";letter-spacing:.04em")}>⚠ OSHA WHISTLEBLOWER DEADLINE</span>
+        <span style={css("font:700 " + (dark ? '16px/1.3' : '18px/1.3') + " 'Atkinson Hyperlegible',sans-serif;color:" + (dark ? '#fff' : '#14181F'))}>{oshaFact.value || oshaFact.summary}</span>
+        <span style={css("font:400 " + (dark ? '13px/1.4' : '14px/1.4') + " 'Atkinson Hyperlegible',sans-serif;color:" + (dark ? '#FFE3EA' : '#5A1330'))}>Reporting a safety hazard? This OSHA complaint deadline is much shorter than the discrimination-charge window above.</span>
+      </button>
+    );
+  };
 
   /* ── Screen renderers ──────────────────────────────────────────── */
 
@@ -1119,6 +1164,7 @@ function App(){
           </button>
         ) : null;
       })()}
+      <OshaWatch dark={false} />
 
       <button onClick={nav('strength')} style={css("text-align:left;padding:20px;border-radius:18px;border:2px solid #14181F;background:#E8F6EE;cursor:pointer;display:flex;flex-direction:column;gap:14px")}>
         <div style={css("display:flex;align-items:baseline;justify-content:space-between")}>
@@ -1212,6 +1258,7 @@ function App(){
           </button>
         ) : null;
       })()}
+      <OshaWatch dark={true} />
       <div style={css("display:flex;flex-direction:column;gap:12px")}>
         <button onClick={() => {
           const stepIdx = Math.min(doneCount, cfg.steps.length - 1);
@@ -1255,6 +1302,7 @@ function App(){
           </button>
         ) : null;
       })()}
+      <OshaWatch dark={false} />
       {(() => {
         const K = cfg.key;
         const heads = {
@@ -1695,6 +1743,9 @@ function App(){
             {!contentErr && <p style={css("margin:0 0 6px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}><strong>Federal:</strong> {fedDL ? fedDL.summary : 'Loading the deadline that applies to your claim…'} {src(fedDL)}</p>}
             {stateErr ? <p style={css("margin:0 0 8px;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load the {stateSel} deadline. Check your connection and reopen — this is not a confirmation that no shorter state deadline applies.</p> :
               <p style={css("margin:0 0 8px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}><strong>{stateLabel}:</strong> {stDL ? stDL.summary : (stateData === undefined ? 'Loading…' : 'See the federal deadline above; a state limit may also apply.')} {src(stDL)}</p>}
+            {oshaFact &&
+              <p style={css("margin:0 0 8px;padding:10px 12px;border-radius:10px;background:#FFE7EC;border:2px solid #B3264F;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#5A1330")}><strong>⚠ OSHA whistleblower (safety retaliation):</strong> {oshaFact.summary} {src(oshaFact)}</p>
+            }
             <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Act well before the earliest deadline — a claim filed late is usually barred. Confirm your exact date with an attorney.</p>
           </div>
         );
