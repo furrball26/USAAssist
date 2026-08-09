@@ -74,7 +74,7 @@
       "lastChecked": "2026-07-30",
       "reviewed": false,
       "reviewedBy": null,
-      "notes": "Six months for employment/public-accommodation complaints; the parallel federal EEOC charge deadline (300 days in a deferral state like Kansas) is longer, so claimants should mind both."
+      "notes": "Six months for employment/public-accommodation complaints; the parallel federal EEOC charge deadline (300 days in a deferral state like Kansas) is longer, so claimants should mind both. Source-domain exception: the Kansas Human Rights Commission (see agencies.discrimination) operates on khrc.net, not a .gov domain -- no khrc.gov exists (confirmed no DNS resolution); khrc.net resolves through the state's official AccessKansas government hosting infrastructure and is treated as the official agency site for this dataset."
     },
     {
       "topic": "retaliation",

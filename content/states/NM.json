@@ -6,63 +6,69 @@
   "facts": [
     {
       "topic": "minimumWage.hourly",
-      "value": 12.00,
+      "value": 12.0,
       "summary": "New Mexico's state minimum wage is $12.00 per hour, higher than the federal $7.25.",
       "citation": "NMSA 1978, Section 50-4-22(A) (Minimum Wage Act)",
-      "sourceUrl": "https://www.dws.state.nm.us",
+      "sourceUrl": "https://www.dws.state.nm.us/Portals/0/DM/LaborRelations/MWA_Summary_ENGL_2023.pdf",
       "sourceAgency": "New Mexico Department of Workforce Solutions, Labor Relations Division",
-      "lastChecked": "2026-07-30",
+      "lastChecked": "2026-08-08",
       "reviewed": false,
       "reviewedBy": null,
-      "notes": "State rate reached $12.00 on Jan 1, 2023 under 2019 HB 31 with no further statutory increases scheduled; treated as still $12.00 for 2026. Tipped minimum cash wage is $3.00/hr. Several localities (Santa Fe, Albuquerque, Las Cruces, Bernalillo/Santa Fe counties) mandate higher local rates. Could NOT verify the current live figure: DWS pages returned bot-protection rejections and WebSearch budget was exhausted this session. Verify 2026 figure on the DWS Labor Relations minimum wage page."
+      "notes": "Re-verified 2026-08-08: multiple independent secondary sources (labor-law-poster/compliance summaries citing DWS) confirm the statewide rate remains $12.00/hr in 2026 -- a 2025 bill (HB522) that would have added an annual cost-of-living adjustment starting 1/1/2026 died in committee (Action Postponed Indefinitely) and did not become law, so no COLA is in effect. Tipped minimum cash wage is $3.00/hr. Several localities (Santa Fe, Albuquerque, Las Cruces, Bernalillo/Santa Fe counties) mandate higher local rates. DWS pages return bot-protection (WAF) rejections to automated fetch tools; sourceUrl and figures confirmed via WebSearch result snippets/titles on the official dws.state.nm.us domain rather than a direct page fetch -- spot-check directly if possible."
     },
     {
       "topic": "overtime.daily",
       "value": "follows federal FLSA",
       "summary": "New Mexico has no daily overtime and no higher salary floor; overtime is 1.5x after 40 hours in a week, mirroring federal law.",
       "citation": "NMSA 1978, Section 50-4-22(E) (Minimum Wage Act)",
-      "sourceUrl": "https://nmonesource.com/nmos/en/nav.do",
-      "sourceAgency": "New Mexico Compilation Commission (official NMSA 1978 statutes)",
-      "lastChecked": "2026-07-30",
+      "sourceUrl": "https://www.dws.state.nm.us/Portals/0/DM/LaborRelations/MWA_Summary_ENGL_2023.pdf",
+      "sourceAgency": "New Mexico Department of Workforce Solutions, Labor Relations Division",
+      "lastChecked": "2026-08-08",
       "reviewed": false,
       "reviewedBy": null,
-      "notes": "NM requires overtime at 1.5x the regular rate for hours over 40 in a workweek (weekly threshold, same as FLSA); no state daily-overtime rule and no state salary-level test above the federal $684/week. Statute text could not be re-fetched (official statute portal returned 403); verify Section 50-4-22(E) on nmonesource.com."
+      "notes": "NM requires overtime at 1.5x the regular rate for hours over 40 in a workweek (weekly threshold, same as FLSA); no state daily-overtime rule and no state salary-level test above the federal $684/week. Some secondary summaries cite this provision as subsection (D) rather than (E) -- subsection lettering could not be independently confirmed against primary statute text this session (nmonesource.com blocks automated fetch); verify the exact subsection letter before relying on the citation."
     },
     {
       "topic": "discrimination.protectedClasses",
-      "value": ["sexual orientation", "gender identity", "ancestry", "serious medical condition", "spousal affiliation"],
+      "value": [
+        "sexual orientation",
+        "gender identity",
+        "ancestry",
+        "serious medical condition",
+        "spousal affiliation"
+      ],
       "summary": "The New Mexico Human Rights Act protects several classes beyond the federal set, including sexual orientation, gender identity, ancestry, serious medical condition, and spousal affiliation.",
       "citation": "NMSA 1978, Section 28-1-7 (New Mexico Human Rights Act)",
-      "sourceUrl": "https://nmonesource.com/nmos/en/nav.do",
-      "sourceAgency": "New Mexico Compilation Commission (official NMSA 1978 statutes)",
-      "lastChecked": "2026-07-30",
+      "sourceUrl": "https://hrb.dws.state.nm.us/",
+      "sourceAgency": "New Mexico Human Rights Bureau, NM Dept of Workforce Solutions",
+      "lastChecked": "2026-08-08",
       "reviewed": false,
       "reviewedBy": null,
-      "notes": "Additions beyond the federal Title VII/ADA/ADEA baseline. NMHRA also covers race, color, religion, national origin, sex, pregnancy, age, and physical/mental handicap. Statute text could not be re-fetched (403); verify Section 28-1-7 on nmonesource.com."
+      "notes": "Additions beyond the federal Title VII/ADA/ADEA baseline. NMHRA also covers race, color, religion, national origin, sex, pregnancy, age, and physical/mental disability (a 2023 amendment substituted 'disability' for 'handicap' and added gender/gender identity). Deep link to the exact statute text on nmonesource.com is not possible (JS-driven portal with no static per-section URL; blocks automated fetch) -- sourceUrl points to the enforcing agency's official complaint-intake site instead; verify class list directly against Section 28-1-7 on nmonesource.com."
     },
     {
       "topic": "discrimination.coverage",
       "value": 4,
       "summary": "The New Mexico Human Rights Act applies to employers with four or more employees, a lower threshold than the federal 15.",
       "citation": "NMSA 1978, Section 28-1-2(B) (definition of 'employer')",
-      "sourceUrl": "https://nmonesource.com/nmos/en/nav.do",
-      "sourceAgency": "New Mexico Compilation Commission (official NMSA 1978 statutes)",
-      "lastChecked": "2026-07-30",
+      "sourceUrl": "https://hrb.dws.state.nm.us/",
+      "sourceAgency": "New Mexico Human Rights Bureau, NM Dept of Workforce Solutions",
+      "lastChecked": "2026-08-08",
       "reviewed": false,
       "reviewedBy": null,
-      "notes": "NMHRA defines 'employer' as a person employing four or more persons, extending discrimination coverage below the federal 15-employee threshold. Statute text could not be re-fetched (403); verify Section 28-1-2 on nmonesource.com."
+      "notes": "NMHRA defines 'employer' as a person employing four or more persons, extending discrimination coverage below the federal 15-employee threshold. Deep link to the exact statute text on nmonesource.com is not possible (JS-driven portal, blocks automated fetch); sourceUrl points to the enforcing agency's official site instead; verify Section 28-1-2 on nmonesource.com."
     },
     {
       "topic": "deadlines.discriminationComplaint",
       "value": "300 days",
       "summary": "A discrimination complaint must be filed with the New Mexico Human Rights Bureau within 300 days of the alleged discriminatory act.",
       "citation": "NMSA 1978, Section 28-1-10(A) (New Mexico Human Rights Act)",
-      "sourceUrl": "https://nmonesource.com/nmos/en/nav.do",
+      "sourceUrl": "https://hrb.dws.state.nm.us/",
       "sourceAgency": "New Mexico Human Rights Bureau (FEPA), NM Dept of Workforce Solutions",
-      "lastChecked": "2026-07-30",
+      "lastChecked": "2026-08-08",
       "reviewed": false,
       "reviewedBy": null,
-      "notes": "State FEPA filing deadline. Statute text could not be re-fetched (403); verify the 300-day period in Section 28-1-10 on nmonesource.com and the filing process on the DWS Human Rights Bureau page."
+      "notes": "State FEPA filing deadline; independently corroborated via secondary legal-resource summaries (Cornell LII regulation pages, law firm FAQs) citing 300 calendar days from the last act of discrimination. Deep link to primary statute text on nmonesource.com is not possible (JS-driven portal, blocks automated fetch); verify the 300-day period in Section 28-1-10 on nmonesource.com directly."
     },
     {
       "topic": "deadlines.wageClaim",
@@ -77,28 +83,28 @@
       "notes": "Corrected citation: the three-year statute of limitations for wage claims under Chapter 50, Article 4 is codified in Section 50-4-26 ('a civil action to enforce any provision of Chapter 50, Article 4 NMSA 1978 shall be commenced within three years after a violation last occurs'), not the previously cited Section 50-4-32, which does not exist. The general wage-and-hour limitations statute is Section 37-1-5. Three-year value confirmed via official statute text."
     },
     {
-      "topic": "whistleblower",
+      "topic": "retaliation.whistleblower",
       "value": "New Mexico Whistleblower Protection Act (public employers) plus NMHRA anti-retaliation",
       "summary": "New Mexico's Whistleblower Protection Act protects public employees who report unlawful or improper government acts, and the Human Rights Act separately prohibits retaliation against those who oppose discrimination.",
       "citation": "NMSA 1978, Sections 10-16C-1 to 10-16C-6 (Whistleblower Protection Act); NMSA 1978, Section 28-1-7(I) (NMHRA retaliation)",
-      "sourceUrl": "https://nmonesource.com/w/nmos/Chapter-10-NMSA-1978.pdf",
+      "sourceUrl": "https://nmonesource.com/nmos/en/nav.do",
       "sourceAgency": "New Mexico Compilation Commission (official NMSA 1978 statutes)",
-      "lastChecked": "2026-08-02",
+      "lastChecked": "2026-08-08",
       "reviewed": false,
       "reviewedBy": null,
-      "notes": "Narrowed sourceUrl from the nmonesource.com portal homepage to the Compilation Commission's own Chapter 10 (Public Officers and Employees) PDF, which contains Article 16C; content could not be re-fetched to confirm the exact 10-16C-1 to 10-16C-6 text (403 to automated fetch on this domain), so this remains unverified -- verify Article 16C therein and Section 28-1-7(I) (Chapter 28) separately on nmonesource.com."
+      "notes": "The previously cited Chapter-10 PDF path returned 404 (broken link) and has been replaced with the Compilation Commission's statute-search portal entry point; the portal is a JS-driven search application (Lexum/Decisia) with no static per-chapter or per-section URL discoverable, and blocks automated fetch (403), so exact statutory text of Article 16C (10-16C-1 to -6) and Section 28-1-7(I) remains unverified this session -- secondary sources (Justia mirror, law-firm summaries) corroborate the WPA covers only public employees and that a private civil action must be filed within two years of the retaliatory action; verify directly on nmonesource.com before relying on it."
     },
     {
       "topic": "final-pay",
       "value": "discharge: within 5 days (task/piece/commission wages within 10 days); resignation: next regular payday",
       "summary": "A discharged employee's fixed wages are due within five days of termination (task- or commission-based within ten days), while an employee who quits is paid by the next regular payday.",
       "citation": "NMSA 1978, Sections 50-4-4 and 50-4-5 (Wage Payment)",
-      "sourceUrl": "https://nmonesource.com/nmos/en/nav.do",
-      "sourceAgency": "New Mexico Compilation Commission (official NMSA 1978 statutes)",
-      "lastChecked": "2026-07-30",
+      "sourceUrl": "https://www.dws.state.nm.us/en-us/Businesses/Rules-and-Regulations/Labor-Relations-FAQs/when-does-an-employer-have-to-pay-final-wages-to-a-terminated-employee",
+      "sourceAgency": "New Mexico Department of Workforce Solutions, Labor Relations Division",
+      "lastChecked": "2026-08-08",
       "reviewed": false,
       "reviewedBy": null,
-      "notes": "Final-pay timing differs from federal law (FLSA has no final-pay deadline). Statute text could not be re-fetched (403); verify the 5-day/10-day and next-payday rules in Sections 50-4-4 and 50-4-5 on nmonesource.com."
+      "notes": "Final-pay timing differs from federal law (FLSA has no final-pay deadline). Re-verified 2026-08-08: DWS's own FAQ page (title/content confirmed via search-index snippet, direct fetch blocked by WAF) states final wages are due within 5 business days of discharge, or 10 days for piece/task/commission pay, matching NMSA 50-4-4/50-4-5; verify directly against primary statute text on nmonesource.com when reachable."
     }
   ],
   "agencies": {
@@ -108,7 +114,7 @@
     },
     "discrimination": {
       "name": "New Mexico Human Rights Bureau (FEPA), NM Dept of Workforce Solutions",
-      "url": "https://www.dws.state.nm.us"
+      "url": "https://hrb.dws.state.nm.us/"
     }
   }
 }

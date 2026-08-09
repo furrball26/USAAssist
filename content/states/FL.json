@@ -14,11 +14,11 @@
       "lastChecked": "2026-07-30",
       "reviewed": false,
       "reviewedBy": null,
-      "notes": "Florida statutes contain no overtime provision; the state defers to federal FLSA. The floridajobs.org page was reachable via search but returned HTTP 403 to automated fetch; verify the URL in a browser."
+      "notes": "Florida statutes contain no overtime provision; the state defers to federal FLSA. The floridajobs.org page was reachable via search but returned HTTP 403 to automated fetch; verify the URL in a browser. Source-domain exception: Florida's Dept of Commerce (the state's labor/wage agency) operates on floridajobs.org, not a .gov domain -- no floridajobs.gov or equivalent .gov site exists for this agency (confirmed no DNS resolution); floridajobs.org is treated as the official agency site for this dataset."
     },
     {
       "topic": "minimumWage.hourly",
-      "value": 14.00,
+      "value": 14.0,
       "summary": "Florida's minimum wage is $14.00/hour (effective Sept 30, 2025), scheduled to rise to $15.00/hour on Sept 30, 2026; tipped minimum is $10.98 (tip credit $3.02), rising to $11.98.",
       "citation": "Fla. Const. art. X, s. 24; Fla. Stat. 448.110",
       "sourceUrl": "https://www.floridajobs.org/docs/default-source/business-growth-and-partnerships/for-employers/posters-and-required-notices/2025-minimum-wage/2025-minimum-wage-announcement.pdf",
@@ -26,11 +26,16 @@
       "lastChecked": "2026-07-30",
       "reviewed": false,
       "reviewedBy": null,
-      "notes": "Higher than federal $7.25. As of the 2026-07-30 check date the current rate is $14.00; it increases to $15.00 on 2026-09-30 (final step of the 2020 constitutional amendment). Confirm which figure to display based on effective date. Beginning 2027 the Dept of Commerce adjusts annually for inflation."
+      "notes": "Higher than federal $7.25. As of this re-check (2026-08-08) the current rate is still $14.00; it increases to $15.00 on 2026-09-30 (the final scheduled step of the 2020 constitutional amendment, Fla. Const. art. X, s. 24) and this fact must be updated to value 15.00 / tipped 11.98 on or after that date -- VERIFY AND UPDATE 2026-09-30. Beginning 2027 the Dept of Commerce adjusts the rate annually for inflation, so this figure should also be re-checked each year thereafter."
     },
     {
       "topic": "discrimination.protectedClasses",
-      "value": ["marital status", "pregnancy", "handicap (disability)", "AIDS/HIV status"],
+      "value": [
+        "marital status",
+        "pregnancy",
+        "handicap (disability)",
+        "AIDS/HIV status"
+      ],
       "summary": "The Florida Civil Rights Act adds 'marital status' beyond the federal set; it also expressly protects pregnancy, handicap/disability, and (via handicap) AIDS/HIV status.",
       "citation": "Fla. Stat. 760.10(1)",
       "sourceUrl": "http://www.leg.state.fl.us/statutes/index.cfm?App_mode=Display_Statute&URL=0700-0799/0760/Sections/0760.10.html",
@@ -62,10 +67,10 @@
       "lastChecked": "2026-07-30",
       "reviewed": false,
       "reviewedBy": null,
-      "notes": "FCHR is Florida's FEPA. Separate downstream deadlines apply to filing the civil lawsuit after an FCHR/EEOC determination (amended effective July 1, 2026); this fact covers only the administrative charge deadline."
+      "notes": "FCHR is Florida's FEPA. Separate downstream deadlines apply to filing the civil lawsuit after an FCHR/EEOC determination (amended effective July 1, 2026); this fact covers only the administrative charge deadline. Source-domain exception: the Florida Commission on Human Relations (see agencies.discrimination) operates on fchr.myflorida.com, not a .gov domain -- no fchr.gov or equivalent .gov site exists (confirmed no DNS resolution); myflorida.com is the state's official web platform and fchr.myflorida.com is treated as the official agency site for this dataset."
     },
     {
-      "topic": "whistleblower",
+      "topic": "retaliation.whistleblower",
       "value": "Florida Private Sector Whistleblower's Act, Fla. Stat. 448.101-448.105",
       "summary": "Florida's Private Whistleblower's Act protects private employees (employers with 10+ employees) from retaliation for disclosing, or refusing to participate in, a violation of law, rule, or regulation.",
       "citation": "Fla. Stat. 448.102 (see also 448.101, 448.103)",
