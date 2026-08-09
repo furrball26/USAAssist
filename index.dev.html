@@ -992,8 +992,9 @@ function App(){
     const dIssue = editing ? editDraft.issue : issue;
     const dProfile = editing ? editDraft.profile : profile;
     const setDStateSel = (v) => {
+      setCountyQuery(''); // F20 — a stale filter from the previous state's county list shouldn't carry over
       if (editing) setEditDraft(p => Object.assign({}, p, { stateSel: v, county: '' }));
-      else { setStateSel(v); setCounty(''); setCountyQuery(''); }
+      else { setStateSel(v); setCounty(''); }
     };
     const setDCounty = (v) => { if (editing) setEditDraft(p => Object.assign({}, p, { county: v })); else setCounty(v); };
     const setDIssue = (v) => { if (editing) setEditDraft(p => Object.assign({}, p, { issue: v })); else setIssue(v); };
@@ -1029,18 +1030,39 @@ function App(){
         </div>
       }
 
-      {onbStep === 2 &&
+      {onbStep === 2 && (() => {
+        const countyLabelWord = US_COUNTY_LABEL[dStateSel] === 'PARISH' ? 'parish' : US_COUNTY_LABEL[dStateSel] === 'BOROUGH' ? 'borough' : 'county';
+        const allCounties = US_COUNTIES[dStateSel] || [];
+        // F20 — a native <select> with 100+ options is hard to scan; add a
+        // simple text filter above it for states with a lot of counties (TX
+        // has 254, GA 159, VA 133…). Small states (few counties) skip the
+        // filter — it would just be clutter. The currently-selected county
+        // always stays in the list even if it no longer matches the filter
+        // text, so filtering never silently clears a valid selection.
+        const q = countyQuery.trim().toLowerCase();
+        let shown = q ? allCounties.filter(n => n.toLowerCase().includes(q)) : allCounties;
+        if (dCounty && !shown.includes(dCounty)) shown = [dCounty].concat(shown);
+        return (
         <div style={css("display:flex;flex-direction:column;gap:14px")}>
           <label htmlFor="onb-county" style={css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em")}>{(US_COUNTY_LABEL[dStateSel] || 'COUNTY') + ' · ' + dStateSel.toUpperCase()}</label>
+          {allCounties.length > 20 &&
+            <input id="onb-county-filter" type="text" value={countyQuery} onChange={e => setCountyQuery(e.target.value)}
+              placeholder={'Type to filter ' + allCounties.length + ' ' + countyLabelWord + 's…'} aria-label={'Filter the ' + countyLabelWord + ' list'}
+              style={css("padding:14px;border-radius:12px;border:2px solid #14181F;font:400 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
+          }
           <select id="onb-county" value={dCounty || ''} onChange={e => setDCounty(e.target.value || null)} style={css("width:100%;padding:15px;border-radius:12px;border:2px solid #14181F;background:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer;appearance:menulist;-webkit-appearance:menulist")}>
-            <option value="">{'Select a ' + (US_COUNTY_LABEL[dStateSel] === 'PARISH' ? 'parish' : US_COUNTY_LABEL[dStateSel] === 'BOROUGH' ? 'borough' : 'county') + ' (' + (US_COUNTIES[dStateSel] || []).length + ')'}</option>
-            {(US_COUNTIES[dStateSel] || []).map(n => <option key={n} value={n}>{n}</option>)}
+            <option value="">{'Select a ' + countyLabelWord + ' (' + shown.length + (shown.length !== allCounties.length ? ' of ' + allCounties.length : '') + ')'}</option>
+            {shown.map(n => <option key={n} value={n}>{n}</option>)}
           </select>
+          {q && shown.length === (dCounty ? 1 : 0) &&
+            <p role="status" style={css("margin:0;font:600 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>No {countyLabelWord} matches “{countyQuery.trim()}”.</p>
+          }
           <div style={css("padding:16px 18px;border-radius:14px;background:#EEF1FF;border:2px solid #2B3AA8")}>
             <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>We layer federal, {dStateSel} state, and local county or city rules — and always show whichever gives you the most protection.</p>
           </div>
         </div>
-      }
+        );
+      })()}
 
       {onbStep === 3 &&
         <div role="radiogroup" aria-label="What brings you here?" style={css("display:flex;flex-direction:column;gap:12px")}>
