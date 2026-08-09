@@ -760,7 +760,7 @@ function App(){
           </div>
         );
       })()}
-      <button onClick={() => { setOnboarded(true); setScreen('home'); }} style={css("align-self:center;background:none;border:none;padding:6px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;text-decoration:underline;cursor:pointer")}>Skip to dashboard</button>
+      <button onClick={() => { setOnboarded(true); setScreen('home'); }} style={css("align-self:center;min-height:44px;padding:12px 14px;display:inline-flex;align-items:center;justify-content:center;background:none;border:none;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;text-decoration:underline;cursor:pointer")}>Skip to dashboard</button>
     </div>
   );
 
@@ -896,7 +896,7 @@ function App(){
           setScreen(target.screen);
         }} style={css("padding:20px;border-radius:16px;border:none;background:#FFF4D6;color:#14181F;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Do this step</button>
         <button onClick={() => setDone(p => Object.assign({}, p, { [Math.min(doneCount, cfg.steps.length - 1)]: true }))} style={css("padding:20px;border-radius:16px;border:2px solid #fff;background:transparent;color:#fff;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Mark it done</button>
-        <button onClick={nav('rights')} style={css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.4);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Why this matters</button>
+        <button onClick={nav('rights')} style={css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.6);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Why this matters</button>
       </div>
       <div style={css("margin-top:auto;display:flex;flex-direction:column;gap:12px")}>
         <div style={css("padding:16px;border-radius:14px;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.35)")}>
@@ -1056,7 +1056,7 @@ function App(){
               const stRev = !!(stateData && stateData.reviewed === true);
               const fedOT = [factByTopic(fedF,'overtime.basicRule'), factByTopic(fedF,'overtime.salaryLevelWeekly')].filter(Boolean);
               const stOT = factsByPrefix(stF,'overtime').concat([factByTopic(stF,'minimumWage.hourly')].filter(Boolean));
-              const line = f => <p key={f.topic} style={css("margin:0 0 8px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{f.summary} {f.sourceUrl ? <a href={f.sourceUrl} target="_blank" rel="noopener noreferrer" style={css("color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null}</p>;
+              const line = f => <p key={f.topic} style={css("margin:0 0 8px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{f.summary} {f.sourceUrl ? <a href={f.sourceUrl} target="_blank" rel="noopener noreferrer" style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null}</p>;
               return (
                 <div style={css("padding:18px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF")}>
                   <p style={css("margin:0 0 10px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>What applies in {stateLabel}</p>
@@ -1113,7 +1113,7 @@ function App(){
       <div style={css("padding:16px;border-radius:16px;border:2px solid #14181F;background:#fff;display:flex;flex-direction:column;gap:12px")}>
         <div role="group" aria-label="Entry type" style={css("display:flex;gap:8px;flex-wrap:wrap")}>
           {LOG_KINDS.map(k =>
-            <button key={k.tag} onClick={() => setLogKind(k.tag)} aria-pressed={logKind === k.tag} style={css('padding:10px 13px;border-radius:999px;border:2px solid #14181F;background:' + (logKind === k.tag ? '#14181F' : '#fff') + ';color:' + (logKind === k.tag ? '#fff' : '#14181F') + ";font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{k.label.replace('+ ','')}</button>
+            <button key={k.tag} onClick={() => setLogKind(k.tag)} aria-pressed={logKind === k.tag} style={css('min-height:44px;padding:10px 13px;border-radius:999px;border:2px solid #14181F;background:' + (logKind === k.tag ? '#14181F' : '#fff') + ';color:' + (logKind === k.tag ? '#fff' : '#14181F') + ";font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{k.label.replace('+ ','')}</button>
           )}
         </div>
         {kind.asksHours &&
@@ -1273,7 +1273,7 @@ function App(){
         const stF = (stateData && stateData.facts) || [];
         const fedDL = pickDeadlineFact(fedF, cfg.key);
         const stDL = pickDeadlineFact(stF, cfg.key);
-        const src = f => f && f.sourceUrl ? <a href={f.sourceUrl} target="_blank" rel="noopener noreferrer" style={css("color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null;
+        const src = f => f && f.sourceUrl ? <a href={f.sourceUrl} target="_blank" rel="noopener noreferrer" style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null;
         return (
           <div style={css("padding:18px;border-radius:16px;background:#FFE7EC;border:2px solid #14181F")}>
             <p style={css("margin:0 0 8px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Deadline watch — {stateLabel}</p>
@@ -1294,7 +1294,7 @@ function App(){
       <p style={css("margin:0 0 12px;font:400 16px/1.5 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{f.summary}</p>
       <div style={css("display:flex;gap:8px;flex-wrap:wrap;align-items:center")}>
         {f.citation ? <span style={css("padding:7px 11px;border-radius:8px;background:#EEF1FF;font:600 13px 'IBM Plex Mono',monospace;color:#1B2778")}>{f.citation}</span> : null}
-        {f.sourceUrl ? <a href={f.sourceUrl} target="_blank" rel="noopener noreferrer" style={css("padding:7px 11px;border-radius:8px;background:#fff;border:2px solid #2B3AA8;font:600 13px 'IBM Plex Mono',monospace;color:#2B3AA8;text-decoration:none")}>Source ↗</a> : null}
+        {f.sourceUrl ? <a href={f.sourceUrl} target="_blank" rel="noopener noreferrer" style={css("display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:7px 11px;border-radius:8px;background:#fff;border:2px solid #2B3AA8;font:600 13px 'IBM Plex Mono',monospace;color:#2B3AA8;text-decoration:none")}>Source ↗</a> : null}
         <span style={css('padding:7px 11px;border-radius:8px;background:' + scopeTone + ";border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace;color:#14181F")}>{scopeLabel}</span>
       </div>
     </div>
