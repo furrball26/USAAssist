@@ -1809,11 +1809,30 @@ function App(){
       <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Attorneys licensed in {stateLabel}, near {countyShort}. WorkLaw takes no referral fee.</p>
       {(() => {
         const ag = (stateData && stateData.agencies) || {};
+        const fedF = (federal && federal.facts) || [];
         const links = [];
         if (ag.wageHour && safeUrl(ag.wageHour.url)) links.push(['Wage & hour — ' + (ag.wageHour.name || stateSel), safeUrl(ag.wageHour.url)]);
         if (ag.discrimination && safeUrl(ag.discrimination.url)) links.push(['Discrimination — ' + (ag.discrimination.name || stateSel), safeUrl(ag.discrimination.url)]);
-        links.push(['Federal — EEOC (discrimination)', 'https://www.eeoc.gov/filing-charge-discrimination']);
-        links.push(['Federal — U.S. DOL Wage & Hour', 'https://www.dol.gov/agencies/whd/contact/local-offices']);
+        // F19 — the federal links below adapt to the issue at hand instead of
+        // always showing the same fixed EEOC + DOL pair: a document-review user
+        // has no EEOC charge or wage claim to file (they need a lawyer, not an
+        // agency), and a termination may be safety retaliation — which runs
+        // through OSHA on a much shorter 30-day clock, not the EEOC's
+        // discrimination window (see deadlines.oshaWhistleblower).
+        if (cfg.key === 'document') {
+          links.push(['Find a lawyer — ABA free legal-help / lawyer-referral directory', 'https://www.findlegalhelp.org/']);
+        } else if (cfg.key === 'termination') {
+          links.push(['Federal — EEOC (discrimination)', 'https://www.eeoc.gov/filing-charge-discrimination']);
+          const oshaF = factByTopic(fedF, 'deadlines.oshaWhistleblower');
+          links.push(['Federal — OSHA whistleblower complaint (safety retaliation)', safeUrl(oshaF && oshaF.sourceUrl) || 'https://www.osha.gov/workers/file-complaint']);
+        } else if (cfg.key === 'wage') {
+          links.push(['Federal — U.S. DOL Wage & Hour', 'https://www.dol.gov/agencies/whd/contact/local-offices']);
+        } else if (cfg.key === 'discrimination' || cfg.key === 'harassment') {
+          links.push(['Federal — EEOC (discrimination)', 'https://www.eeoc.gov/filing-charge-discrimination']);
+        } else {
+          links.push(['Federal — EEOC (discrimination)', 'https://www.eeoc.gov/filing-charge-discrimination']);
+          links.push(['Federal — U.S. DOL Wage & Hour', 'https://www.dol.gov/agencies/whd/contact/local-offices']);
+        }
         return (
           <div style={css("padding:16px 18px;border-radius:14px;background:#E8F6EE;border:2px solid #14181F;display:flex;flex-direction:column;gap:8px")}>
             <p style={css("margin:0;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>File directly with the enforcing agencies — free</p>
