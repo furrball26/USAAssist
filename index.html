@@ -863,9 +863,10 @@ function fmtDate(d) {
   d = d || /* @__PURE__ */ new Date();
   return MONTHS_FULL[d.getMonth()] + " " + d.getDate() + ", " + d.getFullYear();
 }
-const LETTER_LABELS = { "classification-request": "Classification request", "wage-demand": "Wage demand", "complaint": "Complaint letter", "records-request": "Records request", "review-time-request": "Request more time" };
+const LETTER_LABELS = { "classification-request": "Classification request", "wage-demand": "Wage demand", "complaint": "Complaint letter", "records-request": "Records request", "review-time-request": "Request more time", "accommodation-request": "Accommodation request" };
 function letterKindsFor(issueKey, cfgLetterKind) {
   if (issueKey === "wage") return ["classification-request", "wage-demand"];
+  if (issueKey === "discrimination") return ["complaint", "accommodation-request"];
   return [cfgLetterKind || "records-request"];
 }
 function stepTarget(cfg, idx) {
@@ -922,6 +923,14 @@ function buildLetter(ctx) {
     const stClause = stCite ? " and " + ctx.stateSel + " law (" + stCite + ")" : "";
     const body2 = date + "\n\n" + emp + "\nAttn: Human Resources\n\nRe: " + subject2 + "\n\nTo whom it may concern:\n\nI am formally reporting conduct at work that I believe violates Title VII of the Civil Rights Act of 1964" + stClause + ". I am asking that the conduct stop and that the company promptly and impartially investigate." + list + "\n\nThe law prohibits retaliation against me for making this good-faith complaint. I ask that this letter be placed in my personnel file.\n\nSincerely,\n" + name;
     return { title: "Complaint letter", subject: subject2, body: body2 };
+  }
+  if (kind === "accommodation-request") {
+    const fedCite = cite(fed, "disability.reasonableAccommodation", "42 U.S.C. \xA7 12112");
+    const stFact = stateFactFor(st, ["disability.accommodation", "disability.reasonableAccommodation", "disability.interactiveProcess"]);
+    const stClause = stFact && stFact.citation ? " " + ctx.stateSel + " law (" + stFact.citation + ") may provide additional protection." : "";
+    const subject2 = "Request for a reasonable accommodation";
+    const body2 = date + "\n\n" + emp + "\nAttn: Human Resources\n\nRe: " + subject2 + "\n\nTo whom it may concern:\n\nI am requesting a reasonable accommodation for a disability under the Americans with Disabilities Act (" + fedCite + ")." + stClause + "\n\nMy limitation is: [describe your limitation in plain terms \u2014 no legal or medical terms required].\nThe change that would help is: [describe the accommodation you are requesting].\n\nI understand this begins an interactive process between us to identify an effective accommodation, and I am glad to discuss options. Please confirm receipt in writing and let me know a good time to talk this week.\n\nSincerely,\n" + name;
+    return { title: "Accommodation request letter", subject: subject2, body: body2 };
   }
   const subject = "Request for personnel file and pay records";
   const body = date + "\n\n" + emp + "\nAttn: Human Resources\n\nRe: " + subject + "\n\nTo whom it may concern:\n\nI request a complete copy of my personnel file, including performance records, disciplinary records, time records, and all final pay records. Many states require an employer to provide these within a set period after a written request.\n\nPlease provide the records in writing within the time required by " + ctx.stateSel + " law. I am making this request to keep an accurate record of my employment.\n\nSincerely,\n" + name;

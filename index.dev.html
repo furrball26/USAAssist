@@ -449,9 +449,14 @@ function fmtDate(d){ d = d || new Date(); return MONTHS_FULL[d.getMonth()] + ' '
 
 // Which letter templates an issue offers. Wage claims get two, in order:
 // confirm your classification first, then demand unpaid wages.
-const LETTER_LABELS = { 'classification-request':'Classification request', 'wage-demand':'Wage demand', 'complaint':'Complaint letter', 'records-request':'Records request', 'review-time-request':'Request more time' };
+const LETTER_LABELS = { 'classification-request':'Classification request', 'wage-demand':'Wage demand', 'complaint':'Complaint letter', 'records-request':'Records request', 'review-time-request':'Request more time', 'accommodation-request':'Accommodation request' };
 function letterKindsFor(issueKey, cfgLetterKind){
   if (issueKey === 'wage') return ['classification-request', 'wage-demand'];
+  // The chat's ADA reply promises "I can draft that request from a template" for
+  // any accommodation question — make that real for discrimination cases (the
+  // issue bucket ADA/disability falls under; see ISSUE_LIST), not just a generic
+  // Title VII complaint letter.
+  if (issueKey === 'discrimination') return ['complaint', 'accommodation-request'];
   return [cfgLetterKind || 'records-request'];
 }
 
@@ -548,6 +553,22 @@ function buildLetter(ctx){
       'I am formally reporting conduct at work that I believe violates Title VII of the Civil Rights Act of 1964' + stClause + '. I am asking that the conduct stop and that the company promptly and impartially investigate.' + list + '\n\n' +
       'The law prohibits retaliation against me for making this good-faith complaint. I ask that this letter be placed in my personnel file.\n\nSincerely,\n' + name;
     return { title: 'Complaint letter', subject, body };
+  }
+
+  if (kind === 'accommodation-request') {
+    // Copy mirrors ADA_REPLY's promise in chat ("I can draft that request from a
+    // template") — see letterKindsFor, which offers this kind for discrimination
+    // cases so that promise is real, not just a generic Title VII complaint letter.
+    const fedCite = cite(fed, 'disability.reasonableAccommodation', '42 U.S.C. § 12112');
+    const stFact = stateFactFor(st, ['disability.accommodation', 'disability.reasonableAccommodation', 'disability.interactiveProcess']);
+    const stClause = (stFact && stFact.citation) ? ' ' + ctx.stateSel + ' law (' + stFact.citation + ') may provide additional protection.' : '';
+    const subject = 'Request for a reasonable accommodation';
+    const body = date + '\n\n' + emp + '\nAttn: Human Resources\n\nRe: ' + subject + '\n\nTo whom it may concern:\n\n' +
+      'I am requesting a reasonable accommodation for a disability under the Americans with Disabilities Act (' + fedCite + ').' + stClause + '\n\n' +
+      'My limitation is: [describe your limitation in plain terms — no legal or medical terms required].\n' +
+      'The change that would help is: [describe the accommodation you are requesting].\n\n' +
+      'I understand this begins an interactive process between us to identify an effective accommodation, and I am glad to discuss options. Please confirm receipt in writing and let me know a good time to talk this week.\n\nSincerely,\n' + name;
+    return { title: 'Accommodation request letter', subject, body };
   }
 
   // records-request (termination, document review, or generic)
