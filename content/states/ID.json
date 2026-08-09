@@ -42,7 +42,15 @@
     },
     {
       "topic": "discrimination.protectedClasses",
-      "value": ["race", "color", "religion", "sex", "national origin", "age (40+)", "disability"],
+      "value": [
+        "race",
+        "color",
+        "religion",
+        "sex",
+        "national origin",
+        "age (40+)",
+        "disability"
+      ],
       "summary": "The Idaho Human Rights Act prohibits employment discrimination based on race, color, religion, sex, national origin, age (40 and over), and disability, and does not add protected classes beyond the federal set (e.g., no statewide sexual orientation or gender identity protection).",
       "citation": "Idaho Code § 67-5909",
       "sourceUrl": "https://legislature.idaho.gov/statutesrules/idstat/title67/t67ch59/sect67-5909/",
@@ -101,7 +109,7 @@
       "notes": "No federal final-pay timing requirement exists, so this is a state addition. Verify the 48-hour written-request provision against current statute text."
     },
     {
-      "topic": "whistleblower",
+      "topic": "retaliation.whistleblower",
       "value": "public employees only (Idaho Protection of Public Employees Act)",
       "summary": "Idaho's whistleblower statute (Protection of Public Employees Act) bars adverse action against public employees who in good faith report waste or a violation of law, but it does not cover private-sector employees.",
       "citation": "Idaho Code §§ 6-2101 to 6-2109 (esp. § 6-2104)",

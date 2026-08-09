@@ -6,7 +6,7 @@
   "facts": [
     {
       "topic": "minimumWage.hourly",
-      "value": 11.00,
+      "value": 11.0,
       "summary": "Arkansas's state minimum wage is $11.00 per hour, higher than the federal $7.25.",
       "citation": "Ark. Code Ann. §§ 11-4-201 et seq. (Arkansas Minimum Wage Act)",
       "sourceUrl": "https://labor.arkansas.gov/labor/labor-standards/minimum-wage-and-overtime/",
@@ -42,7 +42,13 @@
     },
     {
       "topic": "discrimination.protectedClasses",
-      "value": ["race", "religion", "national origin/ancestry", "gender", "disability"],
+      "value": [
+        "race",
+        "religion",
+        "national origin/ancestry",
+        "gender",
+        "disability"
+      ],
       "summary": "The Arkansas Civil Rights Act prohibits employment discrimination based on race, religion, national origin/ancestry, gender, and disability.",
       "citation": "Ark. Code Ann. § 16-123-107 (Arkansas Civil Rights Act of 1993)",
       "sourceUrl": "https://www.usccr.gov/files/pubs/sac/ar0201/ch2.htm",
@@ -65,7 +71,7 @@
       "notes": "There is no Arkansas FEPA; the ACRA is enforced through private lawsuits. Reported (aggregator) rule under § 16-123-107(c): an ACRA employment action must be brought within 1 year of the discrimination or within 90 days of an EEOC right-to-sue letter, whichever is later — verify against live statute. Federal EEOC charge deadline remains 180/300 days."
     },
     {
-      "topic": "whistleblower",
+      "topic": "retaliation.whistleblower",
       "value": "public employees only",
       "summary": "The Arkansas Whistle-Blower Act protects public employees from retaliation for good-faith reporting of waste or violations of law; there is no general private-sector whistleblower statute.",
       "citation": "Ark. Code Ann. §§ 21-1-601 to -610 (Arkansas Whistle-Blower Act)",

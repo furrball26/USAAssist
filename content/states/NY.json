@@ -6,7 +6,7 @@
   "facts": [
     {
       "topic": "minimumWage.hourly",
-      "value": 17.00,
+      "value": 17.0,
       "summary": "New York's minimum wage in 2026 is $17.00/hour in New York City, Long Island, and Westchester County, and $16.00/hour in the remainder of the state, well above the federal $7.25.",
       "citation": "N.Y. Labor Law art. 19 (Minimum Wage Act); 12 NYCRR 142",
       "sourceUrl": "https://dol.ny.gov/minimum-wage-0",
@@ -81,7 +81,7 @@
       "notes": "Six-year statute of limitations is longer than the federal FLSA's two/three-year period."
     },
     {
-      "topic": "whistleblower",
+      "topic": "retaliation.whistleblower",
       "value": "Labor Law § 740 (2-year limitations period)",
       "summary": "New York's whistleblower statute protects private employees from retaliation for disclosing, objecting to, or refusing to participate in activity they reasonably believe violates law or poses a substantial danger to public health or safety; suit must be brought within two years.",
       "citation": "N.Y. Labor Law § 740",
@@ -94,7 +94,7 @@
     },
     {
       "topic": "overtime.salaryLevelWeekly.nycLIWestchester",
-      "value": 1275.00,
+      "value": 1275.0,
       "summary": "For New York's executive and administrative overtime exemptions, employers in New York City, Nassau, Suffolk, and Westchester counties must pay at least $1,275.00/week ($66,300/yr) — well above the federal EAP salary floor of $684/week.",
       "citation": "12 NYCRR § 142-2.14",
       "sourceUrl": "https://dol.ny.gov/system/files/documents/2025/10/cr142.pdf",
@@ -106,7 +106,7 @@
     },
     {
       "topic": "overtime.salaryLevelWeekly.restOfState",
-      "value": 1199.10,
+      "value": 1199.1,
       "summary": "For New York's executive and administrative overtime exemptions, employers outside New York City, Nassau, Suffolk, and Westchester counties must pay at least $1,199.10/week ($62,353.20/yr) — above the federal EAP salary floor of $684/week.",
       "citation": "12 NYCRR § 142-2.14",
       "sourceUrl": "https://dol.ny.gov/system/files/documents/2025/10/cr142.pdf",

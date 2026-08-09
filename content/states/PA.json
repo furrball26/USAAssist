@@ -42,7 +42,19 @@
     },
     {
       "topic": "discrimination.protectedClasses",
-      "value": ["race", "color", "religious creed", "ancestry", "age (40 and over)", "sex", "national origin", "familial status (housing only)", "disability", "use/handling/training of guide or support animals for disability", "retaliation"],
+      "value": [
+        "race",
+        "color",
+        "religious creed",
+        "ancestry",
+        "age (40 and over)",
+        "sex",
+        "national origin",
+        "familial status (housing only)",
+        "disability",
+        "use/handling/training of guide or support animals for disability",
+        "retaliation"
+      ],
       "summary": "The PA Human Relations Act adds protected classes beyond the federal set, including ancestry, religious creed, familial status (housing), and use/handling/training of guide or support animals.",
       "citation": "Pennsylvania Human Relations Act, Act 222 of 1955 (43 P.S. § 951 et seq.; § 955)",
       "sourceUrl": "https://www.pa.gov/en/agencies/phrc.html",
@@ -77,7 +89,7 @@
       "notes": "180 days confirmed on PHRC file-a-complaint page (shorter than the federal 300-day EEOC deadline for dual-filed charges)."
     },
     {
-      "topic": "whistleblower",
+      "topic": "retaliation.whistleblower",
       "value": "Pennsylvania Whistleblower Law",
       "summary": "Pennsylvania's Whistleblower Law protects employees who report or are about to report wrongdoing or waste from employer retaliation.",
       "citation": "Whistleblower Law, Act 169 of 1986 (43 P.S. § 1421 et seq.)",

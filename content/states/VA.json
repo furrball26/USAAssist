@@ -30,7 +30,14 @@
     },
     {
       "topic": "discrimination.protectedClasses",
-      "value": ["sexual orientation", "gender identity", "marital status", "pregnancy, childbirth or related medical conditions including lactation", "military status", "ethnic origin"],
+      "value": [
+        "sexual orientation",
+        "gender identity",
+        "marital status",
+        "pregnancy, childbirth or related medical conditions including lactation",
+        "military status",
+        "ethnic origin"
+      ],
       "summary": "The Virginia Human Rights Act protects several classes beyond the federal set, including sexual orientation, gender identity, marital status, pregnancy/childbirth/lactation, military status, and ethnic origin.",
       "citation": "Va. Code § 2.2-3905",
       "sourceUrl": "https://law.lis.virginia.gov/vacode/title2.2/chapter39/section2.2-3905/",
@@ -65,7 +72,7 @@
       "notes": "Applies to employers with more than five employees. The explicit statutory interactive-process mandate is an addition beyond the federal ADA framework."
     },
     {
-      "topic": "whistleblower",
+      "topic": "retaliation.whistleblower",
       "value": "Va. Code § 40.1-27.3 protects employees from retaliation",
       "summary": "Virginia's whistleblower statute bars employers from discharging, disciplining, or otherwise retaliating against employees who report legal violations, participate in investigations, refuse illegal acts, or testify to government bodies.",
       "citation": "Va. Code § 40.1-27.3",

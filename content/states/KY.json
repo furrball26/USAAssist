@@ -30,7 +30,9 @@
     },
     {
       "topic": "discrimination.protectedClasses",
-      "value": ["smoker or nonsmoker status"],
+      "value": [
+        "smoker or nonsmoker status"
+      ],
       "summary": "The Kentucky Civil Rights Act adds smoker/nonsmoker status as a protected class beyond the federal set (race, color, religion, national origin, sex, age 40+, disability).",
       "citation": "KRS 344.040",
       "sourceUrl": "https://apps.legislature.ky.gov/law/statutes/statute.aspx?id=49405",
@@ -89,7 +91,7 @@
       "notes": "Applies to both voluntary and involuntary separations. No federal analog requires a specific final-pay deadline."
     },
     {
-      "topic": "whistleblower",
+      "topic": "retaliation.whistleblower",
       "value": "public employees: protected from reprisal for disclosing violations; claim within 90 days",
       "summary": "The Kentucky Whistleblower Act protects public (government) employees from reprisal for reporting suspected legal violations, mismanagement, or dangers to public health/safety, with a 90-day window to sue.",
       "citation": "KRS 61.102 (see also KRS 61.103)",

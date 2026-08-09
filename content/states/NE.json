@@ -6,7 +6,7 @@
   "facts": [
     {
       "topic": "minimumWage.hourly",
-      "value": 15.00,
+      "value": 15.0,
       "summary": "Nebraska's minimum wage is $15.00 per hour effective January 1, 2026, well above the federal $7.25.",
       "citation": "Neb. Rev. Stat. 48-1203",
       "sourceUrl": "https://dol.nebraska.gov/PressRelease/Details/338",
@@ -42,7 +42,10 @@
     },
     {
       "topic": "discrimination.protectedClasses",
-      "value": ["marital status", "military or veteran status"],
+      "value": [
+        "marital status",
+        "military or veteran status"
+      ],
       "summary": "Beyond the federal set, Nebraska's Fair Employment Practice Act adds marital status and military/veteran status as protected characteristics.",
       "citation": "Neb. Rev. Stat. 48-1104",
       "sourceUrl": "https://nebraskalegislature.gov/laws/statutes.php?statute=48-1104",
@@ -101,7 +104,7 @@
       "notes": "Different timing rules apply to political subdivisions tied to governing-body meeting schedules. Federal law has no final-pay timing rule, so this is a state addition."
     },
     {
-      "topic": "whistleblower",
+      "topic": "retaliation.whistleblower",
       "value": "State Government Effectiveness Act protects state employees from retaliation for reporting government wrongdoing",
       "summary": "Nebraska's State Government Effectiveness Act (the state whistleblower law) bars state agencies from retaliating against state employees who report gross inefficiency or misconduct.",
       "citation": "Neb. Rev. Stat. 81-2701 to 81-2711",

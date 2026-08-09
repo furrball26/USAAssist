@@ -18,7 +18,7 @@
     },
     {
       "topic": "minimumWage.hourly",
-      "value": 11.00,
+      "value": 11.0,
       "summary": "Ohio's minimum wage is $11.00 per hour in 2026 (tipped: $5.50 per hour), above the federal $7.25 and raised each January by CPI inflation under the state constitution; employers with annual gross receipts below the threshold and workers under 16 pay the federal $7.25.",
       "citation": "Ohio Const. art. II, section 34a",
       "sourceUrl": "https://codes.ohio.gov/ohio-constitution/section-2.34a",
@@ -30,7 +30,10 @@
     },
     {
       "topic": "discrimination.protectedClasses",
-      "value": ["military status", "ancestry"],
+      "value": [
+        "military status",
+        "ancestry"
+      ],
       "summary": "Beyond the federal set, Ohio employment discrimination law expressly protects military status and ancestry (and treats pregnancy and related conditions as sex discrimination).",
       "citation": "Ohio Rev. Code 4112.01, 4112.02",
       "sourceUrl": "https://codes.ohio.gov/ohio-revised-code/section-4112.02",
@@ -77,7 +80,7 @@
       "notes": "Three-year limit is set by Ohio Const. art. II section 34a (https://codes.ohio.gov/ohio-constitution/section-2.34a) and implemented in ORC 4111.14(K). Overtime claims under ORC 4111.03/FLSA carry the separate federal 2- or 3-year FLSA limitations period; this fact covers the state wage/minimum-wage claim period."
     },
     {
-      "topic": "whistleblower",
+      "topic": "retaliation.whistleblower",
       "value": "protected; civil action within 180 days",
       "summary": "Ohio's whistleblower statute protects employees from retaliation for reporting certain criminal, safety, environmental, or fraud violations, with a private civil action that must be brought within 180 days.",
       "citation": "Ohio Rev. Code 4113.52",

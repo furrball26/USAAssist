@@ -6,7 +6,7 @@
   "facts": [
     {
       "topic": "minimumWage.hourly",
-      "value": 15.00,
+      "value": 15.0,
       "summary": "Missouri's minimum wage is $15.00 per hour effective January 1, 2026, higher than the federal $7.25.",
       "citation": "RSMo 290.502",
       "sourceUrl": "https://labor.mo.gov/news/press-releases/minimum-wage-increases-1500-hour-2026",
@@ -30,7 +30,16 @@
     },
     {
       "topic": "discrimination.protectedClasses",
-      "value": ["race", "color", "religion", "national origin", "ancestry", "sex", "disability", "age"],
+      "value": [
+        "race",
+        "color",
+        "religion",
+        "national origin",
+        "ancestry",
+        "sex",
+        "disability",
+        "age"
+      ],
       "summary": "The Missouri Human Rights Act prohibits employment discrimination based on race, color, religion, national origin, ancestry, sex, disability, and age.",
       "citation": "RSMo 213.055",
       "sourceUrl": "https://labor.mo.gov/mohumanrights/discrimination",
@@ -65,7 +74,7 @@
       "notes": "Failure to timely file deprives the commission of jurisdiction. This is shorter than the federal 300-day cross-filing window in deferral states."
     },
     {
-      "topic": "whistleblower",
+      "topic": "retaliation.whistleblower",
       "value": "Missouri Whistleblower's Protection Act",
       "summary": "Missouri's Whistleblower's Protection Act makes it unlawful to discharge an employee for reporting or refusing to carry out an unlawful act, providing actual (not punitive) damages.",
       "citation": "RSMo 285.575",

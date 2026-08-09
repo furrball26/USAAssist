@@ -6,7 +6,7 @@
   "facts": [
     {
       "topic": "minimumWage.hourly",
-      "value": 16.00,
+      "value": 16.0,
       "summary": "Rhode Island's minimum wage is $16.00 per hour effective January 1, 2026, well above the federal $7.25.",
       "citation": "R.I. Gen. Laws § 28-12-3",
       "sourceUrl": "https://webserver.rilegislature.gov/Statutes/TITLE28/28-12/28-12-3.htm",
@@ -30,7 +30,11 @@
     },
     {
       "topic": "discrimination.protectedClasses",
-      "value": ["sexual orientation", "gender identity or expression", "country of ancestral origin"],
+      "value": [
+        "sexual orientation",
+        "gender identity or expression",
+        "country of ancestral origin"
+      ],
       "summary": "Rhode Island's Fair Employment Practices Act bars discrimination on bases beyond federal law, including sexual orientation, gender identity or expression, and ancestral origin (in addition to race, color, religion, sex, disability, and age).",
       "citation": "R.I. Gen. Laws § 28-5-7",
       "sourceUrl": "https://webserver.rilegislature.gov/Statutes/TITLE28/28-5/28-5-7.htm",
@@ -65,7 +69,7 @@
       "notes": "Employer bears burden of proving undue hardship; must give written notice of these rights. Statute does not label a formal 'interactive process' but requires individualized accommodation."
     },
     {
-      "topic": "whistleblower",
+      "topic": "retaliation.whistleblower",
       "value": "Rhode Island Whistleblowers' Protection Act",
       "summary": "Rhode Island's Whistleblowers' Protection Act prohibits employers from discharging, threatening, or otherwise retaliating against employees who report or refuse to participate in violations of law.",
       "citation": "R.I. Gen. Laws § 28-50-3",

@@ -30,7 +30,16 @@
     },
     {
       "topic": "discrimination.protectedClasses",
-      "value": ["race", "religion", "color", "sex", "age", "national origin", "disability", "pregnancy"],
+      "value": [
+        "race",
+        "religion",
+        "color",
+        "sex",
+        "age",
+        "national origin",
+        "disability",
+        "pregnancy"
+      ],
       "summary": "The South Carolina Human Affairs Law prohibits employment discrimination based on race, religion, color, sex, age, national origin, and disability, and expressly includes pregnancy, childbirth, and related medical conditions within sex discrimination.",
       "citation": "S.C. Code Ann. § 1-13-30",
       "sourceUrl": "https://www.scstatehouse.gov/code/t01c013.php",
@@ -89,7 +98,7 @@
       "notes": "This is a state-specific final-pay rule stricter than the federal baseline (which has none). Unpaid wages can expose the employer to treble damages under § 41-10-80(C)."
     },
     {
-      "topic": "whistleblower",
+      "topic": "retaliation.whistleblower",
       "value": "public employees only; report within 180 days, civil action within 1 year",
       "summary": "South Carolina's whistleblower statute protects public-body employees from dismissal, suspension, demotion, or pay reduction for good-faith reports of wrongdoing; the report must be made within 180 days and any civil action filed within one year of accrual or exhaustion of remedies.",
       "citation": "S.C. Code Ann. §§ 8-27-10 to 8-27-30",

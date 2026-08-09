@@ -42,7 +42,11 @@
     },
     {
       "topic": "discrimination.protectedClasses",
-      "value": ["sexual orientation", "gender identity", "marital status"],
+      "value": [
+        "sexual orientation",
+        "gender identity",
+        "marital status"
+      ],
       "summary": "Beyond the federal protected classes, New Hampshire's Law Against Discrimination also prohibits employment discrimination based on sexual orientation, gender identity, and marital status.",
       "citation": "RSA 354-A:7 (see also RSA 354-A:2)",
       "sourceUrl": "https://gc.nh.gov/rsa/html/XXXI/354-A/354-A-7.htm",
@@ -77,7 +81,7 @@
       "notes": "State FEPA (Commission for Human Rights) filing deadline is 180 days; a related superior court civil action must be brought within 3 years of the act."
     },
     {
-      "topic": "whistleblower",
+      "topic": "retaliation.whistleblower",
       "value": "RSA 275-E Whistleblowers' Protection Act",
       "summary": "New Hampshire's Whistleblowers' Protection Act bars employers from discharging or discriminating against employees who in good faith report, or refuse to participate in, a suspected violation of law or rule.",
       "citation": "RSA 275-E",

@@ -30,7 +30,15 @@
     },
     {
       "topic": "discrimination.protectedClasses",
-      "value": ["race", "color", "religion", "national origin", "sex (including sexual orientation)", "age", "disability"],
+      "value": [
+        "race",
+        "color",
+        "religion",
+        "national origin",
+        "sex (including sexual orientation)",
+        "age",
+        "disability"
+      ],
       "summary": "Under Georgia's Fair Employment Practices Act the state (via GCEO) prohibits discrimination on race, color, religion, national origin, sex including sexual orientation, age, and disability.",
       "citation": "O.C.G.A. § 45-19-29 (Fair Employment Practices Act)",
       "sourceUrl": "https://gceo.georgia.gov/faqs/employment-faq",
@@ -65,7 +73,7 @@
       "notes": "180-day deadline confirmed on GCEO filing pages. Applies to state-government employment claims only; private-sector claimants use the EEOC's 180/300-day federal deadlines."
     },
     {
-      "topic": "whistleblower",
+      "topic": "retaliation.whistleblower",
       "value": "Georgia Whistleblower Act (public employees)",
       "summary": "Georgia's Whistleblower Act bars public employers from retaliating against public employees who disclose or refuse to participate in violations of law, rule, or regulation.",
       "citation": "O.C.G.A. § 45-1-4",

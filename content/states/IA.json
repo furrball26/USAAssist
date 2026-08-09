@@ -77,6 +77,18 @@
       "notes": "State addition applicable to employers with 4+ employees, independent of the federal FMLA 50-employee threshold. Pregnancy-related disabilities must be treated like other temporary disabilities under employer leave/insurance plans."
     },
     {
+      "topic": "disability.accommodation",
+      "value": "mandatory absent undue hardship",
+      "summary": "Iowa Civil Rights Commission rules require covered employers to accommodate the known physical or mental limitations of a qualified person with a disability -- through measures such as accessible facilities, job restructuring, modified schedules, or equipment -- unless doing so would impose an undue hardship.",
+      "citation": "Iowa Admin. Code r. 161-8.11(216)",
+      "sourceUrl": "https://www.legis.iowa.gov/docs/iac/rule/02-05-2025.161.8.11.pdf",
+      "sourceAgency": "Iowa Civil Rights Commission",
+      "lastChecked": "2026-08-08",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Added to give Iowa a disability-accommodation fact under the topic key the app looks up (disability.accommodation); Iowa's other disability fact (disability.pregnancyLeave, above) covers a separate pregnancy-disability-leave entitlement and does not itself address reasonable accommodation, so it was not renamed/repurposed. Rule effective 9/25/24 (ARC 8199C); undue-hardship factors include employer size, operations, and accommodation cost. Applies at the ICRA 4+-employee coverage threshold (see discrimination.coverage). Iowa Code 216.6 itself does not spell out the accommodation duty in the statute text; it is set out in this implementing administrative rule."
+    },
+    {
       "topic": "retaliation.whistleblower",
       "value": "Iowa Code 70A.28 (public employees)",
       "summary": "Iowa's statutory whistleblower protection under Iowa Code 70A.28 prohibits retaliation against state and local government employees who disclose legal violations, mismanagement, or threats to public health/safety; private-sector employees rely on common-law wrongful-discharge and statute-specific anti-retaliation provisions.",

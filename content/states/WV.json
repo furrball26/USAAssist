@@ -42,7 +42,10 @@
     },
     {
       "topic": "discrimination.protectedClasses",
-      "value": ["ancestry", "blindness"],
+      "value": [
+        "ancestry",
+        "blindness"
+      ],
       "summary": "The WV Human Rights Act protects the federal classes plus ancestry and blindness in employment (full list: race, religion, color, national origin, ancestry, sex, age 40+, blindness, disability).",
       "citation": "W. Va. Code §16B-17-3; §16B-17-9",
       "sourceUrl": "https://code.wvlegislature.gov/16B-17-3/",
@@ -77,7 +80,7 @@
       "notes": "365-day state deadline is more generous than the federal EEOC 180/300-day charge deadlines. HRC now sits within the WV Office of the Inspector General (oig.wv.gov)."
     },
     {
-      "topic": "whistleblower",
+      "topic": "retaliation.whistleblower",
       "value": "WV Whistle-blower Law (public employees)",
       "summary": "West Virginia's Whistle-blower Law bars public/government employers from retaliating against employees who report wrongdoing or waste in good faith.",
       "citation": "W. Va. Code §6C-1-1 et seq. (§6C-1-3)",

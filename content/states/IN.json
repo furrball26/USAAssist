@@ -30,7 +30,10 @@
     },
     {
       "topic": "discrimination.protectedClasses",
-      "value": ["ancestry", "veteran status (employment)"],
+      "value": [
+        "ancestry",
+        "veteran status (employment)"
+      ],
       "summary": "Indiana's civil rights law covers race, color, religion, sex, disability, national origin, plus ancestry and veteran status (the latter in employment).",
       "citation": "Ind. Code 22-9-1-3",
       "sourceUrl": "https://www.in.gov/icrc/know-your-rights/protected-classes",
@@ -101,7 +104,7 @@
       "notes": "The DOL page does not state a filing deadline; the general 2-year civil statute of limitations for wage actions (Ind. Code 34-11-2-1) is commonly applied but was not confirmed on an official DOL page. Verify the 2-year figure before publishing."
     },
     {
-      "topic": "whistleblower",
+      "topic": "retaliation.whistleblower",
       "value": "protected (Ind. Code 22-5-3-3)",
       "summary": "Indiana law protects employees who report a violation of federal, state, or local law or misuse of public resources from retaliation; violation is a Class A infraction.",
       "citation": "Ind. Code 22-5-3-3",

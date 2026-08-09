@@ -18,7 +18,7 @@
     },
     {
       "topic": "minimumWage.hourly",
-      "value": 15.00,
+      "value": 15.0,
       "summary": "Massachusetts's minimum wage is $15.00 per hour, well above the federal $7.25.",
       "citation": "M.G.L. c. 151, s. 1",
       "sourceUrl": "https://malegislature.gov/Laws/GeneralLaws/PartI/TitleXXI/Chapter151/Section1",
@@ -108,7 +108,7 @@
       "notes": "The 3-year period is tolled while the Attorney General reviews a filed complaint. Prevailing employees receive mandatory treble damages plus costs and attorney's fees."
     },
     {
-      "topic": "whistleblower",
+      "topic": "retaliation.whistleblower",
       "value": "public employees protected under c.149 s.185; wage-complaint retaliation barred for all employees under c.149 s.148A",
       "summary": "Massachusetts's general whistleblower statute protects public employees who report legal, health, safety, or environmental violations; separately, retaliation against any employee for asserting Wage Act rights is prohibited.",
       "citation": "M.G.L. c. 149, s. 185 (public employees); M.G.L. c. 149, s. 148A (wage retaliation)",

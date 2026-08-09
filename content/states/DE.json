@@ -18,7 +18,7 @@
     },
     {
       "topic": "minimumWage.hourly",
-      "value": 15.00,
+      "value": 15.0,
       "summary": "Delaware's minimum wage is $15.00 per hour effective January 1, 2025; no further increase is scheduled for 2026.",
       "citation": "19 Del. C. § 902",
       "sourceUrl": "https://delcode.delaware.gov/title19/c009/",
@@ -99,7 +99,7 @@
       "notes": "General 2-year limitations period covering wages, salary, overtime, and related damages/penalties. The Wage Payment and Collection Act (Ch. 11) provides remedies but no separate limitations period."
     },
     {
-      "topic": "whistleblower",
+      "topic": "retaliation.whistleblower",
       "value": "3 years",
       "summary": "The Delaware Whistleblowers' Protection Act bars retaliation against employees who report, or refuse to participate in, violations of law, and a civil action must be brought within 3 years of the violation.",
       "citation": "19 Del. C. §§ 1703, 1704",
