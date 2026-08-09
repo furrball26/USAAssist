@@ -590,6 +590,14 @@ function printLetter(subject, text){
   }
 }
 
+// Sanity bounds for figures that flow into a sent wage-demand letter. These are
+// soft limits — flagged with an inline warning, never silently rejected — wide
+// enough to cover real high earners/long logs, but tight enough to catch an
+// obvious typo (an extra digit) before it produces an absurd dollar figure in a
+// document the user is told to send to their employer.
+const RATE_WARN_MAX = 500;    // $/hr — a non-exempt hourly wage-claim rate this high is very rare
+const ENTRY_HOURS_WARN_MAX = 100; // hours on a single log entry — well over 2 full workweeks
+
 // Quick-add kinds for the incident log (shared; optional hours capture for wage claims).
 const LOG_KINDS = [
   { label:'+ Hours worked', title:'Unpaid or extra hours', body:'', color:'#EF7B22', tag:'Wage & hour', asksHours:true },
@@ -859,8 +867,11 @@ function App(){
           {profile.payType === 'Hourly' &&
             <div style={css("display:flex;flex-direction:column;gap:6px")}>
               <label htmlFor="onb-rate" style={css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>HOURLY RATE (OPTIONAL)</label>
-              <input id="onb-rate" type="number" min="0" step="0.5" value={profile.rate} onChange={e => setProfile(p => Object.assign({}, p, { rate:e.target.value }))} placeholder="e.g. 24.00" style={css("width:150px;padding:14px;border-radius:12px;border:2px solid #14181F;font:400 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
+              <input id="onb-rate" type="number" min="0" max={RATE_WARN_MAX} step="0.5" value={profile.rate} onChange={e => setProfile(p => Object.assign({}, p, { rate:e.target.value }))} placeholder="e.g. 24.00" style={css("width:150px;padding:14px;border-radius:12px;border:2px solid #14181F;font:400 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
               <span style={css("font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Used to estimate overtime owed in your demand letter.</span>
+              {Number(profile.rate) > RATE_WARN_MAX &&
+                <p role="alert" style={css("margin:0;padding:10px 12px;border-radius:10px;background:#FFF4D6;border:2px solid #14181F;font:700 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#6B4B00")}>That’s an unusually high hourly rate ({money(Number(profile.rate))}/hr) — double-check it. It feeds directly into your owed-amount estimate and letters.</p>
+              }
             </div>
           }
         </div>
@@ -1262,8 +1273,11 @@ function App(){
           <div style={css("display:flex;flex-direction:column;gap:10px")}>
             <div style={css("display:flex;align-items:center;gap:10px")}>
               <label htmlFor="log-hours" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Hours</label>
-              <input id="log-hours" type="number" min="0" max="80" step="0.5" value={logHours} onChange={e => setLogHours(e.target.value)} placeholder="e.g. 6.5" style={css("width:110px;padding:11px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif")} />
+              <input id="log-hours" type="number" min="0" max={ENTRY_HOURS_WARN_MAX} step="0.5" value={logHours} onChange={e => setLogHours(e.target.value)} placeholder="e.g. 6.5" style={css("width:110px;padding:11px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif")} />
             </div>
+            {Number(logHours) > ENTRY_HOURS_WARN_MAX &&
+              <p role="alert" style={css("margin:0;padding:10px 12px;border-radius:10px;background:#FFF4D6;border:2px solid #14181F;font:700 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#6B4B00")}>{Number(logHours)} hours is more than {ENTRY_HOURS_WARN_MAX} — well over 2 full workweeks for one entry. Double-check this figure, or log separate entries per pay period.</p>
+            }
             <div role="group" aria-label="Were these hours paid?" style={css("display:flex;gap:8px;flex-wrap:wrap")}>
               {[['unpaid','Not paid at all'],['straight','Paid straight-time only']].map(([v, label]) =>
                 <button key={v} type="button" onClick={() => setLogPayStatus(v)} aria-pressed={logPayStatus === v} style={css('min-height:44px;padding:10px 13px;border-radius:999px;border:2px solid ' + (logPayStatus === v ? '#2B3AA8' : '#14181F') + ';background:' + (logPayStatus === v ? '#2B3AA8' : '#fff') + ';color:' + (logPayStatus === v ? '#fff' : '#14181F') + ";font:700 13px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{label}</button>
@@ -1356,6 +1370,11 @@ function App(){
       : cfg.key === 'wage' && (evidenceCount > 0 || unpaidHours > 0)
       ? 'Built from your log: ' + evidenceCount + ' ' + (evidenceCount === 1 ? 'entry' : 'entries') + (unpaidHours > 0 ? ', ' + unpaidHours + ' unpaid hours' : '') + '.'
       : 'Built from your case details for ' + locationLabel + '.';
+    // Soft sanity check on the figures that produced this letter's dollar amount —
+    // flag, never silently block, an out-of-bounds rate or a single entry with an
+    // implausible number of hours before the user sends this to their employer.
+    const hasAbsurdRate = activeKind === 'wage-demand' && rateNum > RATE_WARN_MAX;
+    const absurdEntry = activeKind === 'wage-demand' && (entries || []).find(e => Number(e.hours) > ENTRY_HOURS_WARN_MAX);
     return (
     <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
       <button onClick={nav('home')} style={css("align-self:flex-start;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}>← Dashboard</button>
@@ -1372,6 +1391,11 @@ function App(){
       {(!youName || !employerName) &&
         <div style={css("padding:12px 15px;border-radius:12px;background:#FFF4D6;border:2px solid #14181F")}>
           <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Fill in {[!youName ? 'your name' : null, !employerName ? 'your employer' : null].filter(Boolean).join(' and ')} on the dashboard location screen (or edit the text below) to complete the bracketed fields.</p>
+        </div>
+      }
+      {(hasAbsurdRate || absurdEntry) &&
+        <div role="alert" style={css("padding:12px 15px;border-radius:12px;background:#FFF4D6;border:2px solid #14181F")}>
+          <p style={css("margin:0;font:700 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#6B4B00")}>Double-check the numbers below before sending. {hasAbsurdRate ? 'Your hourly rate (' + money(rateNum) + ') ' : ''}{hasAbsurdRate && absurdEntry ? 'and ' : ''}{absurdEntry ? 'a logged entry (' + Number(absurdEntry.hours) + ' hours) ' : ''}looks unusually high — the dollar amount below is calculated directly from it.</p>
         </div>
       }
       {editing ?
