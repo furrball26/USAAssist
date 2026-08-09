@@ -1009,6 +1009,13 @@ function App(){
       <div style={css("display:flex;gap:3px;height:5px;border-radius:3px;overflow:hidden")}>
         <div style={css("flex:1;background:#E0322F")}></div><div style={css("flex:1;background:#EF7B22")}></div><div style={css("flex:1;background:#E3B505")}></div><div style={css("flex:1;background:#1F8A4C")}></div><div style={css("flex:1;background:#2B3AA8")}></div><div style={css("flex:1;background:#7A3AA8")}></div>
       </div>
+      {/* F16 — a typo or wrong pick two steps back previously had no fix except
+          finishing the whole flow (or the unsafe Skip). Back only moves within
+          this in-progress draft — it never touches the live case; Save/Cancel
+          at the end still gate any real commit. */}
+      {onbStep > 1 &&
+        <button onClick={() => setOnbStep(onbStep - 1)} aria-label="Back to the previous step" style={css("align-self:flex-start;min-height:44px;padding:10px 12px;margin:-8px 0 -10px -10px;background:none;border:none;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}>‹ Back</button>
+      }
       <h1 style={css("margin:0;font:700 30px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{ONB_TITLES[onbStep]}</h1>
       <p style={css("margin:0;font:400 18px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty")}>{editing ? 'Nothing changes until you tap Save at the end.' : ONB_BODIES[onbStep]}</p>
 
