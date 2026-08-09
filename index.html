@@ -638,6 +638,71 @@ const CLAUSES = [
   { title: "Non-disparagement", level: "NEGOTIABLE", quote: "\u2026shall not make any statement that reflects negatively on the Company\u2026", plain: "As written this is broad. Many states protect your ability to describe unlawful conduct you experienced; that carve-out is missing here.", tone: "#FFF4D6", badge: "#8A5A00" },
   { title: "Severance amount", level: "STANDARD", quote: "\u2026eight (8) weeks of base salary, less withholdings\u2026", plain: "Eight weeks is within a normal range for your tenure. It is separate from wages you are already owed.", tone: "#E8F6EE", badge: "#136B3C" }
 ];
+const CLAUSE_PATTERNS = [
+  {
+    title: "Release of claims",
+    level: "READ CLOSELY",
+    tone: "#FFE7EC",
+    badge: "#C81E1B",
+    re: /\brelease[sd]?\b[^.]{0,100}\b(claims?|causes? of action|liability)\b/i,
+    plain: "Looks like a release of legal claims \u2014 you may be giving up the right to sue for things that already happened. In many states, wages you already earned generally cannot be waived by signing this."
+  },
+  {
+    title: "Non-disparagement",
+    level: "NEGOTIABLE",
+    tone: "#FFF4D6",
+    badge: "#8A5A00",
+    re: /non-?disparage|shall not (make any statement|disparage)/i,
+    plain: "Looks like a non-disparagement clause. As commonly written these are broad; many states protect your ability to describe unlawful conduct you experienced, and that carve-out is sometimes missing."
+  },
+  {
+    title: "Non-compete / restrictive covenant",
+    level: "READ CLOSELY",
+    tone: "#FFE7EC",
+    badge: "#C81E1B",
+    re: /non-?compete|restrictive covenant|shall not (work for|be employed by|compete with)/i,
+    plain: "Looks like a non-compete or restrictive-covenant clause. Several states ban or sharply limit these for most workers \u2014 check the Rights tab for your state before assuming it is enforceable."
+  },
+  {
+    title: "Arbitration / class-action waiver",
+    level: "READ CLOSELY",
+    tone: "#FFE7EC",
+    badge: "#C81E1B",
+    re: /\barbitrat|class action waiver|waive[sd]?[^.]{0,30}(class|collective) action/i,
+    plain: "Looks like an arbitration clause or a waiver of your right to join a class or collective action. This can limit how and where you can bring a future claim."
+  },
+  {
+    title: "Confidentiality / non-disclosure",
+    level: "NEGOTIABLE",
+    tone: "#FFF4D6",
+    badge: "#8A5A00",
+    re: /confidential(ity)?|non-disclosure|\bnda\b/i,
+    plain: "Looks like a confidentiality or non-disclosure clause. Check the scope \u2014 federal and some state law protect your ability to discuss your own wages and working conditions regardless of what this says."
+  },
+  {
+    title: "Revocation / consideration period",
+    level: "STANDARD",
+    tone: "#E8F6EE",
+    badge: "#136B3C",
+    re: /revocation period|revoke this agreement|(21|twenty-one) days? to consider|(7|seven) days? to revoke/i,
+    plain: "Mentions a period to consider and/or revoke the agreement \u2014 common in release agreements covered by the Older Workers Benefit Protection Act. Confirm the exact number of days in your copy."
+  }
+];
+function scanClauseText(text) {
+  const t = String(text || "");
+  if (!t.trim()) return [];
+  return CLAUSE_PATTERNS.map((p) => {
+    const m = t.match(p.re);
+    if (!m) return null;
+    const idx = m.index || 0;
+    const start = Math.max(0, idx - 40);
+    const end = Math.min(t.length, idx + m[0].length + 40);
+    let quote = t.slice(start, end).replace(/\s+/g, " ").trim();
+    if (start > 0) quote = "\u2026" + quote;
+    if (end < t.length) quote = quote + "\u2026";
+    return Object.assign({}, p, { quote });
+  }).filter(Boolean);
+}
 const LAWYERS = [
   { name: "Sample \u2014 Employment Law Group", match: "SAMPLE", detail: "Illustrative listing: wage-and-hour and retaliation claims. Free initial consultation.", fee: "CONTINGENCY", langs: "EN \xB7 ES" },
   { name: "Sample \u2014 Solo Employee-Side Attorney", match: "SAMPLE", detail: "Illustrative listing: individual wage claims, discrimination and wrongful termination.", fee: "FREE CONSULT", langs: "EN \xB7 FR" },
@@ -1026,6 +1091,7 @@ function App() {
   const [letterEdit, setLetterEdit] = useState(() => saved.letterEdit != null ? saved.letterEdit : null);
   const [letterType, setLetterType] = useState(() => saved.letterType || null);
   const [docName, setDocName] = useState(() => saved.docName || "");
+  const [docText, setDocText] = useState(() => saved.docText || "");
   const [consultSent, setConsultSent] = useState("");
   const [wizNode, setWizNode] = useState(() => saved.wizNode || "start");
   const [wizPath, setWizPath] = useState(() => saved.wizPath || []);
@@ -1069,7 +1135,8 @@ function App() {
       letterType,
       wizNode,
       wizPath,
-      docName
+      docName,
+      docText
     });
   }, [
     onboarded,
@@ -1086,7 +1153,8 @@ function App() {
     letterType,
     wizNode,
     wizPath,
-    docName
+    docName,
+    docText
   ]);
   useEffect(() => {
     fetchContentJson("content/_federal.json").then((d) => {
@@ -1126,7 +1194,7 @@ function App() {
     setStateSel("");
     setCounty("");
     setIssue(null);
-    setProfile({ name: "", employer: "", payType: "", rate: "" });
+    setProfile({ name: "", employer: "", payType: "", rate: "", salary: "" });
     setHomeMode("standard");
     setDone({});
     setEntries([]);
@@ -1139,6 +1207,7 @@ function App() {
     setLetterEdit(null);
     setLetterType(null);
     setDocName("");
+    setDocText("");
     setConsultSent("");
     setWizNode("start");
     setWizPath([]);
@@ -1169,6 +1238,7 @@ function App() {
     setLetterEdit(null);
     setLetterType(null);
     setDocName("");
+    setDocText("");
     setConsultSent("");
     setWizNode("start");
     setWizPath([]);
@@ -1479,9 +1549,14 @@ function App() {
       (e, i) => /* @__PURE__ */ React.createElement("div", { key: i, style: css("display:flex;gap:14px") }, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;align-items:center;width:22px;flex:none") }, /* @__PURE__ */ React.createElement("span", { style: css("flex:none;width:18px;height:18px;border-radius:50%;background:" + e.color + ";border:3px solid #14181F") }), /* @__PURE__ */ React.createElement("span", { style: css("flex:1;width:3px;background:rgba(20,24,31,.15)") })), /* @__PURE__ */ React.createElement("div", { style: css("padding-bottom:18px;flex:1;border-radius:12px;" + (editingEntryIdx === i ? "outline:2px solid #6B4B00;outline-offset:6px;" : "")) }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 3px;font:600 13px 'IBM Plex Mono',monospace;color:#4A5162") }, e.date), /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 5px;font:700 18px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, e.title, e.hours ? " \u2014 " + e.hours + " hrs" : ""), /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 8px;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, e.body), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;align-items:center;gap:8px;flex-wrap:wrap") }, /* @__PURE__ */ React.createElement("span", { style: css("display:inline-block;padding:6px 10px;border-radius:8px;background:#F0EDE5;border:2px solid #14181F;font:600 12px 'IBM Plex Mono',monospace;color:#14181F") }, e.tag), /* @__PURE__ */ React.createElement("button", { onClick: () => startEdit(i), "aria-label": "Edit entry from " + e.date, style: css("min-height:36px;padding:6px 12px;border-radius:8px;border:2px solid #2B3AA8;background:#fff;color:#2B3AA8;font:700 13px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, "Edit"), /* @__PURE__ */ React.createElement("button", { onClick: () => deleteEntry(i), "aria-label": "Delete entry from " + e.date, style: css("min-height:36px;padding:6px 12px;border-radius:8px;border:2px solid #B3264F;background:#fff;color:#B3264F;font:700 13px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, "Delete"))))
     )));
   };
-  const Doc = () => /* @__PURE__ */ React.createElement("div", { style: css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px") }, /* @__PURE__ */ React.createElement("button", { onClick: nav("home"), style: css("align-self:flex-start;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer") }, "\u2190 Dashboard"), /* @__PURE__ */ React.createElement("h1", { style: css("margin:0;font:700 26px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Review a document"), /* @__PURE__ */ React.createElement("div", { style: css("padding:14px 16px;border-radius:12px;background:#FFF4D6;border:2px solid #14181F") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Automated clause analysis is not available in this preview, so ", /* @__PURE__ */ React.createElement("strong", null, "your document is not uploaded or read"), " \u2014 the picker only notes the file name. The ", /* @__PURE__ */ React.createElement("strong", null, "example review"), " below shows how flags will work. Bring your actual document to an attorney before signing.")), /* @__PURE__ */ React.createElement("label", { style: css("display:flex;flex-direction:column;gap:8px;padding:20px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF;cursor:pointer;text-align:center") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, docName ? "Noted: " + docName + " (not analyzed)" : "See how document review works"), /* @__PURE__ */ React.createElement("span", { style: css("font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "Offer, contract, NDA, severance or PIP \xB7 your file stays on your device"), /* @__PURE__ */ React.createElement("input", { type: "file", accept: ".pdf,.doc,.docx,.txt,.rtf", onChange: (e) => setDocName(e.target.files && e.target.files[0] ? e.target.files[0].name : ""), style: css("display:none") })), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:600 14px 'IBM Plex Mono',monospace;color:#4A5162") }, "EXAMPLE \xB7 severance agreement \xB7 3 clauses flagged"), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:12px") }, CLAUSES.map(
-    (cl, i) => /* @__PURE__ */ React.createElement("div", { key: i, style: css("padding:18px;border-radius:16px;border:2px solid #14181F;background:" + cl.tone) }, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, cl.title), /* @__PURE__ */ React.createElement("span", { style: css("flex:none;padding:6px 10px;border-radius:8px;background:#fff;border:2px solid " + cl.badge + ";font:700 12px 'IBM Plex Mono',monospace;color:" + cl.badge) }, cl.level)), /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 10px;padding-left:12px;border-left:4px solid rgba(20,24,31,.25);font:italic 400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "\u201C", cl.quote, "\u201D"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, cl.plain))
-  )), /* @__PURE__ */ React.createElement("div", { style: css("padding:16px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "You have ", /* @__PURE__ */ React.createElement("strong", null, "21 days"), " to consider this and ", /* @__PURE__ */ React.createElement("strong", null, "7 days"), " to revoke after signing. Do not sign to hit an artificial deadline.")));
+  const Doc = () => {
+    const scanned = scanClauseText(docText);
+    const hasPasted = docText.trim().length > 0;
+    const shownClauses = hasPasted ? scanned : CLAUSES;
+    return /* @__PURE__ */ React.createElement("div", { style: css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px") }, /* @__PURE__ */ React.createElement("button", { onClick: nav("home"), style: css("align-self:flex-start;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer") }, "\u2190 Dashboard"), /* @__PURE__ */ React.createElement("h1", { style: css("margin:0;font:700 26px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Review a document"), /* @__PURE__ */ React.createElement("div", { style: css("padding:14px 16px;border-radius:12px;background:#FFF4D6;border:2px solid #14181F") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, /* @__PURE__ */ React.createElement("strong", null, "Uploaded files are not read"), " \u2014 the picker below only notes the file name. ", /* @__PURE__ */ React.createElement("strong", null, "Pasted text IS scanned"), ", entirely on your device, for a short list of common clause keywords (release, non-disparagement, non-compete, arbitration, confidentiality, revocation period). This is a basic keyword match, not a legal opinion \u2014 it can miss real issues and flag benign text. Bring your actual document to an attorney before signing.")), /* @__PURE__ */ React.createElement("label", { style: css("display:flex;flex-direction:column;gap:8px;padding:16px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF;cursor:pointer;text-align:center") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, docName ? "Noted: " + docName + " (file contents not read)" : "Note a file name (optional)"), /* @__PURE__ */ React.createElement("span", { style: css("font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "Offer, contract, NDA, severance or PIP \xB7 your file stays on your device"), /* @__PURE__ */ React.createElement("input", { type: "file", accept: ".pdf,.doc,.docx,.txt,.rtf", onChange: (e) => setDocName(e.target.files && e.target.files[0] ? e.target.files[0].name : ""), style: css("display:none") })), docName && /* @__PURE__ */ React.createElement("button", { onClick: () => setDocName(""), style: css("align-self:flex-start;min-height:44px;padding:10px 14px;border-radius:10px;border:2px solid #B3264F;background:#fff;color:#B3264F;font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, "Remove file name"), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:8px") }, /* @__PURE__ */ React.createElement("label", { htmlFor: "doc-text", style: css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Paste the document text here for a real scan"), /* @__PURE__ */ React.createElement("textarea", { id: "doc-text", value: docText, onChange: (e) => setDocText(e.target.value), rows: 7, placeholder: "Paste the text of your offer, severance, NDA or PIP here\u2026", style: css("width:100%;box-sizing:border-box;padding:14px;border-radius:12px;border:2px solid #14181F;font:400 15px/1.5 'IBM Plex Mono',monospace;color:#14181F;resize:vertical") }), hasPasted && /* @__PURE__ */ React.createElement("button", { onClick: () => setDocText(""), style: css("align-self:flex-start;min-height:44px;padding:10px 14px;border-radius:10px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, "Clear pasted text")), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:600 14px 'IBM Plex Mono',monospace;color:#4A5162") }, hasPasted ? scanned.length ? scanned.length + " clause" + (scanned.length === 1 ? "" : "s") + " flagged in your pasted text" : "No matching clause keywords found in your pasted text \u2014 that does not mean the document is safe to sign" : "EXAMPLE \xB7 severance agreement \xB7 3 clauses flagged"), hasPasted && scanned.length === 0 ? null : /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:12px") }, shownClauses.map(
+      (cl, i) => /* @__PURE__ */ React.createElement("div", { key: i, style: css("padding:18px;border-radius:16px;border:2px solid #14181F;background:" + cl.tone) }, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, cl.title), /* @__PURE__ */ React.createElement("span", { style: css("flex:none;padding:6px 10px;border-radius:8px;background:#fff;border:2px solid " + cl.badge + ";font:700 12px 'IBM Plex Mono',monospace;color:" + cl.badge) }, cl.level)), /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 10px;padding-left:12px;border-left:4px solid rgba(20,24,31,.25);font:italic 400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "\u201C", cl.quote, "\u201D"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, cl.plain))
+    )), /* @__PURE__ */ React.createElement("div", { style: css("padding:16px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "If your document mentions a consideration/revocation period, you typically have ", /* @__PURE__ */ React.createElement("strong", null, "21 days"), " to consider it and ", /* @__PURE__ */ React.createElement("strong", null, "7 days"), " to revoke after signing. Do not sign to hit an artificial deadline.")));
+  };
   const Letter = () => {
     const kinds = letterKindsFor(cfg.key, cfg.letterKind);
     const activeKind = kinds.indexOf(letterType) >= 0 ? letterType : kinds[0];

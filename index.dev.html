@@ -221,11 +221,53 @@ const TREE = {
   outsideSales: { q:'Do you regularly make sales away from your employer’s place of business?', help:'Customer sites, door-to-door, the field. Selling by phone or email from home or an office does not count.', opts:[['Yes, mostly in the field','r_outside','FIELD SALES'],['No, mostly from a desk','r_outside_no','INSIDE SALES']] }
 };
 
+// Illustrative-only — shown labeled "EXAMPLE" until the user pastes real text.
 const CLAUSES = [
   { title:'Release of claims', level:'READ CLOSELY', quote:'…releases all claims arising from employment, known or unknown…', plain:'You give up the right to sue for anything that already happened. In many states, wages you already earned generally cannot be waived — even by signing this.', tone:'#FFE7EC', badge:'#C81E1B' },
   { title:'Non-disparagement', level:'NEGOTIABLE', quote:'…shall not make any statement that reflects negatively on the Company…', plain:'As written this is broad. Many states protect your ability to describe unlawful conduct you experienced; that carve-out is missing here.', tone:'#FFF4D6', badge:'#8A5A00' },
   { title:'Severance amount', level:'STANDARD', quote:'…eight (8) weeks of base salary, less withholdings…', plain:'Eight weeks is within a normal range for your tenure. It is separate from wages you are already owed.', tone:'#E8F6EE', badge:'#136B3C' }
 ];
+
+// Basic, rules-based (regex keyword) clause flagging for TEXT the user pastes
+// directly — honest about what it is: a simple pattern scan that runs locally in
+// the browser, not a legal opinion, and it can both miss real issues and flag
+// benign text. Deliberately does NOT claim to read uploaded files (PDF/DOC/etc
+// parsing is out of scope here) — only text actually pasted into the textarea.
+const CLAUSE_PATTERNS = [
+  { title:'Release of claims', level:'READ CLOSELY', tone:'#FFE7EC', badge:'#C81E1B',
+    re:/\brelease[sd]?\b[^.]{0,100}\b(claims?|causes? of action|liability)\b/i,
+    plain:'Looks like a release of legal claims — you may be giving up the right to sue for things that already happened. In many states, wages you already earned generally cannot be waived by signing this.' },
+  { title:'Non-disparagement', level:'NEGOTIABLE', tone:'#FFF4D6', badge:'#8A5A00',
+    re:/non-?disparage|shall not (make any statement|disparage)/i,
+    plain:'Looks like a non-disparagement clause. As commonly written these are broad; many states protect your ability to describe unlawful conduct you experienced, and that carve-out is sometimes missing.' },
+  { title:'Non-compete / restrictive covenant', level:'READ CLOSELY', tone:'#FFE7EC', badge:'#C81E1B',
+    re:/non-?compete|restrictive covenant|shall not (work for|be employed by|compete with)/i,
+    plain:'Looks like a non-compete or restrictive-covenant clause. Several states ban or sharply limit these for most workers — check the Rights tab for your state before assuming it is enforceable.' },
+  { title:'Arbitration / class-action waiver', level:'READ CLOSELY', tone:'#FFE7EC', badge:'#C81E1B',
+    re:/\barbitrat|class action waiver|waive[sd]?[^.]{0,30}(class|collective) action/i,
+    plain:'Looks like an arbitration clause or a waiver of your right to join a class or collective action. This can limit how and where you can bring a future claim.' },
+  { title:'Confidentiality / non-disclosure', level:'NEGOTIABLE', tone:'#FFF4D6', badge:'#8A5A00',
+    re:/confidential(ity)?|non-disclosure|\bnda\b/i,
+    plain:'Looks like a confidentiality or non-disclosure clause. Check the scope — federal and some state law protect your ability to discuss your own wages and working conditions regardless of what this says.' },
+  { title:'Revocation / consideration period', level:'STANDARD', tone:'#E8F6EE', badge:'#136B3C',
+    re:/revocation period|revoke this agreement|(21|twenty-one) days? to consider|(7|seven) days? to revoke/i,
+    plain:'Mentions a period to consider and/or revoke the agreement — common in release agreements covered by the Older Workers Benefit Protection Act. Confirm the exact number of days in your copy.' },
+];
+function scanClauseText(text){
+  const t = String(text || '');
+  if (!t.trim()) return [];
+  return CLAUSE_PATTERNS.map(p => {
+    const m = t.match(p.re);
+    if (!m) return null;
+    const idx = m.index || 0;
+    const start = Math.max(0, idx - 40);
+    const end = Math.min(t.length, idx + m[0].length + 40);
+    let quote = t.slice(start, end).replace(/\s+/g, ' ').trim();
+    if (start > 0) quote = '…' + quote;
+    if (end < t.length) quote = quote + '…';
+    return Object.assign({}, p, { quote });
+  }).filter(Boolean);
+}
 
 const LAWYERS = [
   { name:'Sample — Employment Law Group', match:'SAMPLE', detail:'Illustrative listing: wage-and-hour and retaliation claims. Free initial consultation.', fee:'CONTINGENCY', langs:'EN · ES' },
@@ -680,6 +722,7 @@ function App(){
   const [letterEdit, setLetterEdit] = useState(() => (saved.letterEdit != null ? saved.letterEdit : null)); // null = generated view; string = editing
   const [letterType, setLetterType] = useState(() => saved.letterType || null); // chosen letter kind (wage issue offers two)
   const [docName, setDocName] = useState(() => saved.docName || '');
+  const [docText, setDocText] = useState(() => saved.docText || ''); // pasted document text for the local rules-based clause scan
   const [consultSent, setConsultSent] = useState('');
   const [wizNode, setWizNode] = useState(() => saved.wizNode || 'start');
   const [wizPath, setWizPath] = useState(() => saved.wizPath || []);
@@ -712,9 +755,9 @@ function App(){
   // on reload because they weren't in this list.
   useEffect(() => {
     saveCase({ onboarded, stateSel, county, issue, profile, caseOpened, homeMode, done, messages, entries,
-      letterEdit, letterType, wizNode, wizPath, docName });
+      letterEdit, letterType, wizNode, wizPath, docName, docText });
   }, [onboarded, stateSel, county, issue, profile, caseOpened, homeMode, done, messages, entries,
-      letterEdit, letterType, wizNode, wizPath, docName]);
+      letterEdit, letterType, wizNode, wizPath, docName, docText]);
 
   // Load the source-cited legal-content dataset (federal once; state on selection change).
   useEffect(() => {
@@ -749,12 +792,12 @@ function App(){
         !window.confirm('Delete your case from this device? This erases your inputs, log entries, chat and saved documents from this browser and cannot be undone.')) return;
     try { localStorage.removeItem(STORE_KEY); } catch(e){}
     setStateSel(''); setCounty(''); setIssue(null);
-    setProfile({ name:'', employer:'', payType:'', rate:'' });
+    setProfile({ name:'', employer:'', payType:'', rate:'', salary:'' });
     setHomeMode('standard'); setDone({}); setEntries([]);
     setMessages([{ role:'ai', text: issueCfg(null).chatSeed }]);
     setDraft(''); setLogNote(''); setLogHours(''); setLogPayStatus('unpaid'); setEditingEntryIdx(null);
     setLetterEdit(null); setLetterType(null);
-    setDocName(''); setConsultSent(''); setWizNode('start'); setWizPath([]);
+    setDocName(''); setDocText(''); setConsultSent(''); setWizNode('start'); setWizPath([]);
     setOnbStep(1); setOnboarded(false); setScreen('onboarding');
   }, []);
 
@@ -789,7 +832,7 @@ function App(){
         !window.confirm('Start a fresh case? This clears your incident log, step progress, letters and chat for a new case. Your state, county, name and employer stay set — change those with the ' + '◉' + ' button if this is a different employer.')) return;
     setDone({}); setEntries([]); setLogNote(''); setLogHours(''); setLogPayStatus('unpaid'); setEditingEntryIdx(null);
     setMessages([{ role:'ai', text: issueCfg(issue).chatSeed }]);
-    setLetterEdit(null); setLetterType(null); setDocName(''); setConsultSent('');
+    setLetterEdit(null); setLetterType(null); setDocName(''); setDocText(''); setConsultSent('');
     setWizNode('start'); setWizPath([]);
     setCaseOpened(new Date().toISOString());
   }, [issue]);
@@ -1494,21 +1537,38 @@ function App(){
     );
   };
 
-  const Doc = () => (
+  const Doc = () => {
+    const scanned = scanClauseText(docText);
+    const hasPasted = docText.trim().length > 0;
+    const shownClauses = hasPasted ? scanned : CLAUSES;
+    return (
     <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
       <button onClick={nav('home')} style={css("align-self:flex-start;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}>← Dashboard</button>
       <h1 style={css("margin:0;font:700 26px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Review a document</h1>
       <div style={css("padding:14px 16px;border-radius:12px;background:#FFF4D6;border:2px solid #14181F")}>
-        <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Automated clause analysis is not available in this preview, so <strong>your document is not uploaded or read</strong> — the picker only notes the file name. The <strong>example review</strong> below shows how flags will work. Bring your actual document to an attorney before signing.</p>
+        <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}><strong>Uploaded files are not read</strong> — the picker below only notes the file name. <strong>Pasted text IS scanned</strong>, entirely on your device, for a short list of common clause keywords (release, non-disparagement, non-compete, arbitration, confidentiality, revocation period). This is a basic keyword match, not a legal opinion — it can miss real issues and flag benign text. Bring your actual document to an attorney before signing.</p>
       </div>
-      <label style={css("display:flex;flex-direction:column;gap:8px;padding:20px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF;cursor:pointer;text-align:center")}>
-        <span style={css("font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{docName ? 'Noted: ' + docName + ' (not analyzed)' : 'See how document review works'}</span>
-        <span style={css("font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>Offer, contract, NDA, severance or PIP · your file stays on your device</span>
+      <label style={css("display:flex;flex-direction:column;gap:8px;padding:16px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF;cursor:pointer;text-align:center")}>
+        <span style={css("font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{docName ? 'Noted: ' + docName + ' (file contents not read)' : 'Note a file name (optional)'}</span>
+        <span style={css("font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>Offer, contract, NDA, severance or PIP · your file stays on your device</span>
         <input type="file" accept=".pdf,.doc,.docx,.txt,.rtf" onChange={e => setDocName(e.target.files && e.target.files[0] ? e.target.files[0].name : '')} style={css("display:none")} />
       </label>
-      <p style={css("margin:0;font:600 14px 'IBM Plex Mono',monospace;color:#4A5162")}>EXAMPLE · severance agreement · 3 clauses flagged</p>
+      {docName &&
+        <button onClick={() => setDocName('')} style={css("align-self:flex-start;min-height:44px;padding:10px 14px;border-radius:10px;border:2px solid #B3264F;background:#fff;color:#B3264F;font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Remove file name</button>
+      }
+      <div style={css("display:flex;flex-direction:column;gap:8px")}>
+        <label htmlFor="doc-text" style={css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Paste the document text here for a real scan</label>
+        <textarea id="doc-text" value={docText} onChange={e => setDocText(e.target.value)} rows={7} placeholder="Paste the text of your offer, severance, NDA or PIP here…" style={css("width:100%;box-sizing:border-box;padding:14px;border-radius:12px;border:2px solid #14181F;font:400 15px/1.5 'IBM Plex Mono',monospace;color:#14181F;resize:vertical")} />
+        {hasPasted && <button onClick={() => setDocText('')} style={css("align-self:flex-start;min-height:44px;padding:10px 14px;border-radius:10px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Clear pasted text</button>}
+      </div>
+      <p style={css("margin:0;font:600 14px 'IBM Plex Mono',monospace;color:#4A5162")}>
+        {hasPasted
+          ? (scanned.length ? scanned.length + ' clause' + (scanned.length === 1 ? '' : 's') + ' flagged in your pasted text' : 'No matching clause keywords found in your pasted text — that does not mean the document is safe to sign')
+          : 'EXAMPLE · severance agreement · 3 clauses flagged'}
+      </p>
+      {hasPasted && scanned.length === 0 ? null :
       <div style={css("display:flex;flex-direction:column;gap:12px")}>
-        {CLAUSES.map((cl, i) =>
+        {shownClauses.map((cl, i) =>
           <div key={i} style={css('padding:18px;border-radius:16px;border:2px solid #14181F;background:' + cl.tone)}>
             <div style={css("display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px")}>
               <span style={css("font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{cl.title}</span>
@@ -1519,11 +1579,13 @@ function App(){
           </div>
         )}
       </div>
+      }
       <div style={css("padding:16px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F")}>
-        <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>You have <strong>21 days</strong> to consider this and <strong>7 days</strong> to revoke after signing. Do not sign to hit an artificial deadline.</p>
+        <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>If your document mentions a consideration/revocation period, you typically have <strong>21 days</strong> to consider it and <strong>7 days</strong> to revoke after signing. Do not sign to hit an artificial deadline.</p>
       </div>
     </div>
-  );
+    );
+  };
 
   const Letter = () => {
     const kinds = letterKindsFor(cfg.key, cfg.letterKind);
