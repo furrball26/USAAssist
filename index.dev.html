@@ -1146,11 +1146,25 @@ function App(){
     );
   };
 
+  // Opens the ◉ edit-location/profile flow, staging the current case into
+  // editDraft (F10's model) so nothing changes until Save is tapped.
+  const openEditFlow = () => { setEditDraft({ stateSel, county, issue, profile: Object.assign({}, profile) }); setScreen('onboarding'); setOnbStep(1); };
+
+  // F17 — the ◉ edit-location/profile pill used to only render in HomeStandard;
+  // Action-first and Plain modes had NO way at all to fix a wrong state/county
+  // without switching modes first. Shared across all three so it's always
+  // reachable, styled per the calling mode's theme (light card vs. dark hero).
+  const LocationPill = ({ dark }) => (
+    <button onClick={openEditFlow} style={css(dark
+      ? "align-self:flex-start;display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;border:2px solid rgba(255,255,255,.6);background:rgba(255,255,255,.1);font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#fff;cursor:pointer"
+      : "align-self:flex-start;display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;border:2px solid #14181F;background:#FFF;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer")}>◉ {locationLabel}</button>
+  );
+
   const HomeStandard = () => (
     <div style={css("padding:8px 22px 34px;display:flex;flex-direction:column;gap:18px")}>
       <ModeSwitch theme="light" />
       <div style={css("display:flex;align-items:center;justify-content:space-between;gap:10px")}>
-        <button onClick={() => { setEditDraft({ stateSel, county, issue, profile: Object.assign({}, profile) }); setScreen('onboarding'); setOnbStep(1); }} style={css("display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;border:2px solid #14181F;background:#FFF;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer")}>◉ {locationLabel}</button>
+        <LocationPill dark={false} />
         <span style={css("font:700 13px 'IBM Plex Mono',monospace;color:#4A5162")}>CASE #{caseNo(caseOpened)}</span>
       </div>
 
@@ -1251,6 +1265,7 @@ function App(){
   const HomeAction = () => (
     <div style={css("padding:16px 24px 28px;display:flex;flex-direction:column;gap:18px;min-height:100%")}>
       <ModeSwitch theme="dark" />
+      <LocationPill dark={true} />
       <p style={css("margin:0;font:700 14px 'IBM Plex Mono',monospace;color:#C9D0FF;letter-spacing:.05em")}>STEP {Math.min(doneCount + 1, cfg.steps.length)} OF {cfg.steps.length} · {cfg.caseTitle.toUpperCase()}</p>
       <h1 style={css("margin:0;font:700 40px/1.08 'Atkinson Hyperlegible',sans-serif;color:#fff;text-wrap:pretty")}>{cfg.steps[Math.min(doneCount, cfg.steps.length - 1)]}.</h1>
       <p style={css("margin:0;font:400 19px/1.5 'Atkinson Hyperlegible',sans-serif;color:#DDE2FF")}>{cfg.actionWhy}</p>
@@ -1294,6 +1309,7 @@ function App(){
   const HomePlain = () => (
     <div style={css("padding:14px 22px 28px;display:flex;flex-direction:column;gap:16px;min-height:100%")}>
       <ModeSwitch theme="light" />
+      <LocationPill dark={false} />
       <div style={css("display:flex;gap:3px;height:6px;border-radius:3px;overflow:hidden")}>
         <div style={css("flex:1;background:#E0322F")}></div><div style={css("flex:1;background:#EF7B22")}></div><div style={css("flex:1;background:#E3B505")}></div><div style={css("flex:1;background:#1F8A4C")}></div><div style={css("flex:1;background:#2B3AA8")}></div><div style={css("flex:1;background:#7A3AA8")}></div>
       </div>
