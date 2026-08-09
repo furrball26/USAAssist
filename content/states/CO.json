@@ -77,6 +77,30 @@
       "notes": "Colorado Wage Act. Willfulness means intentional or reckless disregard of the law."
     },
     {
+      "topic": "retaliation.whistleblower",
+      "value": "protected: good-faith health/safety and fraud reports",
+      "summary": "Colorado's Protected Health/Safety Expression and Whistleblowing (PHEW) Act bars an employer from disciplining, discriminating against, or retaliating against a worker (employee or independent contractor) for raising a reasonable, good-faith concern about a workplace violation of a government health or safety rule, or a significant workplace health/safety threat; a related provision also protects reports of fraud against public benefit programs.",
+      "citation": "C.R.S. § 8-14.4-101 et seq. (as amended by SB 22-097)",
+      "sourceUrl": "https://cdle.colorado.gov/sites/cdle/files/INFO%20%235A%20Retaliation%20Protections%2002.15.2024%20accessible.pdf",
+      "sourceAgency": "Colorado Dept of Labor & Employment, Division of Labor Standards and Statistics",
+      "lastChecked": "2026-08-08",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "cdle.colorado.gov blocks automated fetch (CloudFront 403) for this and other CO facts' sourceUrls; content confirmed via WebSearch result snippets describing CDLE's own INFO #5A guidance and secondary law-firm summaries (Littler, Fisher Phillips) of the 2022 SB 22-097 expansion. Workers may file a complaint with CDLE, which can proceed to state court. Separate from this general health/safety whistleblower law, Colorado also has a State Employee Protection Act (C.R.S. § 24-50.5-101 et seq.) covering only public employees, and Colorado recognizes a common-law wrongful-discharge-in-violation-of-public-policy claim not codified here."
+    },
+    {
+      "topic": "final-pay",
+      "value": "discharge: immediately (or within 6/24 hours if payroll unit is closed); resignation: next regular payday",
+      "summary": "Under the Colorado Wage Act, an employee's earned, unpaid wages are due immediately upon a discharge by the employer (with a short grace period if the accounting unit isn't open), while an employee who resigns is paid on the next regular payday.",
+      "citation": "C.R.S. § 8-4-109",
+      "sourceUrl": "https://cdle.colorado.gov/sites/cdle/files/colorado_wage_act_revised_august_6,_2025.pdf",
+      "sourceAgency": "Colorado Dept of Labor & Employment, Division of Labor Standards and Statistics",
+      "lastChecked": "2026-08-08",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "cdle.colorado.gov blocks automated fetch for this tool (as with other CO facts' sourceUrls); content confirmed via WebSearch result snippets (including the Colorado Office of the State Controller's own summary) describing immediate-on-discharge payment with narrow 6-hour/24-hour extensions when the accounting unit isn't operating, a 10-calendar-day property/equipment audit allowance, and next-payday timing for a voluntary resignation."
+    },
+    {
       "topic": "deadlines.discriminationComplaint",
       "value": "300 days",
       "summary": "An employment discrimination charge with the Colorado Civil Rights Division must be filed within 300 days of the alleged discriminatory act, or it is barred.",

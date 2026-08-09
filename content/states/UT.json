@@ -89,6 +89,18 @@
       "notes": "Shorter than the federal 300-day deadline. Charges filed between 180 and 300 days are forwarded to the EEOC rather than processed by UALD."
     },
     {
+      "topic": "retaliation.whistleblower",
+      "value": "protected: OSHA-related complaints/testimony; 30-day filing window",
+      "summary": "Utah's Occupational Safety and Health Act bars an employer from discharging or retaliating against an employee for filing a workplace safety complaint, testifying in a related proceeding, or exercising a right under the Act; a retaliation complaint must be filed with the Labor Commission's division within 30 days of the violation.",
+      "citation": "Utah Code Ann. § 34A-6-203",
+      "sourceUrl": "https://le.utah.gov/xcode/Title34A/Chapter6/C34A-6-S203_2016051020160510.pdf",
+      "sourceAgency": "Utah State Legislature (Utah Code); Utah Labor Commission",
+      "lastChecked": "2026-08-08",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Confirmed directly against the primary statute text. Note the unusually short 30-day complaint deadline under Subsection (2)(a) -- much shorter than a typical discrimination-charge deadline. The Utah Antidiscrimination Act separately protects an employee from retaliation for opposing discrimination or participating in a UAA proceeding (Utah Code Ann. Title 34A, Ch. 5), and the Utah Protection of Public Employees Act (Utah Code Ann. § 67-21-1 et seq.) separately protects only public employees who report waste, fraud, or legal violations; neither of those two was independently verified against primary text this session."
+    },
+    {
       "topic": "final-pay",
       "value": "involuntary: within 24 hours of separation; voluntary: next regular payday",
       "summary": "An employee who is fired or laid off must be paid all wages within 24 hours of separation; an employee who resigns is paid on the next regular payday.",

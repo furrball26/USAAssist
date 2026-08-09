@@ -65,6 +65,18 @@
       "notes": "REDA (Article 21 of Chapter 95). Written complaint to NC Commissioner of Labor due within 180 days of the alleged retaliatory act (NCGS 95-242)."
     },
     {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "N/A -- no state deadline; use the federal EEOC deadline (180 days)",
+      "summary": "North Carolina has no state administrative charge-filing process for private-sector employment discrimination (the Equal Employment Practices Act is a policy declaration, not an enforcement statute, and North Carolina has no FEPA that processes private-employer charges), so there is no separate state filing deadline. A worker must instead file a charge with the EEOC, and because North Carolina is not an EEOC 'deferral state' for private employment, the shorter 180-day federal deadline applies rather than the 300 days available where a state/local fair-employment agency exists.",
+      "citation": "42 U.S.C. § 2000e-5(e)(1); 29 C.F.R. § 1601.13",
+      "sourceUrl": "https://www.eeoc.gov/time-limits-filing-charge",
+      "sourceAgency": "U.S. Equal Employment Opportunity Commission",
+      "lastChecked": "2026-08-08",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Confirmed directly against the EEOC's own time-limits page: the 180-day deadline extends to 300 days only if a state or local agency enforces a law prohibiting the same kind of discrimination; North Carolina has no such enforcing agency for private-sector employment (see discrimination.protectedClasses and the agencies.discrimination note in this file), so private-sector NC workers get 180 days, not 300. Exception: state/county employees covered by the NC State Personnel Act may have their charge dual-filed with the NC Office of Administrative Hearings Civil Rights Division, which can extend the deadline to 300 days for that narrower group -- not independently verified against primary text this session."
+    },
+    {
       "topic": "discrimination.coverage",
       "value": 15,
       "summary": "The NC Equal Employment Practices Act applies to employers that regularly employ 15 or more employees, matching the federal Title VII threshold.",

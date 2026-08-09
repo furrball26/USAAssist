@@ -50,14 +50,47 @@
     },
     {
       "topic": "deadlines.wageClaim",
-      "value": "follows federal FLSA (2 yr / 3 if willful)",
-      "summary": "Wyoming resolves wage claims through DWS; FLSA claims follow the federal 2-year (3 for willful) limit.",
-      "citation": "29 U.S.C. § 255(a); Wyo. Stat. § 27-4-104",
-      "sourceUrl": "https://dws.wyo.gov/dws-division/labor-standards/",
-      "sourceAgency": "Wyoming Dept of Workforce Services, Labor Standards",
-      "lastChecked": "2026-07-30",
+      "value": "2 years (3 if willful) under FLSA; 8 years under Wyoming's general statutory-liability limitation",
+      "summary": "A claim brought under the federal FLSA follows the federal 2-year (3-year if willful) limit; a Wyoming state-law wage claim (e.g., under the Wyoming wage-payment statute) is not FLSA-limited and instead falls under Wyoming's general 8-year period for 'a liability created by statute.'",
+      "citation": "29 U.S.C. § 255(a) (federal FLSA claims); Wyo. Stat. § 1-3-105(a)(ii)(B) (state statutory-liability claims)",
+      "sourceUrl": "https://wyoleg.gov/statutes/compress/title01.pdf#page=35",
+      "sourceAgency": "Wyoming Legislative Service Office (Wyoming Statutes)",
+      "lastChecked": "2026-08-08",
       "reviewed": false, "reviewedBy": null,
-      "notes": "Confirm any distinct state statute of limitations for wage claims."
+      "notes": "CORRECTED: this fact previously cited Wyo. Stat. § 27-4-104 as the source of the state limitations period, but that section (confirmed directly against primary text) does not set a statute of limitations at all -- it governs final-pay timing and an 18%/year interest penalty for late payment (see the new final-pay fact, below). Wyoming's Title 27 sets no dedicated wage-claim limitations period, so the general 8-year 'liability created by statute' period in § 1-3-105(a)(ii)(B) (confirmed directly against primary text) is the state-law period understood to apply, distinct from and longer than the federal FLSA period."
+    },
+    {
+      "topic": "final-pay",
+      "value": "next regular scheduled payday (discharge or quit)",
+      "summary": "Whether an employee quits or is discharged, Wyoming requires payment of wages due no later than the employer's usual practice on regularly scheduled payroll dates (or as set by a collective bargaining agreement); Wyoming does not require accelerated/immediate payment the way some states do.",
+      "citation": "Wyo. Stat. § 27-4-104(a)",
+      "sourceUrl": "https://wyoleg.gov/statutes/compress/title27.pdf#page=109",
+      "sourceAgency": "Wyoming Legislative Service Office (Wyoming Statutes)",
+      "lastChecked": "2026-08-08",
+      "reviewed": false, "reviewedBy": null,
+      "notes": "Confirmed directly against primary statute text. Subsection (b) entitles an employee who sues for unpaid wages to 18% annual interest on the past-due amount from the date of discharge/termination, plus reasonable attorney fees and costs; § 27-4-105 separately makes willful nonpayment a civil penalty."
+    },
+    {
+      "topic": "retaliation.whistleblower",
+      "value": "protected: occupational-safety complaints/testimony",
+      "summary": "Wyoming's Occupational Health and Safety Act bars an employer from discharging or discriminating against an employee for filing a complaint, instituting or testifying in a related proceeding, or exercising any right afforded by the Act, whether on the employee's own behalf or another's.",
+      "citation": "Wyo. Stat. § 27-11-109(e)",
+      "sourceUrl": "https://wyoleg.gov/statutes/compress/title27.pdf#page=156",
+      "sourceAgency": "Wyoming Legislative Service Office (Wyoming Statutes)",
+      "lastChecked": "2026-08-08",
+      "reviewed": false, "reviewedBy": null,
+      "notes": "Confirmed directly against primary statute text. Wyoming has no single broad private-sector whistleblower statute; this OSHA-related provision is the general-purpose one. Separately, public employees are protected from retaliation for reporting fraud, waste, or health/safety risks under Wyo. Stat. § 9-11-102 et seq., and narrower sector-specific protections exist (e.g., health-care-facility employees under § 35-2-910(b), long-term-care ombudsman reports under § 9-2-1308, wage-discrimination retaliation under § 27-4-304) -- none of those were independently verified against primary text this session."
+    },
+    {
+      "topic": "deadlines.discriminationComplaint",
+      "value": "6 months",
+      "summary": "A discrimination or unfair-employment-practice complaint must be filed with the Department of Workforce Services within six months of the alleged violation.",
+      "citation": "Wyo. Stat. § 27-9-106(a)",
+      "sourceUrl": "https://wyoleg.gov/statutes/compress/title27.pdf#page=141",
+      "sourceAgency": "Wyoming Legislative Service Office (Wyoming Statutes)",
+      "lastChecked": "2026-08-08",
+      "reviewed": false, "reviewedBy": null,
+      "notes": "Confirmed directly against primary statute text. Substantially shorter than the federal EEOC 180/300-day deadlines, so a worker with a federally-covered claim should also consider filing directly with the EEOC within the federal window."
     }
   ],
   "agencies": {
