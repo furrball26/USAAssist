@@ -613,6 +613,12 @@ function App(){
   const [onboarded, setOnboarded] = useState(() => !!saved.onboarded);
   const [screen, setScreen] = useState(() => saved.onboarded ? 'home' : 'onboarding');
   const [onbStep, setOnbStep] = useState(1);
+  // Non-null only while re-entering the location/profile flow to EDIT an existing
+  // case (via the ◉ pill) — holds a staged copy so state/county/issue/profile
+  // selects don't silently commit to the live case (re-citing law, blanking the
+  // county) until the user explicitly taps Save. Null during first-run onboarding,
+  // where there is no existing case to protect and the prior live-binding is fine.
+  const [editDraft, setEditDraft] = useState(null);
   const [stateSel, setStateSel] = useState(() => saved.stateSel || '');
   const [county, setCounty] = useState(() => saved.county || '');
   const [countyQuery, setCountyQuery] = useState('');
@@ -800,7 +806,28 @@ function App(){
 
   /* ── Screen renderers ──────────────────────────────────────────── */
 
-  const Onboarding = () => (
+  const Onboarding = () => {
+    // Re-entering this flow to EDIT an existing case (via the ◉ pill) stages
+    // changes in editDraft — nothing here touches the live case (stateSel/county/
+    // issue/profile) until Save is tapped. First-run onboarding (editDraft null)
+    // keeps the original live-binding behavior; there's no existing case yet to
+    // protect from an unconfirmed change.
+    const editing = onboarded && editDraft != null;
+    const dStateSel = editing ? editDraft.stateSel : stateSel;
+    const dCounty = editing ? editDraft.county : county;
+    const dIssue = editing ? editDraft.issue : issue;
+    const dProfile = editing ? editDraft.profile : profile;
+    const setDStateSel = (v) => {
+      if (editing) setEditDraft(p => Object.assign({}, p, { stateSel: v, county: '' }));
+      else { setStateSel(v); setCounty(''); setCountyQuery(''); }
+    };
+    const setDCounty = (v) => { if (editing) setEditDraft(p => Object.assign({}, p, { county: v })); else setCounty(v); };
+    const setDIssue = (v) => { if (editing) setEditDraft(p => Object.assign({}, p, { issue: v })); else setIssue(v); };
+    const setDProfile = (updater) => {
+      if (editing) setEditDraft(p => Object.assign({}, p, { profile: updater(p.profile) }));
+      else setProfile(updater);
+    };
+    return (
     <div style={css("padding:20px 24px 40px;display:flex;flex-direction:column;gap:22px")}>
       <div style={css("display:flex;gap:4px;height:6px")}>
         {[1,2,3,4].map(n => <div key={n} style={css("flex:1;border-radius:3px;background:" + (onbStep >= n ? '#2B3AA8' : 'rgba(20,24,31,.12)'))}></div>)}
@@ -809,12 +836,12 @@ function App(){
         <div style={css("flex:1;background:#E0322F")}></div><div style={css("flex:1;background:#EF7B22")}></div><div style={css("flex:1;background:#E3B505")}></div><div style={css("flex:1;background:#1F8A4C")}></div><div style={css("flex:1;background:#2B3AA8")}></div><div style={css("flex:1;background:#7A3AA8")}></div>
       </div>
       <h1 style={css("margin:0;font:700 30px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{ONB_TITLES[onbStep]}</h1>
-      <p style={css("margin:0;font:400 18px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty")}>{ONB_BODIES[onbStep]}</p>
+      <p style={css("margin:0;font:400 18px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty")}>{editing ? 'Nothing changes until you tap Save at the end.' : ONB_BODIES[onbStep]}</p>
 
       {onbStep === 1 &&
         <div style={css("display:flex;flex-direction:column;gap:14px")}>
           <label htmlFor="onb-state" style={css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em")}>STATE</label>
-          <select id="onb-state" value={stateSel} onChange={e => { setStateSel(e.target.value); setCounty(''); setCountyQuery(''); }} style={css("width:100%;padding:15px;border-radius:12px;border:2px solid #14181F;background:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer;appearance:menulist;-webkit-appearance:menulist")}>
+          <select id="onb-state" value={dStateSel} onChange={e => setDStateSel(e.target.value)} style={css("width:100%;padding:15px;border-radius:12px;border:2px solid #14181F;background:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer;appearance:menulist;-webkit-appearance:menulist")}>
             <option value="">Select your state…</option>
             {US_STATES.map(n => <option key={n} value={n}>{n}</option>)}
           </select>
@@ -823,13 +850,13 @@ function App(){
 
       {onbStep === 2 &&
         <div style={css("display:flex;flex-direction:column;gap:14px")}>
-          <label htmlFor="onb-county" style={css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em")}>{(US_COUNTY_LABEL[stateSel] || 'COUNTY') + ' · ' + stateSel.toUpperCase()}</label>
-          <select id="onb-county" value={county || ''} onChange={e => setCounty(e.target.value || null)} style={css("width:100%;padding:15px;border-radius:12px;border:2px solid #14181F;background:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer;appearance:menulist;-webkit-appearance:menulist")}>
-            <option value="">{'Select a ' + (US_COUNTY_LABEL[stateSel] === 'PARISH' ? 'parish' : US_COUNTY_LABEL[stateSel] === 'BOROUGH' ? 'borough' : 'county') + ' (' + (US_COUNTIES[stateSel] || []).length + ')'}</option>
-            {(US_COUNTIES[stateSel] || []).map(n => <option key={n} value={n}>{n}</option>)}
+          <label htmlFor="onb-county" style={css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em")}>{(US_COUNTY_LABEL[dStateSel] || 'COUNTY') + ' · ' + dStateSel.toUpperCase()}</label>
+          <select id="onb-county" value={dCounty || ''} onChange={e => setDCounty(e.target.value || null)} style={css("width:100%;padding:15px;border-radius:12px;border:2px solid #14181F;background:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer;appearance:menulist;-webkit-appearance:menulist")}>
+            <option value="">{'Select a ' + (US_COUNTY_LABEL[dStateSel] === 'PARISH' ? 'parish' : US_COUNTY_LABEL[dStateSel] === 'BOROUGH' ? 'borough' : 'county') + ' (' + (US_COUNTIES[dStateSel] || []).length + ')'}</option>
+            {(US_COUNTIES[dStateSel] || []).map(n => <option key={n} value={n}>{n}</option>)}
           </select>
           <div style={css("padding:16px 18px;border-radius:14px;background:#EEF1FF;border:2px solid #2B3AA8")}>
-            <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>We layer federal, {stateSel} state, and local county or city rules — and always show whichever gives you the most protection.</p>
+            <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>We layer federal, {dStateSel} state, and local county or city rules — and always show whichever gives you the most protection.</p>
           </div>
         </div>
       }
@@ -837,8 +864,8 @@ function App(){
       {onbStep === 3 &&
         <div role="radiogroup" aria-label="What brings you here?" style={css("display:flex;flex-direction:column;gap:12px")}>
           {ISSUE_LIST.map(([name, desc]) =>
-            <button key={name} onClick={() => setIssue(name)} role="radio" aria-checked={issue === name}
-              style={css('text-align:left;display:flex;flex-direction:column;gap:5px;padding:18px;border-radius:16px;border:2px solid ' + (issue === name ? '#2B3AA8' : '#14181F') + ';background:' + (issue === name ? '#EEF1FF' : '#fff') + ';cursor:pointer')}>
+            <button key={name} onClick={() => setDIssue(name)} role="radio" aria-checked={dIssue === name}
+              style={css('text-align:left;display:flex;flex-direction:column;gap:5px;padding:18px;border-radius:16px;border:2px solid ' + (dIssue === name ? '#2B3AA8' : '#14181F') + ';background:' + (dIssue === name ? '#EEF1FF' : '#fff') + ';cursor:pointer')}>
               <span style={css("font:700 18px 'Atkinson Hyperlegible',sans-serif")}>{name}</span>
               <span style={css("font:400 15px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{desc}</span>
             </button>
@@ -850,27 +877,27 @@ function App(){
         <div style={css("display:flex;flex-direction:column;gap:14px")}>
           <div style={css("display:flex;flex-direction:column;gap:6px")}>
             <label htmlFor="onb-name" style={css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>YOUR NAME</label>
-            <input id="onb-name" value={profile.name} onChange={e => setProfile(p => Object.assign({}, p, { name:e.target.value }))} placeholder="e.g. your full name" style={css("padding:14px;border-radius:12px;border:2px solid #14181F;font:400 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
+            <input id="onb-name" value={dProfile.name} onChange={e => setDProfile(p => Object.assign({}, p, { name:e.target.value }))} placeholder="e.g. your full name" style={css("padding:14px;border-radius:12px;border:2px solid #14181F;font:400 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
           </div>
           <div style={css("display:flex;flex-direction:column;gap:6px")}>
             <label htmlFor="onb-emp" style={css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>EMPLOYER</label>
-            <input id="onb-emp" value={profile.employer} onChange={e => setProfile(p => Object.assign({}, p, { employer:e.target.value }))} placeholder="Company name" style={css("padding:14px;border-radius:12px;border:2px solid #14181F;font:400 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
+            <input id="onb-emp" value={dProfile.employer} onChange={e => setDProfile(p => Object.assign({}, p, { employer:e.target.value }))} placeholder="Company name" style={css("padding:14px;border-radius:12px;border:2px solid #14181F;font:400 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
           </div>
           <div style={css("display:flex;flex-direction:column;gap:6px")}>
             <label id="paytype-label" style={css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>HOW ARE YOU PAID?</label>
             <div role="group" aria-labelledby="paytype-label" style={css("display:flex;gap:8px")}>
               {['Hourly','Salary'].map(t =>
-                <button key={t} onClick={() => setProfile(p => Object.assign({}, p, { payType:t }))} aria-pressed={profile.payType === t} style={css('flex:1;padding:13px;border-radius:12px;border:2px solid #14181F;background:' + (profile.payType === t ? '#2B3AA8' : '#fff') + ';color:' + (profile.payType === t ? '#fff' : '#14181F') + ";font:700 16px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{t}</button>
+                <button key={t} onClick={() => setDProfile(p => Object.assign({}, p, { payType:t }))} aria-pressed={dProfile.payType === t} style={css('flex:1;padding:13px;border-radius:12px;border:2px solid #14181F;background:' + (dProfile.payType === t ? '#2B3AA8' : '#fff') + ';color:' + (dProfile.payType === t ? '#fff' : '#14181F') + ";font:700 16px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{t}</button>
               )}
             </div>
           </div>
-          {profile.payType === 'Hourly' &&
+          {dProfile.payType === 'Hourly' &&
             <div style={css("display:flex;flex-direction:column;gap:6px")}>
               <label htmlFor="onb-rate" style={css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>HOURLY RATE (OPTIONAL)</label>
-              <input id="onb-rate" type="number" min="0" max={RATE_WARN_MAX} step="0.5" value={profile.rate} onChange={e => setProfile(p => Object.assign({}, p, { rate:e.target.value }))} placeholder="e.g. 24.00" style={css("width:150px;padding:14px;border-radius:12px;border:2px solid #14181F;font:400 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
+              <input id="onb-rate" type="number" min="0" max={RATE_WARN_MAX} step="0.5" value={dProfile.rate} onChange={e => setDProfile(p => Object.assign({}, p, { rate:e.target.value }))} placeholder="e.g. 24.00" style={css("width:150px;padding:14px;border-radius:12px;border:2px solid #14181F;font:400 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
               <span style={css("font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Used to estimate overtime owed in your demand letter.</span>
-              {Number(profile.rate) > RATE_WARN_MAX &&
-                <p role="alert" style={css("margin:0;padding:10px 12px;border-radius:10px;background:#FFF4D6;border:2px solid #14181F;font:700 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#6B4B00")}>That’s an unusually high hourly rate ({money(Number(profile.rate))}/hr) — double-check it. It feeds directly into your owed-amount estimate and letters.</p>
+              {Number(dProfile.rate) > RATE_WARN_MAX &&
+                <p role="alert" style={css("margin:0;padding:10px 12px;border-radius:10px;background:#FFF4D6;border:2px solid #14181F;font:700 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#6B4B00")}>That’s an unusually high hourly rate ({money(Number(dProfile.rate))}/hr) — double-check it. It feeds directly into your owed-amount estimate and letters.</p>
               }
             </div>
           }
@@ -883,23 +910,34 @@ function App(){
       </div>
 
       {(() => {
-        const blocked = (onbStep === 1 && !stateSel) || (onbStep === 2 && !county) || (onbStep === 3 && !issue);
+        const blocked = (onbStep === 1 && !dStateSel) || (onbStep === 2 && !dCounty) || (onbStep === 3 && !dIssue);
         const need = onbStep === 1 ? 'Select the state where you work to continue.' : onbStep === 2 ? 'Select your county to continue.' : onbStep === 3 ? 'Pick the issue that fits best to continue.' : '';
         const go = () => {
           if (blocked) return;
           if (onbStep < 4) setOnbStep(onbStep + 1);
-          else { setOnboarded(true); setScreen('home'); }
+          else if (editing) {
+            // Commit the staged draft to the live case in one shot — this is the
+            // only moment an edit via the ◉ pill actually changes anything.
+            setStateSel(editDraft.stateSel); setCounty(editDraft.county);
+            setIssue(editDraft.issue); setProfile(editDraft.profile);
+            setEditDraft(null); setScreen('home');
+          } else { setOnboarded(true); setScreen('home'); }
         };
         return (
           <div style={css("display:flex;flex-direction:column;gap:8px")}>
-            <button onClick={go} aria-disabled={blocked} style={css("width:100%;padding:20px;border:none;border-radius:16px;background:#2B3AA8;color:#fff;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:" + (blocked ? 'not-allowed' : 'pointer') + ";opacity:" + (blocked ? '.5' : '1'))}>{onbStep === 4 ? 'Open my dashboard' : 'Continue'}</button>
+            <button onClick={go} aria-disabled={blocked} style={css("width:100%;padding:20px;border:none;border-radius:16px;background:#2B3AA8;color:#fff;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:" + (blocked ? 'not-allowed' : 'pointer') + ";opacity:" + (blocked ? '.5' : '1'))}>{onbStep === 4 ? (editing ? 'Save changes' : 'Open my dashboard') : 'Continue'}</button>
             {blocked && <p role="status" style={css("margin:0;text-align:center;font:600 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>{need}</p>}
           </div>
         );
       })()}
-      <button onClick={() => { setOnboarded(true); setScreen('home'); }} style={css("align-self:center;min-height:44px;padding:12px 14px;display:inline-flex;align-items:center;justify-content:center;background:none;border:none;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;text-decoration:underline;cursor:pointer")}>Skip to dashboard</button>
+      {editing ?
+        <button onClick={() => { setEditDraft(null); setScreen('home'); }} style={css("align-self:center;min-height:44px;padding:12px 14px;display:inline-flex;align-items:center;justify-content:center;background:none;border:none;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#B3264F;text-decoration:underline;cursor:pointer")}>Cancel — discard these changes</button>
+        :
+        <button onClick={() => { setOnboarded(true); setScreen('home'); }} style={css("align-self:center;min-height:44px;padding:12px 14px;display:inline-flex;align-items:center;justify-content:center;background:none;border:none;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;text-decoration:underline;cursor:pointer")}>Skip to dashboard</button>
+      }
     </div>
-  );
+    );
+  };
 
   const ModeSwitch = ({ theme }) => {
     const dark = theme === 'dark';
@@ -921,7 +959,7 @@ function App(){
     <div style={css("padding:8px 22px 34px;display:flex;flex-direction:column;gap:18px")}>
       <ModeSwitch theme="light" />
       <div style={css("display:flex;align-items:center;justify-content:space-between;gap:10px")}>
-        <button onClick={() => { setScreen('onboarding'); setOnbStep(1); }} style={css("display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;border:2px solid #14181F;background:#FFF;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer")}>◉ {locationLabel}</button>
+        <button onClick={() => { setEditDraft({ stateSel, county, issue, profile: Object.assign({}, profile) }); setScreen('onboarding'); setOnbStep(1); }} style={css("display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;border:2px solid #14181F;background:#FFF;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer")}>◉ {locationLabel}</button>
         <span style={css("font:700 13px 'IBM Plex Mono',monospace;color:#4A5162")}>CASE #{caseNo(caseOpened)}</span>
       </div>
 
