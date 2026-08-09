@@ -24,5 +24,7 @@ const res = await pg.evaluate(()=>{
   return { value: i ? i.value : '(input gone)', focused: document.activeElement === i, scroll: document.querySelector('.scrollarea')?.scrollTop };
 });
 console.log('typed "overtime" →', JSON.stringify(res), 'scrollBefore='+scrollBefore);
-console.log(res.value === 'overtime' && res.focused ? '✅ input keeps focus & value' : '❌ BUG: focus/value lost on typing');
+const ok = res.value === 'overtime' && res.focused;
+console.log(ok ? '✅ input keeps focus & value' : '❌ BUG: focus/value lost on typing');
 await b.close();srv.close();
+process.exit(ok ? 0 : 1);
