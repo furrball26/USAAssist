@@ -1064,12 +1064,12 @@ function App(){
                   {fedOT.length ? fedOT.map(line) : contentErr ?
                     <p style={css("margin:0 0 8px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load federal rules. Check your connection and reopen.</p> :
                     <p style={css("margin:0 0 8px;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>Loading…</p>}
-                  <p style={css("margin:10px 0 4px;font:700 13px 'IBM Plex Mono',monospace;color:#1B2778;letter-spacing:.04em")}>{stateSel.toUpperCase()}{stRev ? '' : ' (DRAFT)'}</p>
+                  <p style={css("margin:10px 0 4px;font:700 13px 'IBM Plex Mono',monospace;color:#1B2778;letter-spacing:.04em")}>{stateSel ? stateSel.toUpperCase() : stateLabel.toUpperCase()}{stRev ? '' : ' (DRAFT)'}</p>
                   {stOT.length ? stOT.map(line) : stateErr ?
-                    <p style={css("margin:0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load {stateSel} rules. Check your connection and reopen — this is not a confirmation that no extra state rule applies.</p> :
+                    <p style={css("margin:0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load {stateLabel} rules. Check your connection and reopen — this is not a confirmation that no extra state rule applies.</p> :
                     stateData === undefined ?
                     <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>Loading…</p> :
-                    <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{stateSel} follows the federal overtime standard.</p>}
+                    <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{stateLabel} follows the federal overtime standard.</p>}
                 </div>
               );
             })()}
@@ -1195,7 +1195,7 @@ function App(){
     const kinds = letterKindsFor(cfg.key, cfg.letterKind);
     const activeKind = kinds.indexOf(letterType) >= 0 ? letterType : kinds[0];
     const gen = buildLetter({
-      kind: activeKind, issueKey: cfg.key, youName, employerName, stateSel,
+      kind: activeKind, issueKey: cfg.key, youName, employerName, stateSel: stateLabel,
       unpaidHours, owedEstimate, rateNum, federal, stateData, entries,
     });
     const editing = letterEdit != null;
