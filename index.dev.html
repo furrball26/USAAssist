@@ -637,6 +637,7 @@ function App(){
   const [logNote, setLogNote] = useState('');
   const [logHours, setLogHours] = useState('');
   const [logPayStatus, setLogPayStatus] = useState('unpaid'); // 'unpaid' (paid $0) | 'straight' (paid straight-time only)
+  const [editingEntryIdx, setEditingEntryIdx] = useState(null); // non-null while editing an existing log entry in place
   const [letterEdit, setLetterEdit] = useState(null); // null = generated view; string = editing
   const [letterType, setLetterType] = useState(null); // chosen letter kind (wage issue offers two)
   const [docName, setDocName] = useState('');
@@ -706,7 +707,8 @@ function App(){
     setProfile({ name:'', employer:'', payType:'', rate:'' });
     setHomeMode('standard'); setDone({}); setEntries([]);
     setMessages([{ role:'ai', text: issueCfg(null).chatSeed }]);
-    setDraft(''); setLogNote(''); setLogHours(''); setLetterEdit(null); setLetterType(null);
+    setDraft(''); setLogNote(''); setLogHours(''); setLogPayStatus('unpaid'); setEditingEntryIdx(null);
+    setLetterEdit(null); setLetterType(null);
     setDocName(''); setConsultSent(''); setWizNode('start'); setWizPath([]);
     setOnbStep(1); setOnboarded(false); setScreen('onboarding');
   }, []);
@@ -740,7 +742,7 @@ function App(){
   const startFreshCase = useCallback(() => {
     if (typeof window !== 'undefined' && window.confirm &&
         !window.confirm('Start a fresh case? This clears your incident log, step progress, letters and chat for a new case. Your state, county, name and employer stay set — change those with the ' + '◉' + ' button if this is a different employer.')) return;
-    setDone({}); setEntries([]);
+    setDone({}); setEntries([]); setLogNote(''); setLogHours(''); setLogPayStatus('unpaid'); setEditingEntryIdx(null);
     setMessages([{ role:'ai', text: issueCfg(issue).chatSeed }]);
     setLetterEdit(null); setLetterType(null); setDocName(''); setConsultSent('');
     setWizNode('start'); setWizPath([]);
@@ -1328,18 +1330,44 @@ function App(){
   const Log = () => {
     const kind = LOG_KINDS.find(k => k.tag === logKind) || LOG_KINDS[0];
     const logBreakdown = computeOwedBreakdown(entries, rateNum);
+    const editing = editingEntryIdx != null && entries[editingEntryIdx];
+    const PLACEHOLDER_BODY = 'No detail added yet — tap to edit while it is fresh.';
+    const resetForm = () => { setLogNote(''); setLogHours(''); setLogPayStatus('unpaid'); setEditingEntryIdx(null); };
     const submit = () => {
-      addEntry({ title: kind.title, body: logNote.trim() || 'No detail added yet — tap to edit while it is fresh.',
+      const fields = { title: kind.title, body: logNote.trim() || PLACEHOLDER_BODY,
         color: kind.color, tag: kind.tag, hours: kind.asksHours ? (Number(logHours) || 0) : undefined,
-        payStatus: kind.asksHours ? logPayStatus : undefined });
-      setLogNote(''); setLogHours(''); setLogPayStatus('unpaid');
+        payStatus: kind.asksHours ? logPayStatus : undefined };
+      if (editing) {
+        // Preserve the original date/iso timestamp — only the editable fields
+        // change; the entry keeps its place in the timeline.
+        setEntries(p => p.map((e, idx) => idx === editingEntryIdx ? Object.assign({}, e, fields) : e));
+      } else {
+        addEntry(fields);
+      }
+      resetForm();
+    };
+    const startEdit = (i) => {
+      const e = entries[i];
+      const k = LOG_KINDS.find(k => k.tag === e.tag) || LOG_KINDS[0];
+      setLogKind(k.tag);
+      setLogNote(e.body === PLACEHOLDER_BODY ? '' : (e.body || ''));
+      setLogHours(e.hours ? String(e.hours) : '');
+      setLogPayStatus(e.payStatus || 'unpaid');
+      setEditingEntryIdx(i);
+    };
+    const deleteEntry = (i) => {
+      if (typeof window !== 'undefined' && window.confirm &&
+          !window.confirm('Delete this log entry? This cannot be undone.')) return;
+      setEntries(p => p.filter((_, idx) => idx !== i));
+      if (editingEntryIdx === i) resetForm();
     };
     return (
     <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
       <h1 style={css("margin:0;font:700 26px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Incident log</h1>
       <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Contemporaneous notes carry real weight. Each entry is timestamped and kept on your device.</p>
 
-      <div style={css("padding:16px;border-radius:16px;border:2px solid #14181F;background:#fff;display:flex;flex-direction:column;gap:12px")}>
+      <div style={css('padding:16px;border-radius:16px;border:2px solid #14181F;background:' + (editing ? '#FFF4D6' : '#fff') + ';display:flex;flex-direction:column;gap:12px')}>
+        {editing && <p role="status" style={css("margin:0;font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#6B4B00")}>Editing the entry from {entries[editingEntryIdx].date}</p>}
         <div role="group" aria-label="Entry type" style={css("display:flex;gap:8px;flex-wrap:wrap")}>
           {LOG_KINDS.map(k =>
             <button key={k.tag} onClick={() => setLogKind(k.tag)} aria-pressed={logKind === k.tag} style={css('min-height:44px;padding:10px 13px;border-radius:999px;border:2px solid ' + (logKind === k.tag ? '#2B3AA8' : '#14181F') + ';background:' + (logKind === k.tag ? '#2B3AA8' : '#fff') + ';color:' + (logKind === k.tag ? '#fff' : '#14181F') + ";font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{k.label.replace('+ ','')}</button>
@@ -1363,7 +1391,10 @@ function App(){
           </div>
         }
         <textarea aria-label="What happened" value={logNote} onChange={e => setLogNote(e.target.value)} rows={2} placeholder="What happened? Date, who was there, what was said…" style={css("width:100%;box-sizing:border-box;padding:12px;border-radius:10px;border:2px solid #14181F;font:400 16px/1.4 'Atkinson Hyperlegible',sans-serif;resize:vertical")} />
-        <button onClick={submit} style={css("align-self:flex-start;padding:12px 18px;border-radius:12px;border:none;background:#2B3AA8;color:#fff;font:700 16px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Add to log</button>
+        <div style={css("display:flex;gap:10px")}>
+          <button onClick={submit} style={css("align-self:flex-start;padding:12px 18px;border-radius:12px;border:none;background:#2B3AA8;color:#fff;font:700 16px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{editing ? 'Save changes' : 'Add to log'}</button>
+          {editing && <button onClick={resetForm} style={css("align-self:flex-start;padding:12px 18px;border-radius:12px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 16px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Cancel</button>}
+        </div>
       </div>
 
       {entries.length > 0 &&
@@ -1386,11 +1417,15 @@ function App(){
                 <span style={css('flex:none;width:18px;height:18px;border-radius:50%;background:' + e.color + ';border:3px solid #14181F')}></span>
                 <span style={css("flex:1;width:3px;background:rgba(20,24,31,.15)")}></span>
               </div>
-              <div style={css("padding-bottom:18px;flex:1")}>
+              <div style={css('padding-bottom:18px;flex:1;border-radius:12px;' + (editingEntryIdx === i ? 'outline:2px solid #6B4B00;outline-offset:6px;' : ''))}>
                 <p style={css("margin:0 0 3px;font:600 13px 'IBM Plex Mono',monospace;color:#4A5162")}>{e.date}</p>
                 <p style={css("margin:0 0 5px;font:700 18px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{e.title}{e.hours ? ' — ' + e.hours + ' hrs' : ''}</p>
                 <p style={css("margin:0 0 8px;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{e.body}</p>
-                <span style={css("display:inline-block;padding:6px 10px;border-radius:8px;background:#F0EDE5;border:2px solid #14181F;font:600 12px 'IBM Plex Mono',monospace;color:#14181F")}>{e.tag}</span>
+                <div style={css("display:flex;align-items:center;gap:8px;flex-wrap:wrap")}>
+                  <span style={css("display:inline-block;padding:6px 10px;border-radius:8px;background:#F0EDE5;border:2px solid #14181F;font:600 12px 'IBM Plex Mono',monospace;color:#14181F")}>{e.tag}</span>
+                  <button onClick={() => startEdit(i)} aria-label={'Edit entry from ' + e.date} style={css("min-height:36px;padding:6px 12px;border-radius:8px;border:2px solid #2B3AA8;background:#fff;color:#2B3AA8;font:700 13px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Edit</button>
+                  <button onClick={() => deleteEntry(i)} aria-label={'Delete entry from ' + e.date} style={css("min-height:36px;padding:6px 12px;border-radius:8px;border:2px solid #B3264F;background:#fff;color:#B3264F;font:700 13px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Delete</button>
+                </div>
               </div>
             </div>
           )}
