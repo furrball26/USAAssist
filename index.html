@@ -1073,10 +1073,13 @@ function App() {
   const send = (text) => {
     if (!text.trim()) return;
     const lower = text.toLowerCase();
-    const isAda = lower.includes("accommodation") || lower.includes("ada") || lower.includes("disab");
-    const isRetaliation = lower.includes("retaliat") || lower.includes("fired") || lower.includes("terminat") || lower.includes("pushed out") || lower.includes("let go");
-    const isSeverance = lower.includes("severance") || lower.includes("sign") || lower.includes("release");
-    const isOvertime = lower.includes("overtime") || lower.includes("unpaid") || lower.includes("off the clock") || lower.includes("off-the-clock") || lower.includes("wage");
+    const hasWord = (re) => re.test(lower);
+    const isAda = hasWord(/\baccommodat\w*/) || hasWord(/\bada\b/) || hasWord(/\bdisab\w*/);
+    const isRetaliation = hasWord(/\bretaliat\w*/) || hasWord(/\bfired\b/) || hasWord(/\bterminat\w*/) || hasWord(/\bpushed out\b/) || hasWord(/\blet go\b/);
+    const hasSignVerb = hasWord(/\bsign(?:ing|ed)?\b/);
+    const hasDocNoun = hasWord(/\b(severance|release|agreement|contract|offer|document|paperwork|pip|nda)\b/);
+    const isSeverance = hasWord(/\bseverance\b/) || hasWord(/\brelease agreement\b/) || hasSignVerb && hasDocNoun;
+    const isOvertime = hasWord(/\bovertime\b/) || hasWord(/\bunpaid\b/) || hasWord(/\boff[\s-]the[\s-]clock\b/) || hasWord(/\bwages?\b/);
     const stFacts = stateData && stateData.facts || [];
     const retaliationFact = stateFactFor(stFacts, ["retaliation", "retaliation.whistleblower", "discrimination.retaliation"]);
     const adaFact = stateFactFor(stFacts, ["disability.accommodation", "disability.interactiveProcess"]);
