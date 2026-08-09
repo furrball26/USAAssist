@@ -648,7 +648,10 @@ function buildCaseFile(ctx){
   return lines.join('\n');
 }
 
-// Real export: open a clean print window (Save as PDF); fall back to a .txt download.
+// Real export: open a clean print window (Save as PDF); fall back to a .txt
+// download if the popup is blocked; returns which path was actually taken
+// ('tab' | 'download' | 'failed') so callers can phrase their confirmation
+// message accurately instead of always claiming "opened in a new tab".
 function printLetter(subject, text){
   const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   try {
@@ -659,6 +662,7 @@ function printLetter(subject, text){
       esc(text) + '</body></html>');
     w.document.close(); w.focus();
     setTimeout(() => { try { w.print(); } catch(e){} }, 300);
+    return 'tab';
   } catch(e){
     try {
       const blob = new Blob([text], { type: 'text/plain' });
@@ -667,7 +671,10 @@ function printLetter(subject, text){
       a.href = url; a.download = (subject || 'letter').replace(/[^a-z0-9]+/gi, '-').toLowerCase() + '.txt';
       document.body.appendChild(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
-    } catch(_){}
+      return 'download';
+    } catch(_){
+      return 'failed';
+    }
   }
 }
 
@@ -724,6 +731,7 @@ function App(){
   const [docName, setDocName] = useState(() => saved.docName || '');
   const [docText, setDocText] = useState(() => saved.docText || ''); // pasted document text for the local rules-based clause scan
   const [consultSent, setConsultSent] = useState('');
+  const [exportPath, setExportPath] = useState(''); // 'tab' | 'download' | 'failed' — actual path printLetter() took, for accurate confirmation copy
   const [wizNode, setWizNode] = useState(() => saved.wizNode || 'start');
   const [wizPath, setWizPath] = useState(() => saved.wizPath || []);
   const [messages, setMessages] = useState(() =>
@@ -797,7 +805,7 @@ function App(){
     setMessages([{ role:'ai', text: issueCfg(null).chatSeed }]);
     setDraft(''); setLogNote(''); setLogHours(''); setLogPayStatus('unpaid'); setEditingEntryIdx(null);
     setLetterEdit(null); setLetterType(null);
-    setDocName(''); setDocText(''); setConsultSent(''); setWizNode('start'); setWizPath([]);
+    setDocName(''); setDocText(''); setConsultSent(''); setExportPath(''); setWizNode('start'); setWizPath([]);
     setOnbStep(1); setOnboarded(false); setScreen('onboarding');
   }, []);
 
@@ -832,7 +840,7 @@ function App(){
         !window.confirm('Start a fresh case? This clears your incident log, step progress, letters and chat for a new case. Your state, county, name and employer stay set — change those with the ' + '◉' + ' button if this is a different employer.')) return;
     setDone({}); setEntries([]); setLogNote(''); setLogHours(''); setLogPayStatus('unpaid'); setEditingEntryIdx(null);
     setMessages([{ role:'ai', text: issueCfg(issue).chatSeed }]);
-    setLetterEdit(null); setLetterType(null); setDocName(''); setDocText(''); setConsultSent('');
+    setLetterEdit(null); setLetterType(null); setDocName(''); setDocText(''); setConsultSent(''); setExportPath('');
     setWizNode('start'); setWizPath([]);
     setCaseOpened(new Date().toISOString());
   }, [issue]);
@@ -1781,9 +1789,17 @@ function App(){
               <span style={css("padding:7px 11px;border-radius:8px;background:#F0EDE5;font:600 13px 'IBM Plex Mono',monospace;color:#14181F")}>{l.fee}</span>
               <span style={css("padding:7px 11px;border-radius:8px;background:#F0EDE5;font:600 13px 'IBM Plex Mono',monospace;color:#14181F")}>{l.langs}</span>
             </div>
-            <button onClick={() => { printLetter('WorkLaw case file', buildCaseFile({ youName, employerName, locationLabel, issue, caseOpened, strength, unpaidHours, owedEstimate, entries })); setConsultSent(l.name); }} style={css("margin-top:4px;padding:15px;border-radius:12px;border:none;background:#2B3AA8;color:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Export case file for this firm</button>
+            <button onClick={() => {
+              const path = printLetter('WorkLaw case file', buildCaseFile({ youName, employerName, locationLabel, issue, caseOpened, strength, unpaidHours, owedEstimate, entries }));
+              setExportPath(path); setConsultSent(l.name);
+            }} style={css("margin-top:4px;padding:15px;border-radius:12px;border:none;background:#2B3AA8;color:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Export case file for this firm</button>
             {consultSent === l.name &&
-              <p style={css("margin:2px 0 0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#136B3C")}>Your case file opened in a new tab — save it as PDF and attach it when you contact a firm. (This is a sample listing; no message was sent.)</p>
+              <p style={css('margin:2px 0 0;font:400 14px/1.45 \'Atkinson Hyperlegible\',sans-serif;color:' + (exportPath === 'failed' ? '#B3264F' : '#136B3C'))}>
+                {exportPath === 'download' ? 'Your case file downloaded as a .txt file (your browser blocked the new-tab preview) — attach it when you contact a firm.'
+                  : exportPath === 'failed' ? 'Export did not work in this browser — note your case details from the dashboard manually and share them when you contact a firm.'
+                  : 'Your case file opened in a new tab — save it as PDF and attach it when you contact a firm.'}
+                {' '}(This is a sample listing; no message was sent.)
+              </p>
             }
           </div>
         )}
