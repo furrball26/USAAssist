@@ -504,6 +504,16 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 </script>
 <script>const { useState, useRef, useEffect, useCallback } = React;
 const CONTENT_BASE = typeof window !== "undefined" && window.CONTENT_BASE || "";
+const CONTENT_FALLBACK_BASE = "https://raw.githubusercontent.com/furrball26/USAAssist/2394a3fd80b0102915e76d7c98729ecb87cc825c/";
+function fetchContentJson(path) {
+  return fetch(CONTENT_BASE + path).then((r) => {
+    if (!r.ok) throw new Error("http " + r.status);
+    return r.json();
+  }).catch(() => fetch(CONTENT_FALLBACK_BASE + path).then((r) => {
+    if (!r.ok) throw new Error("http " + r.status);
+    return r.json();
+  }));
+}
 function topicKicker(topic) {
   const p = String(topic || "").split(".")[0];
   const m = {
@@ -989,7 +999,7 @@ function App() {
     saveCase({ onboarded, stateSel, county, issue, profile, caseOpened, homeMode, done, messages, entries });
   }, [onboarded, stateSel, county, issue, profile, caseOpened, homeMode, done, messages, entries]);
   useEffect(() => {
-    fetch(CONTENT_BASE + "content/_federal.json").then((r) => r.ok ? r.json() : null).then((d) => {
+    fetchContentJson("content/_federal.json").then((d) => {
       if (d) setFederal(d);
       else setContentErr(true);
     }).catch(() => setContentErr(true));
@@ -1004,10 +1014,7 @@ function App() {
     let ignore = false;
     setStateData(void 0);
     setStateErr(false);
-    fetch(CONTENT_BASE + "content/states/" + ab + ".json").then((r) => {
-      if (!r.ok) throw new Error("http " + r.status);
-      return r.json();
-    }).then((d) => {
+    fetchContentJson("content/states/" + ab + ".json").then((d) => {
       if (!ignore) setStateData(d);
     }).catch(() => {
       if (!ignore) {

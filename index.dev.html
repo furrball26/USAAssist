@@ -10,7 +10,7 @@
      index.html is fully self-contained (no CDN, no inline-script execution model change) and its
      head is maintained separately (see build.mjs). frame-ancestors cannot be set via <meta> and
      is handled at the HTTP-header level by the Vercel shell. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://cdn.jsdelivr.net; object-src 'none'; base-uri 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://cdn.jsdelivr.net https://raw.githubusercontent.com; object-src 'none'; base-uri 'none';">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232B3AA8'/%3E%3Ctext x='32' y='47' font-size='42' text-anchor='middle' fill='white' font-family='Georgia,serif'%3E%C2%A7%3C/text%3E%3C/svg%3E">
 <title>WorkLaw — know your rights at work</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -73,6 +73,15 @@ const { useState, useRef, useEffect, useCallback } = React;
 // Base for fetching the content/ dataset. Empty = same-origin (GitHub Pages / local).
 // On worklaw.app the Vercel shell sets window.CONTENT_BASE to a jsDelivr URL pinned to the commit.
 const CONTENT_BASE = (typeof window !== 'undefined' && window.CONTENT_BASE) || '';
+// SHA-pinned fallback source for the same content/ path, tried once if the primary
+// CONTENT_BASE fetch fails (network error or non-2xx) before surfacing the error state.
+// Bump this SHA as part of routine maintenance so it stays a recent known-good commit.
+const CONTENT_FALLBACK_BASE = 'https://raw.githubusercontent.com/furrball26/USAAssist/2394a3fd80b0102915e76d7c98729ecb87cc825c/';
+function fetchContentJson(path){
+  return fetch(CONTENT_BASE + path)
+    .then(r => { if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
+    .catch(() => fetch(CONTENT_FALLBACK_BASE + path).then(r => { if (!r.ok) throw new Error('http ' + r.status); return r.json(); }));
+}
 
 function topicKicker(topic){
   const p = String(topic || '').split('.')[0];
@@ -566,7 +575,7 @@ function App(){
 
   // Load the source-cited legal-content dataset (federal once; state on selection change).
   useEffect(() => {
-    fetch(CONTENT_BASE + 'content/_federal.json').then(r => r.ok ? r.json() : null)
+    fetchContentJson('content/_federal.json')
       .then(d => { if (d) setFederal(d); else setContentErr(true); })
       .catch(() => setContentErr(true));
   }, []);
@@ -579,8 +588,7 @@ function App(){
     // Treat an HTTP error (404/500) the same as a network failure: surface stateErr
     // rather than resolving to null, which is indistinguishable from the legitimate
     // "state follows federal" case and would hide a genuine load failure.
-    fetch(CONTENT_BASE + 'content/states/' + ab + '.json')
-      .then(r => { if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
+    fetchContentJson('content/states/' + ab + '.json')
       .then(d => { if (!ignore) setStateData(d); })
       .catch(() => { if (!ignore) { setStateData(null); setStateErr(true); } });
     return () => { ignore = true; };
