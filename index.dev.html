@@ -72,7 +72,9 @@ const { useState, useRef, useEffect, useCallback } = React;
 
 // Base for fetching the content/ dataset. Empty = same-origin (GitHub Pages / local).
 // On worklaw.app the Vercel shell sets window.CONTENT_BASE to a jsDelivr URL pinned to the commit.
-const CONTENT_BASE = (typeof window !== 'undefined' && window.CONTENT_BASE) || '';
+const CONTENT_BASE = (typeof window !== 'undefined' && window.CONTENT_BASE)
+  || (typeof document !== 'undefined' && document.querySelector('meta[name="worklaw-content-base"]') && document.querySelector('meta[name="worklaw-content-base"]').getAttribute('content'))
+  || '';
 // SHA-pinned fallback source for the same content/ path, tried once if the primary
 // CONTENT_BASE fetch fails (network error or non-2xx) before surfacing the error state.
 // Bump this SHA as part of routine maintenance so it stays a recent known-good commit.

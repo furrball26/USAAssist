@@ -70,13 +70,12 @@
 </style>
 </head>
 <body>
+<!-- Content dataset base: served from jsDelivr, SHA-pinned to this exact deploy (immutable,
+     cache-safe). Set as a <meta> (not an inline script) so a strict CSP with no
+     'unsafe-inline' script-src can still apply; assets/app.js reads this at module init
+     (window.CONTENT_BASE || this meta || ''). See content/README.md + index.dev.html. -->
+<meta name="worklaw-content-base" content="https://cdn.jsdelivr.net/gh/furrball26/USAAssist@{{SHA}}/">
 <div id="root"></div>
-<script>
-  // Content dataset base: served from jsDelivr, SHA-pinned to this exact deploy (immutable,
-  // cache-safe). Must be set before assets/app.js runs, which reads window.CONTENT_BASE once
-  // at module init. See content/README.md and index.dev.html's CONTENT_BASE comment.
-  window.CONTENT_BASE = 'https://cdn.jsdelivr.net/gh/furrball26/USAAssist@{{SHA}}/';
-</script>
 <script crossorigin="anonymous" integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
 <script crossorigin="anonymous" integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/furrball26/USAAssist@{{SHA}}/assets/app.js"></script>

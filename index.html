@@ -503,7 +503,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 })();
 </script>
 <script>const { useState, useRef, useEffect, useCallback } = React;
-const CONTENT_BASE = typeof window !== "undefined" && window.CONTENT_BASE || "";
+const CONTENT_BASE = typeof window !== "undefined" && window.CONTENT_BASE || typeof document !== "undefined" && document.querySelector('meta[name="worklaw-content-base"]') && document.querySelector('meta[name="worklaw-content-base"]').getAttribute("content") || "";
 const CONTENT_FALLBACK_BASE = "https://raw.githubusercontent.com/furrball26/USAAssist/2394a3fd80b0102915e76d7c98729ecb87cc825c/";
 function fetchContentJson(path) {
   return fetch(CONTENT_BASE + path).then((r) => {
