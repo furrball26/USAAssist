@@ -662,6 +662,7 @@ function buildCaseFile(ctx){
   (ctx.entries || []).forEach(e => {
     lines.push('• [' + e.tag + '] ' + e.date + ' — ' + e.title + (e.hours ? ' (' + e.hours + ' hrs)' : ''));
     if (e.body) lines.push('    ' + e.body);
+    if (e.attachment && e.attachment.name) lines.push('    [attachment: ' + e.attachment.name + ']');
   });
   if (!(ctx.entries || []).length) lines.push('• (no entries logged yet)');
   lines.push('');
@@ -706,6 +707,13 @@ function printLetter(subject, text){
 // document the user is told to send to their employer.
 const RATE_WARN_MAX = 500;    // $/hr — a non-exempt hourly wage-claim rate this high is very rare
 const ENTRY_HOURS_WARN_MAX = 100; // hours on a single log entry — well over 2 full workweeks
+// F15 — a per-entry file/photo attachment is stored as a base64 data URL
+// directly in localStorage (same on-device-only model as everything else in
+// the case). A hard cap, not just a warning, because every attachment adds
+// real weight against a shared, limited localStorage quota across every
+// entry in the case — unlike the rate/hours soft-warning figures above, an
+// oversized attachment is rejected outright rather than silently accepted.
+const ATTACHMENT_MAX_BYTES = 1.5 * 1024 * 1024; // 1.5MB per attachment
 
 // Quick-add kinds for the incident log (shared; optional hours capture for wage claims).
 const LOG_KINDS = [
@@ -746,6 +754,8 @@ function App(){
   const [logNote, setLogNote] = useState('');
   const [logHours, setLogHours] = useState('');
   const [logPayStatus, setLogPayStatus] = useState('unpaid'); // 'unpaid' (paid $0) | 'straight' (paid straight-time only)
+  const [logAttachment, setLogAttachment] = useState(null); // { name, type, size, dataUrl } | null — staged file/photo for the entry form (F15)
+  const [logAttachmentError, setLogAttachmentError] = useState('');
   const [editingEntryIdx, setEditingEntryIdx] = useState(null); // non-null while editing an existing log entry in place
   const [letterEdit, setLetterEdit] = useState(() => (saved.letterEdit != null ? saved.letterEdit : null)); // null = generated view; string = editing
   const [letterType, setLetterType] = useState(() => saved.letterType || null); // chosen letter kind (wage issue offers two)
@@ -1535,11 +1545,27 @@ function App(){
     const logBreakdown = computeOwedBreakdown(entries, rateNum);
     const editing = editingEntryIdx != null && entries[editingEntryIdx];
     const PLACEHOLDER_BODY = 'No detail added yet — tap to edit while it is fresh.';
-    const resetForm = () => { setLogNote(''); setLogHours(''); setLogPayStatus('unpaid'); setEditingEntryIdx(null); };
+    const resetForm = () => { setLogNote(''); setLogHours(''); setLogPayStatus('unpaid'); setLogAttachment(null); setLogAttachmentError(''); setEditingEntryIdx(null); };
+    // F15 — read the picked file into a data URL (kept on-device, same model as
+    // everything else in the case) with a hard size cap so one attachment
+    // can't eat the shared localStorage quota the whole case relies on.
+    const onAttachmentChange = (ev) => {
+      const file = ev.target.files && ev.target.files[0];
+      ev.target.value = ''; // let the same file be re-picked after Remove
+      if (!file) return;
+      if (file.size > ATTACHMENT_MAX_BYTES) {
+        setLogAttachmentError('That file is ' + (Math.round(file.size / 1024 / 1024 * 10) / 10) + 'MB — attachments are limited to ' + (ATTACHMENT_MAX_BYTES / 1024 / 1024) + 'MB. Try a smaller photo or a cropped screenshot.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => { setLogAttachmentError(''); setLogAttachment({ name: file.name, type: file.type, size: file.size, dataUrl: reader.result }); };
+      reader.onerror = () => setLogAttachmentError('Could not read that file. Try again or pick a different one.');
+      reader.readAsDataURL(file);
+    };
     const submit = () => {
       const fields = { title: kind.title, body: logNote.trim() || PLACEHOLDER_BODY,
         color: kind.color, tag: kind.tag, hours: kind.asksHours ? (Number(logHours) || 0) : undefined,
-        payStatus: kind.asksHours ? logPayStatus : undefined };
+        payStatus: kind.asksHours ? logPayStatus : undefined, attachment: logAttachment || undefined };
       if (editing) {
         // Preserve the original date/iso timestamp — only the editable fields
         // change; the entry keeps its place in the timeline.
@@ -1556,6 +1582,8 @@ function App(){
       setLogNote(e.body === PLACEHOLDER_BODY ? '' : (e.body || ''));
       setLogHours(e.hours ? String(e.hours) : '');
       setLogPayStatus(e.payStatus || 'unpaid');
+      setLogAttachment(e.attachment || null);
+      setLogAttachmentError('');
       setEditingEntryIdx(i);
     };
     const deleteEntry = (i) => {
@@ -1594,6 +1622,26 @@ function App(){
           </div>
         }
         <textarea aria-label="What happened" value={logNote} onChange={e => setLogNote(e.target.value)} rows={2} placeholder="What happened? Date, who was there, what was said…" style={css("width:100%;box-sizing:border-box;padding:12px;border-radius:10px;border:2px solid #14181F;font:400 16px/1.4 'Atkinson Hyperlegible',sans-serif;resize:vertical")} />
+        <div style={css("display:flex;flex-direction:column;gap:8px")}>
+          <label htmlFor="log-attachment" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Attach a photo or file (optional)</label>
+          {!logAttachment &&
+            <input id="log-attachment" type="file" accept="image/*,.pdf,.doc,.docx,.txt" onChange={onAttachmentChange} aria-describedby="log-attachment-hint" style={css("font:400 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
+          }
+          {logAttachmentError &&
+            <p role="alert" style={css("margin:0;padding:10px 12px;border-radius:10px;background:#FFE7EC;border:2px solid #B3264F;font:700 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#8A1438")}>{logAttachmentError}</p>
+          }
+          {logAttachment &&
+            <div style={css("display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;border:2px solid #14181F;background:#F0EDE5")}>
+              {logAttachment.type && logAttachment.type.startsWith('image/') ?
+                <img src={logAttachment.dataUrl} alt="" style={css("flex:none;width:48px;height:48px;border-radius:8px;object-fit:cover;border:2px solid #14181F")} /> :
+                <span aria-hidden="true" style={css("flex:none;font:700 22px 'IBM Plex Mono',monospace;color:#14181F")}>▤</span>
+              }
+              <span style={css("flex:1;font:600 14px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F;overflow-wrap:anywhere")}>{logAttachment.name}</span>
+              <button type="button" onClick={() => setLogAttachment(null)} aria-label={'Remove attachment ' + logAttachment.name} style={css("flex:none;min-height:40px;padding:8px 12px;border-radius:8px;border:2px solid #B3264F;background:#fff;color:#B3264F;font:700 13px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Remove</button>
+            </div>
+          }
+          <p id="log-attachment-hint" style={css("margin:0;font:400 12px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Stays on this device, like everything else here. Limit {ATTACHMENT_MAX_BYTES / 1024 / 1024}MB.</p>
+        </div>
         <div style={css("display:flex;gap:10px")}>
           <button onClick={submit} style={css("align-self:flex-start;padding:12px 18px;border-radius:12px;border:none;background:#2B3AA8;color:#fff;font:700 16px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{editing ? 'Save changes' : 'Add to log'}</button>
           {editing && <button onClick={resetForm} style={css("align-self:flex-start;padding:12px 18px;border-radius:12px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 16px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Cancel</button>}
@@ -1624,6 +1672,15 @@ function App(){
                 <p style={css("margin:0 0 3px;font:600 13px 'IBM Plex Mono',monospace;color:#4A5162")}>{e.date}</p>
                 <p style={css("margin:0 0 5px;font:700 18px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{e.title}{e.hours ? ' — ' + e.hours + ' hrs' : ''}</p>
                 <p style={css("margin:0 0 8px;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{e.body}</p>
+                {e.attachment &&
+                  <a href={e.attachment.dataUrl} download={e.attachment.name} style={css("display:inline-flex;align-items:center;gap:8px;margin:0 0 8px;padding:6px;border-radius:10px;border:2px solid #14181F;background:#F0EDE5;text-decoration:none;max-width:220px")}>
+                    {e.attachment.type && e.attachment.type.startsWith('image/') ?
+                      <img src={e.attachment.dataUrl} alt={'Attachment: ' + e.attachment.name} style={css("flex:none;width:52px;height:52px;border-radius:8px;object-fit:cover;border:2px solid #14181F")} /> :
+                      <span aria-hidden="true" style={css("flex:none;font:700 22px 'IBM Plex Mono',monospace;color:#14181F;padding:0 4px")}>▤</span>
+                    }
+                    <span style={css("flex:1;font:600 13px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F;overflow-wrap:anywhere")}>{e.attachment.name}</span>
+                  </a>
+                }
                 <div style={css("display:flex;align-items:center;gap:8px;flex-wrap:wrap")}>
                   <span style={css("display:inline-block;padding:6px 10px;border-radius:8px;background:#F0EDE5;border:2px solid #14181F;font:600 12px 'IBM Plex Mono',monospace;color:#14181F")}>{e.tag}</span>
                   <button onClick={() => startEdit(i)} aria-label={'Edit entry from ' + e.date} style={css("min-height:36px;padding:6px 12px;border-radius:8px;border:2px solid #2B3AA8;background:#fff;color:#2B3AA8;font:700 13px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Edit</button>
