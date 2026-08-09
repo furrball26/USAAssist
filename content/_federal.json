@@ -147,6 +147,18 @@
       "reviewed": false, "reviewedBy": null, "notes": ""
     },
     {
+      "topic": "deadlines.oshaWhistleblower",
+      "value": "30 days",
+      "summary": "A worker retaliated against (fired, demoted, etc.) for reporting a workplace safety or health hazard, or for otherwise exercising OSHA rights, must file a Section 11(c) whistleblower complaint with OSHA within 30 days of the adverse action -- much shorter than the EEOC's 180/300-day discrimination-charge window. The complaint can be filed by phone, in writing, or online; no lawsuit or lawyer is required to file it.",
+      "citation": "29 U.S.C. § 660(c) (OSH Act § 11(c))",
+      "sourceUrl": "https://www.whistleblowers.gov/statutes/oshact",
+      "sourceAgency": "U.S. Department of Labor, Occupational Safety and Health Administration",
+      "lastChecked": "2026-08-08",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Confirmed 2026-08-08 directly against whistleblowers.gov (statute text: 'within thirty days after such violation occurs, file a complaint with the Secretary') and osha.gov guidance. This is a much shorter, easy-to-miss deadline distinct from the EEOC discrimination-charge deadline (deadlines.eeocCharge, above); route safety-retaliation fact patterns here, not to the EEOC deadline. Some other federal whistleblower statutes OSHA also administers (e.g. certain environmental, trucking, and financial-reform laws) have longer deadlines (90-180 days) -- this 30-day figure is specific to OSH Act Section 11(c) safety retaliation."
+    },
+    {
       "topic": "severance.adeaWaiver",
       "value": "21 days consider / 7 days revoke",
       "summary": "For a valid waiver of age claims in severance, workers 40+ get at least 21 days to consider (45 in a group layoff) and 7 days to revoke after signing.",

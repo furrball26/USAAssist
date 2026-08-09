@@ -18,15 +18,15 @@
     },
     {
       "topic": "overtime.daily",
-      "value": "State law requires overtime after 48 hours/week; federal FLSA 40-hour rule controls for covered employers",
-      "summary": "Minnesota's own overtime law only requires time-and-a-half after 48 hours per workweek, but most employers are covered by the stricter federal FLSA 40-hour standard, which applies.",
-      "citation": "Minn. Stat. 177.25",
+      "value": "no overtime protection beyond federal FLSA (Minnesota's own 48-hr/week threshold is weaker than the federal 40-hr rule)",
+      "summary": "Minnesota's own overtime statute requires time-and-a-half only after 48 hours in a workweek -- a weaker threshold than the federal FLSA's 40 hours. Because nearly all employers are also covered by the FLSA, the federal 40-hour rule is the one that actually applies in practice, so state law adds no extra overtime protection beyond what federal law already requires. There is no daily overtime under Minnesota law.",
+      "citation": "Minn. Stat. § 177.25, subd. 1",
       "sourceUrl": "https://www.dli.mn.gov/overtime",
       "sourceAgency": "Minnesota Department of Labor and Industry",
-      "lastChecked": "2026-07-30",
+      "lastChecked": "2026-08-08",
       "reviewed": false,
       "reviewedBy": null,
-      "notes": "Minnesota does not mandate daily overtime. State threshold (48 hrs) is less protective than federal (40 hrs); the more stringent standard governs. No daily OT."
+      "notes": "Confirmed 2026-08-08 against revisor.mn.gov statute text and dli.mn.gov guidance: the 48-hour state threshold is LESS protective than the FLSA's 40-hour threshold, so it functions as a floor only for the small minority of MN-only employers not reached by the FLSA. No daily OT under state law. This fact should never be treated as an 'extra protection beyond federal' state for wage-letter purposes."
     },
     {
       "topic": "discrimination.protectedClasses",

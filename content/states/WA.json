@@ -18,15 +18,15 @@
     },
     {
       "topic": "overtime.daily",
-      "value": "no daily overtime required",
-      "summary": "Washington follows the federal weekly overtime model (1.5x after 40 hours/week) and does not require daily overtime, except on certain public works projects.",
+      "value": "follows federal FLSA on rate/threshold (1.5x after 40 hrs/week; no general daily overtime)",
+      "summary": "On the core overtime rate and hours threshold, Washington follows the same federal FLSA model -- 1.5x the regular rate after 40 hours in a workweek, with no general daily overtime (a limited daily-overtime rule applies on certain public works projects). This fact alone adds no overtime protection beyond federal law. Washington's real point of extra protection is a much higher salary floor for the executive/administrative/professional exemption -- see the separate overtime.salaryThreshold fact.",
       "citation": "RCW 49.46.130; WAC 296-128",
       "sourceUrl": "https://www.lni.wa.gov/workers-rights/wages/overtime/",
       "sourceAgency": "Washington State Department of Labor & Industries",
-      "lastChecked": "2026-07-30",
+      "lastChecked": "2026-08-08",
       "reviewed": false,
       "reviewedBy": null,
-      "notes": "No daily OT threshold; the state difference from federal is the higher exempt salary floor recorded separately."
+      "notes": "No daily OT threshold on the general standard; the state's real extra protection over federal is the higher exempt-salary floor in the overtime.salaryThreshold fact (2.25x state minimum wage), not this fact."
     },
     {
       "topic": "overtime.salaryThreshold",

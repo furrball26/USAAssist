@@ -6,15 +6,15 @@
   "facts": [
     {
       "topic": "overtime.daily",
-      "value": "no daily overtime; 1.5x required after 40 hrs/week under state law",
-      "summary": "Massachusetts has no daily overtime; like federal law it requires 1.5x the regular rate for hours over 40 in a workweek, but under its own statute (with treble damages for violations) and with a narrower list of exemptions than the FLSA.",
-      "citation": "M.G.L. c. 151, s. 1A",
+      "value": "follows federal FLSA on rate/threshold (1.5x after 40 hrs/week; no daily overtime; no higher salary floor)",
+      "summary": "On the core overtime rate and hours threshold, Massachusetts follows the same standard as federal law: no daily overtime, and 1.5x the regular rate after 40 hours in a workweek, with no higher salary floor. Massachusetts's own overtime statute (M.G.L. c.151, s.1A) exempts MORE occupations than the FLSA does -- including restaurant, hotel/motel, gas-station, and other listed employees -- so a worker exempt under Massachusetts law may still be owed overtime under the more protective federal law where the employer is FLSA-covered. Where the Massachusetts statute does apply, a prevailing employee is entitled to mandatory treble damages plus attorneys' fees and costs -- a stronger remedy than the FLSA's own framework, but that is a penalty/remedy difference, not a different pay rate or hours threshold.",
+      "citation": "M.G.L. c. 151, ss. 1A, 1B",
       "sourceUrl": "https://malegislature.gov/Laws/GeneralLaws/PartI/TitleXXI/Chapter151/Section1A",
       "sourceAgency": "Massachusetts Legislature (General Laws)",
-      "lastChecked": "2026-07-30",
+      "lastChecked": "2026-08-08",
       "reviewed": false,
       "reviewedBy": null,
-      "notes": "No higher salary floor than federal; the 40-hour weekly threshold mirrors the FLSA. State overtime exemptions under c.151 s1A differ from FLSA exemptions."
+      "notes": "Corrects a prior note that mischaracterized MA's exemption list as 'narrower' than federal's: s.1A actually exempts more occupations than the FLSA (verified directly against the statute text at malegislature.gov 2026-08-08) -- e.g. restaurant, hotel/motel, gasoline-station, and agricultural employees are exempt under MA law but may still be FLSA-covered. So on this rate/threshold fact, MA provides no overtime protection beyond federal; the treble-damages remedy (s.1B) is a separate, real, state-specific enhancement when the state statute itself applies. VERIFY periodically for amendments to the s.1A exemption list."
     },
     {
       "topic": "minimumWage.hourly",
