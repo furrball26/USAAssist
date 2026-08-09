@@ -692,8 +692,6 @@ function App(){
   const youName = (profile.name || '').trim();
   const employerName = (profile.employer || '').trim();
 
-  const chip = (active, big) => 'padding:' + (big ? '14px 16px' : '12px 15px') + ';border-radius:999px;border:2px solid ' + (active ? '#2B3AA8' : '#14181F') + ';background:' + (active ? '#2B3AA8' : '#fff') + ';color:' + (active ? '#fff' : '#14181F') + ";font:700 16px 'Atkinson Hyperlegible',sans-serif;cursor:pointer";
-
   /* ── Screen renderers ──────────────────────────────────────────── */
 
   const Onboarding = () => (
@@ -828,7 +826,7 @@ function App(){
         const stF = (stateData && stateData.facts) || [];
         const dl = pickDeadlineFactAcross(stF, fedF, cfg.key);
         return dl ? (
-          <button onClick={nav('strength')} style={css("text-align:left;padding:16px 18px;border-radius:14px;border:2px solid #14181F;background:#FFE7EC;cursor:pointer;display:flex;flex-direction:column;gap:4px")}>
+          <button onClick={nav('strength')} style={css("text-align:left;padding:16px 18px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;flex-direction:column;gap:4px")}>
             <span style={css("font:700 13px 'IBM Plex Mono',monospace;color:#14181F;letter-spacing:.04em")}>⏱ DEADLINE WATCH</span>
             <span style={css("font:700 18px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{dl.value || dl.summary}</span>
             <span style={css("font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{dl.summary}</span>
@@ -872,7 +870,7 @@ function App(){
             <span style={css("font:700 22px 'IBM Plex Mono',monospace")}>§</span>
             <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Am I exempt from overtime?</span>
           </button>
-          <button onClick={nav('log')} style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#FFE7EC;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
+          <button onClick={nav('log')} style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#F1EAFB;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
             <span style={css("font:700 22px 'IBM Plex Mono',monospace")}>◷</span>
             <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Log an incident or hours</span>
           </button>
@@ -912,7 +910,7 @@ function App(){
         const dl = pickDeadlineFactAcross(stF, fedF, cfg.key);
         return dl ? (
           <button onClick={nav('strength')} style={css("text-align:left;padding:14px 16px;border-radius:12px;border:2px solid rgba(255,255,255,.4);background:rgba(255,255,255,.14);cursor:pointer;display:flex;flex-direction:column;gap:4px")}>
-            <span style={css("font:700 12px 'IBM Plex Mono',monospace;color:#FFE7EC;letter-spacing:.05em")}>⏱ DEADLINE WATCH</span>
+            <span style={css("font:700 12px 'IBM Plex Mono',monospace;color:#DDE2FF;letter-spacing:.05em")}>⏱ DEADLINE WATCH</span>
             <span style={css("font:700 16px/1.3 'Atkinson Hyperlegible',sans-serif;color:#fff")}>{dl.value || dl.summary}</span>
           </button>
         ) : null;
@@ -953,7 +951,7 @@ function App(){
         const stF = (stateData && stateData.facts) || [];
         const dl = pickDeadlineFactAcross(stF, fedF, cfg.key);
         return dl ? (
-          <button onClick={nav('strength')} style={css("text-align:left;padding:18px 20px;border-radius:16px;border:2px solid #14181F;background:#FFE7EC;cursor:pointer;display:flex;flex-direction:column;gap:6px")}>
+          <button onClick={nav('strength')} style={css("text-align:left;padding:18px 20px;border-radius:16px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;flex-direction:column;gap:6px")}>
             <span style={css("font:700 15px 'IBM Plex Mono',monospace;color:#14181F;letter-spacing:.04em")}>⏱ DEADLINE WATCH</span>
             <span style={css("font:700 22px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{dl.value || dl.summary}</span>
             <span style={css("font:400 17px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{dl.summary}</span>
@@ -1158,7 +1156,7 @@ function App(){
       <div style={css("padding:16px;border-radius:16px;border:2px solid #14181F;background:#fff;display:flex;flex-direction:column;gap:12px")}>
         <div role="group" aria-label="Entry type" style={css("display:flex;gap:8px;flex-wrap:wrap")}>
           {LOG_KINDS.map(k =>
-            <button key={k.tag} onClick={() => setLogKind(k.tag)} aria-pressed={logKind === k.tag} style={css('min-height:44px;padding:10px 13px;border-radius:999px;border:2px solid #14181F;background:' + (logKind === k.tag ? '#14181F' : '#fff') + ';color:' + (logKind === k.tag ? '#fff' : '#14181F') + ";font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{k.label.replace('+ ','')}</button>
+            <button key={k.tag} onClick={() => setLogKind(k.tag)} aria-pressed={logKind === k.tag} style={css('min-height:44px;padding:10px 13px;border-radius:999px;border:2px solid ' + (logKind === k.tag ? '#2B3AA8' : '#14181F') + ';background:' + (logKind === k.tag ? '#2B3AA8' : '#fff') + ';color:' + (logKind === k.tag ? '#fff' : '#14181F') + ";font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{k.label.replace('+ ','')}</button>
           )}
         </div>
         {kind.asksHours &&
@@ -1320,7 +1318,7 @@ function App(){
         const stDL = pickDeadlineFact(stF, cfg.key);
         const src = f => { const u = f && safeUrl(f.sourceUrl); return u ? <a href={u} target="_blank" rel="noopener noreferrer" style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null; };
         return (
-          <div style={css("padding:18px;border-radius:16px;background:#FFE7EC;border:2px solid #14181F")}>
+          <div style={css("padding:18px;border-radius:16px;background:#F0EDE5;border:2px solid #14181F")}>
             <p style={css("margin:0 0 8px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Deadline watch — {stateLabel}</p>
             {contentErr ? <p style={css("margin:0 0 8px;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load the federal deadline. Check your connection and reopen — do not assume you have time to spare.</p> : null}
             {!contentErr && <p style={css("margin:0 0 6px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}><strong>Federal:</strong> {fedDL ? fedDL.summary : 'Loading the deadline that applies to your claim…'} {src(fedDL)}</p>}
@@ -1356,7 +1354,7 @@ function App(){
         <h1 style={css("margin:0;font:700 26px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Rights library</h1>
         <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Federal protections apply everywhere; {stName} rules are layered on top. Each item links to its official source.</p>
 
-        {contentErr ? <div style={css("padding:16px;border-radius:14px;background:#FFE7EC;border:2px solid #14181F")}><p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Couldn’t load the rights dataset. Check your connection and reopen.</p></div> : null}
+        {contentErr ? <p style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load the rights dataset. Check your connection and reopen.</p> : null}
         {!federal && !contentErr ? <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Loading…</p> : null}
 
         {stateData && !stReviewed ?
