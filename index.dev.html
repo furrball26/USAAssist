@@ -307,7 +307,7 @@ const ISSUES = {
     chatSeed:'You mentioned being fired or pushed out. Tell me the reason you were given and what happened in the weeks before, and I will explain wrongful-termination and retaliation rules where you work.',
   },
   'A document to review': {
-    key:'document', caseTitle:'Document review', primaryTool:'doc', letterKind:null,
+    key:'document', caseTitle:'Document review', primaryTool:'doc', letterKind:'review-time-request',
     action:'Do not sign under a deadline you did not choose.',
     actionWhy:'Severance and separation agreements are negotiable. Understand every clause before you sign.',
     steps:[
@@ -352,7 +352,7 @@ function fmtDate(d){ d = d || new Date(); return MONTHS_FULL[d.getMonth()] + ' '
 
 // Which letter templates an issue offers. Wage claims get two, in order:
 // confirm your classification first, then demand unpaid wages.
-const LETTER_LABELS = { 'classification-request':'Classification request', 'wage-demand':'Wage demand', 'complaint':'Complaint letter', 'records-request':'Records request' };
+const LETTER_LABELS = { 'classification-request':'Classification request', 'wage-demand':'Wage demand', 'complaint':'Complaint letter', 'records-request':'Records request', 'review-time-request':'Request more time' };
 function letterKindsFor(issueKey, cfgLetterKind){
   if (issueKey === 'wage') return ['classification-request', 'wage-demand'];
   return [cfgLetterKind || 'records-request'];
@@ -385,6 +385,18 @@ function buildLetter(ctx){
       '3. A copy of the written job description and the job duties the company relies on for that classification.\n\n' +
       'My classification determines whether I am owed overtime for hours worked over 40 in a workweek. Under the FLSA, exempt status turns on my actual salary and job duties, not my job title (29 C.F.R. § 541.2). Please respond in writing within 14 days.\n\nSincerely,\n' + name;
     return { title: 'Overtime classification request', subject, body };
+  }
+
+  if (kind === 'review-time-request') {
+    const subject = 'Request for time to review before signing';
+    const body = date + '\n\n' + emp + '\nAttn: Human Resources\n\nRe: ' + subject + '\n\nTo whom it may concern:\n\n' +
+      'I received a document for my review and signature (for example, a severance, separation, or release agreement). I have not yet signed it.\n\n' +
+      'I am requesting, in writing:\n\n' +
+      '1. Confirmation of the exact deadline I have to consider and sign this document.\n' +
+      '2. Confirmation of any period I have to revoke my signature after signing, if applicable.\n' +
+      '3. A copy of any attachments referenced in the document (benefit summaries, release scope, etc.) that were not included.\n\n' +
+      'I want to fully understand what I am giving up before I sign anything, and I am not agreeing to any deadline shorter than what the document itself provides. Please confirm these dates in writing.\n\nSincerely,\n' + name;
+    return { title: 'Request for time to review', subject, body };
   }
 
   if (kind === 'wage-demand') {
