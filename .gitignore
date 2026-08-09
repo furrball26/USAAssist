@@ -1,7 +1,5 @@
 node_modules/
 .DS_Store
 .claude/settings.local.json
-vercel/
 chrome-headless-shell/
-package-lock.json
 test/*.png

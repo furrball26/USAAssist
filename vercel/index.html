@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14181F">
+<title>WorkLaw — know your rights at work</title>
+<meta name="description" content="WorkLaw — know your rights at work. Employee-side workplace-rights app: overtime exemption check, incident log, document review, wage-demand letters, and attorney referrals.">
+<!--
+  Production shell for worklaw.app (Vercel). This is a TEMPLATE: the {{SHA}} placeholder
+  below is substituted with the deploying commit's full SHA by automation/render-shell.mjs
+  (`node automation/render-shell.mjs`) before this file is uploaded to Vercel — never edit
+  a SHA in by hand. Pinning to a commit SHA (not @main) makes the jsDelivr URL immutable
+  and cache-safe; see README.md "Deployment" for the redeploy procedure and rollback note.
+
+  CSP / clickjacking / other security headers for this shell are set as real HTTP response
+  headers by vercel.json (not a <meta> tag, since <meta http-equiv> cannot set
+  frame-ancestors or apply to non-HTML responses). vercel.json's CSP is kept consistent
+  with the GitHub Pages dev shell's <meta> CSP in index.dev.html — same origins allowed,
+  same object-src/base-uri lockdown — modulo unsafe-inline/unsafe-eval, which this shell
+  does not need (index.dev.html only requires them for its in-browser Babel transpile step;
+  this shell loads a pre-compiled bundle).
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    background:#F3EFE7;
+    font-family:'Atkinson Hyperlegible',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    color:#14181F;
+  }
+  a{color:#2B3AA8}
+  a:hover{color:#1B2778}
+  button{font-family:inherit}
+  input{font-family:inherit}
+  ::-webkit-scrollbar{width:0;height:0}
+  @keyframes popin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
+
+  /* Device / app shell */
+  #root{min-height:100%;display:flex;align-items:center;justify-content:center;padding:24px}
+  .device{
+    width:410px;height:864px;max-height:calc(100vh - 32px);
+    background:#14181F;border-radius:52px;padding:10px;
+    box-shadow:0 24px 60px rgba(20,24,31,.28);
+  }
+  .screen{
+    width:100%;height:100%;background:#FFFDF8;border-radius:42px;
+    overflow:hidden;position:relative;display:flex;flex-direction:column;
+  }
+  .statusbar{
+    height:54px;flex:none;display:flex;align-items:flex-end;justify-content:space-between;
+    padding:0 26px 8px;font:700 14px 'IBM Plex Mono',monospace;color:#14181F;
+  }
+  .scrollarea{flex:1;overflow-y:auto;overflow-x:hidden}
+  .hoverfx{transition:background .12s ease}
+  .hoverfx:hover{background:#EEF1FF !important}
+
+  /* Full-bleed on phones — the real app fills the viewport */
+  @media (max-width:520px){
+    #root{padding:0}
+    .device{width:100vw;height:100vh;height:100dvh;max-height:none;border-radius:0;padding:0;box-shadow:none;background:#FFFDF8}
+    .screen{border-radius:0}
+    .statusbar{padding-top:env(safe-area-inset-top,0)}
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  // Content dataset base: served from jsDelivr, SHA-pinned to this exact deploy (immutable,
+  // cache-safe). Must be set before assets/app.js runs, which reads window.CONTENT_BASE once
+  // at module init. See content/README.md and index.dev.html's CONTENT_BASE comment.
+  window.CONTENT_BASE = 'https://cdn.jsdelivr.net/gh/furrball26/USAAssist@{{SHA}}/';
+</script>
+<script crossorigin="anonymous" integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+<script crossorigin="anonymous" integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/furrball26/USAAssist@{{SHA}}/assets/app.js"></script>
+</body>
+</html>
