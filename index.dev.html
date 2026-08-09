@@ -638,12 +638,12 @@ function App(){
   const [logHours, setLogHours] = useState('');
   const [logPayStatus, setLogPayStatus] = useState('unpaid'); // 'unpaid' (paid $0) | 'straight' (paid straight-time only)
   const [editingEntryIdx, setEditingEntryIdx] = useState(null); // non-null while editing an existing log entry in place
-  const [letterEdit, setLetterEdit] = useState(null); // null = generated view; string = editing
-  const [letterType, setLetterType] = useState(null); // chosen letter kind (wage issue offers two)
-  const [docName, setDocName] = useState('');
+  const [letterEdit, setLetterEdit] = useState(() => (saved.letterEdit != null ? saved.letterEdit : null)); // null = generated view; string = editing
+  const [letterType, setLetterType] = useState(() => saved.letterType || null); // chosen letter kind (wage issue offers two)
+  const [docName, setDocName] = useState(() => saved.docName || '');
   const [consultSent, setConsultSent] = useState('');
-  const [wizNode, setWizNode] = useState('start');
-  const [wizPath, setWizPath] = useState([]);
+  const [wizNode, setWizNode] = useState(() => saved.wizNode || 'start');
+  const [wizPath, setWizPath] = useState(() => saved.wizPath || []);
   const [messages, setMessages] = useState(() =>
     (saved.messages && saved.messages.length) ? saved.messages : [{ role:'ai', text: issueCfg(saved.issue).chatSeed }]
   );
@@ -666,10 +666,16 @@ function App(){
     if (el) { el.scrollTop = 0; el.focus({ preventScroll: true }); }
   }, [screen]);
 
-  // Persist the case whenever anything meaningful changes.
+  // Persist the case whenever anything meaningful changes. Includes letterEdit/
+  // letterType/wizNode/wizPath/docName — the app tells users "everything you
+  // enter stays on this device," but a hand-edited letter, in-progress
+  // classification-wizard position, or noted document name previously vanished
+  // on reload because they weren't in this list.
   useEffect(() => {
-    saveCase({ onboarded, stateSel, county, issue, profile, caseOpened, homeMode, done, messages, entries });
-  }, [onboarded, stateSel, county, issue, profile, caseOpened, homeMode, done, messages, entries]);
+    saveCase({ onboarded, stateSel, county, issue, profile, caseOpened, homeMode, done, messages, entries,
+      letterEdit, letterType, wizNode, wizPath, docName });
+  }, [onboarded, stateSel, county, issue, profile, caseOpened, homeMode, done, messages, entries,
+      letterEdit, letterType, wizNode, wizPath, docName]);
 
   // Load the source-cited legal-content dataset (federal once; state on selection change).
   useEffect(() => {
