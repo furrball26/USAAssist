@@ -701,6 +701,28 @@ function stamp(d) {
 function money(n) {
   return "$" + Number(n || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
+function weekStartKey(iso) {
+  const d = iso ? new Date(iso) : null;
+  if (!d || isNaN(d.getTime())) return null;
+  const sun = new Date(d);
+  sun.setDate(d.getDate() - d.getDay());
+  return sun.toISOString().slice(0, 10);
+}
+function computeOwedBreakdown(entries, rateNum) {
+  const withHours = (entries || []).filter((e) => Number(e.hours) > 0);
+  let unpaidHrs = 0, straightHrs = 0;
+  const weeks = /* @__PURE__ */ new Set();
+  withHours.forEach((e) => {
+    const h = Number(e.hours) || 0;
+    if (e.payStatus === "straight") straightHrs += h;
+    else unpaidHrs += h;
+    const wk = weekStartKey(e.iso);
+    if (wk) weeks.add(wk);
+  });
+  const totalHours = unpaidHrs + straightHrs;
+  const owedEstimate = rateNum > 0 ? unpaidHrs * rateNum * 1.5 + straightHrs * rateNum * 0.5 : 0;
+  return { totalHours, unpaidHrs, straightHrs, owedEstimate, weekCount: weeks.size || (totalHours > 0 ? 1 : 0) };
+}
 function caseNo(iso) {
   const d = iso ? new Date(iso) : /* @__PURE__ */ new Date();
   const yy = String(d.getFullYear()).slice(2);
@@ -873,10 +895,17 @@ function buildLetter(ctx) {
     const stOTFacts = factsByPrefix(st, "overtime");
     const stOT = stOTFacts.find((f) => f.topic === "overtime.daily") || stOTFacts[0];
     const stClause = stOT && stOT.citation && stateAddsRealOvertimeProtection(stOTFacts) ? " " + ctx.stateSel + " law (" + stOT.citation + ") provides additional overtime protection that may increase what I am owed." : "";
-    const hrs = ctx.unpaidHours > 0 ? ctx.unpaidHours : "[number]";
-    const amountLine = ctx.owedEstimate > 0 ? "Based on my regular rate of " + money(ctx.rateNum) + " per hour, the overtime pay owed for these hours (at one-and-one-half times my regular rate) totals approximately " + money(ctx.owedEstimate) + "." : "I request payment for these hours at one-and-one-half times my regular rate of pay.";
+    const bd = computeOwedBreakdown(ctx.entries, ctx.rateNum);
+    const hrs = bd.totalHours > 0 ? bd.totalHours : ctx.unpaidHours > 0 ? ctx.unpaidHours : "[number]";
+    const weekPhrase = bd.weekCount > 1 ? "across " + bd.weekCount + " separate workweeks" : "in a workweek";
+    const breakdownParts = [];
+    if (bd.unpaidHrs > 0) breakdownParts.push(bd.unpaidHrs + " hours paid nothing");
+    if (bd.straightHrs > 0) breakdownParts.push(bd.straightHrs + " hours paid straight-time only, without the overtime premium");
+    const breakdownLine = breakdownParts.length ? " Of that, " + breakdownParts.join(" and ") + "." : "";
+    const rateNote = bd.straightHrs > 0 && bd.unpaidHrs > 0 ? " (one-and-one-half times my regular rate for hours I was paid nothing for, plus the one-half-time differential owed on hours already paid straight-time)" : bd.straightHrs > 0 && bd.unpaidHrs === 0 ? " (the one-half-time overtime differential owed on hours already paid straight-time)" : " (at one-and-one-half times my regular rate)";
+    const amountLine = bd.owedEstimate > 0 ? "Based on my regular rate of " + money(ctx.rateNum) + " per hour, the overtime pay owed for these hours" + rateNote + " totals approximately " + money(bd.owedEstimate) + "." : "I request payment for these hours at the overtime rate required by law.";
     const subject2 = "Demand for unpaid overtime wages";
-    const body2 = date + "\n\n" + emp + "\nAttn: Payroll / Human Resources\n\nRe: " + subject2 + "\n\nTo whom it may concern:\n\nI am writing to request payment of overtime wages I earned and was not paid. My records show " + hrs + " hours worked beyond 40 in a workweek that were not paid at the required overtime rate.\n\nUnder the federal Fair Labor Standards Act (" + fedCite + "), these hours must be paid at one-and-one-half times my regular rate of pay." + stClause + "\n\n" + amountLine + " I request payment within 14 days of the date of this letter. Please contact me to arrange payment.\n\nSincerely,\n" + name;
+    const body2 = date + "\n\n" + emp + "\nAttn: Payroll / Human Resources\n\nRe: " + subject2 + "\n\nTo whom it may concern:\n\nI am writing to request payment of overtime wages I earned and was not paid correctly. My records show " + hrs + " hours worked beyond 40 hours " + weekPhrase + " that were not paid at the required overtime rate." + breakdownLine + "\n\nUnder the federal Fair Labor Standards Act (" + fedCite + "), these hours must be paid at one-and-one-half times my regular rate of pay, less any straight-time amount already paid for them." + stClause + "\n\n" + amountLine + " I request payment within 14 days of the date of this letter. Please contact me to arrange payment.\n\nSincerely,\n" + name;
     return { title: "Wage demand letter", subject: subject2, body: body2 };
   }
   if (kind === "complaint") {
@@ -975,6 +1004,7 @@ function App() {
   const [logKind, setLogKind] = useState("Wage & hour");
   const [logNote, setLogNote] = useState("");
   const [logHours, setLogHours] = useState("");
+  const [logPayStatus, setLogPayStatus] = useState("unpaid");
   const [letterEdit, setLetterEdit] = useState(null);
   const [letterType, setLetterType] = useState(null);
   const [docName, setDocName] = useState("");
@@ -1119,9 +1149,10 @@ function App() {
   const openedDays = daysAgo(caseOpened);
   const openedLabel = openedDays === 0 ? "today" : openedDays === 1 ? "yesterday" : openedDays + " days ago";
   const evidenceCount = entries.length;
-  const unpaidHours = entries.reduce((s, e) => s + (Number(e.hours) || 0), 0);
   const rateNum = Number(profile.rate) || 0;
-  const owedEstimate = unpaidHours > 0 && rateNum > 0 ? unpaidHours * rateNum * 1.5 : 0;
+  const owedBreakdown = computeOwedBreakdown(entries, rateNum);
+  const unpaidHours = owedBreakdown.totalHours;
+  const owedEstimate = owedBreakdown.owedEstimate;
   const strength = caseStrength(entries);
   const strengthFill = evidenceCount > 0 ? Math.max(1, Math.round(strength.score / 20)) : 0;
   const doneCount = cfg.steps.filter((_, i) => done[i]).length;
@@ -1289,21 +1320,25 @@ function App() {
   };
   const Log = () => {
     const kind = LOG_KINDS.find((k) => k.tag === logKind) || LOG_KINDS[0];
-    const totalHours = entries.reduce((s, e) => s + (Number(e.hours) || 0), 0);
+    const logBreakdown = computeOwedBreakdown(entries, rateNum);
     const submit = () => {
       addEntry({
         title: kind.title,
         body: logNote.trim() || "No detail added yet \u2014 tap to edit while it is fresh.",
         color: kind.color,
         tag: kind.tag,
-        hours: kind.asksHours ? Number(logHours) || 0 : void 0
+        hours: kind.asksHours ? Number(logHours) || 0 : void 0,
+        payStatus: kind.asksHours ? logPayStatus : void 0
       });
       setLogNote("");
       setLogHours("");
+      setLogPayStatus("unpaid");
     };
     return /* @__PURE__ */ React.createElement("div", { style: css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px") }, /* @__PURE__ */ React.createElement("h1", { style: css("margin:0;font:700 26px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Incident log"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Contemporaneous notes carry real weight. Each entry is timestamped and kept on your device."), /* @__PURE__ */ React.createElement("div", { style: css("padding:16px;border-radius:16px;border:2px solid #14181F;background:#fff;display:flex;flex-direction:column;gap:12px") }, /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": "Entry type", style: css("display:flex;gap:8px;flex-wrap:wrap") }, LOG_KINDS.map(
       (k) => /* @__PURE__ */ React.createElement("button", { key: k.tag, onClick: () => setLogKind(k.tag), "aria-pressed": logKind === k.tag, style: css("min-height:44px;padding:10px 13px;border-radius:999px;border:2px solid " + (logKind === k.tag ? "#2B3AA8" : "#14181F") + ";background:" + (logKind === k.tag ? "#2B3AA8" : "#fff") + ";color:" + (logKind === k.tag ? "#fff" : "#14181F") + ";font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, k.label.replace("+ ", ""))
-    )), kind.asksHours && /* @__PURE__ */ React.createElement("div", { style: css("display:flex;align-items:center;gap:10px") }, /* @__PURE__ */ React.createElement("label", { htmlFor: "log-hours", style: css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Unpaid hours"), /* @__PURE__ */ React.createElement("input", { id: "log-hours", type: "number", min: "0", step: "0.5", value: logHours, onChange: (e) => setLogHours(e.target.value), placeholder: "e.g. 6.5", style: css("width:110px;padding:11px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif") })), /* @__PURE__ */ React.createElement("textarea", { "aria-label": "What happened", value: logNote, onChange: (e) => setLogNote(e.target.value), rows: 2, placeholder: "What happened? Date, who was there, what was said\u2026", style: css("width:100%;box-sizing:border-box;padding:12px;border-radius:10px;border:2px solid #14181F;font:400 16px/1.4 'Atkinson Hyperlegible',sans-serif;resize:vertical") }), /* @__PURE__ */ React.createElement("button", { onClick: submit, style: css("align-self:flex-start;padding:12px 18px;border-radius:12px;border:none;background:#2B3AA8;color:#fff;font:700 16px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, "Add to log")), entries.length > 0 && /* @__PURE__ */ React.createElement("div", { style: css("display:flex;gap:10px;flex-wrap:wrap") }, /* @__PURE__ */ React.createElement("span", { style: css("padding:8px 12px;border-radius:8px;background:#EEF1FF;border:2px solid #2B3AA8;font:600 13px 'IBM Plex Mono',monospace;color:#1B2778") }, entries.length, " ", entries.length === 1 ? "ENTRY" : "ENTRIES"), totalHours > 0 && /* @__PURE__ */ React.createElement("span", { style: css("padding:8px 12px;border-radius:8px;background:#FFF4D6;border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace;color:#14181F") }, totalHours, " UNPAID HRS LOGGED")), entries.length === 0 ? /* @__PURE__ */ React.createElement("div", { style: css("padding:22px;border-radius:16px;border:2px dashed rgba(20,24,31,.35);background:#fff;text-align:center") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 4px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Your log is empty"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Add your first entry above. The earlier you start, the stronger your record.")) : /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column") }, entries.map(
+    )), kind.asksHours && /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:10px") }, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;align-items:center;gap:10px") }, /* @__PURE__ */ React.createElement("label", { htmlFor: "log-hours", style: css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Hours"), /* @__PURE__ */ React.createElement("input", { id: "log-hours", type: "number", min: "0", max: "80", step: "0.5", value: logHours, onChange: (e) => setLogHours(e.target.value), placeholder: "e.g. 6.5", style: css("width:110px;padding:11px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif") })), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": "Were these hours paid?", style: css("display:flex;gap:8px;flex-wrap:wrap") }, [["unpaid", "Not paid at all"], ["straight", "Paid straight-time only"]].map(
+      ([v, label]) => /* @__PURE__ */ React.createElement("button", { key: v, type: "button", onClick: () => setLogPayStatus(v), "aria-pressed": logPayStatus === v, style: css("min-height:44px;padding:10px 13px;border-radius:999px;border:2px solid " + (logPayStatus === v ? "#2B3AA8" : "#14181F") + ";background:" + (logPayStatus === v ? "#2B3AA8" : "#fff") + ";color:" + (logPayStatus === v ? "#fff" : "#14181F") + ";font:700 13px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, label)
+    )), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, logPayStatus === "straight" ? "Owed at the 0.5\xD7 overtime differential (you already got straight time for these hours)." : "Owed at the full 1.5\xD7 overtime rate.")), /* @__PURE__ */ React.createElement("textarea", { "aria-label": "What happened", value: logNote, onChange: (e) => setLogNote(e.target.value), rows: 2, placeholder: "What happened? Date, who was there, what was said\u2026", style: css("width:100%;box-sizing:border-box;padding:12px;border-radius:10px;border:2px solid #14181F;font:400 16px/1.4 'Atkinson Hyperlegible',sans-serif;resize:vertical") }), /* @__PURE__ */ React.createElement("button", { onClick: submit, style: css("align-self:flex-start;padding:12px 18px;border-radius:12px;border:none;background:#2B3AA8;color:#fff;font:700 16px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, "Add to log")), entries.length > 0 && /* @__PURE__ */ React.createElement("div", { style: css("display:flex;gap:10px;flex-wrap:wrap") }, /* @__PURE__ */ React.createElement("span", { style: css("padding:8px 12px;border-radius:8px;background:#EEF1FF;border:2px solid #2B3AA8;font:600 13px 'IBM Plex Mono',monospace;color:#1B2778") }, entries.length, " ", entries.length === 1 ? "ENTRY" : "ENTRIES"), logBreakdown.totalHours > 0 && /* @__PURE__ */ React.createElement("span", { style: css("padding:8px 12px;border-radius:8px;background:#FFF4D6;border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace;color:#14181F") }, logBreakdown.totalHours, " HRS LOGGED \xB7 ", logBreakdown.weekCount, " ", logBreakdown.weekCount === 1 ? "WORKWEEK" : "WORKWEEKS")), entries.length === 0 ? /* @__PURE__ */ React.createElement("div", { style: css("padding:22px;border-radius:16px;border:2px dashed rgba(20,24,31,.35);background:#fff;text-align:center") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 4px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Your log is empty"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Add your first entry above. The earlier you start, the stronger your record.")) : /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column") }, entries.map(
       (e, i) => /* @__PURE__ */ React.createElement("div", { key: i, style: css("display:flex;gap:14px") }, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;align-items:center;width:22px;flex:none") }, /* @__PURE__ */ React.createElement("span", { style: css("flex:none;width:18px;height:18px;border-radius:50%;background:" + e.color + ";border:3px solid #14181F") }), /* @__PURE__ */ React.createElement("span", { style: css("flex:1;width:3px;background:rgba(20,24,31,.15)") })), /* @__PURE__ */ React.createElement("div", { style: css("padding-bottom:18px;flex:1") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 3px;font:600 13px 'IBM Plex Mono',monospace;color:#4A5162") }, e.date), /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 5px;font:700 18px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, e.title, e.hours ? " \u2014 " + e.hours + " hrs" : ""), /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 8px;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, e.body), /* @__PURE__ */ React.createElement("span", { style: css("display:inline-block;padding:6px 10px;border-radius:8px;background:#F0EDE5;border:2px solid #14181F;font:600 12px 'IBM Plex Mono',monospace;color:#14181F") }, e.tag)))
     )));
   };

@@ -291,6 +291,35 @@ function stamp(d){
   return MONTHS[d.getMonth()].toUpperCase() + ' ' + d.getDate() + ', ' + d.getFullYear() + ' · ' + h + ':' + m + ' ' + ap;
 }
 function money(n){ return '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 }); }
+// Sunday-start key for the workweek an ISO timestamp falls in, so multi-week logs
+// aren't billed as if every logged hour fell inside a single ">40 hrs" workweek.
+function weekStartKey(iso){
+  const d = iso ? new Date(iso) : null;
+  if (!d || isNaN(d.getTime())) return null;
+  const sun = new Date(d);
+  sun.setDate(d.getDate() - d.getDay());
+  return sun.toISOString().slice(0, 10);
+}
+// Turn logged hours entries into an owed-amount estimate that distinguishes hours
+// paid $0 (owed the full 1.5x overtime rate) from hours already paid straight-time
+// but denied the overtime premium (owed only the 0.5x differential) — a ~3x
+// overstatement if every entry is assumed unpaid — and reports how many distinct
+// workweeks the hours span, since a multi-week log is not ">40 hours in a
+// workweek" the way a single-week log is.
+function computeOwedBreakdown(entries, rateNum){
+  const withHours = (entries || []).filter(e => Number(e.hours) > 0);
+  let unpaidHrs = 0, straightHrs = 0;
+  const weeks = new Set();
+  withHours.forEach(e => {
+    const h = Number(e.hours) || 0;
+    if (e.payStatus === 'straight') straightHrs += h; else unpaidHrs += h;
+    const wk = weekStartKey(e.iso);
+    if (wk) weeks.add(wk);
+  });
+  const totalHours = unpaidHrs + straightHrs;
+  const owedEstimate = rateNum > 0 ? (unpaidHrs * rateNum * 1.5) + (straightHrs * rateNum * 0.5) : 0;
+  return { totalHours, unpaidHrs, straightHrs, owedEstimate, weekCount: weeks.size || (totalHours > 0 ? 1 : 0) };
+}
 // A short, stable case number derived from the case-open date (no fake persona).
 function caseNo(iso){
   const d = iso ? new Date(iso) : new Date();
@@ -463,14 +492,29 @@ function buildLetter(ctx){
     const stClause = (stOT && stOT.citation && stateAddsRealOvertimeProtection(stOTFacts))
       ? ' ' + ctx.stateSel + ' law (' + stOT.citation + ') provides additional overtime protection that may increase what I am owed.'
       : '';
-    const hrs = ctx.unpaidHours > 0 ? ctx.unpaidHours : '[number]';
-    const amountLine = ctx.owedEstimate > 0
-      ? 'Based on my regular rate of ' + money(ctx.rateNum) + ' per hour, the overtime pay owed for these hours (at one-and-one-half times my regular rate) totals approximately ' + money(ctx.owedEstimate) + '.'
-      : 'I request payment for these hours at one-and-one-half times my regular rate of pay.';
+    // Distinguish hours paid $0 (owed the full 1.5x rate) from hours already paid
+    // straight-time but denied the overtime premium (owed only the 0.5x
+    // differential — the 1.5x figure overstates that portion by 3x), and group by
+    // workweek so a multi-week log isn't described as ">40 hrs in a workweek".
+    const bd = computeOwedBreakdown(ctx.entries, ctx.rateNum);
+    const hrs = bd.totalHours > 0 ? bd.totalHours : (ctx.unpaidHours > 0 ? ctx.unpaidHours : '[number]');
+    const weekPhrase = bd.weekCount > 1 ? 'across ' + bd.weekCount + ' separate workweeks' : 'in a workweek';
+    const breakdownParts = [];
+    if (bd.unpaidHrs > 0) breakdownParts.push(bd.unpaidHrs + ' hours paid nothing');
+    if (bd.straightHrs > 0) breakdownParts.push(bd.straightHrs + ' hours paid straight-time only, without the overtime premium');
+    const breakdownLine = breakdownParts.length ? ' Of that, ' + breakdownParts.join(' and ') + '.' : '';
+    const rateNote = bd.straightHrs > 0 && bd.unpaidHrs > 0
+      ? ' (one-and-one-half times my regular rate for hours I was paid nothing for, plus the one-half-time differential owed on hours already paid straight-time)'
+      : bd.straightHrs > 0 && bd.unpaidHrs === 0
+      ? ' (the one-half-time overtime differential owed on hours already paid straight-time)'
+      : ' (at one-and-one-half times my regular rate)';
+    const amountLine = bd.owedEstimate > 0
+      ? 'Based on my regular rate of ' + money(ctx.rateNum) + ' per hour, the overtime pay owed for these hours' + rateNote + ' totals approximately ' + money(bd.owedEstimate) + '.'
+      : 'I request payment for these hours at the overtime rate required by law.';
     const subject = 'Demand for unpaid overtime wages';
     const body = date + '\n\n' + emp + '\nAttn: Payroll / Human Resources\n\nRe: ' + subject + '\n\nTo whom it may concern:\n\n' +
-      'I am writing to request payment of overtime wages I earned and was not paid. My records show ' + hrs + ' hours worked beyond 40 in a workweek that were not paid at the required overtime rate.\n\n' +
-      'Under the federal Fair Labor Standards Act (' + fedCite + '), these hours must be paid at one-and-one-half times my regular rate of pay.' + stClause + '\n\n' +
+      'I am writing to request payment of overtime wages I earned and was not paid correctly. My records show ' + hrs + ' hours worked beyond 40 hours ' + weekPhrase + ' that were not paid at the required overtime rate.' + breakdownLine + '\n\n' +
+      'Under the federal Fair Labor Standards Act (' + fedCite + '), these hours must be paid at one-and-one-half times my regular rate of pay, less any straight-time amount already paid for them.' + stClause + '\n\n' +
       amountLine + ' I request payment within 14 days of the date of this letter. Please contact me to arrange payment.\n\nSincerely,\n' + name;
     return { title: 'Wage demand letter', subject, body };
   }
@@ -578,6 +622,7 @@ function App(){
   const [logKind, setLogKind] = useState('Wage & hour');
   const [logNote, setLogNote] = useState('');
   const [logHours, setLogHours] = useState('');
+  const [logPayStatus, setLogPayStatus] = useState('unpaid'); // 'unpaid' (paid $0) | 'straight' (paid straight-time only)
   const [letterEdit, setLetterEdit] = useState(null); // null = generated view; string = editing
   const [letterType, setLetterType] = useState(null); // chosen letter kind (wage issue offers two)
   const [docName, setDocName] = useState('');
@@ -729,10 +774,13 @@ function App(){
   const openedDays = daysAgo(caseOpened);
   const openedLabel = openedDays === 0 ? 'today' : openedDays === 1 ? 'yesterday' : openedDays + ' days ago';
   const evidenceCount = entries.length;
-  const unpaidHours = entries.reduce((s, e) => s + (Number(e.hours) || 0), 0);
   const rateNum = Number(profile.rate) || 0;
-  // Estimated overtime owed: only when we have both hours and a pay rate (1.5×).
-  const owedEstimate = (unpaidHours > 0 && rateNum > 0) ? unpaidHours * rateNum * 1.5 : 0;
+  // Owed-amount estimate: distinguishes hours paid $0 (1.5×) from hours already
+  // paid straight-time but denied the overtime premium (0.5× differential), and
+  // groups logged hours by workweek — see computeOwedBreakdown.
+  const owedBreakdown = computeOwedBreakdown(entries, rateNum);
+  const unpaidHours = owedBreakdown.totalHours;
+  const owedEstimate = owedBreakdown.owedEstimate;
   const strength = caseStrength(entries);
   // Show 0 filled bars when nothing is logged. Each strength dimension floors at
   // pct 12, so score is ~12 even with no evidence — Math.round(12/20) would light
@@ -1192,11 +1240,12 @@ function App(){
 
   const Log = () => {
     const kind = LOG_KINDS.find(k => k.tag === logKind) || LOG_KINDS[0];
-    const totalHours = entries.reduce((s, e) => s + (Number(e.hours) || 0), 0);
+    const logBreakdown = computeOwedBreakdown(entries, rateNum);
     const submit = () => {
       addEntry({ title: kind.title, body: logNote.trim() || 'No detail added yet — tap to edit while it is fresh.',
-        color: kind.color, tag: kind.tag, hours: kind.asksHours ? (Number(logHours) || 0) : undefined });
-      setLogNote(''); setLogHours('');
+        color: kind.color, tag: kind.tag, hours: kind.asksHours ? (Number(logHours) || 0) : undefined,
+        payStatus: kind.asksHours ? logPayStatus : undefined });
+      setLogNote(''); setLogHours(''); setLogPayStatus('unpaid');
     };
     return (
     <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
@@ -1210,9 +1259,17 @@ function App(){
           )}
         </div>
         {kind.asksHours &&
-          <div style={css("display:flex;align-items:center;gap:10px")}>
-            <label htmlFor="log-hours" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Unpaid hours</label>
-            <input id="log-hours" type="number" min="0" step="0.5" value={logHours} onChange={e => setLogHours(e.target.value)} placeholder="e.g. 6.5" style={css("width:110px;padding:11px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif")} />
+          <div style={css("display:flex;flex-direction:column;gap:10px")}>
+            <div style={css("display:flex;align-items:center;gap:10px")}>
+              <label htmlFor="log-hours" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Hours</label>
+              <input id="log-hours" type="number" min="0" max="80" step="0.5" value={logHours} onChange={e => setLogHours(e.target.value)} placeholder="e.g. 6.5" style={css("width:110px;padding:11px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif")} />
+            </div>
+            <div role="group" aria-label="Were these hours paid?" style={css("display:flex;gap:8px;flex-wrap:wrap")}>
+              {[['unpaid','Not paid at all'],['straight','Paid straight-time only']].map(([v, label]) =>
+                <button key={v} type="button" onClick={() => setLogPayStatus(v)} aria-pressed={logPayStatus === v} style={css('min-height:44px;padding:10px 13px;border-radius:999px;border:2px solid ' + (logPayStatus === v ? '#2B3AA8' : '#14181F') + ';background:' + (logPayStatus === v ? '#2B3AA8' : '#fff') + ';color:' + (logPayStatus === v ? '#fff' : '#14181F') + ";font:700 13px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{label}</button>
+              )}
+            </div>
+            <p style={css("margin:0;font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{logPayStatus === 'straight' ? 'Owed at the 0.5× overtime differential (you already got straight time for these hours).' : 'Owed at the full 1.5× overtime rate.'}</p>
           </div>
         }
         <textarea aria-label="What happened" value={logNote} onChange={e => setLogNote(e.target.value)} rows={2} placeholder="What happened? Date, who was there, what was said…" style={css("width:100%;box-sizing:border-box;padding:12px;border-radius:10px;border:2px solid #14181F;font:400 16px/1.4 'Atkinson Hyperlegible',sans-serif;resize:vertical")} />
@@ -1222,7 +1279,7 @@ function App(){
       {entries.length > 0 &&
         <div style={css("display:flex;gap:10px;flex-wrap:wrap")}>
           <span style={css("padding:8px 12px;border-radius:8px;background:#EEF1FF;border:2px solid #2B3AA8;font:600 13px 'IBM Plex Mono',monospace;color:#1B2778")}>{entries.length} {entries.length === 1 ? 'ENTRY' : 'ENTRIES'}</span>
-          {totalHours > 0 && <span style={css("padding:8px 12px;border-radius:8px;background:#FFF4D6;border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace;color:#14181F")}>{totalHours} UNPAID HRS LOGGED</span>}
+          {logBreakdown.totalHours > 0 && <span style={css("padding:8px 12px;border-radius:8px;background:#FFF4D6;border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace;color:#14181F")}>{logBreakdown.totalHours} HRS LOGGED · {logBreakdown.weekCount} {logBreakdown.weekCount === 1 ? 'WORKWEEK' : 'WORKWEEKS'}</span>}
         </div>
       }
 
