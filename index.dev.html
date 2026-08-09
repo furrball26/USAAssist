@@ -1051,7 +1051,7 @@ function App(){
         <div ref={chatEnd}></div>
       </div>
       <div style={css("position:sticky;bottom:0;background:#FFFDF8;border-top:2px solid rgba(20,24,31,.1);padding:14px 20px 18px;display:flex;flex-direction:column;gap:12px")}>
-        <div style={css("display:flex;gap:8px;overflow-x:auto")}>
+        <div style={css("display:flex;gap:8px;overflow-x:auto;-webkit-mask-image:linear-gradient(to right,#000 92%,transparent 100%);mask-image:linear-gradient(to right,#000 92%,transparent 100%)")}>
           {PROMPT_TEXTS.map(t => <button key={t} onClick={() => send(t)} style={css("flex:none;padding:11px 14px;border-radius:999px;border:2px solid #14181F;background:#FFF;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer")}>{t}</button>)}
         </div>
         <div style={css("display:flex;gap:10px;align-items:center")}>
@@ -1210,7 +1210,7 @@ function App(){
       <div style={css("padding:14px 16px;border-radius:12px;background:#FFF4D6;border:2px solid #14181F")}>
         <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Automated clause analysis is not available in this preview, so <strong>your document is not uploaded or read</strong> — the picker only notes the file name. The <strong>example review</strong> below shows how flags will work. Bring your actual document to an attorney before signing.</p>
       </div>
-      <label style={css("display:flex;flex-direction:column;gap:8px;padding:20px;border-radius:16px;border:2px dashed #2B3AA8;background:#EEF1FF;cursor:pointer;text-align:center")}>
+      <label style={css("display:flex;flex-direction:column;gap:8px;padding:20px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF;cursor:pointer;text-align:center")}>
         <span style={css("font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{docName ? 'Noted: ' + docName + ' (not analyzed)' : 'See how document review works'}</span>
         <span style={css("font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>Offer, contract, NDA, severance or PIP · your file stays on your device</span>
         <input type="file" accept=".pdf,.doc,.docx,.txt,.rtf" onChange={e => setDocName(e.target.files && e.target.files[0] ? e.target.files[0].name : '')} style={css("display:none")} />
