@@ -82,6 +82,9 @@ function topicKicker(topic){
     wages:'WAGES', termination:'TERMINATION', compensation:'COMPENSATION' };
   return m[p] || p.replace(/([A-Z])/g, ' $1').replace(/^./, c => c.toUpperCase()).toUpperCase();
 }
+// Only ever render an https:// URL as an href — guards against a malformed/malicious
+// javascript:, data:, or other scheme reaching an <a href> from content data.
+function safeUrl(u){ return (typeof u === 'string' && /^https:\/\//i.test(u)) ? u : null; }
 function factValStr(v){ return Array.isArray(v) ? v.join(', ') : (v == null ? '' : String(v)); }
 function factByTopic(facts, topic){ return (facts || []).find(f => f.topic === topic); }
 function factsByPrefix(facts, prefix){ return (facts || []).filter(f => String(f.topic || '').split('.')[0] === prefix); }
@@ -1090,7 +1093,7 @@ function App(){
               const stRev = !!(stateData && stateData.reviewed === true);
               const fedOT = [factByTopic(fedF,'overtime.basicRule'), factByTopic(fedF,'overtime.salaryLevelWeekly')].filter(Boolean);
               const stOT = factsByPrefix(stF,'overtime').concat([factByTopic(stF,'minimumWage.hourly')].filter(Boolean));
-              const line = f => <p key={f.topic} style={css("margin:0 0 8px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{f.summary} {f.sourceUrl ? <a href={f.sourceUrl} target="_blank" rel="noopener noreferrer" style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null}</p>;
+              const line = f => { const u = safeUrl(f.sourceUrl); return <p key={f.topic} style={css("margin:0 0 8px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{f.summary} {u ? <a href={u} target="_blank" rel="noopener noreferrer" style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null}</p>; };
               return (
                 <div style={css("padding:18px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF")}>
                   <p style={css("margin:0 0 10px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>What applies in {stateLabel}</p>
@@ -1307,7 +1310,7 @@ function App(){
         const stF = (stateData && stateData.facts) || [];
         const fedDL = pickDeadlineFact(fedF, cfg.key);
         const stDL = pickDeadlineFact(stF, cfg.key);
-        const src = f => f && f.sourceUrl ? <a href={f.sourceUrl} target="_blank" rel="noopener noreferrer" style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null;
+        const src = f => { const u = f && safeUrl(f.sourceUrl); return u ? <a href={u} target="_blank" rel="noopener noreferrer" style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null; };
         return (
           <div style={css("padding:18px;border-radius:16px;background:#FFE7EC;border:2px solid #14181F")}>
             <p style={css("margin:0 0 8px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Deadline watch — {stateLabel}</p>
@@ -1328,7 +1331,7 @@ function App(){
       <p style={css("margin:0 0 12px;font:400 16px/1.5 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{f.summary}</p>
       <div style={css("display:flex;gap:8px;flex-wrap:wrap;align-items:center")}>
         {f.citation ? <span style={css("padding:7px 11px;border-radius:8px;background:#EEF1FF;font:600 13px 'IBM Plex Mono',monospace;color:#1B2778")}>{f.citation}</span> : null}
-        {f.sourceUrl ? <a href={f.sourceUrl} target="_blank" rel="noopener noreferrer" style={css("display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:7px 11px;border-radius:8px;background:#fff;border:2px solid #2B3AA8;font:600 13px 'IBM Plex Mono',monospace;color:#2B3AA8;text-decoration:none")}>Source ↗</a> : null}
+        {safeUrl(f.sourceUrl) ? <a href={safeUrl(f.sourceUrl)} target="_blank" rel="noopener noreferrer" style={css("display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:7px 11px;border-radius:8px;background:#fff;border:2px solid #2B3AA8;font:600 13px 'IBM Plex Mono',monospace;color:#2B3AA8;text-decoration:none")}>Source ↗</a> : null}
         <span style={css('padding:7px 11px;border-radius:8px;background:' + scopeTone + ";border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace;color:#14181F")}>{scopeLabel}</span>
       </div>
     </div>
@@ -1379,8 +1382,8 @@ function App(){
       {(() => {
         const ag = (stateData && stateData.agencies) || {};
         const links = [];
-        if (ag.wageHour && ag.wageHour.url) links.push(['Wage & hour — ' + (ag.wageHour.name || stateSel), ag.wageHour.url]);
-        if (ag.discrimination && ag.discrimination.url) links.push(['Discrimination — ' + (ag.discrimination.name || stateSel), ag.discrimination.url]);
+        if (ag.wageHour && safeUrl(ag.wageHour.url)) links.push(['Wage & hour — ' + (ag.wageHour.name || stateSel), safeUrl(ag.wageHour.url)]);
+        if (ag.discrimination && safeUrl(ag.discrimination.url)) links.push(['Discrimination — ' + (ag.discrimination.name || stateSel), safeUrl(ag.discrimination.url)]);
         links.push(['Federal — EEOC (discrimination)', 'https://www.eeoc.gov/filing-charge-discrimination']);
         links.push(['Federal — U.S. DOL Wage & Hour', 'https://www.dol.gov/agencies/whd/contact/local-offices']);
         return (
