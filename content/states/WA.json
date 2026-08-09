@@ -73,6 +73,30 @@
       "notes": "Definition excludes nonprofit religious or sectarian organizations."
     },
     {
+      "topic": "disability.accommodation",
+      "value": "mandatory absent undue hardship; interactive process required",
+      "summary": "Washington Human Rights Commission rules require an employer to reasonably accommodate an 'able worker with a disability' -- through measures like job restructuring, a modified schedule, equipment, or reassignment to a vacant position -- unless the employer shows undue hardship, and require the employer to engage in an interactive process with the employee once an accommodation is requested.",
+      "citation": "WAC 162-22-065 (reasonable accommodation); WAC 162-22-075 (undue hardship)",
+      "sourceUrl": "https://app.leg.wa.gov/wac/default.aspx?cite=162-22-065",
+      "sourceAgency": "Washington State Human Rights Commission (WAC Title 162)",
+      "lastChecked": "2026-08-08",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Confirmed directly against the primary regulatory text (fetched from app.leg.wa.gov): 162-22-065 defines reasonable accommodation (enabling the application process, job performance, and equal benefits/privileges of employment); 162-22-075 sets the undue-hardship standard (cost/difficulty unreasonable given the employer's size and resources, ability to fold the cost into existing plans, and other legal/contractual constraints). Unlike NY/NJ/IL, this duty is set out in WSHRC administrative rules interpreting RCW 49.60.180 rather than spelled out in the RCW itself. Coverage follows WLAD's 8-employee threshold (see discrimination.coverage, above)."
+    },
+    {
+      "topic": "final-pay",
+      "value": "next regular payday",
+      "summary": "Whether an employee quits or is fired, Washington requires the employer to pay all wages owed by the end of the next regular pay period (no accelerated payment on discharge).",
+      "citation": "RCW 49.48.010",
+      "sourceUrl": "https://app.leg.wa.gov/rcw/default.aspx?cite=49.48.010",
+      "sourceAgency": "Washington State Legislature (Revised Code of Washington)",
+      "lastChecked": "2026-08-08",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "L&I enforces this rule; willful withholding of wages can expose an employer to a double-damages/exemplary-damages claim under RCW 49.52.070, not captured in this fact."
+    },
+    {
       "topic": "retaliation",
       "value": "prohibited under WLAD",
       "summary": "It is an unfair practice to discharge, expel, or otherwise discriminate against a person for opposing discrimination or for filing a charge, testifying, or assisting in a proceeding under the Law Against Discrimination.",

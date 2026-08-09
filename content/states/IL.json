@@ -66,6 +66,18 @@
       "notes": "Effective July 1, 2020 the Act's employer definition was broadened to 1+ employee for most purposes; certain provisions (e.g., some disability accommodation counts) may have had prior thresholds. Verify exact subsection wording."
     },
     {
+      "topic": "disability.accommodation",
+      "value": "mandatory unless prohibitively expensive or unduly disruptive",
+      "summary": "The Illinois Human Rights Act requires employers to make reasonable accommodation of the known physical or mental limitations of an otherwise-qualified applicant or employee with a disability -- such as facility alterations, modified schedules or leave, equipment, job restructuring, or readers/interpreters -- unless the employer can show the accommodation would be prohibitively expensive or would unduly disrupt the ordinary conduct of business.",
+      "citation": "775 ILCS 5/2-102(A)",
+      "sourceUrl": "https://dhr.illinois.gov/rights/disability-rights.html",
+      "sourceAgency": "Illinois Department of Human Rights",
+      "lastChecked": "2026-08-08",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "IHRA's undue-hardship standard uses different wording than the ADA's ('prohibitively expensive' / 'unduly disrupt the ordinary conduct of business' rather than 'undue hardship'), confirmed via multiple independent secondary legal sources quoting the statute; the primary text at ilga.gov's statute-search tool blocks automated fetch (403), so it was not independently re-confirmed word-for-word this session -- verify directly on ilga.gov if possible. It is the employee's responsibility to request the accommodation; coverage follows the IHRA's 1+-employee threshold (see discrimination.coverage, above)."
+    },
+    {
       "topic": "retaliation.whistleblower",
       "value": "Illinois Whistleblower Act",
       "summary": "Illinois's Whistleblower Act bars employers from retaliating against employees who disclose (or refuse to participate in) activity they reasonably believe violates a state or federal law, rule, or regulation or poses a danger to public health or safety.",

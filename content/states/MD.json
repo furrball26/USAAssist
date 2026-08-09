@@ -53,6 +53,18 @@
       "notes": "The lowered 1-employee threshold for harassment (added by 2019 amendments) is the key state addition beyond the federal 15-employee floor."
     },
     {
+      "topic": "disability.accommodation",
+      "value": "mandatory for employees and applicants absent undue hardship",
+      "summary": "Maryland's Fair Employment Practices Act makes it unlawful for a covered employer to fail or refuse to make reasonable accommodation for the known disability of an otherwise-qualified employee or job applicant.",
+      "citation": "Md. Code, State Government Art., § 20-606(a)(4)",
+      "sourceUrl": "https://mgaleg.maryland.gov/mgawebsite/Laws/StatuteText?article=gsg&section=20-606&enactments=false",
+      "sourceAgency": "Maryland General Assembly (Maryland Code)",
+      "lastChecked": "2026-08-08",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Confirmed directly against the primary statute text (fetched from mgaleg.maryland.gov): 20-606(a)(4) already covers both an 'employee' and 'an applicant for employment.' The undue-hardship exception and the requirement that employers consider reassignment to other available positions (not just the employee's current job) are set out in implementing COMAR 14.03.02 regulations and Fourth Circuit case law, not independently verified against primary regulatory text this session. Applies at the 15+-employee coverage threshold (see discrimination.coverage, above)."
+    },
+    {
       "topic": "deadlines.discriminationComplaint",
       "value": "300 days (discrimination/retaliation); 2 years (harassment)",
       "summary": "A discrimination or retaliation complaint must be filed with MCCR within 300 days of the alleged act, while harassment complaints have a 2-year filing window.",

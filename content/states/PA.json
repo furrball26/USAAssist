@@ -77,6 +77,18 @@
       "notes": "PHRA 'employer' means a person employing four or more persons within the Commonwealth. Verify exact 'four or more' wording against the full statute text (Section 4 definitions)."
     },
     {
+      "topic": "disability.accommodation",
+      "value": "mandatory absent undue hardship",
+      "summary": "Pennsylvania Human Relations Commission regulations bar denying a person with a disability the opportunity to use, enjoy, or benefit from employment where the denial is based on the person's need for reasonable accommodation, unless making the accommodation would impose an undue hardship.",
+      "citation": "16 Pa. Code § 44.5(b)",
+      "sourceUrl": "https://www.pacodeandbulletin.gov/Display/pacode?file=/secure/pacode/data/016/chapter44/s44.5.html&d=reduce",
+      "sourceAgency": "Pennsylvania Human Relations Commission (16 Pa. Code Ch. 44)",
+      "lastChecked": "2026-08-08",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Confirmed directly against the primary regulatory text (fetched from the official Pennsylvania Code and Bulletin site). This duty is set out in PHRC's implementing regulations (16 Pa. Code Ch. 44, 'Discrimination on the Basis of Handicap or Disability') rather than spelled out in the PHRA statute text itself; related sections 44.13 (equipment modification) and 44.14 (job modification) detail specific accommodation types, not independently verified this session. Applies at the PHRA's 4+-employee coverage threshold (see discrimination.coverage, above)."
+    },
+    {
       "topic": "deadlines.discriminationComplaint",
       "value": "180 days",
       "summary": "A discrimination complaint must be filed with the PA Human Relations Commission within 180 days of the alleged discrimination.",

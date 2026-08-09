@@ -56,6 +56,30 @@
       "notes": "Definition of 'employer' includes the state, political subdivisions, and any person employing four or more persons within Ohio. This lower threshold also extends age discrimination protection (age 40+) to employers below the federal ADEA 20-employee floor."
     },
     {
+      "topic": "disability.accommodation",
+      "value": "mandatory absent undue hardship",
+      "summary": "Ohio Civil Rights Commission regulations require an employer to make reasonable accommodation to the disability of an employee or applicant, unless the employer can show the accommodation would impose an undue hardship on the conduct of its business, considering factors such as business necessity and financial cost relative to the employer's size.",
+      "citation": "Ohio Admin. Code 4112-5-08(E)(1)",
+      "sourceUrl": "https://codes.ohio.gov/ohio-administrative-code/rule-4112-5-08",
+      "sourceAgency": "Ohio Civil Rights Commission (Ohio Admin. Code Ch. 4112-5)",
+      "lastChecked": "2026-08-08",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Confirmed directly against the primary regulatory text (effective 4/11/2023), fetched from the official Ohio Laws codes.ohio.gov site. This duty is set out in OCRC's implementing administrative rule rather than spelled out in the R.C. 4112 statute text itself. Applies at Ohio's 4+-employee discrimination-coverage threshold (see discrimination.coverage, above)."
+    },
+    {
+      "topic": "final-pay",
+      "value": "no dedicated termination rule; follows the regular semi-monthly pay schedule",
+      "summary": "Ohio has no statute specifically requiring accelerated payment of final wages on termination; a separated employee's final wages are simply due on the employer's next regular semi-monthly payday under the general wage-payment-timing statute.",
+      "citation": "Ohio Rev. Code 4113.15",
+      "sourceUrl": "https://codes.ohio.gov/ohio-revised-code/section-4113.15",
+      "sourceAgency": "Ohio Revised Code (LSC)",
+      "lastChecked": "2026-08-08",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Confirmed directly against the primary statute text: 4113.15 requires wages for the first half of a month to be paid by the 1st of the next month, and wages for the second half by the 15th, with no separate provision accelerating payment on discharge or resignation; some secondary summaries describe this as 'next payday or within 15 days, whichever is earlier,' which is just a restatement of the semi-monthly schedule itself. Wages unpaid more than 30 days past the regular payday can trigger liquidated damages under this section (not itself specific to termination)."
+    },
+    {
       "topic": "deadlines.discriminationComplaint",
       "value": "2 years",
       "summary": "A charge of employment discrimination must be filed with the Ohio Civil Rights Commission within two years of the alleged unlawful practice; a civil lawsuit also has a two-year limit and generally requires exhausting the OCRC charge first.",

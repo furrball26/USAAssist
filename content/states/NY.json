@@ -81,6 +81,18 @@
       "notes": "Six-year statute of limitations is longer than the federal FLSA's two/three-year period."
     },
     {
+      "topic": "disability.accommodation",
+      "value": "mandatory absent undue hardship",
+      "summary": "New York's Human Rights Law makes it an unlawful discriminatory practice for an employer to refuse to provide reasonable accommodations to the known disabilities, or pregnancy-related conditions, of an employee, prospective employee, or member, unless the employer can demonstrate the accommodation would impose an undue hardship on its operations; retaliating against someone for requesting an accommodation is also unlawful.",
+      "citation": "N.Y. Executive Law § 296(3)",
+      "sourceUrl": "https://www.nysenate.gov/legislation/laws/EXC/296",
+      "sourceAgency": "New York State (official consolidated laws)",
+      "lastChecked": "2026-08-08",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Confirmed directly against the primary statute text (fetched from the official nysenate.gov consolidated-laws site): 296(3)(a) sets the accommodation duty and covers pregnancy-related conditions as well as disability; 296(3)(b) sets the undue-hardship exception (factors include size of the employer's business, budget, and nature/cost of the accommodation). Coverage follows Executive Law 292(5)'s 'all employers' definition (see discrimination.coverage, above) -- the older 4-employee threshold some secondary sources still cite predates the 2019 amendments (effective 2/8/2020) that eliminated it."
+    },
+    {
       "topic": "retaliation.whistleblower",
       "value": "Labor Law § 740 (2-year limitations period)",
       "summary": "New York's whistleblower statute protects private employees from retaliation for disclosing, objecting to, or refusing to participate in activity they reasonably believe violates law or poses a substantial danger to public health or safety; suit must be brought within two years.",

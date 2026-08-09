@@ -89,6 +89,18 @@
       "notes": "NJDOL FAQ: 'There is a six (6) year statute of limitations on complaints for unpaid minimum wage, overtime and all other complaints.' The 6-year period was established by the 2019 Wage Theft Act. Statute citation (34:11-56a25.1) not shown on the FAQ page itself; verify."
     },
     {
+      "topic": "disability.accommodation",
+      "value": "mandatory absent undue hardship; informal interactive process required",
+      "summary": "New Jersey Law Against Discrimination regulations require an employer to provide reasonable accommodation to a qualified employee's disability -- such as accessible facilities, job restructuring, a modified schedule, leave, or equipment -- unless the employer can show undue hardship, and require the employer to engage in an informal interactive process once it becomes aware the employee needs assistance.",
+      "citation": "N.J.A.C. 13:13-2.5(b)",
+      "sourceUrl": "https://www.njcourts.gov/sites/default/files/charges/2.26.pdf",
+      "sourceAgency": "New Jersey Judiciary (Model Civil Jury Charge 2.26, citing N.J.A.C. 13:13-2.5)",
+      "lastChecked": "2026-08-08",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Confirmed directly against the NJ Judiciary's official model jury charge on failure-to-accommodate claims (revised 1/2025), which quotes and cites N.J.A.C. 13:13-2.5(b) for the undue-hardship standard and the interactive-process requirement, and 13:13-2.5(b)(1)-(3) for accommodation examples and undue-hardship factors. Unlike New York's Executive Law 296(3), New Jersey's LAD statute itself does not spell out the disability-accommodation duty in as much express detail -- it derives primarily from this DCR regulation and case law (e.g., Tynan v. Vicinage 13, Victor v. State) applying the LAD's general disability-discrimination prohibition (N.J.S.A. 10:5-12(a))."
+    },
+    {
       "topic": "whistleblower",
       "value": "N.J.S.A. 34:19-3 (Conscientious Employee Protection Act, CEPA)",
       "summary": "New Jersey's Conscientious Employee Protection Act (CEPA) protects employees from retaliation for disclosing, objecting to, or refusing to participate in employer activities the employee reasonably believes are unlawful or fraudulent.",
