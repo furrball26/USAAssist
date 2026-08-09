@@ -79,25 +79,68 @@ Live at **https://worklaw.app** and **https://furrball26.github.io/USAAssist/**.
 - **GitHub Pages** serves the self-contained `index.html` from `main` (root) — fully
   offline-capable, auto-publishes on every push.
 - **worklaw.app** is a Vercel project (`usaassist`, team Spectrum Dating; DNS already
-  points there). It serves a small shell `index.html` that loads React from a CDN and the
-  app bundle from jsDelivr, pinned to a **commit SHA** (immutable, cache-safe):
+  points there). It serves the shell in [`vercel/index.html`](vercel/index.html), which
+  loads React from unpkg (with SRI) and the app bundle from jsDelivr, pinned to a
+  **commit SHA** (immutable, cache-safe):
   `https://cdn.jsdelivr.net/gh/furrball26/USAAssist@<SHA>/assets/app.js`.
-  `assets/app.js` is the minified compiled build, committed to the repo.
+  `assets/app.js` is the minified compiled build, committed to the repo. Response headers
+  (CSP, `X-Frame-Options`, etc.) are set by [`vercel.json`](vercel.json).
+
+`vercel/index.html` is committed as a **template**: its jsDelivr URLs contain a literal
+`{{SHA}}` placeholder instead of a real commit hash, so the file itself never goes stale
+relative to a specific deploy. [`automation/render-shell.mjs`](automation/render-shell.mjs)
+substitutes `{{SHA}}` with the current commit and prints (or writes, via `--out=`) the file
+to actually upload to Vercel — this is what makes the shell reproducible from source instead
+of a hand-maintained artifact living only in the Vercel dashboard.
 
 ### Updating a live change
 
 1. Edit `index.dev.html` (the JSX source).
 2. `npm run verify` — rebuilds `index.html` (for Pages) + `assets/app.js` (for jsDelivr /
-   the Vercel shell) and runs the smoke test.
+   the Vercel shell), validates `content/`, checks the generated artifacts match a fresh
+   build, and runs the full test suite.
 3. `git push`. **GitHub Pages** (furrball26.github.io/USAAssist) updates automatically.
-4. For **worklaw.app**, redeploy the Vercel shell with the script `src` pinned to the new
-   commit SHA (`git rev-parse HEAD`). Pinning to the SHA avoids all CDN/browser cache lag —
-   a mutable `@main` URL can serve a stale bundle for up to ~12h even after a jsDelivr purge.
+4. For **worklaw.app**: run `node automation/render-shell.mjs --out=<path>` (defaults to
+   `git rev-parse HEAD`) and upload the rendered `<path>` as the Vercel project's
+   `index.html`. Pinning to the SHA avoids all CDN/browser cache lag — a mutable `@main`
+   URL can serve a stale bundle for up to ~12h even after a jsDelivr purge.
    (Data source for the state/county list: US Census `national_county.txt`, embedded at build.)
+5. Optionally confirm the deploy landed: `npm run check-live-drift` fetches worklaw.app,
+   extracts the SHA it's actually pinned to, and diffs it against `origin/main` (read-only;
+   requires network access to the live site).
+
+### Rollback
+
+worklaw.app is just a static shell pointing at an immutable, SHA-pinned jsDelivr URL — there
+is no server state to roll back. To revert a bad deploy:
+
+1. Pick the last-known-good commit SHA (`git log` on `main`, or the previous value reported
+   by `npm run check-live-drift`).
+2. `node automation/render-shell.mjs --sha=<good-sha> --out=<path>` and upload `<path>` as
+   the Vercel `index.html`, exactly as in step 4 above but pointed at the old SHA.
+3. Because both `assets/app.js` and `content/*.json` are fetched from jsDelivr at that same
+   pinned SHA, this rolls back the app code *and* the content dataset atomically — there is
+   no separate "roll back the data" step.
+4. GitHub Pages is unaffected by a Vercel rollback (it always serves whatever is on `main`);
+   if the bad change is also live on Pages, revert it there separately (`git revert` + push).
 
 > Alternative: point worklaw.app's DNS at GitHub Pages (apex A records to GitHub's IPs,
 > `www` CNAME to `furrball26.github.io`) to serve the fully self-contained build directly,
 > dropping the CDN dependencies. Requires a DNS change at the registrar.
+
+### Fonts on the Vercel shell (accepted risk)
+
+`vercel/index.html` (like `index.dev.html`) loads Atkinson Hyperlegible / IBM Plex Mono from
+`fonts.googleapis.com` / `fonts.gstatic.com` rather than self-hosting them the way production
+`index.html` does (base64-embedded, zero network requests — see "Stack" above). That means a
+visitor's IP is observable by Google Fonts on worklaw.app specifically, on an app that may
+carry sensitive workplace-dispute context. This is being kept as an **accepted risk** rather
+than fixed here because self-hosting on the Vercel shell means either (a) inlining the same
+base64 fonts `index.html` already carries (~duplicates ~250KB already in the repo into the
+shell, defeating the point of a thin shell) or (b) serving font files from `/public` on
+Vercel (a small, real change — new binary assets + a `vercel.json` route — that's a
+reasonable follow-up but is out of scope for this pass). No code change made; flagging here
+so it isn't lost.
 
 ## Accessibility (core to the brief)
 
