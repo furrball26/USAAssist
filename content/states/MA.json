@@ -118,6 +118,18 @@
       "reviewed": false,
       "reviewedBy": null,
       "notes": "The general whistleblower statute (s.185) applies only to public-sector employers. Private-sector wage/overtime retaliation is covered by c.149 s.148A."
+    },
+    {
+      "topic": "final-pay",
+      "value": "discharge: same day; resignation: next regular payday (or following Saturday if none)",
+      "summary": "Massachusetts requires an employee who is discharged to be paid in full on the day of discharge; an employee who resigns must be paid in full on the next regular payday, or the following Saturday if there is no regular payday.",
+      "citation": "M.G.L. c. 149, s. 148",
+      "sourceUrl": "https://malegislature.gov/Laws/GeneralLaws/PartI/TitleXXI/Chapter149/Section148",
+      "sourceAgency": "Massachusetts Legislature (General Laws)",
+      "lastChecked": "2026-08-08",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Confirmed directly against the primary statute text, fetched from malegislature.gov. Massachusetts's same-day-of-discharge rule is unusually strict; violations of the Wage Act carry mandatory treble damages, attorney's fees, and costs (see deadlines.wageClaim, above)."
     }
   ],
   "agencies": {

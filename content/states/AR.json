@@ -83,6 +83,18 @@
       "notes": "Covers public employers/employees only. Private-sector employees rely on federal statutes or the common-law public-policy exception to at-will employment. Official PDF could not be auto-parsed; citation corroborated by multiple Arkansas state sources — verify statute text."
     },
     {
+      "topic": "final-pay",
+      "value": "next regular payday; 7 days if employee demands payment",
+      "summary": "When an employee is discharged, Arkansas requires payment of wages due by the next regular payday; if the employee requests payment and the employer fails to pay within 7 days of that payday, the employer owes double the unpaid wages as a penalty.",
+      "citation": "Ark. Code Ann. § 11-4-405",
+      "sourceUrl": "https://labor.arkansas.gov/labor/labor-standards/wage-claims/",
+      "sourceAgency": "Arkansas Department of Labor and Licensing, Labor Standards Division",
+      "lastChecked": "2026-08-08",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Statute text confirmed via multiple consistent secondary legal summaries (Ark. Code Ann. 11-4-405); the section applies expressly to discharge, and Arkansas case law/DOL guidance treats voluntary resignation the same way absent a separate statute -- verify directly against primary Arkansas Code text if possible (no reliably fetchable official full-text statute portal was found this session; law.arkansas.gov and ago.arkansas.gov did not resolve for this tool)."
+    },
+    {
       "topic": "deadlines.wageClaim",
       "value": "DOL investigates claims of $2,000 or less; ~3-year private-suit limitation",
       "summary": "The Labor Standards Division administratively investigates wage claims of $2,000 or less (often final-paycheck disputes); private minimum-wage suits carry a judicially established 3-year limitations period.",

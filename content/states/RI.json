@@ -103,6 +103,18 @@
       "reviewed": false,
       "reviewedBy": null,
       "notes": "One year runs from when the practice occurred, terminated, or was applied to adversely affect the aggrieved person, whichever is later."
+    },
+    {
+      "topic": "final-pay",
+      "value": "next regular payday; 24 hours if the business closes or relocates",
+      "summary": "Rhode Island requires an employer to pay a separated employee's unpaid wages by the next regular payday; if the separation is due to the business closing down or relocating, all wages (including accrued vacation and holiday pay) become due within 24 hours.",
+      "citation": "R.I. Gen. Laws § 28-14-4",
+      "sourceUrl": "https://webserver.rilegislature.gov/Statutes/TITLE28/28-14/28-14-4.htm",
+      "sourceAgency": "Rhode Island General Assembly (RI General Laws)",
+      "lastChecked": "2026-08-08",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Confirmed directly against the primary statute text, fetched from webserver.rilegislature.gov. Applies to both voluntary and involuntary separation; accrued vacation pay after one year of service is also covered under this timing rule."
     }
   ],
   "agencies": {

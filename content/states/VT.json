@@ -123,6 +123,18 @@
       "reviewed": false,
       "reviewedBy": null,
       "notes": "This subchapter covers health care employees only (hospitals per 18 V.S.A. § 1902(1); nursing homes per 33 V.S.A. § 7102(7)). Vermont's general whistleblower statute for State employees is at 3 V.S.A. §§ 971-978 (not captured here). No single general private-sector whistleblower statute was located."
+    },
+    {
+      "topic": "final-pay",
+      "value": "discharge: within 72 hours; resignation: next regular payday (or following Friday if none)",
+      "summary": "Vermont requires a discharged employee to be paid within 72 hours of discharge; an employee who voluntarily leaves is paid on the last regular payday, or the following Friday if there is no regular payday.",
+      "citation": "21 V.S.A. § 342(b)",
+      "sourceUrl": "https://legislature.vermont.gov/statutes/section/21/005/00342",
+      "sourceAgency": "Vermont General Assembly (Vermont Statutes Online)",
+      "lastChecked": "2026-08-08",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Confirmed directly against the primary statute text. Also covers the (rarer) case of an employee absent on the regular payday, who is entitled to payment upon demand under 342(b)(3)."
     }
   ],
   "agencies": {

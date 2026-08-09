@@ -106,6 +106,18 @@
       "reviewed": false,
       "reviewedBy": null,
       "notes": "180 days is the administrative MDCR filing window; the 3-year figure for direct court actions comes from Michigan case law, not a statute section, so treat it as guidance."
+    },
+    {
+      "topic": "final-pay",
+      "value": "as soon as due diligence allows (immediately for discharge)",
+      "summary": "Michigan requires an employer to pay an employee who voluntarily leaves all wages earned and due as soon as the amount can, with due diligence, be determined; an employee who is discharged must be paid immediately on the same 'as soon as due diligence allows' basis.",
+      "citation": "MCL 408.475",
+      "sourceUrl": "https://www.legislature.mi.gov/Laws/MCL?objectName=MCL-408-475",
+      "sourceAgency": "Michigan Legislature (Michigan Compiled Laws)",
+      "lastChecked": "2026-08-08",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Confirmed directly against the primary statute text. Michigan does not set a fixed number of days; the standard is 'as soon as the amount can with due diligence be determined' for both discharge and voluntary departure, with discharge requiring immediate payment once that determination is made. A special 3-day-after-termination rule applies to hand-harvest crop workers who quit."
     }
   ],
   "agencies": {

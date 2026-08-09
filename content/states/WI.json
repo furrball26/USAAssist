@@ -97,6 +97,18 @@
       "reviewed": false,
       "reviewedBy": null,
       "notes": "General anti-retaliation provision within the WFEA; separate whistleblower statutes exist for public employees (§§ 230.80-230.89) and health care workers (§ 146.997)."
+    },
+    {
+      "topic": "final-pay",
+      "value": "next regular payday, or within 31 days of the last day worked, whichever is earlier",
+      "summary": "Whether an employee quits or is discharged, Wisconsin requires final wages to be paid in full no later than the date the employee would regularly have been paid under the employer's payroll schedule, or within 31 days of the last day worked, whichever is earlier.",
+      "citation": "Wis. Stat. § 109.03(2)",
+      "sourceUrl": "https://docs.legis.wisconsin.gov/statutes/statutes/109/03",
+      "sourceAgency": "Wisconsin State Legislature",
+      "lastChecked": "2026-08-08",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Confirmed directly against the primary statute text. A 24-hour deadline applies instead if the separation is due to the employer's business closing, merging, or relocating (not independently verified this session)."
     }
   ],
   "agencies": {

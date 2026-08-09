@@ -123,6 +123,18 @@
       "reviewed": false,
       "reviewedBy": null,
       "notes": "NJDOL lists distinct anti-retaliation provisions across multiple statutes (wage & hour 34:11-56a24, wage payment 34:11-4.10, prevailing wage 34:11-56.39, earned sick leave 34:11D-4, family leave 34:11B-9, LAD 10:5-12(r), among others). Retaliation exposure is broader than the single-topic federal treatment."
+    },
+    {
+      "topic": "final-pay",
+      "value": "next regular payday for the pay period of separation",
+      "summary": "Whether an employee is discharged, laid off, suspended, or quits, New Jersey requires the employer to pay all wages due no later than the regular payday for the pay period in which the separation took place.",
+      "citation": "N.J.S.A. 34:11-4.3",
+      "sourceUrl": "https://www.nj.gov/labor/wageandhour/tools-resources/laws/selectedstatelaborlaws.shtml",
+      "sourceAgency": "New Jersey Department of Labor & Workforce Development",
+      "lastChecked": "2026-08-08",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Confirmed directly against the primary statute text as quoted on NJDOL's own official page. Applies equally to discharge, layoff, suspension, and voluntary resignation -- no accelerated payment requirement beyond the regular payday."
     }
   ],
   "agencies": {

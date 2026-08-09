@@ -96,6 +96,18 @@
       "reviewed": false,
       "reviewedBy": null,
       "notes": "Recovery includes the unpaid wages plus an additional amount equal to twice the unpaid wages as liquidated damages, costs, and attorney fees."
+    },
+    {
+      "topic": "final-pay",
+      "value": "discharge: due immediately on the day of discharge",
+      "summary": "Missouri requires an employer to pay a discharged employee's earned, unpaid wages immediately -- on the day of the discharge or refusal to longer employ the person.",
+      "citation": "RSMo 290.110",
+      "sourceUrl": "https://revisor.mo.gov/main/OneSection.aspx?section=290.110",
+      "sourceAgency": "Missouri Revisor of Statutes",
+      "lastChecked": "2026-08-08",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Confirmed directly against the primary statute text, which by its own terms applies to discharge ('discharge...or refusal to longer employ'). If the employer doesn't pay on the day of discharge, the employee may send a written demand, and unpaid wages continue accruing as a penalty for up to 60 days if payment isn't made within 7 days of that demand. The statute text does not address voluntary resignation; Missouri's general wage-payment framework for a voluntary quit was not independently confirmed against primary text this session -- likely follows the regular payday, but verify before relying on it."
     }
   ],
   "agencies": {

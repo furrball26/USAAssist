@@ -114,6 +114,18 @@
       "reviewed": false,
       "reviewedBy": null,
       "notes": "Confirmed directly from the primary statute text. This is South Dakota's anti-retaliation provision tied specifically to discrimination-charge activity under SDCL ch. 20-13; South Dakota has no general private-sector whistleblower statute covering reports of employer wrongdoing generally (narrower, subject-specific statutes exist, e.g. SDCL 34-23A-11 for abortion-referral refusal and SDCL 27B-8-43 for reporting abuse/neglect of a disabled person, neither independently verified this session). South Dakota courts also recognize a common-law public-policy wrongful-discharge claim in limited circumstances, not codified here."
+    },
+    {
+      "topic": "final-pay",
+      "value": "next regular payday, or when employer property is returned if later",
+      "summary": "Whether an employee is separated by the employer or resigns, South Dakota requires payment of unpaid wages by the next regular payday, or as soon after as the employee returns all of the employer's property in the employee's possession, whichever is later.",
+      "citation": "SDCL 60-11-10 (employer-initiated separation); SDCL 60-11-11 (resignation)",
+      "sourceUrl": "https://sdlegislature.gov/api/Statutes/60-11-10.html",
+      "sourceAgency": "South Dakota Legislative Research Council (South Dakota Codified Laws)",
+      "lastChecked": "2026-08-08",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Confirmed directly against the primary statute text for both sections (fetched from sdlegislature.gov). South Dakota is unusual in expressly allowing an employer to withhold final wages until company property is returned, in either separation scenario."
     }
   ],
   "agencies": {

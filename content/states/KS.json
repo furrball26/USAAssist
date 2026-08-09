@@ -107,6 +107,18 @@
       "reviewed": false,
       "reviewedBy": null,
       "notes": "Three years applies to liability created by statute and oral/implied contracts; written-contract wage claims fall under the 5-year period of K.S.A. 60-511. The 3-year application to KWPA claims rests on case-law interpretation, so verify against current precedent."
+    },
+    {
+      "topic": "final-pay",
+      "value": "next regular payday",
+      "summary": "Whether an employee is discharged or resigns, Kansas requires the employer to pay all earned wages no later than the next regular payday on which the employee would have been paid had employment continued.",
+      "citation": "K.S.A. 44-315(a)",
+      "sourceUrl": "https://ksrevisor.gov/statutes/chapters/ch44/044_003_0015.html",
+      "sourceAgency": "Kansas Office of Revisor of Statutes",
+      "lastChecked": "2026-08-08",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Confirmed directly against the primary statute text. Wages may be paid through regular channels or, if the employee requests, by mail postmarked by the deadline."
     }
   ],
   "agencies": {
