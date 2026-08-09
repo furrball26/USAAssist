@@ -702,7 +702,7 @@ function App(){
       <div style={css("display:flex;gap:3px;height:5px;border-radius:3px;overflow:hidden")}>
         <div style={css("flex:1;background:#E0322F")}></div><div style={css("flex:1;background:#EF7B22")}></div><div style={css("flex:1;background:#E3B505")}></div><div style={css("flex:1;background:#1F8A4C")}></div><div style={css("flex:1;background:#2B3AA8")}></div><div style={css("flex:1;background:#7A3AA8")}></div>
       </div>
-      <h1 style={css("margin:0;font:700 34px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{ONB_TITLES[onbStep]}</h1>
+      <h1 style={css("margin:0;font:700 30px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{ONB_TITLES[onbStep]}</h1>
       <p style={css("margin:0;font:400 18px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty")}>{ONB_BODIES[onbStep]}</p>
 
       {onbStep === 1 &&
@@ -1073,7 +1073,7 @@ function App(){
         <button onClick={nav('home')} style={css("align-self:flex-start;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}>← Dashboard</button>
         <div>
           <span style={css("font:700 13px 'IBM Plex Mono',monospace;color:#4A5162;letter-spacing:.05em")}>OVERTIME EXEMPTION CHECK · {wizDone ? 'COMPLETE' : 'QUESTION ' + depth}</span>
-          <h1 style={css("margin:8px 0 0;font:700 27px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{wizDone ? 'Your overtime status' : cur.q}</h1>
+          <h1 style={css("margin:8px 0 0;font:700 26px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{wizDone ? 'Your overtime status' : cur.q}</h1>
         </div>
         {!wizDone &&
           <div style={css("display:flex;flex-direction:column;gap:12px")}>
