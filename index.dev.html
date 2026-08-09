@@ -102,6 +102,31 @@ function factsByPrefix(facts, prefix){ return (facts || []).filter(f => String(f
 // First matching fact across a list of candidate topic names, in priority order (varies by state).
 function stateFactFor(facts, topics){ for (const t of topics) { const f = factByTopic(facts, t); if (f) return f; } return null; }
 
+// True when a state's OWN "overtime.daily" fact describes a genuine day-rate or
+// hours-threshold rule that is MORE protective than the plain federal "1.5x after
+// 40 hrs/week, no daily overtime" rule (e.g. CA/AK's 8-hr/day rule, CO's 12-hr/day
+// or 12-consecutive-hour rule, NV's 24-hour-period rule) — as opposed to a fact
+// that merely restates or tracks the federal standard, worded any of many ways
+// ("follows federal FLSA", "mirrors federal", "no daily overtime", "48-hr
+// threshold weaker than federal", etc). Reads the fact's actual content instead of
+// matching one brittle literal string, so it stays correct as content wording
+// changes. Deliberately does NOT look at a state's separate, higher salary floor
+// for the overtime EXEMPTION (e.g. Washington's overtime.salaryThreshold): that
+// fact changes who qualifies as exempt, not the pay-rate/hours-threshold owed to
+// an already-non-exempt worker for hours already worked — the only thing this
+// (wage-demand) letter is about. A false "additional protection" claim with a
+// real citation is worse than an occasional missed one in a document a user sends.
+function stateAddsRealOvertimeProtection(overtimeFacts){
+  const daily = (overtimeFacts || []).find(f => String(f.topic || '') === 'overtime.daily');
+  if (!daily) return false;
+  const text = String(daily.value == null ? '' : daily.value) + ' ' + String(daily.summary == null ? '' : daily.summary);
+  if (/no\s+(state\s+)?(general\s+)?daily overtime\b/i.test(text)) return false;
+  if (/\d+(\.\d+)?\s*(hrs?\.?|hours?)\s*(\/|per\s+)\s*(day|workday|24-?\s*hour\s*period)/i.test(text)) return true;
+  if (/after\s+\d+(\.\d+)?\s*hours?\s+(worked\s+)?(in|per|each|every)\s+(a\s+|any\s+)?(day|workday|24-?\s*hour\s*period)/i.test(text)) return true;
+  if (/\bdaily overtime\b/i.test(text)) return true;
+  return false;
+}
+
 // Which deadline topics matter most for a given issue type, grouped into priority
 // TIERS (array of arrays). Topics within the same tier are jurisdiction-equivalent —
 // e.g. the federal "eeocCharge" fact and a state's own "discriminationComplaint" /
@@ -433,9 +458,9 @@ function buildLetter(ctx){
 
   if (kind === 'wage-demand') {
     const fedCite = cite(fed, 'overtime.basicRule', '29 U.S.C. § 207');
-    const stOT = factsByPrefix(st, 'overtime')[0];
-    const stFollowsFederalOnly = !!(stOT && typeof stOT.value === 'string' && /^follows federal flsa/i.test(stOT.value.trim()));
-    const stClause = (stOT && stOT.citation && !stFollowsFederalOnly)
+    const stOTFacts = factsByPrefix(st, 'overtime');
+    const stOT = stOTFacts.find(f => f.topic === 'overtime.daily') || stOTFacts[0];
+    const stClause = (stOT && stOT.citation && stateAddsRealOvertimeProtection(stOTFacts))
       ? ' ' + ctx.stateSel + ' law (' + stOT.citation + ') provides additional overtime protection that may increase what I am owed.'
       : '';
     const hrs = ctx.unpaidHours > 0 ? ctx.unpaidHours : '[number]';

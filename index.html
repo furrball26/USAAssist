@@ -552,6 +552,16 @@ function stateFactFor(facts, topics) {
   }
   return null;
 }
+function stateAddsRealOvertimeProtection(overtimeFacts) {
+  const daily = (overtimeFacts || []).find((f) => String(f.topic || "") === "overtime.daily");
+  if (!daily) return false;
+  const text = String(daily.value == null ? "" : daily.value) + " " + String(daily.summary == null ? "" : daily.summary);
+  if (/no\s+(state\s+)?(general\s+)?daily overtime\b/i.test(text)) return false;
+  if (/\d+(\.\d+)?\s*(hrs?\.?|hours?)\s*(\/|per\s+)\s*(day|workday|24-?\s*hour\s*period)/i.test(text)) return true;
+  if (/after\s+\d+(\.\d+)?\s*hours?\s+(worked\s+)?(in|per|each|every)\s+(a\s+|any\s+)?(day|workday|24-?\s*hour\s*period)/i.test(text)) return true;
+  if (/\bdaily overtime\b/i.test(text)) return true;
+  return false;
+}
 function deadlineKeywordsFor(issueKey) {
   switch (issueKey) {
     case "wage":
@@ -860,9 +870,9 @@ function buildLetter(ctx) {
   }
   if (kind === "wage-demand") {
     const fedCite = cite(fed, "overtime.basicRule", "29 U.S.C. \xA7 207");
-    const stOT = factsByPrefix(st, "overtime")[0];
-    const stFollowsFederalOnly = !!(stOT && typeof stOT.value === "string" && /^follows federal flsa/i.test(stOT.value.trim()));
-    const stClause = stOT && stOT.citation && !stFollowsFederalOnly ? " " + ctx.stateSel + " law (" + stOT.citation + ") provides additional overtime protection that may increase what I am owed." : "";
+    const stOTFacts = factsByPrefix(st, "overtime");
+    const stOT = stOTFacts.find((f) => f.topic === "overtime.daily") || stOTFacts[0];
+    const stClause = stOT && stOT.citation && stateAddsRealOvertimeProtection(stOTFacts) ? " " + ctx.stateSel + " law (" + stOT.citation + ") provides additional overtime protection that may increase what I am owed." : "";
     const hrs = ctx.unpaidHours > 0 ? ctx.unpaidHours : "[number]";
     const amountLine = ctx.owedEstimate > 0 ? "Based on my regular rate of " + money(ctx.rateNum) + " per hour, the overtime pay owed for these hours (at one-and-one-half times my regular rate) totals approximately " + money(ctx.owedEstimate) + "." : "I request payment for these hours at one-and-one-half times my regular rate of pay.";
     const subject2 = "Demand for unpaid overtime wages";
