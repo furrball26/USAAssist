@@ -823,7 +823,22 @@ const LOG_KINDS = [
 function App(){
   const [saved] = useState(loadCase); // one-time read of persisted case
   const [onboarded, setOnboarded] = useState(() => !!saved.onboarded);
-  const [screen, setScreen] = useState(() => saved.onboarded ? 'home' : 'onboarding');
+  // F-history — browsers keep a session-history entry's pushState/replaceState
+  // `state` object across a plain reload (F5), even though our own React state
+  // resets. So on first mount, prefer whatever screen the current history
+  // entry already carries (set by the effect below on a prior visit/navigation
+  // in this tab) over the onboarded/not-onboarded default — a reload now
+  // returns you to the screen you were actually on, not always the dashboard.
+  // Guarded by `saved.onboarded`: a stale history entry pointing at a tool
+  // screen (chat/log/letter/...) is only trusted if there is actually an
+  // onboarded case behind it — e.g. after "Delete my case & start over"
+  // clears localStorage, a leftover history entry must never skip the
+  // onboarding gate.
+  const [screen, setScreen] = useState(() => {
+    const histScreen = typeof window !== 'undefined' && window.history.state && window.history.state.screen;
+    if (typeof histScreen === 'string' && (saved.onboarded || histScreen === 'onboarding')) return histScreen;
+    return saved.onboarded ? 'home' : 'onboarding';
+  });
   const [onbStep, setOnbStep] = useState(1);
   // Non-null only while re-entering the location/profile flow to EDIT an existing
   // case (via the ◉ pill) — holds a staged copy so state/county/issue/profile
@@ -880,6 +895,35 @@ function App(){
     if (screen === 'chat') return;
     const el = mainRef.current;
     if (el) { el.scrollTop = 0; el.focus({ preventScroll: true }); }
+  }, [screen]);
+
+  // F-history — wire in-app screen navigation to the browser History API so
+  // Back/Forward step through screens (Letter -> Dashboard, tool -> Dashboard,
+  // etc.) instead of leaving the app on the very first press. Same URL
+  // throughout (no hash/query routing) — only the pushState `state` object
+  // changes, which is enough for popstate to tell us which screen to restore.
+  const skipNextPush = useRef(true); // the first [screen] effect run just mirrors the mount-time replaceState below — don't double it into a push
+  const fromPopState = useRef(false); // true while applying a Back/Forward-driven setScreen, so that change doesn't itself push a new (redundant) entry
+  useEffect(() => {
+    // Stamp the CURRENT history entry with the screen we're actually
+    // rendering (mount-time restore above already picked it, if any) so a
+    // subsequent Back from here — with nothing of ours pushed below it —
+    // leaves the app normally instead of trapping the user in a loop.
+    window.history.replaceState({ screen }, '');
+    const onPop = (e) => {
+      fromPopState.current = true;
+      if (e.state && typeof e.state.screen === 'string') setScreen(e.state.screen);
+      // No app state on the entry we landed on (e.g. genuinely before this
+      // app existed in history) — nothing to restore; let the browser's own
+      // navigation stand.
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []); // once, on mount
+  useEffect(() => {
+    if (skipNextPush.current) { skipNextPush.current = false; return; }
+    if (fromPopState.current) { fromPopState.current = false; return; }
+    window.history.pushState({ screen }, '');
   }, [screen]);
 
   // Persist the case whenever anything meaningful changes. Includes letterEdit/

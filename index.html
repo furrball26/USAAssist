@@ -1147,7 +1147,11 @@ const LOG_KINDS = [
 function App() {
   const [saved] = useState(loadCase);
   const [onboarded, setOnboarded] = useState(() => !!saved.onboarded);
-  const [screen, setScreen] = useState(() => saved.onboarded ? "home" : "onboarding");
+  const [screen, setScreen] = useState(() => {
+    const histScreen = typeof window !== "undefined" && window.history.state && window.history.state.screen;
+    if (typeof histScreen === "string" && (saved.onboarded || histScreen === "onboarding")) return histScreen;
+    return saved.onboarded ? "home" : "onboarding";
+  });
   const [onbStep, setOnbStep] = useState(1);
   const [editDraft, setEditDraft] = useState(null);
   const [stateSel, setStateSel] = useState(() => saved.stateSel || "");
@@ -1202,6 +1206,28 @@ function App() {
       el.scrollTop = 0;
       el.focus({ preventScroll: true });
     }
+  }, [screen]);
+  const skipNextPush = useRef(true);
+  const fromPopState = useRef(false);
+  useEffect(() => {
+    window.history.replaceState({ screen }, "");
+    const onPop = (e) => {
+      fromPopState.current = true;
+      if (e.state && typeof e.state.screen === "string") setScreen(e.state.screen);
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+  useEffect(() => {
+    if (skipNextPush.current) {
+      skipNextPush.current = false;
+      return;
+    }
+    if (fromPopState.current) {
+      fromPopState.current = false;
+      return;
+    }
+    window.history.pushState({ screen }, "");
   }, [screen]);
   useEffect(() => {
     saveCase({

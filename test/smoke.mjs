@@ -86,12 +86,19 @@ try {
     await new Promise(r => setTimeout(r, 250));
   }
 
-  // reload → case should persist (lands on dashboard, not onboarding)
+  // reload → case should persist. Browser History integration (F-history) now
+  // also carries the current in-app screen across a reload via the History
+  // API's per-entry state (browsers preserve pushState/replaceState `state`
+  // across F5, even though React state itself resets) — so a reload restores
+  // whatever screen the user was actually on, not unconditionally the
+  // dashboard. Land on Log (an unambiguous, stable screen) before reloading.
+  await clickText('Log');
+  await new Promise(r => setTimeout(r, 250));
   await page.reload({ waitUntil: 'networkidle0', timeout: 20000 });
   await new Promise(r => setTimeout(r, 400));
   txt = await bodyText();
   assert(!/Where do you work/i.test(txt), 'persistence: reload returned to onboarding');
-  assert(/CASE #|evidence|Tools/i.test(txt), 'persistence: dashboard did not restore after reload');
+  assert(/Incident log|Your log is empty/i.test(txt), 'persistence: reload did not restore the screen the user was actually on (Log)');
 
   // fresh full onboarding walk (clear storage, click Continue through all 4 steps)
   await page.evaluate(() => localStorage.clear());
