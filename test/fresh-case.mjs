@@ -46,7 +46,7 @@ let fails = 0;
   await pg.goto(`http://127.0.0.1:${PORT}/index.html`, { waitUntil:'networkidle0', timeout:20000 });
   await new Promise(r => setTimeout(r, 700));
 
-  await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('◉')); if (btn) btn.click(); });
+  await pg.evaluate(() => { const btn = document.querySelector('button[aria-label^="Edit your state"]'); if (btn) btn.click(); });
   await new Promise(r => setTimeout(r, 300));
   const clickContinue = async () => { await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => /^Continue$|Save changes/.test(b.textContent.trim())); if (btn) btn.click(); }); await new Promise(r => setTimeout(r, 250)); };
   await clickContinue(); // state (unchanged) -> county

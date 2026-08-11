@@ -62,7 +62,7 @@ const oshaCardText = (pg) => pg.evaluate(() => {
 
   const osha = await oshaCardText(pg);
   const regular = await pg.evaluate(() => {
-    const el = [...document.querySelectorAll('button')].find(b => b.textContent.includes('⏱ DEADLINE WATCH'));
+    const el = [...document.querySelectorAll('button')].find(b => b.textContent.includes('DEADLINE WATCH'));
     return el ? el.textContent : null;
   });
 

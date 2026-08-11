@@ -42,7 +42,7 @@ async function freshPage() {
 }
 
 const openPillAndChangeState = async (pg, newState) => {
-  await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('◉')); if (btn) btn.click(); });
+  await pg.evaluate(() => { const btn = document.querySelector('button[aria-label^="Edit your state"]'); if (btn) btn.click(); });
   await new Promise(r => setTimeout(r, 300));
   await pg.evaluate((s) => { const sel = document.querySelector('#onb-state'); if (sel) { sel.value = s; sel.dispatchEvent(new Event('change', { bubbles:true })); } }, newState);
   await new Promise(r => setTimeout(r, 200));
@@ -59,7 +59,7 @@ const openPillAndChangeState = async (pg, newState) => {
   const cancelClicked = await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => /Cancel/.test(b.textContent)); if (btn) { btn.click(); return true; } return false; });
   await new Promise(r => setTimeout(r, 300));
   const stored = await pg.evaluate(() => JSON.parse(localStorage.getItem('worklaw.case.v2') || '{}').stateSel);
-  const pillText = await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('◉')); return btn ? btn.textContent : null; });
+  const pillText = await pg.evaluate(() => { const btn = document.querySelector('button[aria-label^="Edit your state"]'); return btn ? btn.textContent : null; });
 
   const problems = [];
   if (!cancelClicked) problems.push('no Cancel button found');

@@ -49,8 +49,8 @@ for (const mode of ['standard', 'action', 'plain']) {
   pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
   pg.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
 
-  const pillPresent = await pg.evaluate(() => !![...document.querySelectorAll('button')].find(b => b.textContent.includes('◉')));
-  const clicked = await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('◉')); if (btn) { btn.click(); return true; } return false; });
+  const pillPresent = await pg.evaluate(() => !!document.querySelector('button[aria-label^="Edit your state"]'));
+  const clicked = await pg.evaluate(() => { const btn = document.querySelector('button[aria-label^="Edit your state"]'); if (btn) { btn.click(); return true; } return false; });
   await new Promise(r => setTimeout(r, 300));
   const onOnboardingScreen = await pg.evaluate(() => !!document.querySelector('#onb-state'));
 

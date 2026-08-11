@@ -51,7 +51,7 @@ const stepBanner = (pg) => pg.evaluate(() => document.querySelector('h1') ? docu
   await pg.goto(`http://127.0.0.1:${PORT}/index.html`, { waitUntil:'networkidle0', timeout:20000 });
   await new Promise(r => setTimeout(r, 500));
 
-  const backOnStep1 = await clickText(pg, /^‹ Back$/);
+  const backOnStep1 = await clickText(pg, /^Back$/);
 
   // Step 1: pick a state, continue to step 2.
   await pg.evaluate(() => { const sel = document.querySelector('#onb-state'); sel.value = 'Texas'; sel.dispatchEvent(new Event('change', { bubbles:true })); });
@@ -61,7 +61,7 @@ const stepBanner = (pg) => pg.evaluate(() => document.querySelector('h1') ? docu
   const onStep2 = await stepBanner(pg);
 
   // Back to step 1 — the state select should still show Texas.
-  const backClicked = await clickText(pg, /^‹ Back$/);
+  const backClicked = await clickText(pg, /^Back$/);
   await new Promise(r => setTimeout(r, 250));
   const backOnStep1Title = await stepBanner(pg);
   const stateStillSet = await pg.evaluate(() => { const sel = document.querySelector('#onb-state'); return sel ? sel.value : null; });
@@ -97,13 +97,13 @@ const stepBanner = (pg) => pg.evaluate(() => document.querySelector('h1') ? docu
   await pg.goto(`http://127.0.0.1:${PORT}/index.html`, { waitUntil:'networkidle0', timeout:20000 });
   await new Promise(r => setTimeout(r, 700));
 
-  await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('◉')); if (btn) btn.click(); });
+  await pg.evaluate(() => { const btn = document.querySelector('button[aria-label^="Edit your state"]'); if (btn) btn.click(); });
   await new Promise(r => setTimeout(r, 300));
   await pg.evaluate(() => { const sel = document.querySelector('#onb-state'); sel.value = 'California'; sel.dispatchEvent(new Event('change', { bubbles:true })); });
   await new Promise(r => setTimeout(r, 150));
   await clickText(pg, /^Continue$/);
   await new Promise(r => setTimeout(r, 250));
-  const backClicked = await clickText(pg, /^‹ Back$/);
+  const backClicked = await clickText(pg, /^Back$/);
   await new Promise(r => setTimeout(r, 250));
   const stateSelValue = await pg.evaluate(() => { const sel = document.querySelector('#onb-state'); return sel ? sel.value : null; });
   const storedStateSel = await pg.evaluate(() => JSON.parse(localStorage.getItem('worklaw.case.v2') || '{}').stateSel);
