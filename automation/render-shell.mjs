@@ -38,7 +38,18 @@ const template = readFileSync(ROOT + 'vercel/index.html', 'utf8');
 if (!template.includes('{{SHA}}')) {
   throw new Error('render-shell: vercel/index.html has no {{SHA}} placeholder — template drifted');
 }
-const rendered = template.split('{{SHA}}').join(sha);
+
+// The shell's app CSS (.device/.screen/.tabbar/breakpoints/…) must match the app exactly.
+// index.dev.html is the single source of truth, so inject its <style> block into the shell
+// at render time — this makes the committed template's <style> non-authoritative and prevents
+// CSS drift between the app and the worklaw.app shell.
+const dev = readFileSync(ROOT + 'index.dev.html', 'utf8');
+const devStyle = (dev.match(/<style>[\s\S]*?<\/style>/) || [])[0];
+if (!devStyle) throw new Error('render-shell: could not find the app <style> block in index.dev.html');
+const withStyle = template.replace(/<style>[\s\S]*?<\/style>/, () => devStyle);
+if (withStyle === template) throw new Error('render-shell: shell template has no <style> block to sync');
+
+const rendered = withStyle.split('{{SHA}}').join(sha);
 
 if (args.out) {
   writeFileSync(args.out, rendered);
