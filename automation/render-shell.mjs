@@ -46,8 +46,8 @@ if (!template.includes('{{SHA}}')) {
 const dev = readFileSync(ROOT + 'index.dev.html', 'utf8');
 const devStyle = (dev.match(/<style>[\s\S]*?<\/style>/) || [])[0];
 if (!devStyle) throw new Error('render-shell: could not find the app <style> block in index.dev.html');
+if (!/<style>[\s\S]*?<\/style>/.test(template)) throw new Error('render-shell: shell template has no <style> block to sync');
 const withStyle = template.replace(/<style>[\s\S]*?<\/style>/, () => devStyle);
-if (withStyle === template) throw new Error('render-shell: shell template has no <style> block to sync');
 
 const rendered = withStyle.split('{{SHA}}').join(sha);
 
