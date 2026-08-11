@@ -47,8 +47,31 @@ const minified = transformSync(jsx, {
   legalComments: 'none',
 }).code;
 
-// 4. Splice the compiled block into index.html (replace the existing app <script>).
-const html = read('index.html');
+// 4. Sync the shared app <style> block (device/screen/tabbar/media queries,
+// etc.) into index.html, then splice the compiled JS block in (replace the
+// existing app <script>).
+let html = read('index.html');
+
+// 4a. The <style> block. index.html's FIRST <style> tag is a production-only
+// self-hosted @font-face block (base64 fonts; no analog in index.dev.html,
+// which links Google Fonts for dev instead). Its SECOND <style> tag mirrors
+// index.dev.html's one-and-only <style> block verbatim — keep it in sync so
+// CSS-only changes (new classes, new @media breakpoints) actually ship in
+// the production artifact, not just the dev page.
+const devStyleOpen = dev.indexOf('<style>');
+const devStyleClose = dev.indexOf('</style>', devStyleOpen);
+if (devStyleOpen < 0 || devStyleClose < 0) throw new Error('dev: <style> block not found');
+const devStyleBody = dev.slice(devStyleOpen + '<style>'.length, devStyleClose);
+
+const firstStyleClose = html.indexOf('</style>');
+const secondStyleOpen = html.indexOf('<style>', firstStyleClose);
+const secondStyleClose = html.indexOf('</style>', secondStyleOpen);
+if (firstStyleClose < 0 || secondStyleOpen < 0 || secondStyleClose < 0) {
+  throw new Error('index.html: expected two <style> blocks (fonts, then app CSS)');
+}
+html = html.slice(0, secondStyleOpen + '<style>'.length) + devStyleBody + html.slice(secondStyleClose);
+
+// 4b. The app JS block.
 const APP_OPEN = '<script>const {';
 const aStart = html.indexOf(APP_OPEN);
 if (aStart < 0) throw new Error('index.html: app <script>const { block not found');

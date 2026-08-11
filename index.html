@@ -190,6 +190,8 @@
   .scrollarea{flex:1;overflow-y:auto;overflow-x:hidden}
   .hoverfx{transition:background .12s ease}
   .hoverfx:hover{background:#EEF1FF !important}
+  .tabbar{ flex:none; display:grid; grid-template-columns:repeat(5,1fr); gap:4px; padding:10px 12px 26px; border-top:2px solid rgba(20,24,31,.14); background:#FFFDF8; }
+  .tabbar-btn{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; padding:9px 2px; min-height:56px; border-radius:12px; cursor:pointer; }
 
   /* Full-bleed on phones — the real app fills the viewport */
   @media (max-width:520px){
@@ -197,6 +199,36 @@
     .device{width:100vw;height:100vh;height:100dvh;max-height:none;border-radius:0;padding:0;box-shadow:none;background:#FFFDF8}
     .screen{border-radius:0}
     .statusbar{padding-top:env(safe-area-inset-top,0)}
+  }
+
+  /* 768–1023px — wide tier: drop the phone bezel/status bar illusion,
+     present as a bordered paper card instead of a fake device. */
+  @media (min-width:768px) and (max-width:1023.98px){
+    #root{ padding:48px 24px; align-items:flex-start; justify-content:center; }
+    .device{ width:min(600px,92vw); height:auto; max-height:none; background:transparent; padding:0; border-radius:0; box-shadow:none; }
+    .screen{ min-height:calc(100vh - 96px); border-radius:28px; border:2px solid #14181F; box-shadow:0 20px 48px rgba(20,24,31,.14); }
+    .statusbar{ visibility:hidden; height:20px; padding:0; }
+  }
+
+  /* ≥1024px — desktop tier: full-height app shell, left icon rail replaces
+     the bottom tab bar, content column capped for readability. */
+  @media (min-width:1024px){
+    #root{ padding:0; align-items:stretch; justify-content:stretch; min-height:100vh; }
+    .device{ width:100%; height:100vh; height:100dvh; max-height:none; }
+    .screen{
+      display:grid;
+      grid-template-columns:104px minmax(0,1fr);
+      grid-template-rows:auto 1fr;
+      grid-template-areas:"rail status" "rail main";
+      border-radius:0; border:none; box-shadow:none;
+      height:100%;
+    }
+    .screen.no-tabbar{ grid-template-columns:1fr; grid-template-areas:"status" "main"; }
+    .statusbar{ grid-area:status; visibility:hidden; height:0; padding:0; }
+    .scrollarea{ grid-area:main; display:flex; flex-direction:column; align-items:center; padding:48px 40px 64px; }
+    .scrollarea > *{ width:100%; max-width:680px; }
+    .tabbar{ grid-area:rail; display:flex; flex-direction:column; border-top:none; border-right:2px solid rgba(20,24,31,.14); padding:28px 8px; gap:10px; background:#FFFDF8; }
+    .tabbar-btn{ min-height:64px; padding:10px 4px; }
   }
 </style>
 </head>
@@ -1764,7 +1796,7 @@ function App() {
   const altHome = screen === "home" ? homeMode : null;
   const screenBg = altHome === "action" ? "#2B3AA8" : altHome === "plain" ? "#FFFFFF" : "#FFFDF8";
   const statusColor = altHome === "action" ? "#fff" : "#14181F";
-  return /* @__PURE__ */ React.createElement("div", { className: "device" }, /* @__PURE__ */ React.createElement("div", { className: "screen", style: css("background:" + screenBg) }, /* @__PURE__ */ React.createElement("div", { className: "statusbar", "aria-hidden": "true", style: css("color:" + statusColor) }, /* @__PURE__ */ React.createElement("span", null, "9:41"), /* @__PURE__ */ React.createElement("span", { style: css("letter-spacing:2px") }, "\u25AE\u25AE\u25AE \u1BE4 \u25B0")), /* @__PURE__ */ React.createElement("main", { className: "scrollarea", ref: mainRef, tabIndex: -1, style: css("outline:none") }, Current(), screen === "home" && (() => {
+  return /* @__PURE__ */ React.createElement("div", { className: "device" }, /* @__PURE__ */ React.createElement("div", { className: "screen" + (showTabs ? "" : " no-tabbar"), style: css("background:" + screenBg) }, /* @__PURE__ */ React.createElement("div", { className: "statusbar", "aria-hidden": "true", style: css("color:" + statusColor) }, /* @__PURE__ */ React.createElement("span", null, "9:41"), /* @__PURE__ */ React.createElement("span", { style: css("letter-spacing:2px") }, "\u25AE\u25AE\u25AE \u1BE4 \u25B0")), /* @__PURE__ */ React.createElement("main", { className: "scrollarea", ref: mainRef, tabIndex: -1, style: css("outline:none") }, Current(), screen === "home" && (() => {
     const dark = altHome === "action";
     return /* @__PURE__ */ React.createElement("div", { style: css("margin:0 22px 30px;padding-top:16px;border-top:1px solid " + (dark ? "rgba(255,255,255,.25)" : "rgba(20,24,31,.14)")) }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 10px;font:400 13px/1.5 'Atkinson Hyperlegible',sans-serif;color:" + (dark ? "#DDE2FF" : "#4A5162")) }, "Everything you enter stays in this browser on this device \u2014 nothing is uploaded. On a shared or work computer, delete your case when you\u2019re done."), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;gap:10px;flex-wrap:wrap") }, /* @__PURE__ */ React.createElement("button", { onClick: startFreshCase, style: css("padding:12px 16px;border-radius:12px;border:2px solid " + (dark ? "rgba(255,255,255,.55)" : "#14181F") + ";background:transparent;color:" + (dark ? "#fff" : "#14181F") + ";font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;min-height:44px") }, "Start a fresh case"), /* @__PURE__ */ React.createElement("button", { onClick: clearCase, style: css("padding:12px 16px;border-radius:12px;border:2px solid " + (dark ? "rgba(255,255,255,.55)" : "#B3264F") + ";background:transparent;color:" + (dark ? "#fff" : "#B3264F") + ";font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;min-height:44px") }, "Delete my case & start over")));
   })()), showTabs && /* @__PURE__ */ React.createElement("nav", { "aria-label": "Primary", className: "tabbar" }, TAB_DEFS.map(

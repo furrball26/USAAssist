@@ -61,6 +61,36 @@
     .screen{border-radius:0}
     .statusbar{padding-top:env(safe-area-inset-top,0)}
   }
+
+  /* 768–1023px — wide tier: drop the phone bezel/status bar illusion,
+     present as a bordered paper card instead of a fake device. */
+  @media (min-width:768px) and (max-width:1023.98px){
+    #root{ padding:48px 24px; align-items:flex-start; justify-content:center; }
+    .device{ width:min(600px,92vw); height:auto; max-height:none; background:transparent; padding:0; border-radius:0; box-shadow:none; }
+    .screen{ min-height:calc(100vh - 96px); border-radius:28px; border:2px solid #14181F; box-shadow:0 20px 48px rgba(20,24,31,.14); }
+    .statusbar{ visibility:hidden; height:20px; padding:0; }
+  }
+
+  /* ≥1024px — desktop tier: full-height app shell, left icon rail replaces
+     the bottom tab bar, content column capped for readability. */
+  @media (min-width:1024px){
+    #root{ padding:0; align-items:stretch; justify-content:stretch; min-height:100vh; }
+    .device{ width:100%; height:100vh; height:100dvh; max-height:none; }
+    .screen{
+      display:grid;
+      grid-template-columns:104px minmax(0,1fr);
+      grid-template-rows:auto 1fr;
+      grid-template-areas:"rail status" "rail main";
+      border-radius:0; border:none; box-shadow:none;
+      height:100%;
+    }
+    .screen.no-tabbar{ grid-template-columns:1fr; grid-template-areas:"status" "main"; }
+    .statusbar{ grid-area:status; visibility:hidden; height:0; padding:0; }
+    .scrollarea{ grid-area:main; display:flex; flex-direction:column; align-items:center; padding:48px 40px 64px; }
+    .scrollarea > *{ width:100%; max-width:680px; }
+    .tabbar{ grid-area:rail; display:flex; flex-direction:column; border-top:none; border-right:2px solid rgba(20,24,31,.14); padding:28px 8px; gap:10px; background:#FFFDF8; }
+    .tabbar-btn{ min-height:64px; padding:10px 4px; }
+  }
 </style>
 <script crossorigin="anonymous" integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
 <script crossorigin="anonymous" integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
@@ -2061,7 +2091,7 @@ function App(){
 
   return (
     <div className="device">
-      <div className="screen" style={css('background:' + screenBg)}>
+      <div className={'screen' + (showTabs ? '' : ' no-tabbar')} style={css('background:' + screenBg)}>
         <div className="statusbar" aria-hidden="true" style={css('color:' + statusColor)}>
           <span>9:41</span><span style={css("letter-spacing:2px")}>▮▮▮ ᯤ ▰</span>
         </div>
