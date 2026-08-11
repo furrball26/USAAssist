@@ -66,15 +66,15 @@
     },
     {
       "topic": "deadlines.wageClaim",
-      "value": "1 year",
-      "summary": "An administrative wage claim (for wages up to $12,000) must be filed with the Industrial Commission within one year of accrual, and civil actions for unpaid wages/treble damages also carry a one-year statute of limitations.",
-      "citation": "A.R.S. 23-356; A.R.S. 12-541",
-      "sourceUrl": "https://www.azleg.gov/ars/23/00356.htm",
+      "value": "1 year for an administrative wage claim or a general unpaid-wages civil suit; 2 years (3 years if willful) for a civil action under the Fair Wages and Healthy Families Act",
+      "summary": "An administrative wage claim (capped at $12,000) filed with the Industrial Commission's Labor Department must be filed within one year of accrual (A.R.S. 23-356). A civil suit for general unpaid wages/treble damages under A.R.S. 23-355 also runs one year, borrowed from Arizona's catch-all one-year period for liability created by statute (A.R.S. 12-541(5)). But a separate civil action to enforce Arizona's minimum-wage and earned-paid-sick-time law (the Fair Wages and Healthy Families Act) has its own, longer limitations period: it may be commenced up to 2 years after a violation, or 3 years for a willful violation, and can reach a continuing course of violations regardless of date (A.R.S. 23-364(H)).",
+      "citation": "A.R.S. 23-356 (administrative claim, 1 year, $12,000 cap); A.R.S. 12-541(5) (general statutory-liability catch-all, 1 year, applied to A.R.S. 23-355 civil wage suits); A.R.S. 23-364(H) (Fair Wages and Healthy Families Act civil action, 2 years / 3 years if willful)",
+      "sourceUrl": "https://www.azleg.gov/ars/23/00364.htm",
       "sourceAgency": "Arizona State Legislature (Arizona Revised Statutes)",
-      "lastChecked": "2026-07-30",
+      "lastChecked": "2026-08-10",
       "reviewed": false,
       "reviewedBy": null,
-      "notes": "A.R.S. 23-356 sets the one-year limit and $12,000 cap for administrative claims; the one-year civil-suit limit for the statutory treble-damages action derives from A.R.S. 12-541. Recovery under A.R.S. 23-355 can be treble the unpaid wages."
+      "notes": "CORRECTED 2026-08-10: the prior version applied a blanket '1 year' (A.R.S. 23-356 / 12-541) to all wage claims, including minimum-wage claims. That is the correct period for (a) an administrative claim filed with the ICA Labor Department under A.R.S. 23-356 (1 year, $12,000 cap) and (b) a general civil suit for unpaid wages/treble damages under A.R.S. 23-355, which sets no limitations period of its own so courts apply the 1-year catch-all in A.R.S. 12-541(5) for 'liability created by statute.' But it is NOT correct for a civil action to enforce the Fair Wages and Healthy Families Act (Arizona's minimum-wage and earned-paid-sick-time law): A.R.S. 23-364(H) sets its own explicit civil statute of limitations of 2 years, extended to 3 years for a willful violation, confirmed against the enrolled text at azleg.gov ('A civil action to enforce this article may be commenced no later than two years after a violation last occurs, or three years in the case of a willful violation... The statute of limitations shall be tolled during any investigation of an employer by the commission...'). Section 23-364(H) governs minimum-wage and paid-sick-time claims specifically; A.R.S. 23-355/12-541 remains the operative 1-year period for other unpaid-wage claims (e.g., late regular pay, unlawful deductions) that are not minimum-wage/EPST claims. VERIFY periodically for amendment; the administrative $12,000 cap and 1-year figures should also be re-confirmed on the ICA site."
     },
     {
       "topic": "deadlines.discriminationComplaint",

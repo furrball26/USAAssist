@@ -18,7 +18,7 @@
     },
     {
       "topic": "minimumWage.hourly",
-      "value": 15.0,
+      "value": 15,
       "summary": "Massachusetts's minimum wage is $15.00 per hour, well above the federal $7.25.",
       "citation": "M.G.L. c. 151, s. 1",
       "sourceUrl": "https://malegislature.gov/Laws/GeneralLaws/PartI/TitleXXI/Chapter151/Section1",
@@ -97,15 +97,15 @@
     },
     {
       "topic": "deadlines.wageClaim",
-      "value": "3 years",
-      "summary": "A civil action for unpaid wages or overtime under the Massachusetts Wage Act must be brought within 3 years of the violation.",
-      "citation": "M.G.L. c. 149, s. 150",
-      "sourceUrl": "https://malegislature.gov/Laws/GeneralLaws/PartI/TitleXXI/Chapter149/Section150",
+      "value": "3 years for general Wage Act claims; 2 years for the overtime-premium portion of an overtime claim",
+      "summary": "A civil action for unpaid wages under the Massachusetts Wage Act (e.g., late/unpaid regular wages, unlawful deductions, late final pay) must be brought within 3 years of the violation. Massachusetts's separate overtime statute has its own, shorter 2-year limitations period for the overtime-premium portion of an unpaid-overtime claim. An employee whose overtime-premium claim is more than 2 years old may still be able to recover the straight-time (regular-rate) value of the unpaid hours for a 3rd year under the Wage Act, but not the extra overtime premium for that additional year.",
+      "citation": "M.G.L. c. 151, s. 20A (overtime claims, 2 years); M.G.L. c. 149, s. 150 (general Wage Act claims, 3 years); Crocker v. Townsend Oil Co., Inc., 464 Mass. 1 (2012)",
+      "sourceUrl": "https://malegislature.gov/Laws/GeneralLaws/PartI/TitleXXI/Chapter151/Section20A",
       "sourceAgency": "Massachusetts Legislature (General Laws)",
-      "lastChecked": "2026-07-30",
+      "lastChecked": "2026-08-10",
       "reviewed": false,
       "reviewedBy": null,
-      "notes": "The 3-year period is tolled while the Attorney General reviews a filed complaint. Prevailing employees receive mandatory treble damages plus costs and attorney's fees."
+      "notes": "CORRECTED 2026-08-10: the prior version of this fact cited only c.149 s.150 (3 years) as the limitations period for 'unpaid wages or overtime.' But s.150's own enumerated list of sections eligible for a private civil action (ss. 33E, 52E, 148, 148A, 148B, 148C, 150C, 152, 152A, 159C, 190, and c.151 s.19) does NOT include c.151 ss.1A/1B -- the overtime-rate and overtime-violation sections -- confirmed against the statute text at malegislature.gov. Massachusetts's overtime statute carries its own limitations provision, c.151 s.20A, barring any cause of action accruing more than 2 years before filing (tolled while a complaint is pending with the Attorney General, same mechanism as s.150). The Supreme Judicial Court's decision in Crocker v. Townsend Oil Co., Inc., 464 Mass. 1 (2012), confirmed the 2-year period for the overtime-premium claim under s.20A, while holding an employee can still reach a 3rd year of straight-time-only recovery via the Wage Act (c.149 ss.148/150). So: general Wage Act claims = 3 years (c.149 s.150); the overtime-premium claim specifically = 2 years (c.151 s.20A). The 2-year figure in s.20A is corroborated by multiple secondary sources describing the Crocker holding but should be re-confirmed against the enrolled statute text directly before counsel review, since the malegislature.gov page for s.20A is JavaScript-rendered and returned inconsistent automated extracts during this pass. VERIFY periodically for amendment."
     },
     {
       "topic": "retaliation.whistleblower",
