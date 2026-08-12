@@ -85,15 +85,29 @@ for (const c of CASES) {
   (c.mustNotHave || []).forEach(re => { if (re.test(all)) problems.push('unexpectedly has a link matching ' + re + ' — got: ' + JSON.stringify(hrefs.map(h => h.href))); });
 
   // Coverage: this state's own wage-hour/discrimination agency links must
-  // appear (read from content/states/<ABBR>.json, not hardcoded), and no
-  // OTHER sampled state's agency links should leak in.
+  // appear WHEN relevant to the issue (read from content/states/<ABBR>.json,
+  // not hardcoded) — and must NOT appear when irrelevant (R8: the state
+  // agency links are issue-gated the same way the federal ones already are,
+  // so a doc-review/harassment-only case doesn't lead with an unrelated
+  // wage-agency link, and vice versa). No OTHER sampled state's agency
+  // links should ever leak in.
   const st = stateContent(c.abbr);
   const ag = st.agencies || {};
-  if (ag.wageHour && ag.wageHour.url && !all.includes(ag.wageHour.url)) {
-    problems.push(`missing ${c.state}'s own wage-hour agency link (${ag.wageHour.url}) — got: ` + JSON.stringify(hrefs.map(h => h.href)));
+  const wantsWage = c.issue === 'Unpaid overtime or wages' || c.issue === 'Fired or pushed out';
+  const wantsDiscrim = c.issue === 'Discrimination' || c.issue === 'Harassment or a hostile workplace' || c.issue === 'Fired or pushed out';
+  // Match on the visible label (which the app always prefixes "Wage & hour —"
+  // / "Discrimination —"), not just the URL — some states reuse the same
+  // agency URL for both categories (e.g. Texas Workforce Commission), so a
+  // plain href substring check can't tell the two links apart.
+  const hasWageLabel = hrefs.some(h => /^Wage & hour —/.test(h.text) && h.href.replace(/\/$/, '') === ag.wageHour?.url.replace(/\/$/, ''));
+  const hasDiscrimLabel = hrefs.some(h => /^Discrimination —/.test(h.text) && h.href.replace(/\/$/, '') === ag.discrimination?.url.replace(/\/$/, ''));
+  if (ag.wageHour && ag.wageHour.url) {
+    if (wantsWage && !hasWageLabel) problems.push(`missing ${c.state}'s own wage-hour agency link (${ag.wageHour.url}) — got: ` + JSON.stringify(hrefs.map(h => h.href)));
+    if (!wantsWage && hasWageLabel) problems.push(`unexpectedly has ${c.state}'s own wage-hour agency link (${ag.wageHour.url}) for an unrelated issue — got: ` + JSON.stringify(hrefs.map(h => h.href)));
   }
-  if (ag.discrimination && ag.discrimination.url && !all.includes(ag.discrimination.url)) {
-    problems.push(`missing ${c.state}'s own discrimination agency link (${ag.discrimination.url}) — got: ` + JSON.stringify(hrefs.map(h => h.href)));
+  if (ag.discrimination && ag.discrimination.url) {
+    if (wantsDiscrim && !hasDiscrimLabel) problems.push(`missing ${c.state}'s own discrimination agency link (${ag.discrimination.url}) — got: ` + JSON.stringify(hrefs.map(h => h.href)));
+    if (!wantsDiscrim && hasDiscrimLabel) problems.push(`unexpectedly has ${c.state}'s own discrimination agency link (${ag.discrimination.url}) for an unrelated issue — got: ` + JSON.stringify(hrefs.map(h => h.href)));
   }
   for (const other of CASES) {
     if (other.abbr === c.abbr) continue;

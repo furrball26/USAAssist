@@ -2090,8 +2090,16 @@ function App(){
         const ag = (stateData && stateData.agencies) || {};
         const fedF = (federal && federal.facts) || [];
         const links = [];
-        if (ag.wageHour && safeUrl(ag.wageHour.url)) links.push(['Wage & hour — ' + (ag.wageHour.name || stateSel), safeUrl(ag.wageHour.url)]);
-        if (ag.discrimination && safeUrl(ag.discrimination.url)) links.push(['Discrimination — ' + (ag.discrimination.name || stateSel), safeUrl(ag.discrimination.url)]);
+        // R8 — gate the STATE agency links by issue the same way the federal
+        // links below already are: a doc-review or harassment-only case has no
+        // wage claim to file, and shouldn't lead with an unrelated wage-agency
+        // link (and vice versa for a pure wage case).
+        if (cfg.key === 'wage' && ag.wageHour && safeUrl(ag.wageHour.url)) links.push(['Wage & hour — ' + (ag.wageHour.name || stateSel), safeUrl(ag.wageHour.url)]);
+        if ((cfg.key === 'discrimination' || cfg.key === 'harassment') && ag.discrimination && safeUrl(ag.discrimination.url)) links.push(['Discrimination — ' + (ag.discrimination.name || stateSel), safeUrl(ag.discrimination.url)]);
+        if (cfg.key === 'termination') {
+          if (ag.wageHour && safeUrl(ag.wageHour.url)) links.push(['Wage & hour — ' + (ag.wageHour.name || stateSel), safeUrl(ag.wageHour.url)]);
+          if (ag.discrimination && safeUrl(ag.discrimination.url)) links.push(['Discrimination — ' + (ag.discrimination.name || stateSel), safeUrl(ag.discrimination.url)]);
+        }
         // F19 — the federal links below adapt to the issue at hand instead of
         // always showing the same fixed EEOC + DOL pair: a document-review user
         // has no EEOC charge or wage claim to file (they need a lawyer, not an

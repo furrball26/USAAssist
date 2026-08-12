@@ -1808,8 +1808,12 @@ function App() {
     const ag = stateData && stateData.agencies || {};
     const fedF = federal && federal.facts || [];
     const links = [];
-    if (ag.wageHour && safeUrl(ag.wageHour.url)) links.push(["Wage & hour \u2014 " + (ag.wageHour.name || stateSel), safeUrl(ag.wageHour.url)]);
-    if (ag.discrimination && safeUrl(ag.discrimination.url)) links.push(["Discrimination \u2014 " + (ag.discrimination.name || stateSel), safeUrl(ag.discrimination.url)]);
+    if (cfg.key === "wage" && ag.wageHour && safeUrl(ag.wageHour.url)) links.push(["Wage & hour \u2014 " + (ag.wageHour.name || stateSel), safeUrl(ag.wageHour.url)]);
+    if ((cfg.key === "discrimination" || cfg.key === "harassment") && ag.discrimination && safeUrl(ag.discrimination.url)) links.push(["Discrimination \u2014 " + (ag.discrimination.name || stateSel), safeUrl(ag.discrimination.url)]);
+    if (cfg.key === "termination") {
+      if (ag.wageHour && safeUrl(ag.wageHour.url)) links.push(["Wage & hour \u2014 " + (ag.wageHour.name || stateSel), safeUrl(ag.wageHour.url)]);
+      if (ag.discrimination && safeUrl(ag.discrimination.url)) links.push(["Discrimination \u2014 " + (ag.discrimination.name || stateSel), safeUrl(ag.discrimination.url)]);
+    }
     if (cfg.key === "document") {
       links.push(["Find a lawyer \u2014 ABA free legal-help / lawyer-referral directory", "https://www.findlegalhelp.org/"]);
     } else if (cfg.key === "termination") {
