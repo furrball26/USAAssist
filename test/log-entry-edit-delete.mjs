@@ -106,6 +106,29 @@ async function freshPage() {
   await pg.close();
 }
 
+// Case 3 (R11): the per-entry Edit/Delete buttons meet the app's 44px
+// minimum hit-target standard (they were previously 36px).
+{
+  const pg = await freshPage();
+  const errs = [];
+  pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
+  pg.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
+
+  const heights = await pg.evaluate(() => [...document.querySelectorAll('button')]
+    .filter(b => /^Edit entry from|^Delete entry from/.test(b.getAttribute('aria-label') || ''))
+    .map(b => ({ label: b.getAttribute('aria-label'), height: b.getBoundingClientRect().height })));
+
+  const problems = [];
+  if (heights.length === 0) problems.push('no Edit/Delete entry buttons found to measure');
+  heights.forEach(h => { if (h.height < 44) problems.push(h.label + ' is only ' + h.height + 'px tall (< 44px minimum hit target)'); });
+  errs.forEach(e => problems.push(e));
+
+  const ok = problems.length === 0;
+  if (!ok) fails++;
+  console.log((ok ? '✅' : '❌') + ' Edit/Delete entry buttons meet the 44px minimum hit target' + (ok ? '' : '\n   ' + problems.join('\n   ')));
+  await pg.close();
+}
+
 } finally {
   await b.close();
   server.close();
