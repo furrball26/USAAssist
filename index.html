@@ -677,7 +677,13 @@ const ICON_PATHS = {
   sparkle: /* @__PURE__ */ React.createElement("path", { d: "M12 2c.6 3.3 1.4 5.5 2.4 6.6 1 1 3.2 1.9 6.6 2.4-3.3.6-5.5 1.4-6.6 2.4-1 1-1.8 3.2-2.4 6.6-.6-3.3-1.4-5.5-2.4-6.6C8.5 12.4 6.3 11.6 3 11c3.3-.6 5.5-1.4 6.6-2.4C10.6 7.5 11.4 5.3 12 2Z" }),
   log: /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("path", { d: "M9 4h6a1 1 0 0 1 1 1v1h1.5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H6.5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1H8V5a1 1 0 0 1 1-1Z" }), /* @__PURE__ */ React.createElement("path", { d: "M9 4h6v2H9z" }), /* @__PURE__ */ React.createElement("path", { d: "M8.5 12h7M8.5 15.5h7M8.5 18.5h4.5" })),
   rights: /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("path", { d: "M12 6.8c-1.7-1.4-4-2.1-6.4-2.1-.6 0-1.1.5-1.1 1.1v11.6c0 .6.5 1 1.1 1 2.4 0 4.7.7 6.4 2.1 1.7-1.4 4-2.1 6.4-2.1.6 0 1.1-.4 1.1-1V5.8c0-.6-.5-1.1-1.1-1.1-2.4 0-4.7.7-6.4 2.1Z" }), /* @__PURE__ */ React.createElement("path", { d: "M12 6.8v13.6" })),
-  scales: /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("path", { d: "M12 3v17M8 20.5h8" }), /* @__PURE__ */ React.createElement("path", { d: "M12 6 5 8.3M12 6l7 2.3" }), /* @__PURE__ */ React.createElement("path", { d: "M2.4 8.6 5 7.8l2.6.8c.2 1.5-.9 2.9-2.6 2.9S2.2 10.1 2.4 8.6Z" }), /* @__PURE__ */ React.createElement("path", { d: "M16.4 8.6 19 7.8l2.6.8c.2 1.5-.9 2.9-2.6 2.9s-2.8-1.4-2.6-2.9Z" })),
+  // R7 — the Agencies tab ("Where to file a complaint") used to reuse a
+  // scales/justice glyph, which reads as "lawyer/court" rather than "free
+  // government office you can file with directly". A plain office building
+  // (no columns/pediment, so it doesn't just read as a courthouse either)
+  // matches the actual screen content better; the old scales path had no
+  // other call site, so it's replaced rather than kept as dead code.
+  building: /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("path", { d: "M6 21V8a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v13" }), /* @__PURE__ */ React.createElement("path", { d: "M3 21h18" }), /* @__PURE__ */ React.createElement("path", { d: "M9 21v-4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4" }), /* @__PURE__ */ React.createElement("path", { d: "M9 10.5h2M13 10.5h2M9 14h2M13 14h2" })),
   "location-pin": /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("path", { d: "M12 21s7-7.4 7-12.4A7 7 0 1 0 5 8.6C5 13.6 12 21 12 21Z" }), /* @__PURE__ */ React.createElement("circle", { cx: "12", cy: "8.6", r: "2.4" })),
   "deadline-clock": /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("circle", { cx: "12", cy: "13.2", r: "8.3" }), /* @__PURE__ */ React.createElement("path", { d: "M12 8.7v4.5l3 2" }), /* @__PURE__ */ React.createElement("path", { d: "M9.2 2.5h5.6M12 2.5v2.4" })),
   document: /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("path", { d: "M7 3h7.5L19 7.5V20a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" }), /* @__PURE__ */ React.createElement("path", { d: "M14.5 3v4.5H19" }), /* @__PURE__ */ React.createElement("path", { d: "M9 13h6M9 16.5h6" })),
@@ -811,7 +817,7 @@ const ISSUE_LIST = [
   ["A document to review", "Offer, contract, NDA, severance, PIP"]
 ];
 const PROMPT_TEXTS = ["Can my boss refuse to pay overtime?", "How do I ask for an ADA accommodation?", "What counts as retaliation?", "Should I sign this severance?"];
-const TAB_DEFS = [["home", "home", "Home"], ["chat", "sparkle", "Ask AI"], ["log", "log", "Log"], ["rights", "rights", "Rights"], ["agencies", "scales", "Agencies"]];
+const TAB_DEFS = [["home", "home", "Home"], ["chat", "sparkle", "Ask AI"], ["log", "log", "Log"], ["rights", "rights", "Rights"], ["agencies", "building", "Agencies"]];
 const ONB_TITLES = { 1: "Where do you work?", 2: "Which county?", 3: "What brings you here?", 4: "A few case details" };
 const ONB_BODIES = {
   1: "Employment law changes by state. Choose yours \u2014 we only show rules that actually apply to you.",

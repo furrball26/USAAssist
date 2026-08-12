@@ -289,11 +289,17 @@ const ICON_PATHS = {
     <path d="M12 6.8c-1.7-1.4-4-2.1-6.4-2.1-.6 0-1.1.5-1.1 1.1v11.6c0 .6.5 1 1.1 1 2.4 0 4.7.7 6.4 2.1 1.7-1.4 4-2.1 6.4-2.1.6 0 1.1-.4 1.1-1V5.8c0-.6-.5-1.1-1.1-1.1-2.4 0-4.7.7-6.4 2.1Z"/>
     <path d="M12 6.8v13.6"/>
   </>,
-  scales: <>
-    <path d="M12 3v17M8 20.5h8"/>
-    <path d="M12 6 5 8.3M12 6l7 2.3"/>
-    <path d="M2.4 8.6 5 7.8l2.6.8c.2 1.5-.9 2.9-2.6 2.9S2.2 10.1 2.4 8.6Z"/>
-    <path d="M16.4 8.6 19 7.8l2.6.8c.2 1.5-.9 2.9-2.6 2.9s-2.8-1.4-2.6-2.9Z"/>
+  // R7 — the Agencies tab ("Where to file a complaint") used to reuse a
+  // scales/justice glyph, which reads as "lawyer/court" rather than "free
+  // government office you can file with directly". A plain office building
+  // (no columns/pediment, so it doesn't just read as a courthouse either)
+  // matches the actual screen content better; the old scales path had no
+  // other call site, so it's replaced rather than kept as dead code.
+  building: <>
+    <path d="M6 21V8a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v13"/>
+    <path d="M3 21h18"/>
+    <path d="M9 21v-4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4"/>
+    <path d="M9 10.5h2M13 10.5h2M9 14h2M13 14h2"/>
   </>,
   'location-pin': <>
     <path d="M12 21s7-7.4 7-12.4A7 7 0 1 0 5 8.6C5 13.6 12 21 12 21Z"/>
@@ -420,7 +426,7 @@ const ISSUE_LIST = [
 
 const PROMPT_TEXTS =['Can my boss refuse to pay overtime?','How do I ask for an ADA accommodation?','What counts as retaliation?','Should I sign this severance?'];
 
-const TAB_DEFS = [['home','home','Home'],['chat','sparkle','Ask AI'],['log','log','Log'],['rights','rights','Rights'],['agencies','scales','Agencies']];
+const TAB_DEFS = [['home','home','Home'],['chat','sparkle','Ask AI'],['log','log','Log'],['rights','rights','Rights'],['agencies','building','Agencies']];
 
 const ONB_TITLES = { 1:'Where do you work?', 2:'Which county?', 3:'What brings you here?', 4:'A few case details' };
 const ONB_BODIES = {

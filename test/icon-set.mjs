@@ -192,6 +192,35 @@ for (const mode of ['action', 'plain']) {
   await pg.close();
 }
 
+// Case 5 (R7, docs/review-2-report.md) — the Agencies tab ("Where to file a
+// complaint") used to reuse a scales/justice glyph, which reads as
+// "lawyer/court" rather than "free government office you can file with
+// directly". It must now render the distinct "building" icon.
+{
+  const pg = await b.newPage();
+  const errs = [];
+  pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
+  pg.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
+  await seedAndOpen(pg);
+
+  const agenciesIconHtml = await pg.evaluate(() => {
+    const btn = [...document.querySelectorAll('nav button')].find(b => /Agencies/.test(b.textContent));
+    const svg = btn && btn.querySelector('svg');
+    return svg ? svg.innerHTML : null;
+  });
+  const problems = [];
+  if (!agenciesIconHtml) problems.push('no <svg> found in the Agencies tab button');
+  // "M3 21h18" is the building icon's ground line, not present in any other
+  // icon; a scales/justice glyph would instead contain "M12 3v17".
+  else if (!agenciesIconHtml.includes('M3 21h18')) problems.push('Agencies tab icon is not the "building" glyph: ' + agenciesIconHtml);
+  errs.forEach(e => problems.push(e));
+
+  const ok = problems.length === 0;
+  if (!ok) fails++;
+  console.log((ok ? '✅' : '❌') + ' Agencies tab uses the "building" icon, not scales/justice' + (ok ? '' : '\n   ' + problems.join('\n   ')));
+  await pg.close();
+}
+
 } finally {
   await b.close();
   server.close();
