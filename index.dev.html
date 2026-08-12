@@ -51,7 +51,12 @@
   .scrollarea{flex:1;overflow-y:auto;overflow-x:hidden}
   .hoverfx{transition:background .12s ease}
   .hoverfx:hover{background:#EEF1FF !important}
-  .tabbar{ flex:none; display:grid; grid-template-columns:repeat(5,1fr); gap:4px; padding:10px 12px 26px; border-top:2px solid rgba(20,24,31,.14); background:#FFFDF8; }
+  /* order:2 keeps the tab bar last visually (bottom of the phone/tablet flex
+     column) even though it's now first in DOM order (R3) — flex/grid `order`
+     only changes paint order, never keyboard tab order, so this restores the
+     mobile/tablet look while a screen-reader/keyboard user still reaches the
+     nav first, matching its visual-first desktop rail position. */
+  .tabbar{ flex:none; order:2; display:grid; grid-template-columns:repeat(5,1fr); gap:4px; padding:10px 12px 26px; border-top:2px solid rgba(20,24,31,.14); background:#FFFDF8; }
   .tabbar-btn{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; padding:9px 2px; min-height:56px; border-radius:12px; cursor:pointer; }
 
   /* Full-bleed on phones — the real app fills the viewport */
@@ -2128,6 +2133,23 @@ function App(){
         <div className="statusbar" aria-hidden="true" style={css('color:' + statusColor)}>
           <span>9:41</span><span style={css("letter-spacing:2px")}>▮▮▮ ᯤ ▰</span>
         </div>
+        {/* R3: nav is before main in DOM so keyboard tab order reaches it
+            first — matching its visual-first position in the >=1024px rail
+            (grid-area placement doesn't depend on DOM order, but tab order
+            does). .tabbar's CSS `order:2` keeps it painted LAST (bottom bar)
+            at the phone/tablet tiers where it's a flex column, so the
+            visual layout there is unchanged. */}
+        {showTabs &&
+          <nav aria-label="Primary" className="tabbar">
+            {TAB_DEFS.map(([k, name, label]) =>
+              <button key={k} className="hoverfx tabbar-btn" onClick={nav(k)} aria-current={screen === k ? 'page' : undefined}
+                style={css('border:2px solid ' + (screen === k ? '#14181F' : 'transparent') + ';background:' + (screen === k ? '#FFF4D6' : 'transparent') + ';color:#14181F;cursor:pointer')}>
+                <Icon name={name} size={22} />
+                <span style={css("font:700 12px 'Atkinson Hyperlegible',sans-serif")}>{label}</span>
+              </button>
+            )}
+          </nav>
+        }
         <main className="scrollarea" ref={mainRef} tabIndex={-1} style={css("outline:none")}>
           {/* Call the screen as a function (not <Current/>) so it inlines into this
               stable tree instead of remounting on every keystroke — remounting was
@@ -2146,17 +2168,6 @@ function App(){
             );
           })()}
         </main>
-        {showTabs &&
-          <nav aria-label="Primary" className="tabbar">
-            {TAB_DEFS.map(([k, name, label]) =>
-              <button key={k} className="hoverfx tabbar-btn" onClick={nav(k)} aria-current={screen === k ? 'page' : undefined}
-                style={css('border:2px solid ' + (screen === k ? '#14181F' : 'transparent') + ';background:' + (screen === k ? '#FFF4D6' : 'transparent') + ';color:#14181F;cursor:pointer')}>
-                <Icon name={name} size={22} />
-                <span style={css("font:700 12px 'Atkinson Hyperlegible',sans-serif")}>{label}</span>
-              </button>
-            )}
-          </nav>
-        }
       </div>
     </div>
   );

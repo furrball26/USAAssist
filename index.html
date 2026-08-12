@@ -190,7 +190,12 @@
   .scrollarea{flex:1;overflow-y:auto;overflow-x:hidden}
   .hoverfx{transition:background .12s ease}
   .hoverfx:hover{background:#EEF1FF !important}
-  .tabbar{ flex:none; display:grid; grid-template-columns:repeat(5,1fr); gap:4px; padding:10px 12px 26px; border-top:2px solid rgba(20,24,31,.14); background:#FFFDF8; }
+  /* order:2 keeps the tab bar last visually (bottom of the phone/tablet flex
+     column) even though it's now first in DOM order (R3) — flex/grid `order`
+     only changes paint order, never keyboard tab order, so this restores the
+     mobile/tablet look while a screen-reader/keyboard user still reaches the
+     nav first, matching its visual-first desktop rail position. */
+  .tabbar{ flex:none; order:2; display:grid; grid-template-columns:repeat(5,1fr); gap:4px; padding:10px 12px 26px; border-top:2px solid rgba(20,24,31,.14); background:#FFFDF8; }
   .tabbar-btn{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; padding:9px 2px; min-height:56px; border-radius:12px; cursor:pointer; }
 
   /* Full-bleed on phones — the real app fills the viewport */
@@ -1822,10 +1827,7 @@ function App() {
   const altHome = screen === "home" ? homeMode : null;
   const screenBg = altHome === "action" ? "#2B3AA8" : altHome === "plain" ? "#FFFFFF" : "#FFFDF8";
   const statusColor = altHome === "action" ? "#fff" : "#14181F";
-  return /* @__PURE__ */ React.createElement("div", { className: "device" }, /* @__PURE__ */ React.createElement("div", { className: "screen" + (showTabs ? "" : " no-tabbar"), style: Object.assign(css("background:" + screenBg), { "--mode-bg": screenBg }) }, /* @__PURE__ */ React.createElement("div", { className: "statusbar", "aria-hidden": "true", style: css("color:" + statusColor) }, /* @__PURE__ */ React.createElement("span", null, "9:41"), /* @__PURE__ */ React.createElement("span", { style: css("letter-spacing:2px") }, "\u25AE\u25AE\u25AE \u1BE4 \u25B0")), /* @__PURE__ */ React.createElement("main", { className: "scrollarea", ref: mainRef, tabIndex: -1, style: css("outline:none") }, Current(), screen === "home" && (() => {
-    const dark = altHome === "action";
-    return /* @__PURE__ */ React.createElement("div", { style: css("margin:0 22px 30px;padding-top:16px;border-top:1px solid " + (dark ? "rgba(255,255,255,.25)" : "rgba(20,24,31,.14)")) }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 10px;font:400 13px/1.5 'Atkinson Hyperlegible',sans-serif;color:" + (dark ? "#DDE2FF" : "#4A5162")) }, "Everything you enter stays in this browser on this device \u2014 nothing is uploaded. On a shared or work computer, delete your case when you\u2019re done."), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;gap:10px;flex-wrap:wrap") }, /* @__PURE__ */ React.createElement("button", { onClick: startFreshCase, style: css("padding:12px 16px;border-radius:12px;border:2px solid " + (dark ? "rgba(255,255,255,.55)" : "#14181F") + ";background:transparent;color:" + (dark ? "#fff" : "#14181F") + ";font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;min-height:44px") }, "Start a fresh case"), /* @__PURE__ */ React.createElement("button", { onClick: clearCase, style: css("padding:12px 16px;border-radius:12px;border:2px solid " + (dark ? "rgba(255,255,255,.55)" : "#B3264F") + ";background:transparent;color:" + (dark ? "#fff" : "#B3264F") + ";font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;min-height:44px") }, "Delete my case & start over")));
-  })()), showTabs && /* @__PURE__ */ React.createElement("nav", { "aria-label": "Primary", className: "tabbar" }, TAB_DEFS.map(
+  return /* @__PURE__ */ React.createElement("div", { className: "device" }, /* @__PURE__ */ React.createElement("div", { className: "screen" + (showTabs ? "" : " no-tabbar"), style: Object.assign(css("background:" + screenBg), { "--mode-bg": screenBg }) }, /* @__PURE__ */ React.createElement("div", { className: "statusbar", "aria-hidden": "true", style: css("color:" + statusColor) }, /* @__PURE__ */ React.createElement("span", null, "9:41"), /* @__PURE__ */ React.createElement("span", { style: css("letter-spacing:2px") }, "\u25AE\u25AE\u25AE \u1BE4 \u25B0")), showTabs && /* @__PURE__ */ React.createElement("nav", { "aria-label": "Primary", className: "tabbar" }, TAB_DEFS.map(
     ([k, name, label]) => /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -1838,7 +1840,10 @@ function App() {
       /* @__PURE__ */ React.createElement(Icon, { name, size: 22 }),
       /* @__PURE__ */ React.createElement("span", { style: css("font:700 12px 'Atkinson Hyperlegible',sans-serif") }, label)
     )
-  ))));
+  )), /* @__PURE__ */ React.createElement("main", { className: "scrollarea", ref: mainRef, tabIndex: -1, style: css("outline:none") }, Current(), screen === "home" && (() => {
+    const dark = altHome === "action";
+    return /* @__PURE__ */ React.createElement("div", { style: css("margin:0 22px 30px;padding-top:16px;border-top:1px solid " + (dark ? "rgba(255,255,255,.25)" : "rgba(20,24,31,.14)")) }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 10px;font:400 13px/1.5 'Atkinson Hyperlegible',sans-serif;color:" + (dark ? "#DDE2FF" : "#4A5162")) }, "Everything you enter stays in this browser on this device \u2014 nothing is uploaded. On a shared or work computer, delete your case when you\u2019re done."), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;gap:10px;flex-wrap:wrap") }, /* @__PURE__ */ React.createElement("button", { onClick: startFreshCase, style: css("padding:12px 16px;border-radius:12px;border:2px solid " + (dark ? "rgba(255,255,255,.55)" : "#14181F") + ";background:transparent;color:" + (dark ? "#fff" : "#14181F") + ";font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;min-height:44px") }, "Start a fresh case"), /* @__PURE__ */ React.createElement("button", { onClick: clearCase, style: css("padding:12px 16px;border-radius:12px;border:2px solid " + (dark ? "rgba(255,255,255,.55)" : "#B3264F") + ";background:transparent;color:" + (dark ? "#fff" : "#B3264F") + ";font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;min-height:44px") }, "Delete my case & start over")));
+  })())));
 }
 ReactDOM.createRoot(document.getElementById("root")).render(/* @__PURE__ */ React.createElement(App, null));</script>
 </body>
