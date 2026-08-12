@@ -16,6 +16,7 @@ import { readFileSync, existsSync, statSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
 import { execSync } from 'node:child_process';
 import puppeteer from 'puppeteer-core';
+import { gotoApp, reloadApp } from './lib/nav.mjs';
 
 const ROOT = new URL('..', import.meta.url).pathname;
 const TYPES = { '.html':'text/html', '.js':'text/javascript', '.json':'application/json', '.svg':'image/svg+xml' };
@@ -31,6 +32,8 @@ const chrome = execSync(`find "${ROOT}chrome-headless-shell" -type f -name 'chro
 
 const b = await puppeteer.launch({ executablePath: chrome, headless: true, args: ['--no-sandbox'] });
 let fails = 0;
+
+try {
 
 // The 11 glyphs the icon set replaced, plus the "←" back-link arrow. These
 // must never again appear as *visible page text* (they're fine inside JS
@@ -51,7 +54,7 @@ async function seedAndOpen(pg, extra = {}) {
     done:{}, messages:[],
   }, extra);
   await pg.evaluateOnNewDocument((s) => { localStorage.clear(); localStorage.setItem('worklaw.case.v2', JSON.stringify(s)); }, seed);
-  await pg.goto(`http://127.0.0.1:${PORT}/index.html`, { waitUntil:'networkidle0', timeout:20000 });
+  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`);
   await new Promise(r => setTimeout(r, 700));
 }
 
@@ -166,7 +169,7 @@ for (const mode of ['action', 'plain']) {
   pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
   pg.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
   await pg.evaluateOnNewDocument(() => localStorage.clear());
-  await pg.goto(`http://127.0.0.1:${PORT}/index.html`, { waitUntil:'networkidle0', timeout:20000 });
+  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`);
   await new Promise(r => setTimeout(r, 500));
   await pg.evaluate(() => { const sel = document.querySelector('#onb-state'); sel.value = 'Texas'; sel.dispatchEvent(new Event('change', { bubbles:true })); });
   await new Promise(r => setTimeout(r, 150));
@@ -189,6 +192,9 @@ for (const mode of ['action', 'plain']) {
   await pg.close();
 }
 
-await b.close(); server.close();
+} finally {
+  await b.close();
+  server.close();
+}
 console.log(fails ? `\n❌ ${fails} case(s) failed` : '\n✅ ALL ICON-SET CASES PASSED');
 process.exit(fails ? 1 : 0);

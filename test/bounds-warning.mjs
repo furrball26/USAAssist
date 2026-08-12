@@ -13,6 +13,7 @@ import { readFileSync, existsSync, statSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
 import { execSync } from 'node:child_process';
 import puppeteer from 'puppeteer-core';
+import { gotoApp, reloadApp } from './lib/nav.mjs';
 
 const ROOT = new URL('..', import.meta.url).pathname;
 const TYPES = { '.html':'text/html', '.js':'text/javascript', '.json':'application/json', '.svg':'image/svg+xml' };
@@ -29,6 +30,8 @@ const chrome = execSync(`find "${ROOT}chrome-headless-shell" -type f -name 'chro
 const b = await puppeteer.launch({ executablePath: chrome, headless: true, args: ['--no-sandbox'] });
 let fails = 0;
 
+try {
+
 // Case 1: an absurd rate + hours pair (the exact numbers from the gap report) must
 // surface a warning on the Letter screen, not a silent $149,998,350,001.50 figure.
 {
@@ -43,7 +46,7 @@ let fails = 0;
     entries: [{ date:'JAN 5, 2026 · 9:00 AM', iso:'2026-01-05T09:00:00.000Z', title:'Unpaid or extra hours', body:'x', color:'#EF7B22', tag:'Wage & hour', hours:99999, payStatus:'unpaid' }],
   };
   await pg.evaluateOnNewDocument((s) => localStorage.setItem('worklaw.case.v2', JSON.stringify(s)), seed);
-  await pg.goto(`http://127.0.0.1:${PORT}/index.html`, { waitUntil:'networkidle0', timeout:20000 });
+  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`);
   await new Promise(r => setTimeout(r, 700));
   await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('Draft a letter')); if (btn) btn.click(); });
   await new Promise(r => setTimeout(r, 300));
@@ -78,7 +81,7 @@ let fails = 0;
     entries: [{ date:'JAN 5, 2026 · 9:00 AM', iso:'2026-01-05T09:00:00.000Z', title:'Unpaid or extra hours', body:'x', color:'#EF7B22', tag:'Wage & hour', hours:8, payStatus:'unpaid' }],
   };
   await pg.evaluateOnNewDocument((s) => localStorage.setItem('worklaw.case.v2', JSON.stringify(s)), seed);
-  await pg.goto(`http://127.0.0.1:${PORT}/index.html`, { waitUntil:'networkidle0', timeout:20000 });
+  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`);
   await new Promise(r => setTimeout(r, 700));
   await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('Draft a letter')); if (btn) btn.click(); });
   await new Promise(r => setTimeout(r, 300));
@@ -105,7 +108,7 @@ let fails = 0;
   // localStorage persists per-origin across pages in the same browser, so explicitly
   // clear the case saved by an earlier case in this file before starting fresh onboarding.
   await pg.evaluateOnNewDocument(() => localStorage.clear());
-  await pg.goto(`http://127.0.0.1:${PORT}/index.html`, { waitUntil:'networkidle0', timeout:20000 });
+  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`);
   await new Promise(r => setTimeout(r, 500));
   const clickContinue = async () => { await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => /Continue|Open my dashboard/.test(b.textContent.trim())); if (btn) btn.click(); }); await new Promise(r => setTimeout(r, 200)); };
   // Step 1: state.
@@ -142,6 +145,9 @@ let fails = 0;
   await pg.close();
 }
 
-await b.close(); server.close();
+} finally {
+  await b.close();
+  server.close();
+}
 console.log(fails ? `\n❌ ${fails} case(s) failed` : '\n✅ ALL BOUNDS-WARNING CASES PASSED');
 process.exit(fails ? 1 : 0);

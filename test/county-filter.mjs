@@ -15,6 +15,7 @@ import { readFileSync, existsSync, statSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
 import { execSync } from 'node:child_process';
 import puppeteer from 'puppeteer-core';
+import { gotoApp, reloadApp } from './lib/nav.mjs';
 
 const ROOT = new URL('..', import.meta.url).pathname;
 const TYPES = { '.html':'text/html', '.js':'text/javascript', '.json':'application/json', '.svg':'image/svg+xml' };
@@ -31,9 +32,11 @@ const chrome = execSync(`find "${ROOT}chrome-headless-shell" -type f -name 'chro
 const b = await puppeteer.launch({ executablePath: chrome, headless: true, args: ['--no-sandbox'] });
 let fails = 0;
 
+try {
+
 async function toCountyStep(pg, state) {
   await pg.evaluateOnNewDocument(() => localStorage.clear());
-  await pg.goto(`http://127.0.0.1:${PORT}/index.html`, { waitUntil:'networkidle0', timeout:20000 });
+  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`);
   await new Promise(r => setTimeout(r, 500));
   await pg.evaluate((s) => { const sel = document.querySelector('#onb-state'); sel.value = s; sel.dispatchEvent(new Event('change', { bubbles:true })); }, state);
   await new Promise(r => setTimeout(r, 150));
@@ -104,6 +107,9 @@ async function toCountyStep(pg, state) {
   await pg.close();
 }
 
-await b.close(); server.close();
+} finally {
+  await b.close();
+  server.close();
+}
 console.log(fails ? `\n❌ ${fails} case(s) failed` : '\n✅ ALL COUNTY-FILTER CASES PASSED');
 process.exit(fails ? 1 : 0);

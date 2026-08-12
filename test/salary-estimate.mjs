@@ -14,6 +14,7 @@ import { readFileSync, existsSync, statSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
 import { execSync } from 'node:child_process';
 import puppeteer from 'puppeteer-core';
+import { gotoApp, reloadApp } from './lib/nav.mjs';
 
 const ROOT = new URL('..', import.meta.url).pathname;
 const TYPES = { '.html':'text/html', '.js':'text/javascript', '.json':'application/json', '.svg':'image/svg+xml' };
@@ -30,6 +31,8 @@ const chrome = execSync(`find "${ROOT}chrome-headless-shell" -type f -name 'chro
 const b = await puppeteer.launch({ executablePath: chrome, headless: true, args: ['--no-sandbox'] });
 let fails = 0;
 
+try {
+
 // $41,600/yr -> hourly-equivalent = 41600/52/40 = $20.00/hr exactly, times 10
 // unpaid hours * 1.5 = $300.00 — a clean, checkable figure.
 {
@@ -44,7 +47,7 @@ let fails = 0;
     entries: [{ date:'JAN 5, 2026 · 9:00 AM', iso:'2026-01-05T09:00:00.000Z', title:'Unpaid or extra hours', body:'x', color:'#EF7B22', tag:'Wage & hour', hours:10, payStatus:'unpaid' }],
   };
   await pg.evaluateOnNewDocument((s) => { localStorage.clear(); localStorage.setItem('worklaw.case.v2', JSON.stringify(s)); }, seed);
-  await pg.goto(`http://127.0.0.1:${PORT}/index.html`, { waitUntil:'networkidle0', timeout:20000 });
+  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`);
   await new Promise(r => setTimeout(r, 700));
   await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('Draft a letter')); if (btn) btn.click(); });
   await new Promise(r => setTimeout(r, 300));
@@ -85,7 +88,7 @@ let fails = 0;
     entries: [{ date:'JAN 5, 2026 · 9:00 AM', iso:'2026-01-05T09:00:00.000Z', title:'Unpaid or extra hours', body:'x', color:'#EF7B22', tag:'Wage & hour', hours:10, payStatus:'unpaid' }],
   };
   await pg.evaluateOnNewDocument((s) => { localStorage.clear(); localStorage.setItem('worklaw.case.v2', JSON.stringify(s)); }, seed);
-  await pg.goto(`http://127.0.0.1:${PORT}/index.html`, { waitUntil:'networkidle0', timeout:20000 });
+  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`);
   await new Promise(r => setTimeout(r, 700));
   await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('Draft a letter')); if (btn) btn.click(); });
   await new Promise(r => setTimeout(r, 300));
@@ -107,6 +110,9 @@ let fails = 0;
   await pg.close();
 }
 
-await b.close(); server.close();
+} finally {
+  await b.close();
+  server.close();
+}
 console.log(fails ? `\n❌ ${fails} case(s) failed` : '\n✅ ALL SALARY-ESTIMATE CASES PASSED');
 process.exit(fails ? 1 : 0);

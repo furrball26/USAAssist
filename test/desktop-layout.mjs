@@ -17,6 +17,7 @@ import { readFileSync, existsSync, statSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
 import { execSync } from 'node:child_process';
 import puppeteer from 'puppeteer-core';
+import { gotoApp, reloadApp } from './lib/nav.mjs';
 
 const ROOT = new URL('..', import.meta.url).pathname;
 const TYPES = { '.html':'text/html', '.js':'text/javascript', '.json':'application/json', '.svg':'image/svg+xml' };
@@ -33,6 +34,8 @@ const chrome = execSync(`find "${ROOT}chrome-headless-shell" -type f -name 'chro
 const b = await puppeteer.launch({ executablePath: chrome, headless: true, args: ['--no-sandbox'] });
 let fails = 0;
 
+try {
+
 async function openHome(pg, homeMode = 'standard') {
   const seed = {
     onboarded:true, stateSel:'Texas', county:'Travis County', issue:'Unpaid overtime or wages',
@@ -40,13 +43,13 @@ async function openHome(pg, homeMode = 'standard') {
     caseOpened:new Date().toISOString(), homeMode, entries:[], done:{}, messages:[],
   };
   await pg.evaluateOnNewDocument((s) => { localStorage.clear(); localStorage.setItem('worklaw.case.v2', JSON.stringify(s)); }, seed);
-  await pg.goto(`http://127.0.0.1:${PORT}/index.html`, { waitUntil:'networkidle0', timeout:20000 });
+  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`);
   await new Promise(r => setTimeout(r, 700));
 }
 
 async function openOnboarding(pg) {
   await pg.evaluateOnNewDocument(() => localStorage.clear());
-  await pg.goto(`http://127.0.0.1:${PORT}/index.html`, { waitUntil:'networkidle0', timeout:20000 });
+  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`);
   await new Promise(r => setTimeout(r, 500));
 }
 
@@ -188,6 +191,9 @@ for (const [width, mode] of [[1280, 'standard'], [1280, 'action'], [1280, 'plain
   await pg.close();
 }
 
-await b.close(); server.close();
+} finally {
+  await b.close();
+  server.close();
+}
 console.log(fails ? `\n❌ ${fails} case(s) failed` : '\n✅ ALL DESKTOP-LAYOUT CASES PASSED');
 process.exit(fails ? 1 : 0);

@@ -13,6 +13,7 @@ import { readFileSync, existsSync, statSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
 import { execSync } from 'node:child_process';
 import puppeteer from 'puppeteer-core';
+import { gotoApp, reloadApp } from './lib/nav.mjs';
 
 const ROOT = new URL('..', import.meta.url).pathname;
 const TYPES = { '.html':'text/html', '.js':'text/javascript', '.json':'application/json', '.svg':'image/svg+xml' };
@@ -27,6 +28,8 @@ const PORT = server.address().port;
 const chrome = execSync(`find "${ROOT}chrome-headless-shell" -type f -name 'chrome-headless-shell' | head -1`).toString().trim();
 
 const b = await puppeteer.launch({ executablePath: chrome, headless: true, args: ['--no-sandbox'] });
+let allOk = false;
+try {
 const pg = await b.newPage();
 const errs = [];
 pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
@@ -40,11 +43,11 @@ const seed = {
   wizNode:'salary-duties', wizPath:['start','salary'], docName:'severance-offer.pdf',
 };
 await pg.evaluateOnNewDocument((s) => localStorage.setItem('worklaw.case.v2', JSON.stringify(s)), seed);
-await pg.goto(`http://127.0.0.1:${PORT}/index.html`, { waitUntil:'networkidle0', timeout:20000 });
+await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`);
 await new Promise(r => setTimeout(r, 700));
 
 // Reload to force a fresh read from localStorage (as if the tab were closed/reopened).
-await pg.reload({ waitUntil:'networkidle0' });
+await reloadApp(pg);
 await new Promise(r => setTimeout(r, 500));
 
 const stored = await pg.evaluate(() => JSON.parse(localStorage.getItem('worklaw.case.v2') || '{}'));
@@ -68,7 +71,10 @@ const shownText = await pg.evaluate(() => { const ta = document.querySelector('t
 const rendered = shownText === seed.letterEdit;
 console.log((rendered ? '✅' : '❌') + ' Letter screen renders the persisted edited text after reload' + (rendered ? '' : ' (got: ' + JSON.stringify(shownText) + ')'));
 
-await b.close(); server.close();
-const allOk = ok && rendered;
+allOk = ok && rendered;
+} finally {
+  await b.close();
+  server.close();
+}
 console.log(allOk ? '\n✅ RELOAD-PERSISTENCE TEST PASSED' : '\n❌ RELOAD-PERSISTENCE TEST FAILED');
 process.exit(allOk ? 0 : 1);

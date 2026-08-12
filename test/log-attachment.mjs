@@ -16,6 +16,7 @@ import { extname, join, normalize } from 'node:path';
 import { tmpdir } from 'node:os';
 import { execSync } from 'node:child_process';
 import puppeteer from 'puppeteer-core';
+import { gotoApp, reloadApp } from './lib/nav.mjs';
 
 const ROOT = new URL('..', import.meta.url).pathname;
 const TYPES = { '.html':'text/html', '.js':'text/javascript', '.json':'application/json', '.svg':'image/svg+xml' };
@@ -40,6 +41,8 @@ writeFileSync(bigPath, Buffer.alloc(2 * 1024 * 1024)); // 2MB, over the 1.5MB ca
 const b = await puppeteer.launch({ executablePath: chrome, headless: true, args: ['--no-sandbox'] });
 let fails = 0;
 
+try {
+
 async function toLogScreen() {
   const pg = await b.newPage();
   const seed = {
@@ -48,7 +51,7 @@ async function toLogScreen() {
     caseOpened:new Date().toISOString(), homeMode:'standard', entries:[], done:{}, messages:[],
   };
   await pg.evaluateOnNewDocument((s) => { localStorage.clear(); localStorage.setItem('worklaw.case.v2', JSON.stringify(s)); }, seed);
-  await pg.goto(`http://127.0.0.1:${PORT}/index.html`, { waitUntil:'networkidle0', timeout:20000 });
+  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`);
   await new Promise(r => setTimeout(r, 700));
   await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('Log')); if (btn) btn.click(); });
   await new Promise(r => setTimeout(r, 400));
@@ -150,6 +153,9 @@ async function toLogScreen() {
   await pg.close();
 }
 
-await b.close(); server.close();
+} finally {
+  await b.close();
+  server.close();
+}
 console.log(fails ? `\n❌ ${fails} case(s) failed` : '\n✅ ALL LOG-ATTACHMENT CASES PASSED');
 process.exit(fails ? 1 : 0);

@@ -13,6 +13,7 @@ import { readFileSync, existsSync, statSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
 import { execSync } from 'node:child_process';
 import puppeteer from 'puppeteer-core';
+import { gotoApp } from './lib/nav.mjs';
 
 const ROOT = new URL('..', import.meta.url).pathname;
 const TYPES = { '.html':'text/html', '.js':'text/javascript', '.json':'application/json', '.svg':'image/svg+xml' };
@@ -27,6 +28,8 @@ const PORT = server.address().port;
 const chrome = execSync(`find "${ROOT}chrome-headless-shell" -type f -name 'chrome-headless-shell' | head -1`).toString().trim();
 
 const b = await puppeteer.launch({ executablePath: chrome, headless: true, args: ['--no-sandbox'] });
+let ok = false;
+try {
 const pg = await b.newPage();
 const errs = [];
 pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
@@ -38,7 +41,7 @@ const seed = {
   caseOpened:new Date().toISOString(), homeMode:'standard', entries:[], done:{}, messages:[],
 };
 await pg.evaluateOnNewDocument((s) => { localStorage.clear(); localStorage.setItem('worklaw.case.v2', JSON.stringify(s)); }, seed);
-await pg.goto(`http://127.0.0.1:${PORT}/index.html`, { waitUntil:'networkidle0', timeout:20000 });
+await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`);
 await new Promise(r => setTimeout(r, 700));
 
 await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('Draft a letter')); if (btn) btn.click(); });
@@ -63,9 +66,11 @@ else {
 }
 errs.forEach(e => problems.push(e));
 
-const ok = problems.length === 0;
+ok = problems.length === 0;
 console.log((ok ? '✅' : '❌') + ' discrimination case can draft a real accommodation-request letter' + (ok ? '' : '\n   ' + problems.join('\n   ')));
-
-await b.close(); server.close();
+} finally {
+  await b.close();
+  server.close();
+}
 console.log(ok ? '\n✅ ACCOMMODATION-LETTER TEST PASSED' : '\n❌ ACCOMMODATION-LETTER TEST FAILED');
 process.exit(ok ? 0 : 1);

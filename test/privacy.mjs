@@ -9,6 +9,7 @@ import { readFileSync, existsSync, statSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
 import { execSync } from 'node:child_process';
 import puppeteer from 'puppeteer-core';
+import { gotoApp } from './lib/nav.mjs';
 
 const ROOT = new URL('..', import.meta.url).pathname;
 const TYPES = { '.html':'text/html', '.js':'text/javascript', '.json':'application/json', '.svg':'image/svg+xml' };
@@ -25,6 +26,8 @@ const chrome = execSync(`find "${ROOT}chrome-headless-shell" -type f -name 'chro
 const SECRETS = /secret incident|Acme Freight|my private note|Jordan Lee/;
 
 const b = await puppeteer.launch({ executablePath: chrome, headless: true, args: ['--no-sandbox'] });
+let problems = ['harness did not run'];
+try {
 const pg = await b.newPage();
 pg.on('dialog', d => d.accept());
 const seed = {
@@ -34,7 +37,7 @@ const seed = {
   messages:[{ role:'user', text:'my private note' }], done:{}, caseOpened:new Date().toISOString(),
 };
 await pg.evaluateOnNewDocument(s => localStorage.setItem('worklaw.case.v2', JSON.stringify(s)), seed);
-await pg.goto(`http://127.0.0.1:${PORT}/index.html`, { waitUntil:'networkidle0', timeout:20000 });
+await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`);
 await new Promise(r => setTimeout(r, 600));
 
 const before = await pg.evaluate(() => localStorage.getItem('worklaw.case.v2'));
@@ -43,13 +46,15 @@ await new Promise(r => setTimeout(r, 600));
 const after = await pg.evaluate(() => localStorage.getItem('worklaw.case.v2'));
 const onOnboarding = await pg.evaluate(() => /Where do you work|Employment law changes by state/i.test(document.body.innerText));
 
-const problems = [];
+problems = [];
 if (!SECRETS.test(before || '')) problems.push('seed did not contain expected sensitive data (test setup broken)');
 if (!clicked) problems.push('"Delete my case" control not found on the dashboard');
 if (SECRETS.test(after || '')) problems.push('sensitive data still present in localStorage after delete');
 if (!onOnboarding) problems.push('app did not return to onboarding after delete');
-
-await b.close(); server.close();
+} finally {
+  await b.close();
+  server.close();
+}
 if (problems.length) { console.log('❌ PRIVACY FAILED\n   ' + problems.join('\n   ')); process.exit(1); }
 console.log('✅ PRIVACY PASSED — case data cleared and app reset to onboarding');
 process.exit(0);

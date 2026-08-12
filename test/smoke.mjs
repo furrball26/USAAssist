@@ -8,6 +8,7 @@ import { readFileSync, existsSync, statSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
 import { execSync } from 'node:child_process';
 import puppeteer from 'puppeteer-core';
+import { gotoApp, reloadApp } from './lib/nav.mjs';
 
 const ROOT = new URL('..', import.meta.url).pathname;
 const TYPES = { '.html':'text/html', '.js':'text/javascript', '.json':'application/json', '.css':'text/css', '.svg':'image/svg+xml' };
@@ -52,7 +53,7 @@ const bodyText = () => page.evaluate(() => document.body.innerText);
 const assert = (cond, msg) => { if (!cond) errors.push('ASSERT: ' + msg); };
 
 try {
-  await page.goto(BASE + '/index.html', { waitUntil: 'networkidle0', timeout: 20000 });
+  await gotoApp(page, BASE + '/index.html');
   await new Promise(r => setTimeout(r, 500));
 
   // root populated
@@ -94,7 +95,7 @@ try {
   // dashboard. Land on Log (an unambiguous, stable screen) before reloading.
   await clickText('Log');
   await new Promise(r => setTimeout(r, 250));
-  await page.reload({ waitUntil: 'networkidle0', timeout: 20000 });
+  await reloadApp(page);
   await new Promise(r => setTimeout(r, 400));
   txt = await bodyText();
   assert(!/Where do you work/i.test(txt), 'persistence: reload returned to onboarding');
@@ -102,7 +103,7 @@ try {
 
   // fresh full onboarding walk (clear storage, click Continue through all 4 steps)
   await page.evaluate(() => localStorage.clear());
-  await page.goto(BASE + '/index.html', { waitUntil: 'networkidle0', timeout: 20000 });
+  await gotoApp(page, BASE + '/index.html');
   await new Promise(r => setTimeout(r, 400));
   assert(/Where do you work/i.test(await bodyText()), 'fresh load did not show onboarding');
   // step 1 now requires an explicit state selection (no demo default)
