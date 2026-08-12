@@ -157,6 +157,10 @@ for (const [width, mode] of [[1280, 'standard'], [1280, 'action'], [1280, 'plain
   if (box.screenDisplay !== 'grid') problems.push('.screen is not a grid shell at ' + width + 'px: ' + box.screenDisplay);
   if (box.tabbarDisplay !== 'flex') problems.push('rail nav should be a flex column at ' + width + 'px, got display=' + box.tabbarDisplay);
   if (box.scrollareaMaxWidth !== '680px') problems.push('content column is not capped at 680px at ' + width + 'px: ' + box.scrollareaMaxWidth);
+  // R1 (review-2-report.md): the dark phone-bezel .device background/padding/
+  // radius/shadow must be reset at the desktop tier too (it used to only be
+  // reset in the 768-1023 "wide" tier, leaking a navy rounded frame at >=1024).
+  if (box.deviceBg !== 'rgba(0, 0, 0, 0)' && box.deviceBg !== 'transparent') problems.push('.device still has the dark phone-bezel background at ' + width + 'px: ' + box.deviceBg);
   errs.forEach(e => problems.push(e));
 
   const ok = problems.length === 0;
