@@ -12,6 +12,13 @@
  *                          (safety retaliation, 30-day deadline)
  *   - document         -> a lawyer/bar-referral link, not a government agency
  *
+ * Coverage (review-2-report.md: "agencies-links.mjs only samples one state —
+ * loop a few states with distinct agency data"): each case below now uses a
+ * different state, and asserts the Agencies screen shows THAT state's real
+ * wage-hour/discrimination agency link (read straight from
+ * content/states/<ABBR>.json, so this stays correct if the content changes)
+ * — and never another state's agency link.
+ *
  * Run: node test/agencies-links.mjs
  */
 import { createServer } from 'node:http';
@@ -19,7 +26,7 @@ import { readFileSync, existsSync, statSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
 import { execSync } from 'node:child_process';
 import puppeteer from 'puppeteer-core';
-import { gotoApp, reloadApp } from './lib/nav.mjs';
+import { gotoApp } from './lib/nav.mjs';
 
 const ROOT = new URL('..', import.meta.url).pathname;
 const TYPES = { '.html':'text/html', '.js':'text/javascript', '.json':'application/json', '.svg':'image/svg+xml' };
@@ -33,18 +40,20 @@ await new Promise(r => server.listen(0, r));
 const PORT = server.address().port;
 const chrome = execSync(`find "${ROOT}chrome-headless-shell" -type f -name 'chrome-headless-shell' | head -1`).toString().trim();
 
+const stateContent = (abbr) => JSON.parse(readFileSync(ROOT + `content/states/${abbr}.json`, 'utf8'));
+
 const b = await puppeteer.launch({ executablePath: chrome, headless: true, args: ['--no-sandbox'] });
 let fails = 0;
 
 try {
 
-async function agencyHrefs(issue) {
+async function agencyHrefs(state, county, issue) {
   const pg = await b.newPage();
   const errs = [];
   pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
   pg.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
   const seed = {
-    onboarded:true, stateSel:'Ohio', county:'Franklin County', issue,
+    onboarded:true, stateSel:state, county, issue,
     profile:{ name:'Pat Vega', employer:'Northgate Co', payType:'Hourly', rate:'20' },
     caseOpened:new Date().toISOString(), homeMode:'standard', entries:[], done:{}, messages:[],
   };
@@ -59,23 +68,47 @@ async function agencyHrefs(issue) {
 }
 
 const CASES = [
-  { issue:'Unpaid overtime or wages', mustHave:[/dol\.gov/i], mustNotHave:[/findlegalhelp/i, /osha\.gov|whistleblowers\.gov/i] },
-  { issue:'Discrimination', mustHave:[/eeoc\.gov/i], mustNotHave:[/findlegalhelp/i, /osha\.gov|whistleblowers\.gov/i] },
-  { issue:'Harassment or a hostile workplace', mustHave:[/eeoc\.gov/i], mustNotHave:[/findlegalhelp/i] },
-  { issue:'Fired or pushed out', mustHave:[/eeoc\.gov/i, /osha\.gov|whistleblowers\.gov/i], mustNotHave:[/findlegalhelp/i] },
-  { issue:'A document to review', mustHave:[/findlegalhelp/i], mustNotHave:[/eeoc\.gov/i, /osha\.gov|whistleblowers\.gov/i, /dol\.gov/i] },
+  { state:'Ohio', abbr:'OH', county:'Franklin County', issue:'Unpaid overtime or wages', mustHave:[/dol\.gov/i], mustNotHave:[/findlegalhelp/i, /osha\.gov|whistleblowers\.gov/i] },
+  { state:'Texas', abbr:'TX', county:'Travis County', issue:'Discrimination', mustHave:[/eeoc\.gov/i], mustNotHave:[/findlegalhelp/i, /osha\.gov|whistleblowers\.gov/i] },
+  { state:'New York', abbr:'NY', county:'Kings County', issue:'Harassment or a hostile workplace', mustHave:[/eeoc\.gov/i], mustNotHave:[/findlegalhelp/i] },
+  { state:'California', abbr:'CA', county:'Alameda County', issue:'Fired or pushed out', mustHave:[/eeoc\.gov/i, /osha\.gov|whistleblowers\.gov/i], mustNotHave:[/findlegalhelp/i] },
+  { state:'Florida', abbr:'FL', county:'Miami-Dade County', issue:'A document to review', mustHave:[/findlegalhelp/i], mustNotHave:[/eeoc\.gov/i, /osha\.gov|whistleblowers\.gov/i, /dol\.gov/i] },
 ];
 
 for (const c of CASES) {
-  const { hrefs, errs } = await agencyHrefs(c.issue);
+  const { hrefs, errs } = await agencyHrefs(c.state, c.county, c.issue);
   const all = hrefs.map(h => h.href).join(' ');
   const problems = [];
+
+  // Federal-link issue-gating (F19).
   (c.mustHave || []).forEach(re => { if (!re.test(all)) problems.push('missing expected link matching ' + re + ' — got: ' + JSON.stringify(hrefs.map(h => h.href))); });
   (c.mustNotHave || []).forEach(re => { if (re.test(all)) problems.push('unexpectedly has a link matching ' + re + ' — got: ' + JSON.stringify(hrefs.map(h => h.href))); });
+
+  // Coverage: this state's own wage-hour/discrimination agency links must
+  // appear (read from content/states/<ABBR>.json, not hardcoded), and no
+  // OTHER sampled state's agency links should leak in.
+  const st = stateContent(c.abbr);
+  const ag = st.agencies || {};
+  if (ag.wageHour && ag.wageHour.url && !all.includes(ag.wageHour.url)) {
+    problems.push(`missing ${c.state}'s own wage-hour agency link (${ag.wageHour.url}) — got: ` + JSON.stringify(hrefs.map(h => h.href)));
+  }
+  if (ag.discrimination && ag.discrimination.url && !all.includes(ag.discrimination.url)) {
+    problems.push(`missing ${c.state}'s own discrimination agency link (${ag.discrimination.url}) — got: ` + JSON.stringify(hrefs.map(h => h.href)));
+  }
+  for (const other of CASES) {
+    if (other.abbr === c.abbr) continue;
+    const otherAg = stateContent(other.abbr).agencies || {};
+    [otherAg.wageHour, otherAg.discrimination].forEach((entry) => {
+      if (entry && entry.url && all.includes(entry.url)) {
+        problems.push(`${c.state}'s Agencies screen leaked ${other.state}'s agency link (${entry.url})`);
+      }
+    });
+  }
+
   errs.forEach(e => problems.push(e));
   const ok = problems.length === 0;
   if (!ok) fails++;
-  console.log((ok ? '✅' : '❌') + ' ' + c.issue + ' agency links' + (ok ? '' : '\n   ' + problems.join('\n   ')));
+  console.log((ok ? '✅' : '❌') + ' ' + c.state + ' / ' + c.issue + ' agency links' + (ok ? '' : '\n   ' + problems.join('\n   ')));
 }
 
 } finally {

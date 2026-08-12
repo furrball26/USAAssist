@@ -191,6 +191,58 @@ for (const [width, mode] of [[1280, 'standard'], [1280, 'action'], [1280, 'plain
   await pg.close();
 }
 
+// Case 6 (coverage gap from review-2-report.md: "desktop-layout.mjs only
+// checks home/onboarding — sweep the other 9 screens for the rail + 680px
+// cap"). Every non-home tool/tab screen must show the same desktop shell as
+// Home — left icon rail (flex), 680px-capped content column — AND must never
+// force horizontal scroll at the desktop tier.
+{
+  const pg = await b.newPage();
+  const errs = [];
+  pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
+  pg.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
+  await pg.setViewport({ width:1280, height:900, deviceScaleFactor:1 });
+  await openHome(pg, 'standard');
+
+  const click = async (t) => {
+    await pg.evaluate((text) => {
+      const el = [...document.querySelectorAll('button,a')].find((e) => e.textContent.includes(text));
+      if (el) el.click();
+    }, t);
+    await new Promise(r => setTimeout(r, 350));
+  };
+  const noHorizontalScroll = () => pg.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
+
+  const screens = [
+    { label:'Ask AI (chat)', open: () => click('Ask AI') },
+    { label:'Log', open: () => click('Log') },
+    { label:'Rights', open: () => click('Rights') },
+    { label:'Agencies', open: () => click('Agencies') },
+    { label:'Draft a letter', open: async () => { await click('Home'); await click('Draft a letter'); } },
+    { label:'Am I exempt (wizard)', open: async () => { await click('Home'); await click('Am I exempt'); } },
+    { label:'Review a document (doc)', open: async () => { await click('Home'); await click('Review a document'); } },
+    { label:'Case Strength', open: async () => { await click('Home'); await click('CASE STRENGTH'); } },
+  ];
+
+  for (const s of screens) {
+    const errsBefore = errs.length;
+    await s.open();
+    const box = await deviceBox(pg);
+    const scrollOk = await noHorizontalScroll();
+    const problems = [];
+    if (box.screenDisplay !== 'grid') problems.push('.screen is not a grid shell: ' + box.screenDisplay);
+    if (box.tabbarDisplay !== 'flex') problems.push('rail nav should be a flex column, got display=' + box.tabbarDisplay);
+    if (box.scrollareaMaxWidth !== '680px') problems.push('content column is not capped at 680px: ' + box.scrollareaMaxWidth);
+    if (!scrollOk) problems.push('page forces horizontal scroll at 1280px');
+    errs.slice(errsBefore).forEach(e => problems.push(e));
+
+    const ok = problems.length === 0;
+    if (!ok) fails++;
+    console.log((ok ? '✅' : '❌') + ' 1280px desktop tier — ' + s.label + ': rail + 680px cap + no h-scroll' + (ok ? '' : '\n   ' + problems.join('\n   ')));
+  }
+  await pg.close();
+}
+
 } finally {
   await b.close();
   server.close();
