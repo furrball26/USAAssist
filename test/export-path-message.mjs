@@ -3,9 +3,11 @@
  * Export-path message accuracy regression test (F18).
  *
  * printLetter() falls back to a Blob download if window.open is blocked, but
- * "Export case file for this firm" always claimed "opened in a new tab" even
- * when it silently fell back to a download. The confirmation message must
- * reflect the actual path taken. Run: node test/export-path-message.mjs
+ * "Download your case file" (on the Agencies screen — formerly a per-firm
+ * "Export case file for this firm" action before the sample attorney-firm
+ * cards were removed) always claimed "opened in a new tab" even when it
+ * silently fell back to a download. The confirmation message must reflect
+ * the actual path taken. Run: node test/export-path-message.mjs
  */
 import { createServer } from 'node:http';
 import { readFileSync, existsSync, statSync } from 'node:fs';
@@ -43,7 +45,7 @@ async function freshPage(blockPopup) {
   }
   await pg.goto(`http://127.0.0.1:${PORT}/index.html`, { waitUntil:'networkidle0', timeout:20000 });
   await new Promise(r => setTimeout(r, 700));
-  await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('Ready for a real attorney')); if (btn) btn.click(); });
+  await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('Ready to file a complaint')); if (btn) btn.click(); });
   await new Promise(r => setTimeout(r, 300));
   return pg;
 }
@@ -55,9 +57,9 @@ async function freshPage(blockPopup) {
   pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
   pg.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
 
-  await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('Export case file for this firm')); if (btn) btn.click(); });
+  await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('Download your case file')); if (btn) btn.click(); });
   await new Promise(r => setTimeout(r, 300));
-  const msg = await pg.evaluate(() => { const p = [...document.querySelectorAll('p')].find(p => p.textContent.includes('sample listing')); return p ? p.textContent : null; });
+  const msg = await pg.evaluate(() => { const p = [...document.querySelectorAll('p')].find(p => /case file (downloaded|opened in a new tab)|Export did not work/.test(p.textContent)); return p ? p.textContent : null; });
 
   const problems = [];
   if (!msg || !/opened in a new tab/.test(msg)) problems.push('expected "opened in a new tab" message, got: ' + JSON.stringify(msg));
@@ -77,9 +79,9 @@ async function freshPage(blockPopup) {
   pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
   pg.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
 
-  await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('Export case file for this firm')); if (btn) btn.click(); });
+  await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('Download your case file')); if (btn) btn.click(); });
   await new Promise(r => setTimeout(r, 300));
-  const msg = await pg.evaluate(() => { const p = [...document.querySelectorAll('p')].find(p => p.textContent.includes('sample listing')); return p ? p.textContent : null; });
+  const msg = await pg.evaluate(() => { const p = [...document.querySelectorAll('p')].find(p => /case file (downloaded|opened in a new tab)|Export did not work/.test(p.textContent)); return p ? p.textContent : null; });
 
   const problems = [];
   if (!msg) problems.push('no confirmation message shown');

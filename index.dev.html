@@ -385,12 +385,6 @@ function scanClauseText(text){
   }).filter(Boolean);
 }
 
-const LAWYERS = [
-  { name:'Sample — Employment Law Group', match:'SAMPLE', detail:'Illustrative listing: wage-and-hour and retaliation claims. Free initial consultation.', fee:'CONTINGENCY', langs:'EN · ES' },
-  { name:'Sample — Solo Employee-Side Attorney', match:'SAMPLE', detail:'Illustrative listing: individual wage claims, discrimination and wrongful termination.', fee:'FREE CONSULT', langs:'EN · FR' },
-  { name:'Sample — Workers’ Legal Clinic', match:'SAMPLE', detail:'Illustrative listing: nonprofit clinic, sliding-scale and income-qualified help.', fee:'SLIDING SCALE', langs:'EN · ES · ZH' }
-];
-
 const US_STATES = ["Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"];
 const US_STATE_ABBR = {"Alabama":"AL","Alaska":"AK","Arizona":"AZ","Arkansas":"AR","California":"CA","Colorado":"CO","Connecticut":"CT","Delaware":"DE","Florida":"FL","Georgia":"GA","Hawaii":"HI","Idaho":"ID","Illinois":"IL","Indiana":"IN","Iowa":"IA","Kansas":"KS","Kentucky":"KY","Louisiana":"LA","Maine":"ME","Maryland":"MD","Massachusetts":"MA","Michigan":"MI","Minnesota":"MN","Mississippi":"MS","Missouri":"MO","Montana":"MT","Nebraska":"NE","Nevada":"NV","New Hampshire":"NH","New Jersey":"NJ","New Mexico":"NM","New York":"NY","North Carolina":"NC","North Dakota":"ND","Ohio":"OH","Oklahoma":"OK","Oregon":"OR","Pennsylvania":"PA","Rhode Island":"RI","South Carolina":"SC","South Dakota":"SD","Tennessee":"TN","Texas":"TX","Utah":"UT","Vermont":"VT","Virginia":"VA","Washington":"WA","West Virginia":"WV","Wisconsin":"WI","Wyoming":"WY"};
 const US_COUNTY_LABEL = {"Alabama":"COUNTY","Alaska":"BOROUGH","Arizona":"COUNTY","Arkansas":"COUNTY","California":"COUNTY","Colorado":"COUNTY","Connecticut":"COUNTY","Delaware":"COUNTY","Florida":"COUNTY","Georgia":"COUNTY","Hawaii":"COUNTY","Idaho":"COUNTY","Illinois":"COUNTY","Indiana":"COUNTY","Iowa":"COUNTY","Kansas":"COUNTY","Kentucky":"COUNTY","Louisiana":"PARISH","Maine":"COUNTY","Maryland":"COUNTY","Massachusetts":"COUNTY","Michigan":"COUNTY","Minnesota":"COUNTY","Mississippi":"COUNTY","Missouri":"COUNTY","Montana":"COUNTY","Nebraska":"COUNTY","Nevada":"COUNTY","New Hampshire":"COUNTY","New Jersey":"COUNTY","New Mexico":"COUNTY","New York":"COUNTY","North Carolina":"COUNTY","North Dakota":"COUNTY","Ohio":"COUNTY","Oklahoma":"COUNTY","Oregon":"COUNTY","Pennsylvania":"COUNTY","Rhode Island":"COUNTY","South Carolina":"COUNTY","South Dakota":"COUNTY","Tennessee":"COUNTY","Texas":"COUNTY","Utah":"COUNTY","Vermont":"COUNTY","Virginia":"COUNTY","Washington":"COUNTY","West Virginia":"COUNTY","Wisconsin":"COUNTY","Wyoming":"COUNTY"};
@@ -406,7 +400,7 @@ const ISSUE_LIST = [
 
 const PROMPT_TEXTS =['Can my boss refuse to pay overtime?','How do I ask for an ADA accommodation?','What counts as retaliation?','Should I sign this severance?'];
 
-const TAB_DEFS = [['home','home','Home'],['chat','sparkle','Ask AI'],['log','log','Log'],['rights','rights','Rights'],['lawyers','scales','Referrals']];
+const TAB_DEFS = [['home','home','Home'],['chat','sparkle','Ask AI'],['log','log','Log'],['rights','rights','Rights'],['agencies','scales','Agencies']];
 
 const ONB_TITLES = { 1:'Where do you work?', 2:'Which county?', 3:'What brings you here?', 4:'A few case details' };
 const ONB_BODIES = {
@@ -871,7 +865,7 @@ function App(){
   const [letterType, setLetterType] = useState(() => saved.letterType || null); // chosen letter kind (wage issue offers two)
   const [docName, setDocName] = useState(() => saved.docName || '');
   const [docText, setDocText] = useState(() => saved.docText || ''); // pasted document text for the local rules-based clause scan
-  const [consultSent, setConsultSent] = useState('');
+  const [caseFileDownloaded, setCaseFileDownloaded] = useState(false);
   const [exportPath, setExportPath] = useState(''); // 'tab' | 'download' | 'failed' — actual path printLetter() took, for accurate confirmation copy
   const [wizNode, setWizNode] = useState(() => saved.wizNode || 'start');
   const [wizPath, setWizPath] = useState(() => saved.wizPath || []);
@@ -975,7 +969,7 @@ function App(){
     setMessages([{ role:'ai', text: issueCfg(null).chatSeed }]);
     setDraft(''); setLogNote(''); setLogHours(''); setLogPayStatus('unpaid'); setEditingEntryIdx(null);
     setLetterEdit(null); setLetterType(null);
-    setDocName(''); setDocText(''); setConsultSent(''); setExportPath(''); setWizNode('start'); setWizPath([]);
+    setDocName(''); setDocText(''); setCaseFileDownloaded(false); setExportPath(''); setWizNode('start'); setWizPath([]);
     setOnbStep(1); setOnboarded(false); setScreen('onboarding');
   }, []);
 
@@ -1010,7 +1004,7 @@ function App(){
         !window.confirm('Start a fresh case? This clears your incident log, step progress, letters and chat for a new case. Your state, county, name and employer stay set — change those with the ' + '◉' + ' button if this is a different employer.')) return;
     setDone({}); setEntries([]); setLogNote(''); setLogHours(''); setLogPayStatus('unpaid'); setEditingEntryIdx(null);
     setMessages([{ role:'ai', text: issueCfg(issue).chatSeed }]);
-    setLetterEdit(null); setLetterType(null); setDocName(''); setDocText(''); setConsultSent(''); setExportPath('');
+    setLetterEdit(null); setLetterType(null); setDocName(''); setDocText(''); setCaseFileDownloaded(false); setExportPath('');
     setWizNode('start'); setWizPath([]);
     setCaseOpened(new Date().toISOString());
   }, [issue]);
@@ -1055,7 +1049,7 @@ function App(){
     // Never attach a statutory citation to an answer we didn't actually match —
     // an off-topic reply carrying a real §-cite reads as authoritative and wrong.
     const fallbackReply = {
-      text: "I can only give sample answers on a few topics: unpaid overtime and wages, discrimination and harassment, termination and retaliation, and severance or documents you've been asked to sign. Try rephrasing toward one of those. For anything else, your state labor agency or a local attorney (see Referrals) is the best next step.",
+      text: "I can only give sample answers on a few topics: unpaid overtime and wages, discrimination and harassment, termination and retaliation, and severance or documents you've been asked to sign. Try rephrasing toward one of those. For anything else, your state labor agency or a local attorney (see Agencies) is the best next step.",
       cites: []
     };
     const matched = isAda ? adaReply : isRetaliation ? repliesResolved[1] : isSeverance ? repliesResolved[2] : isOvertime ? repliesResolved[0] : null;
@@ -1425,9 +1419,9 @@ function App(){
         </div>
       </div>
 
-      <button onClick={nav('lawyers')} style={css("text-align:left;padding:18px 20px;border-radius:16px;border:2px solid #2B3AA8;background:#fff;cursor:pointer;display:flex;flex-direction:column;gap:6px")}>
-        <span style={css("font:700 18px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Ready for a real attorney?</span>
-        <span style={css("font:400 16px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>See employment attorneys and the free government agencies near {countyShort}. Your case file exports in one tap.</span>
+      <button onClick={nav('agencies')} style={css("text-align:left;padding:18px 20px;border-radius:16px;border:2px solid #2B3AA8;background:#fff;cursor:pointer;display:flex;flex-direction:column;gap:6px")}>
+        <span style={css("font:700 18px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Ready to file a complaint?</span>
+        <span style={css("font:400 16px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>See the free government agencies that handle this near {countyShort}. Your case file exports in one tap.</span>
       </button>
 
       <div style={css("padding:18px;border-radius:16px;background:#FFF4D6;border:2px solid #14181F")}>
@@ -1551,7 +1545,7 @@ function App(){
               setScreen(target.screen);
             }} style={css("padding:22px;border-radius:16px;border:none;background:#14181F;color:#fff;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{primary[0]}</button>
             <button onClick={nav('log')} style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{K === 'wage' ? 'Add hours I worked' : 'Add to my log'}</button>
-            <button onClick={nav('lawyers')} style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Talk to a lawyer</button>
+            <button onClick={nav('agencies')} style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Where to file a complaint</button>
           </>
         );
       })()}
@@ -1602,7 +1596,7 @@ function App(){
           <input aria-label="Your question" value={draft} onChange={e => setDraft(e.target.value)} onKeyDown={e => { if(e.key === 'Enter' && draft.trim()) send(draft); }} placeholder="Type your question" style={css("flex:1;padding:16px;border-radius:14px;border:2px solid #14181F;background:#fff;font:400 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
           <button onClick={() => send(draft)} style={css("padding:16px 20px;border-radius:14px;border:none;background:#2B3AA8;color:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Send</button>
         </div>
-        <p style={css("margin:0;font:400 13px/1.35 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>AI can be wrong. Verify anything important with an attorney — tap Referrals in the tab bar.</p>
+        <p style={css("margin:0;font:400 13px/1.35 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>AI can be wrong. Verify anything important with an attorney — tap Agencies in the tab bar.</p>
       </div>
     </div>
   );
@@ -2049,10 +2043,10 @@ function App(){
     );
   };
 
-  const Lawyers = () => (
+  const Agencies = () => (
     <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
-      <h1 style={css("margin:0;font:700 26px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Talk to a real attorney</h1>
-      <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Attorneys licensed in {stateLabel}, near {countyShort}. WorkLaw takes no referral fee.</p>
+      <h1 style={css("margin:0;font:700 26px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Where to file a complaint</h1>
+      <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Official agencies that enforce employment law in {stateLabel}, near {countyShort} — free to contact directly.</p>
       {(() => {
         const ag = (stateData && stateData.agencies) || {};
         const fedF = (federal && federal.facts) || [];
@@ -2087,45 +2081,29 @@ function App(){
           </div>
         );
       })()}
+      <div style={css("padding:16px;border-radius:14px;background:#E8F6EE;border:2px solid #14181F;display:flex;flex-direction:column;gap:10px")}>
+        <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#25302B")}>Your case file — timeline, documents, and the exemption analysis — exports as one PDF you control, to bring to whichever agency (or attorney) you contact.</p>
+        <button onClick={() => {
+          const path = printLetter('WorkLaw case file', buildCaseFile({ youName, employerName, locationLabel, issue, caseOpened, strength, unpaidHours, owedEstimate, entries }));
+          setExportPath(path); setCaseFileDownloaded(true);
+        }} style={css("padding:15px;border-radius:12px;border:none;background:#2B3AA8;color:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Download your case file</button>
+        {caseFileDownloaded &&
+          <p style={css('margin:2px 0 0;font:400 14px/1.45 \'Atkinson Hyperlegible\',sans-serif;color:' + (exportPath === 'failed' ? '#B3264F' : '#136B3C'))}>
+            {exportPath === 'download' ? 'Your case file downloaded as a .txt file (your browser blocked the new-tab preview).'
+              : exportPath === 'failed' ? 'Export did not work in this browser — note your case details from the dashboard manually.'
+              : 'Your case file opened in a new tab — save it as PDF.'}
+          </p>
+        }
+      </div>
       <div style={css("padding:16px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F")}>
-        <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>The attorney listings below are <strong>sample examples</strong> showing how a referral would work — not real firms or endorsements. A production version would connect to a licensed-attorney directory for {stateLabel}.</p>
-      </div>
-      <div style={css("padding:16px;border-radius:14px;background:#E8F6EE;border:2px solid #14181F")}>
-        <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#25302B")}>Your case file — timeline, documents, and the exemption analysis — exports as one PDF you control.</p>
-      </div>
-      <div style={css("display:flex;flex-direction:column;gap:12px")}>
-        {LAWYERS.map((l, i) =>
-          <div key={i} style={css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff;display:flex;flex-direction:column;gap:8px")}>
-            <div style={css("display:flex;justify-content:space-between;align-items:baseline;gap:10px")}>
-              <span style={css("font:700 19px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{l.name}</span>
-              <span style={css("padding:6px 10px;border-radius:8px;background:#E8F6EE;border:2px solid #1F8A4C;font:700 13px 'IBM Plex Mono',monospace;color:#136B3C")}>{l.match}</span>
-            </div>
-            <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{l.detail}</p>
-            <div style={css("display:flex;gap:8px;flex-wrap:wrap")}>
-              <span style={css("padding:7px 11px;border-radius:8px;background:#F0EDE5;font:600 13px 'IBM Plex Mono',monospace;color:#14181F")}>{l.fee}</span>
-              <span style={css("padding:7px 11px;border-radius:8px;background:#F0EDE5;font:600 13px 'IBM Plex Mono',monospace;color:#14181F")}>{l.langs}</span>
-            </div>
-            <button onClick={() => {
-              const path = printLetter('WorkLaw case file', buildCaseFile({ youName, employerName, locationLabel, issue, caseOpened, strength, unpaidHours, owedEstimate, entries }));
-              setExportPath(path); setConsultSent(l.name);
-            }} style={css("margin-top:4px;padding:15px;border-radius:12px;border:none;background:#2B3AA8;color:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Export case file for this firm</button>
-            {consultSent === l.name &&
-              <p style={css('margin:2px 0 0;font:400 14px/1.45 \'Atkinson Hyperlegible\',sans-serif;color:' + (exportPath === 'failed' ? '#B3264F' : '#136B3C'))}>
-                {exportPath === 'download' ? 'Your case file downloaded as a .txt file (your browser blocked the new-tab preview) — attach it when you contact a firm.'
-                  : exportPath === 'failed' ? 'Export did not work in this browser — note your case details from the dashboard manually and share them when you contact a firm.'
-                  : 'Your case file opened in a new tab — save it as PDF and attach it when you contact a firm.'}
-                {' '}(This is a sample listing; no message was sent.)
-              </p>
-            }
-          </div>
-        )}
+        <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>You may also want to consult an employment attorney licensed in {stateLabel}. WorkLaw does not operate a referral service or recommend specific firms — your state or local bar association's lawyer-referral service is a reliable place to start.</p>
       </div>
     </div>
   );
 
   const SCREENS = {
     onboarding: Onboarding, home: HomeScreen, chat: Chat, wizard: Wizard, log: Log,
-    doc: Doc, letter: Letter, strength: Strength, rights: RightsLib, lawyers: Lawyers
+    doc: Doc, letter: Letter, strength: Strength, rights: RightsLib, agencies: Agencies
   };
   const Current = SCREENS[screen] || HomeScreen;
 

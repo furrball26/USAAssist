@@ -75,7 +75,7 @@ try {
   }
 
   // visit every tab + tool screen
-  const stops = ['Ask AI', 'Log', 'Rights', 'Referrals', 'Home'];
+  const stops = ['Ask AI', 'Log', 'Rights', 'Agencies', 'Home'];
   for (const s of stops) { const ok = await clickText(s); assert(ok, `tab "${s}" not found`); }
   // tools from home
   await clickText('Home');

@@ -1,17 +1,18 @@
 #!/usr/bin/env node
 /*
- * Issue-aware Referrals links regression test (F19).
+ * Issue-aware Agencies links regression test (F19).
  *
- * The four federal/lawyer links on the Referrals (Lawyers) screen must adapt
- * to the current case's issue (cfg.key) instead of always showing the same
- * fixed EEOC + DOL pair:
+ * The federal/state agency links on the Agencies screen (formerly "Referrals",
+ * before the sample attorney-firm cards were removed) must adapt to the
+ * current case's issue (cfg.key) instead of always showing the same fixed
+ * EEOC + DOL pair:
  *   - wage             -> DOL Wage & Hour
  *   - discrimination / harassment -> EEOC
  *   - termination      -> EEOC AND an OSHA whistleblower-complaint link
  *                          (safety retaliation, 30-day deadline)
  *   - document         -> a lawyer/bar-referral link, not a government agency
  *
- * Run: node test/referrals-links.mjs
+ * Run: node test/agencies-links.mjs
  */
 import { createServer } from 'node:http';
 import { readFileSync, existsSync, statSync } from 'node:fs';
@@ -34,7 +35,7 @@ const chrome = execSync(`find "${ROOT}chrome-headless-shell" -type f -name 'chro
 const b = await puppeteer.launch({ executablePath: chrome, headless: true, args: ['--no-sandbox'] });
 let fails = 0;
 
-async function referralHrefs(issue) {
+async function agencyHrefs(issue) {
   const pg = await b.newPage();
   const errs = [];
   pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
@@ -47,7 +48,7 @@ async function referralHrefs(issue) {
   await pg.evaluateOnNewDocument((s) => { localStorage.clear(); localStorage.setItem('worklaw.case.v2', JSON.stringify(s)); }, seed);
   await pg.goto(`http://127.0.0.1:${PORT}/index.html`, { waitUntil:'networkidle0', timeout:20000 });
   await new Promise(r => setTimeout(r, 700));
-  await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('Referrals')); if (btn) btn.click(); });
+  await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('Agencies')); if (btn) btn.click(); });
   await new Promise(r => setTimeout(r, 400));
   const hrefs = await pg.evaluate(() => [...document.querySelectorAll('a[href]')].map(a => ({ href: a.href, text: a.textContent })));
   await pg.close();
@@ -63,7 +64,7 @@ const CASES = [
 ];
 
 for (const c of CASES) {
-  const { hrefs, errs } = await referralHrefs(c.issue);
+  const { hrefs, errs } = await agencyHrefs(c.issue);
   const all = hrefs.map(h => h.href).join(' ');
   const problems = [];
   (c.mustHave || []).forEach(re => { if (!re.test(all)) problems.push('missing expected link matching ' + re + ' — got: ' + JSON.stringify(hrefs.map(h => h.href))); });
@@ -71,9 +72,9 @@ for (const c of CASES) {
   errs.forEach(e => problems.push(e));
   const ok = problems.length === 0;
   if (!ok) fails++;
-  console.log((ok ? '✅' : '❌') + ' ' + c.issue + ' referral links' + (ok ? '' : '\n   ' + problems.join('\n   ')));
+  console.log((ok ? '✅' : '❌') + ' ' + c.issue + ' agency links' + (ok ? '' : '\n   ' + problems.join('\n   ')));
 }
 
 await b.close(); server.close();
-console.log(fails ? `\n❌ ${fails} case(s) failed` : '\n✅ ALL REFERRALS-LINKS CASES PASSED');
+console.log(fails ? `\n❌ ${fails} case(s) failed` : '\n✅ ALL AGENCIES-LINKS CASES PASSED');
 process.exit(fails ? 1 : 0);

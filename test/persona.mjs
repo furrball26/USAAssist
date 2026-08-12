@@ -56,7 +56,7 @@ for (const c of CASES) {
   const collect = async () => await pg.evaluate(() => document.body.innerText);
 
   let all = '';
-  for (const stop of ['Home', 'Ask AI', 'Rights', 'Referrals']) { await click(stop); all += '\n' + await collect(); }
+  for (const stop of ['Home', 'Ask AI', 'Rights', 'Agencies']) { await click(stop); all += '\n' + await collect(); }
   await click('Home'); await click('Draft a letter'); const letterTxt = await collect(); all += '\n' + letterTxt;
   await click('Home'); await click('Am I exempt'); all += '\n' + await collect();
 
