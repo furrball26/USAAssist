@@ -222,11 +222,18 @@
       grid-template-areas:"rail status" "rail main";
       border-radius:0; border:none; box-shadow:none;
       height:100%;
+      /* R2: at the desktop tier the mode color (navy/white/cream — set inline
+         as --mode-bg, see screenBg in the App component) belongs only on the
+         680px reading column, not flooding the whole viewport. .screen itself
+         becomes the calm beige "desk" gutter; !important is required because
+         it overrides the same-element inline `background` used at every
+         narrower tier, where .screen SHOULD be full-bleed mode-colored. */
+      background:#F3EFE7 !important;
     }
     .screen.no-tabbar{ grid-template-columns:1fr; grid-template-areas:"status" "main"; }
     .statusbar{ grid-area:status; visibility:hidden; height:0; padding:0; }
     .scrollarea{ grid-area:main; display:flex; flex-direction:column; align-items:center; padding:48px 40px 64px; }
-    .scrollarea > *{ width:100%; max-width:680px; }
+    .scrollarea > *{ width:100%; max-width:680px; background:var(--mode-bg); }
     .tabbar{ grid-area:rail; display:flex; flex-direction:column; border-top:none; border-right:2px solid rgba(20,24,31,.14); padding:28px 8px; gap:10px; background:#FFFDF8; }
     .tabbar-btn{ min-height:64px; padding:10px 4px; }
   }
@@ -1815,7 +1822,7 @@ function App() {
   const altHome = screen === "home" ? homeMode : null;
   const screenBg = altHome === "action" ? "#2B3AA8" : altHome === "plain" ? "#FFFFFF" : "#FFFDF8";
   const statusColor = altHome === "action" ? "#fff" : "#14181F";
-  return /* @__PURE__ */ React.createElement("div", { className: "device" }, /* @__PURE__ */ React.createElement("div", { className: "screen" + (showTabs ? "" : " no-tabbar"), style: css("background:" + screenBg) }, /* @__PURE__ */ React.createElement("div", { className: "statusbar", "aria-hidden": "true", style: css("color:" + statusColor) }, /* @__PURE__ */ React.createElement("span", null, "9:41"), /* @__PURE__ */ React.createElement("span", { style: css("letter-spacing:2px") }, "\u25AE\u25AE\u25AE \u1BE4 \u25B0")), /* @__PURE__ */ React.createElement("main", { className: "scrollarea", ref: mainRef, tabIndex: -1, style: css("outline:none") }, Current(), screen === "home" && (() => {
+  return /* @__PURE__ */ React.createElement("div", { className: "device" }, /* @__PURE__ */ React.createElement("div", { className: "screen" + (showTabs ? "" : " no-tabbar"), style: Object.assign(css("background:" + screenBg), { "--mode-bg": screenBg }) }, /* @__PURE__ */ React.createElement("div", { className: "statusbar", "aria-hidden": "true", style: css("color:" + statusColor) }, /* @__PURE__ */ React.createElement("span", null, "9:41"), /* @__PURE__ */ React.createElement("span", { style: css("letter-spacing:2px") }, "\u25AE\u25AE\u25AE \u1BE4 \u25B0")), /* @__PURE__ */ React.createElement("main", { className: "scrollarea", ref: mainRef, tabIndex: -1, style: css("outline:none") }, Current(), screen === "home" && (() => {
     const dark = altHome === "action";
     return /* @__PURE__ */ React.createElement("div", { style: css("margin:0 22px 30px;padding-top:16px;border-top:1px solid " + (dark ? "rgba(255,255,255,.25)" : "rgba(20,24,31,.14)")) }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 10px;font:400 13px/1.5 'Atkinson Hyperlegible',sans-serif;color:" + (dark ? "#DDE2FF" : "#4A5162")) }, "Everything you enter stays in this browser on this device \u2014 nothing is uploaded. On a shared or work computer, delete your case when you\u2019re done."), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;gap:10px;flex-wrap:wrap") }, /* @__PURE__ */ React.createElement("button", { onClick: startFreshCase, style: css("padding:12px 16px;border-radius:12px;border:2px solid " + (dark ? "rgba(255,255,255,.55)" : "#14181F") + ";background:transparent;color:" + (dark ? "#fff" : "#14181F") + ";font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;min-height:44px") }, "Start a fresh case"), /* @__PURE__ */ React.createElement("button", { onClick: clearCase, style: css("padding:12px 16px;border-radius:12px;border:2px solid " + (dark ? "rgba(255,255,255,.55)" : "#B3264F") + ";background:transparent;color:" + (dark ? "#fff" : "#B3264F") + ";font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;min-height:44px") }, "Delete my case & start over")));
   })()), showTabs && /* @__PURE__ */ React.createElement("nav", { "aria-label": "Primary", className: "tabbar" }, TAB_DEFS.map(
