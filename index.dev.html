@@ -1147,6 +1147,27 @@ function App(){
     );
   };
 
+  // R10 — a document/severance issue has no jurisdiction "deadlines" fact
+  // (deadlineKeywordsFor returns [] for 'document'), so pickDeadlineFactAcross
+  // is always null and these users got NO Home Deadline Watch card at all,
+  // unlike every other issue type. The Older Workers Benefit Protection Act's
+  // 21-day-to-consider / 7-day-to-revoke window (29 U.S.C. §626(f)) is a
+  // general federal rule for age-related release agreements — true regardless
+  // of state, so it is deliberately NOT sourced from stateData/federal facts
+  // and is labeled "general federal rule" rather than jurisdiction-specific.
+  const DocDeadlineWatch = ({ dark }) => {
+    if (cfg.key !== 'document') return null;
+    return (
+      <button onClick={nav('strength')} style={css(dark
+        ? "text-align:left;padding:14px 16px;border-radius:12px;border:2px solid rgba(255,255,255,.4);background:rgba(255,255,255,.14);cursor:pointer;display:flex;flex-direction:column;gap:4px"
+        : "text-align:left;padding:16px 18px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;flex-direction:column;gap:4px")}>
+        <span style={css("font:700 " + (dark ? '12px' : '13px') + " 'IBM Plex Mono',monospace;color:" + (dark ? '#DDE2FF' : '#14181F') + ";letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px")}><Icon name="deadline-clock" size={dark ? 13 : 14} /> DEADLINE WATCH · GENERAL FEDERAL RULE</span>
+        <span style={css("font:700 " + (dark ? '16px/1.3' : '18px/1.3') + " 'Atkinson Hyperlegible',sans-serif;color:" + (dark ? '#fff' : '#14181F'))}>21 days to consider, 7 days to revoke</span>
+        <span style={css("font:400 " + (dark ? '13px/1.4' : '14px/1.4') + " 'Atkinson Hyperlegible',sans-serif;color:" + (dark ? '#DDE2FF' : '#3A4150'))}>If your document is a release covered by the Older Workers Benefit Protection Act (29 U.S.C. §626(f)), this is the standard federal window — not sourced from {stateLabel}'s own facts. Confirm the exact days stated in your copy.</span>
+      </button>
+    );
+  };
+
   /* ── Screen renderers ──────────────────────────────────────────── */
 
   const Onboarding = () => {
@@ -1392,6 +1413,7 @@ function App(){
           </button>
         ) : null;
       })()}
+      <DocDeadlineWatch dark={false} />
       <OshaWatch dark={false} />
 
       <button onClick={nav('strength')} style={css("text-align:left;padding:20px;border-radius:18px;border:2px solid #14181F;background:#E8F6EE;cursor:pointer;display:flex;flex-direction:column;gap:14px")}>
@@ -1489,6 +1511,7 @@ function App(){
           </button>
         ) : null;
       })()}
+      <DocDeadlineWatch dark={true} />
       <OshaWatch dark={true} />
       <div style={css("display:flex;flex-direction:column;gap:12px")}>
         <button onClick={() => {
@@ -1534,6 +1557,7 @@ function App(){
           </button>
         ) : null;
       })()}
+      <DocDeadlineWatch dark={false} />
       <OshaWatch dark={false} />
       {(() => {
         const K = cfg.key;
