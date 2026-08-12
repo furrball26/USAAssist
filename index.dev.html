@@ -383,7 +383,7 @@ const CLAUSE_PATTERNS = [
     re:/non-?disparage|shall not (make any statement|disparage)/i,
     plain:'Looks like a non-disparagement clause. As commonly written these are broad; many states protect your ability to describe unlawful conduct you experienced, and that carve-out is sometimes missing.' },
   { title:'Non-compete / restrictive covenant', level:'READ CLOSELY', tone:'#FFE7EC', badge:'#C81E1B',
-    re:/non-?compete|restrictive covenant|shall not (work for|be employed by|compete with)/i,
+    re:/non-?compet\w*|restrictive covenant|shall not (work for|be employed by|compete with)/i,
     plain:'Looks like a non-compete or restrictive-covenant clause. Several states ban or sharply limit these for most workers — check the Rights tab for your state before assuming it is enforceable.' },
   { title:'Arbitration / class-action waiver', level:'READ CLOSELY', tone:'#FFE7EC', badge:'#C81E1B',
     re:/\barbitrat|class action waiver|waive[sd]?[^.]{0,30}(class|collective) action/i,

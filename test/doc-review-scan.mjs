@@ -77,6 +77,33 @@ async function freshPage() {
   await pg.close();
 }
 
+// Case 2b (R9): "non-competition" (not just "non-compete") must also be
+// flagged — the original regex `non-?compete` didn't match the `-ion` form.
+{
+  const pg = await freshPage();
+  const errs = [];
+  pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
+  pg.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
+
+  const pasted = 'Employee agrees to a period of non-competition for 12 months following separation from the company.';
+  await pg.evaluate(() => { const ta = document.querySelector('#doc-text'); ta && ta.focus(); });
+  await pg.keyboard.type(pasted, { delay:0 });
+  await new Promise(r => setTimeout(r, 200));
+
+  const pageText = await pg.evaluate(() => document.body.textContent);
+  const cardTitles = await pg.evaluate(() => [...document.querySelectorAll('h1,span')].map(e => e.textContent));
+
+  const problems = [];
+  if (!cardTitles.some(t => /Non-compete/.test(t))) problems.push('"non-competition" was not flagged as a non-compete clause');
+  if (!pageText.includes('12 months')) problems.push('flagged clause does not quote the actual pasted text');
+  errs.forEach(e => problems.push(e));
+
+  const ok = problems.length === 0;
+  if (!ok) fails++;
+  console.log((ok ? '✅' : '❌') + ' "non-competition" wording is flagged (broadened non-compete regex)' + (ok ? '' : '\n   ' + problems.join('\n   ')));
+  await pg.close();
+}
+
 // Case 2: with nothing pasted, the screen must NOT claim uploaded files are read.
 {
   const pg = await freshPage();
