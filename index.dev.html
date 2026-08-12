@@ -1287,10 +1287,23 @@ function App(){
           if (blocked) return;
           if (onbStep < 4) setOnbStep(onbStep + 1);
           else if (editing) {
+            // R4 — changing the issue via the ◉ pill used to reset the `done`
+            // checklist (see the prevIssueRef effect above) but NOT the logged
+            // `entries` — so a new discrimination case, say, would silently
+            // inherit a prior wage-issue log entry: it would count toward the
+            // new issue's Case Strength and appear in its exported case file.
+            // Warn and confirm before discarding real evidence; a no-op issue
+            // (or an issue change with nothing logged yet) needs no prompt.
+            const issueChanged = editDraft.issue !== issue;
+            if (issueChanged && entries.length > 0 && typeof window !== 'undefined' && window.confirm &&
+                !window.confirm('Changing your issue to "' + editDraft.issue + '" clears your ' + entries.length + ' logged ' + (entries.length === 1 ? 'entry' : 'entries') + ' — they were logged for your current issue and would not apply to the new one. Continue?')) {
+              return;
+            }
             // Commit the staged draft to the live case in one shot — this is the
             // only moment an edit via the ◉ pill actually changes anything.
             setStateSel(editDraft.stateSel); setCounty(editDraft.county);
             setIssue(editDraft.issue); setProfile(editDraft.profile);
+            if (issueChanged) setEntries([]);
             setEditDraft(null); setScreen('home');
           } else { setOnboarded(true); setScreen('home'); }
         };
