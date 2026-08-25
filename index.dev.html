@@ -229,6 +229,14 @@ function pickDeadlineFactAcross(stateFacts, fedFacts, issueKey){
   return null;
 }
 
+// G1 (docs/flsa-process-gap.md) — the FLSA's 2/3-year deadline (deadlines.flsaWageClaim)
+// keeps running from each unpaid payday and is NOT paused by filing a Wage and Hour
+// Division complaint; a worker who demands/waits/investigates before deciding whether to
+// sue can let the oldest weeks age out of a private lawsuit. Shown wherever the app
+// surfaces the wage deadline, and on the non-exempt wizard result — a static "2 years (3
+// if willful)" figure alone reads as if the clock pauses while the process plays out.
+const FLSA_SOL_TIMING_NOTE = 'This 2–3 year deadline keeps running while you wait. Filing with the Labor Department does not pause it for a lawsuit — talk to an attorney before the oldest weeks age out.';
+
 // F4 — a worker fired/pushed out for reporting a safety hazard has a SEPARATE,
 // much shorter federal deadline (OSHA Section 11(c) whistleblower complaint,
 // 30 days — deadlines.oshaWhistleblower) than the EEOC discrimination-charge
@@ -351,12 +359,21 @@ const RESULTS = {
   r_creative: { v:'ex', title:'Possibly exempt — creative professional', body:'Work requiring invention, imagination, originality or talent in a recognized artistic or creative field can qualify. Routine or formulaic creative work usually does not.', cites:['29 C.F.R. §541.302'] },
   r_comp: { v:'ex', title:'Possibly exempt — computer employee', body:'Systems analysis, design and programming duties can qualify, salaried or at $27.63+/hour. Some states set a much higher pay floor for this exemption than federal law — check the state-specific rules below; you may still be owed overtime there.', cites:['29 U.S.C. §213(a)(17)'] },
   r_outside: { v:'ex', title:'Possibly exempt — outside sales', body:'Regularly making sales away from the employer’s place of business qualifies, with no salary requirement. Time spent on deliveries or service work counts against the exemption.', cites:['29 C.F.R. §541.500'] },
-  r_commission: { v:'maybe', title:'It depends — commissioned sales rules', body:'Commission and piece-rate workers are usually overtime-eligible, but retail/service employees earning over half their pay in commissions at more than 1.5× minimum wage fall under a special exception. Log your hours and pay so the math can be checked.', cites:['29 U.S.C. §207(i)'] }
+  r_commission: { v:'maybe', title:'It depends — commissioned sales rules', body:'Commission and piece-rate workers are usually overtime-eligible, but retail/service employees earning over half their pay in commissions at more than 1.5× minimum wage fall under a special exception. Log your hours and pay so the math can be checked.', cites:['29 U.S.C. §207(i)'] },
+  // G7 (docs/flsa-process-gap.md) — a high earner with just one exempt-type duty can be
+  // exempt via the relaxed highly-compensated-employee test even if they would fail the
+  // FULL duties test the ordinary executive/admin/professional routes require.
+  r_hce: { v:'ex', title:'Possibly exempt — highly compensated employee', body:'At $107,432 or more a year with at least one exempt-type duty, the highly-compensated-employee test uses a relaxed duties standard — you do not need to meet the full duties test that ordinary executive, administrative or professional exemptions require. If your total-pay figure or duty description overstated things, revisit this.', cites:['29 C.F.R. §541.601','29 U.S.C. §213(a)(1)'] }
 };
 
 const TREE = {
   start: { q:'How are you paid?', help:'Most exemptions require a fixed salary — this is the salary-basis test.', opts:[['A fixed salary every period','salaryLevel','SALARY'],['Hourly','hourlyType','HOURLY'],['Commission or piece rate','r_commission','COMMISSION'],['I am an outside salesperson','outsideSales','OUTSIDE SALES']] },
-  salaryLevel: { q:'Is your salary at least $684 per week?', help:'That is $35,568/year — the federal salary-level test. Some states set a higher salary floor; the panel below shows your state’s figure alongside the federal one.', opts:[['Yes, $684/week or more','duties','≥ $684/WK'],['No, less than that','r_salary_low','< $684/WK'],['Not sure','duties','SALARY ?']] },
+  salaryLevel: { q:'Is your salary at least $684 per week?', help:'That is $35,568/year — the federal salary-level test. Some states set a higher salary floor; the panel below shows your state’s figure alongside the federal one.', opts:[['Yes, $684/week or more','hceCheck','≥ $684/WK'],['No, less than that','r_salary_low','< $684/WK'],['Not sure','duties','SALARY ?']] },
+  // G7 — asked only after the salary floor is cleared, before the ordinary duties
+  // question, so a high earner who would otherwise land in "routine tasks" (or another
+  // duty that fails the FULL duties test) still gets a shot at the relaxed HCE test.
+  hceCheck: { q:'Is your total annual pay at least $107,432 — including salary, commissions and nondiscretionary bonuses?', help:'That is the highly-compensated-employee threshold. It relaxes the duties test but does not remove it — you still need at least one exempt-type duty, checked next.', opts:[['Yes, $107,432/year or more','hceDuty','≥ $107,432/YR'],['No, or not sure','duties','< $107,432/YR']] },
+  hceDuty: { q:'Do you regularly perform at least one exempt-type duty — for example directing the work of other employees, or office/business work involving discretion on significant matters?', help:'The highly-compensated test only requires ONE such duty, not the full executive/administrative/professional duties test.', opts:[['Yes, at least one of those','r_hce','HCE DUTY: YES'],['No, mostly routine tasks','duties','HCE DUTY: NO']] },
   duties: { q:'What do you mainly do all day?', help:'The duties test looks at your real work, not your job title. Pick the closest.', opts:[['Manage two or more employees','execAuth','MANAGES 2+'],['Office work with independent judgment on significant matters','r_admin','ADMIN DUTIES'],['Work requiring an advanced degree (law, engineering, medicine…)','r_prof','PROFESSIONAL'],['Original creative or artistic work','r_creative','CREATIVE'],['Systems analysis, software design or programming','r_comp','COMPUTER'],['Follow set procedures and tasks','r_duties_none','ROUTINE TASKS']] },
   execAuth: { q:'Can you hire or fire — or do your recommendations carry real weight?', help:'The executive exemption requires genuine authority over other employees’ jobs, not just scheduling shifts.', opts:[['Yes, I have that authority','r_exec','HIRE/FIRE: YES'],['No, I just supervise the work','r_exec_no','HIRE/FIRE: NO']] },
   hourlyType: { q:'Is your main job computer systems work — like software development or IT systems analysis — paid at $27.63/hour or more?', help:'Hourly workers are almost always owed overtime — the one big exception is computer employees at or above $27.63/hour.', opts:[['Yes, both of those','r_comp','COMPUTER $27.63+'],['No','r_hourly','HOURLY, OTHER']] },
@@ -453,8 +470,22 @@ function loadCase(){
   try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; }
   catch(e){ return {}; }
 }
+// R12 — localStorage.setItem silently threw and was swallowed on a full
+// quota (easily reachable via a few attachments even under the per-file/
+// aggregate caps, since the whole case shares one origin's quota with
+// everything else stored there) — the user believed their evidence was
+// saved when it was actually dropped on the floor. Return whether the save
+// actually succeeded so the caller can warn the user instead of staying
+// silent, and recognize QuotaExceededError specifically (name in modern
+// browsers, legacy numeric codes 22/1014 in older ones) as the "storage
+// full" case rather than lumping it with every other possible error.
+function isQuotaExceededError(e){
+  return !!e && (e.name === 'QuotaExceededError' || e.code === 22 || e.code === 1014 ||
+    e.name === 'NS_ERROR_DOM_QUOTA_REACHED'); // legacy Firefox
+}
 function saveCase(obj){
-  try { localStorage.setItem(STORE_KEY, JSON.stringify(obj)); } catch(e){}
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(obj)); return { ok:true, quotaExceeded:false }; }
+  catch(e){ return { ok:false, quotaExceeded: isQuotaExceededError(e) }; }
 }
 function daysAgo(iso){
   if(!iso) return 0;
@@ -535,8 +566,12 @@ const ISSUES = {
     steps:[
       'Ask HR, in writing, for your overtime (FLSA) classification and its basis',
       'Run the overtime-exemption self-check to see if that classification looks right',
-      'Log every unpaid or off-the-clock hour you can remember',
-      'If you are owed overtime, send a wage-demand letter',
+      'Log every unpaid or off-the-clock hour you can remember — it is evidence',
+      // G5 (docs/flsa-process-gap.md) — a demand letter is an OPTIONAL tactical move, not
+      // something FLSA requires before a complaint or lawsuit; the old copy ("send a
+      // wage-demand letter") read as the last mandatory step in "the process" and never
+      // mentioned the two paths that actually recover the money (WHD complaint / lawsuit).
+      'Optional: send a wage-demand letter — or skip straight to a free WHD complaint or a private lawsuit; no demand letter is required by law',
     ],
     stepScreens:['letter','wizard','log','letter'],
     stepLetterTypes:['classification-request', null, null, 'wage-demand'],
@@ -657,13 +692,18 @@ function buildLetter(ctx){
   const kind = ctx.kind || 'records-request';
 
   if (kind === 'classification-request') {
+    // G4 (docs/flsa-process-gap.md) — this request, like the wage-demand letter below,
+    // is protected activity under the FLSA's anti-retaliation provision; say so, matching
+    // the retaliation statement the discrimination "complaint" letter already includes.
+    const retalCite = cite(fed, 'retaliation.flsa', '29 U.S.C. § 215(a)(3)');
     const subject = 'Request for my FLSA overtime classification';
     const body = date + '\n\n' + emp + '\nAttn: Human Resources / Payroll\n\nRe: ' + subject + '\n\nTo whom it may concern:\n\n' +
       'I am requesting, in writing, the following about my position:\n\n' +
       '1. Whether I am classified as exempt or non-exempt from overtime under the federal Fair Labor Standards Act (29 U.S.C. §§ 201 et seq.).\n' +
       '2. If I am classified as exempt, which exemption the company relies on (for example: executive, administrative, professional, computer, or outside sales) and the basis for it.\n' +
       '3. A copy of the written job description and the job duties the company relies on for that classification.\n\n' +
-      'My classification determines whether I am owed overtime for hours worked over 40 in a workweek. Under the FLSA, exempt status turns on my actual salary and job duties, not my job title (29 C.F.R. § 541.2). Please respond in writing within 14 days.\n\nSincerely,\n' + name;
+      'My classification determines whether I am owed overtime for hours worked over 40 in a workweek. Under the FLSA, exempt status turns on my actual salary and job duties, not my job title (29 C.F.R. § 541.2). Please respond in writing within 14 days.\n\n' +
+      'Federal law (' + retalCite + ') prohibits retaliation against me for making this request.\n\nSincerely,\n' + name;
     return { title: 'Overtime classification request', subject, body };
   }
 
@@ -712,11 +752,19 @@ function buildLetter(ctx){
     const amountLine = bd.owedEstimate > 0
       ? 'Based on my regular rate of ' + money(ctx.rateNum) + ' per hour' + salaryNote + ', the overtime pay owed for these hours' + rateNote + ' totals approximately ' + money(bd.owedEstimate) + '.'
       : 'I request payment for these hours at the overtime rate required by law.';
+    // G2 (docs/flsa-process-gap.md) — this letter's dollar figure is the straight
+    // unpaid premium only; name §216(b) liquidated damages + attorney's fees as real
+    // leverage behind the request, not just an internal ask with a self-imposed deadline.
+    const liqCite = cite(fed, 'remedies.liquidatedDamages', '29 U.S.C. § 216(b)');
+    const liqLine = ' Please note that a private lawsuit under the FLSA (' + liqCite + ') can recover these wages plus an equal amount in liquidated damages, plus attorney\'s fees and costs — I would prefer to resolve this directly with you first.';
+    // G4 — same retaliation protection as the classification-request letter above.
+    const retalCite = cite(fed, 'retaliation.flsa', '29 U.S.C. § 215(a)(3)');
+    const retalLine = ' Federal law (' + retalCite + ') prohibits retaliation against me for making this request.';
     const subject = 'Demand for unpaid overtime wages';
     const body = date + '\n\n' + emp + '\nAttn: Payroll / Human Resources\n\nRe: ' + subject + '\n\nTo whom it may concern:\n\n' +
       'I am writing to request payment of overtime wages I earned and was not paid correctly. My records show ' + hrs + ' hours worked beyond 40 hours ' + weekPhrase + ' that were not paid at the required overtime rate.' + breakdownLine + '\n\n' +
       'Under the federal Fair Labor Standards Act (' + fedCite + '), these hours must be paid at one-and-one-half times my regular rate of pay, less any straight-time amount already paid for them.' + stClause + '\n\n' +
-      amountLine + ' I request payment within 14 days of the date of this letter. Please contact me to arrange payment.\n\nSincerely,\n' + name;
+      amountLine + ' I request payment within 14 days of the date of this letter.' + liqLine + retalLine + ' Please contact me to arrange payment.\n\nSincerely,\n' + name;
     return { title: 'Wage demand letter', subject, body };
   }
 
@@ -829,6 +877,12 @@ const ENTRY_HOURS_WARN_MAX = 100; // hours on a single log entry — well over 2
 // entry in the case — unlike the rate/hours soft-warning figures above, an
 // oversized attachment is rejected outright rather than silently accepted.
 const ATTACHMENT_MAX_BYTES = 1.5 * 1024 * 1024; // 1.5MB per attachment
+// R12 — the per-attachment cap alone didn't stop several under-the-limit
+// attachments (a handful of 1.5MB photos) from together blowing the shared
+// localStorage quota (most browsers give ~5-10MB per origin for the WHOLE
+// case, not just attachments). Cap the SUM of attachment bytes across every
+// logged entry, checked before a new attachment is staged.
+const ATTACHMENT_TOTAL_MAX_BYTES = 6 * 1024 * 1024; // 6MB total across the case
 
 // Quick-add kinds for the incident log (shared; optional hours capture for wage claims).
 const LOG_KINDS = [
@@ -899,6 +953,7 @@ function App(){
     (saved.messages && saved.messages.length) ? saved.messages : [{ role:'ai', text: issueCfg(saved.issue).chatSeed }]
   );
   const [entries, setEntries] = useState(() => saved.entries || []);
+  const [storageWarning, setStorageWarning] = useState(false); // R12 — true when the last save to localStorage failed (quota full)
 
   const timer = useRef(null);
   const chatEnd = useRef(null);
@@ -952,8 +1007,12 @@ function App(){
   // classification-wizard position, or noted document name previously vanished
   // on reload because they weren't in this list.
   useEffect(() => {
-    saveCase({ onboarded, stateSel, county, issue, profile, caseOpened, homeMode, done, messages, entries,
+    const result = saveCase({ onboarded, stateSel, county, issue, profile, caseOpened, homeMode, done, messages, entries,
       letterEdit, letterType, wizNode, wizPath, docName, docText });
+    // R12 — surface a real "wasn't saved" warning instead of pretending the
+    // save succeeded; clears itself the moment a save actually goes through
+    // again (e.g. after the user frees up space or exports and starts fresh).
+    setStorageWarning(!result.ok);
   }, [onboarded, stateSel, county, issue, profile, caseOpened, homeMode, done, messages, entries,
       letterEdit, letterType, wizNode, wizPath, docName, docText]);
 
@@ -1165,6 +1224,32 @@ function App(){
         <span style={css("font:700 " + (dark ? '16px/1.3' : '18px/1.3') + " 'Atkinson Hyperlegible',sans-serif;color:" + (dark ? '#fff' : '#14181F'))}>21 days to consider, 7 days to revoke</span>
         <span style={css("font:400 " + (dark ? '13px/1.4' : '14px/1.4') + " 'Atkinson Hyperlegible',sans-serif;color:" + (dark ? '#DDE2FF' : '#3A4150'))}>If your document is a release covered by the Older Workers Benefit Protection Act (29 U.S.C. §626(f)), this is the standard federal window — not sourced from {stateLabel}'s own facts. Confirm the exact days stated in your copy.</span>
       </button>
+    );
+  };
+
+  // G2/G3 (docs/flsa-process-gap.md) — the app routed wage users to WHD as free/first
+  // without ever describing the OTHER path (a private §216(b) lawsuit), that it can
+  // recover roughly DOUBLE the back wages plus attorney's fees, or that accepting a
+  // WHD-supervised payment (or a Secretary of Labor suit already filed) can waive the
+  // right to sue privately for those same wages. Sourced from the new
+  // enforcement.paths / remedies.liquidatedDamages / remedies.attorneysFees facts, with
+  // a hardcoded fallback so the panel still renders something true if a fact fails to
+  // load. Shown on the wage dashboard and the wizard's non-exempt result.
+  const WageRecoverPanel = () => {
+    if (cfg.key !== 'wage') return null;
+    const fedF = (federal && federal.facts) || [];
+    const enf = factByTopic(fedF, 'enforcement.paths');
+    const liq = factByTopic(fedF, 'remedies.liquidatedDamages');
+    const fees = factByTopic(fedF, 'remedies.attorneysFees');
+    const src = f => { const u = f && safeUrl(f.sourceUrl); return u ? <a href={u} target="_blank" rel="noopener noreferrer" style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null; };
+    return (
+      <div style={css("padding:18px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF;display:flex;flex-direction:column;gap:10px")}>
+        <p style={css("margin:0;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>How to actually recover this</p>
+        <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}><strong>File a free WHD complaint</strong> with the Department of Labor's Wage and Hour Division — confidential, no cost, but as of 2025 it recovers back wages only (no liquidated damages administratively). {src(enf)}</p>
+        <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}><strong>Or file a private lawsuit</strong> — it can recover back wages plus an equal amount in liquidated damages (about double), plus your attorney's fees and costs, which is why many wage lawyers take these cases on contingency. {src(liq) || src(fees)}</p>
+        <p style={css("margin:0;padding:10px 12px;border-radius:10px;background:#FFE7EC;border:2px solid #B3264F;font:700 14px/1.5 'Atkinson Hyperlegible',sans-serif;color:#5A1330")}>⚠ Accepting back pay under WHD supervision — or a case the Secretary of Labor already sued over — can waive your right to sue privately for those same wages.</p>
+        <p style={css("margin:0;font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>29 U.S.C. § 216(b), (c) · this is general information, not a recommendation of which path to take — talk to an employment attorney before choosing.</p>
+      </div>
     );
   };
 
@@ -1410,11 +1495,14 @@ function App(){
             <span style={css("font:700 13px 'IBM Plex Mono',monospace;color:#14181F;letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px")}><Icon name="deadline-clock" size={14} /> DEADLINE WATCH</span>
             <span style={css("font:700 18px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{dl.value || dl.summary}</span>
             <span style={css("font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{dl.summary}</span>
+            {/* G1 (docs/flsa-process-gap.md) — the clock is not paused by a WHD complaint. */}
+            {cfg.key === 'wage' && <span style={css("font:700 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#8A5A00")}>{FLSA_SOL_TIMING_NOTE}</span>}
           </button>
         ) : null;
       })()}
       <DocDeadlineWatch dark={false} />
       <OshaWatch dark={false} />
+      <WageRecoverPanel />
 
       <button onClick={nav('strength')} style={css("text-align:left;padding:20px;border-radius:18px;border:2px solid #14181F;background:#E8F6EE;cursor:pointer;display:flex;flex-direction:column;gap:14px")}>
         <div style={css("display:flex;align-items:baseline;justify-content:space-between")}>
@@ -1508,6 +1596,8 @@ function App(){
           <button onClick={nav('strength')} style={css("text-align:left;padding:14px 16px;border-radius:12px;border:2px solid rgba(255,255,255,.4);background:rgba(255,255,255,.14);cursor:pointer;display:flex;flex-direction:column;gap:4px")}>
             <span style={css("font:700 12px 'IBM Plex Mono',monospace;color:#DDE2FF;letter-spacing:.05em;display:inline-flex;align-items:center;gap:6px")}><Icon name="deadline-clock" size={13} /> DEADLINE WATCH</span>
             <span style={css("font:700 16px/1.3 'Atkinson Hyperlegible',sans-serif;color:#fff")}>{dl.value || dl.summary}</span>
+            {/* G1 (docs/flsa-process-gap.md) — the clock is not paused by a WHD complaint. */}
+            {cfg.key === 'wage' && <span style={css("font:700 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#FFE3A6")}>{FLSA_SOL_TIMING_NOTE}</span>}
           </button>
         ) : null;
       })()}
@@ -1554,6 +1644,8 @@ function App(){
             <span style={css("font:700 15px 'IBM Plex Mono',monospace;color:#14181F;letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px")}><Icon name="deadline-clock" size={16} /> DEADLINE WATCH</span>
             <span style={css("font:700 22px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{dl.value || dl.summary}</span>
             <span style={css("font:400 17px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{dl.summary}</span>
+            {/* G1 (docs/flsa-process-gap.md) — the clock is not paused by a WHD complaint. */}
+            {cfg.key === 'wage' && <span style={css("font:700 15px/1.4 'Atkinson Hyperlegible',sans-serif;color:#8A5A00")}>{FLSA_SOL_TIMING_NOTE}</span>}
           </button>
         ) : null;
       })()}
@@ -1601,6 +1693,14 @@ function App(){
             <div style={css("padding:20px;border-radius:16px;background:#FFF4D6;border:2px solid #14181F")}>
               <p style={css("margin:0 0 10px;font:700 24px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{bigLine}</p>
               <p style={css("margin:0;font:400 20px/1.5 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{sub}</p>
+              {/* G2 (docs/flsa-process-gap.md) — this figure is the straight unpaid-premium
+                  amount only; a private lawsuit can roughly double it via liquidated damages
+                  plus recover attorney's fees on top (remedies.liquidatedDamages,
+                  remedies.attorneysFees) — labeling it prevents the number from reading as
+                  the full amount actually recoverable. */}
+              {K === 'wage' && owedEstimate > 0 &&
+                <p style={css("margin:8px 0 0;font:700 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#6B4B00")}>Back wages only — actual recovery may be up to double, plus attorney's fees, if you sue.</p>
+              }
             </div>
             <button onClick={() => {
               setDone(p => Object.assign({}, p, { [stepIdx]: true }));
@@ -1720,6 +1820,13 @@ function App(){
             <div style={css("display:flex;flex-wrap:wrap;gap:8px")}>
               {result.cites.map((c, ci) => <span key={ci} style={css("padding:8px 12px;border-radius:8px;background:#fff;border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace")}>{c}</span>)}
             </div>
+            {/* G1/G2/G3 (docs/flsa-process-gap.md) — a non-exempt result is exactly the
+                moment a user needs the SOL timing warning and the WHD-vs-lawsuit trade-off,
+                before they act on "you're owed overtime" by only sending a demand letter. */}
+            {result.v === 'non' && cfg.key === 'wage' &&
+              <p style={css("margin:0;padding:12px 14px;border-radius:12px;background:#FFF4D6;border:2px solid #14181F;font:700 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#6B4B00")}>{FLSA_SOL_TIMING_NOTE}</p>
+            }
+            {result.v === 'non' && <WageRecoverPanel />}
             {/* The wage-demand letter only exists for the wage issue (letterKindsFor).
                 For a non-wage issue (e.g. discrimination/termination) the Letter screen
                 would silently fall back to a complaint letter, so route to chat instead
@@ -1756,6 +1863,14 @@ function App(){
       if (!file) return;
       if (file.size > ATTACHMENT_MAX_BYTES) {
         setLogAttachmentError('That file is ' + (Math.round(file.size / 1024 / 1024 * 10) / 10) + 'MB — attachments are limited to ' + (ATTACHMENT_MAX_BYTES / 1024 / 1024) + 'MB. Try a smaller photo or a cropped screenshot.');
+        return;
+      }
+      // R12 — the sum of every OTHER entry's attachment, plus this file
+      // (minus whatever's already staged for the entry being edited, so
+      // re-picking a file while editing doesn't double-count it).
+      const existingTotal = entries.reduce((sum, e, idx) => sum + ((idx !== editingEntryIdx && e.attachment && e.attachment.size) || 0), 0);
+      if (existingTotal + file.size > ATTACHMENT_TOTAL_MAX_BYTES) {
+        setLogAttachmentError('Adding this file would put your case’s total attachments over ' + (ATTACHMENT_TOTAL_MAX_BYTES / 1024 / 1024) + 'MB (' + (Math.round((existingTotal + file.size) / 1024 / 1024 * 10) / 10) + 'MB). Remove an existing attachment first, or export your case file to free up space.');
         return;
       }
       const reader = new FileReader();
@@ -1797,6 +1912,16 @@ function App(){
     <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
       <h1 style={css("margin:0;font:700 26px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Incident log</h1>
       <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Contemporaneous notes carry real weight. Each entry is timestamped and kept on your device.</p>
+      {/* G6 (docs/flsa-process-gap.md) — the hour log was framed only as feeding the
+          letter's dollar figure; it is also evidence in its own right. Your employer is
+          legally required to keep accurate time/pay records (29 U.S.C. § 211(c); 29
+          C.F.R. Part 516) — when those records are missing or wrong, a court can rely on
+          the employee's own reasonable estimate to fill the gap (Anderson v. Mt. Clemens
+          Pottery Co., 328 U.S. 680 (1946)), so a detailed personal log matters most exactly
+          when it would otherwise be your word against a missing timesheet. */}
+      {cfg.key === 'wage' &&
+        <p style={css("margin:0;padding:12px 14px;border-radius:12px;background:#EEF1FF;border:2px solid #2B3AA8;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>This log is evidence. Your employer is legally required to keep accurate time and pay records — when those records are missing or wrong, a good personal log is what a court or investigator relies on instead.</p>
+      }
 
       <div style={css('padding:16px;border-radius:16px;border:2px solid #14181F;background:' + (editing ? '#FFF4D6' : '#fff') + ';display:flex;flex-direction:column;gap:12px')}>
         {editing && <p role="status" style={css("margin:0;font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#6B4B00")}>Editing the entry from {entries[editingEntryIdx].date}</p>}
@@ -2049,6 +2174,13 @@ function App(){
             {oshaFact &&
               <p style={css("margin:0 0 8px;padding:10px 12px;border-radius:10px;background:#FFE7EC;border:2px solid #B3264F;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#5A1330")}><strong>⚠ OSHA whistleblower (safety retaliation):</strong> {oshaFact.summary} {src(oshaFact)}</p>
             }
+            {/* G1 (docs/flsa-process-gap.md) — fedDL.summary already carries the extended
+                SOL-tolling language, but a short, plain-language line is worth repeating
+                here since this is the screen a user consults when weighing "wait for WHD"
+                vs. "act now". */}
+            {cfg.key === 'wage' &&
+              <p style={css("margin:0 0 8px;padding:10px 12px;border-radius:10px;background:#FFF4D6;border:2px solid #14181F;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#6B4B00")}>{FLSA_SOL_TIMING_NOTE}</p>
+            }
             <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Act well before the earliest deadline — a claim filed late is usually barred. Confirm your exact date with an attorney.</p>
           </div>
         );
@@ -2149,6 +2281,20 @@ function App(){
             <p style={css("margin:0;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>File directly with the enforcing agencies — free</p>
             <p style={css("margin:0 0 2px;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#25302B")}>You can bring a complaint to the government agencies that enforce these laws in {stateLabel}, at no cost:</p>
             {links.map(([label, url], i) => <a key={i} href={url} target="_blank" rel="noopener noreferrer" style={css("display:flex;align-items:center;min-height:44px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#136B3C;text-decoration:underline")}>{label} ↗</a>)}
+          </div>
+        );
+      })()}
+      {/* G4 (docs/flsa-process-gap.md) — the app tells a wage user to complain to HR, in a
+          demand letter, and to WHD — all protected activity — without ever saying so.
+          Matches the retaliation statement already in the discrimination complaint letter. */}
+      {cfg.key === 'wage' && (() => {
+        const fedF = (federal && federal.facts) || [];
+        const retal = factByTopic(fedF, 'retaliation.flsa');
+        const u = retal && safeUrl(retal.sourceUrl);
+        return (
+          <div style={css("padding:16px 18px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F;display:flex;flex-direction:column;gap:6px")}>
+            <p style={css("margin:0;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>You are protected from retaliation for speaking up</p>
+            <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>It is illegal for your employer to retaliate against you — fire, demote, cut your hours, or otherwise punish you — for asking about, complaining about, or filing a wage claim, even an internal or verbal complaint. {retal ? retal.citation : '29 U.S.C. § 215(a)(3)'}{u ? <> · <a href={u} target="_blank" rel="noopener noreferrer" style={css("color:#2B3AA8;font:600 13px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a></> : null}</p>
           </div>
         );
       })()}
