@@ -97,6 +97,18 @@
       "notes": "L&I enforces this rule; willful withholding of wages can expose an employer to a double-damages/exemplary-damages claim under RCW 49.52.070, not captured in this fact."
     },
     {
+      "topic": "nonCompete.enforceability",
+      "value": "limited",
+      "summary": "Currently (through June 29, 2027), Washington voids a non-competition covenant unless the employer gave required advance written disclosure, the covenant is presumptively limited to 18 months, AND the worker's annualized earnings from that employer exceed an inflation-adjusted dollar threshold ($126,858.83/year for employees in 2026, $317,147.09 for independent contractors); a covenant is also void as to a worker laid off unless the employer continues to pay compensation during the restricted period. Effective June 30, 2027, a new law voids ALL non-competition covenants outright, regardless of when they were signed or how much the worker earns.",
+      "citation": "RCW 49.62.020 (effective until June 30, 2027, and as amended effective June 30, 2027); RCW 49.62.040 (annual threshold adjustment)",
+      "sourceUrl": "https://app.leg.wa.gov/rcw/default.aspx?cite=49.62.020",
+      "sourceAgency": "Washington State Legislature (Revised Code of Washington)",
+      "lastChecked": "2026-08-25",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Confirmed directly against primary statute text, which displays both the current ('Effective until June 30, 2027') and forthcoming ('Effective June 30, 2027') versions on the same official page. The 2026 dollar thresholds are confirmed directly against the Dept of Labor & Industries' official rule filing, WSR 25-20-099 (lawfilesext.leg.wa.gov/law/wsr/2025/20/25-20-099.htm), filed Sept. 30, 2025. Re-check this whole entry after June 30, 2027 when the blanket ban takes effect. Non-solicitation-of-customers and confidentiality agreements are separately defined in RCW 49.62.010 and are not covered by this fact."
+    },
+    {
       "topic": "retaliation",
       "value": "prohibited under WLAD",
       "summary": "It is an unfair practice to discharge, expel, or otherwise discriminate against a person for opposing discrimination or for filing a charge, testifying, or assisting in a proceeding under the Law Against Discrimination.",

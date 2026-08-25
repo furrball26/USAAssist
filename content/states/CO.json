@@ -89,6 +89,18 @@
       "notes": "cdle.colorado.gov blocks automated fetch (CloudFront 403) for this and other CO facts' sourceUrls; content confirmed via WebSearch result snippets describing CDLE's own INFO #5A guidance and secondary law-firm summaries (Littler, Fisher Phillips) of the 2022 SB 22-097 expansion. Workers may file a complaint with CDLE, which can proceed to state court. Separate from this general health/safety whistleblower law, Colorado also has a State Employee Protection Act (C.R.S. § 24-50.5-101 et seq.) covering only public employees, and Colorado recognizes a common-law wrongful-discharge-in-violation-of-public-policy claim not codified here."
     },
     {
+      "topic": "nonCompete.enforceability",
+      "value": "limited",
+      "summary": "Colorado voids non-compete covenants for most workers: a covenant not to compete restricting an individual's right to receive compensation for labor is void, EXCEPT for a worker who, both when the covenant is entered into and when it is enforced, earns at least the annually-published 'threshold amount for highly compensated workers' ($130,014/year for 2026) AND the covenant is limited to protecting trade secrets and no broader than reasonably necessary. Since August 6, 2025, this trade-secret exception no longer applies at all to covenants restricting the practice of medicine, advanced practice registered nursing, or dentistry -- those are void regardless of pay. Separate, lower thresholds and rules apply to non-solicitation-of-customers/workers covenants.",
+      "citation": "C.R.S. § 8-2-113(2), as amended by S.B. 25-083 (eff. Aug. 6, 2025)",
+      "sourceUrl": "https://content.leg.colorado.gov/sites/default/files/documents/2025A/bills/2025a_083_rev.pdf",
+      "sourceAgency": "Colorado General Assembly",
+      "lastChecked": "2026-08-25",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Confirmed directly against the enacted bill's primary text (2(a)-(b)). The $130,014 highly-compensated-worker threshold for 2026 is set by CDLE's annual PAY CALC Order (see overtime.salaryThreshold, above, sourced to CDLE INFO #1) -- re-verify this dollar figure each year it is republished. An employer must also give advance notice of a non-compete before the worker accepts the offer (or, for a current employee, before the change takes effect) and violations carry a $5,000-per-worker civil penalty payable to the affected worker."
+    },
+    {
       "topic": "final-pay",
       "value": "discharge: immediately (or within 6/24 hours if payroll unit is closed); resignation: next regular payday",
       "summary": "Under the Colorado Wage Act, an employee's earned, unpaid wages are due immediately upon a discharge by the employer (with a short grace period if the accounting unit isn't open), while an employee who resigns is paid on the next regular payday.",
