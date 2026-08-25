@@ -68,6 +68,18 @@
       "notes": "Confirmed directly against the primary statute text: SDCL 20-13-10 ('Unfair or discriminatory practices') lists race, color, creed, religion, sex, ancestry, disability, and national origin verbatim. 'Creed' and 'ancestry' are the additions relative to the federal Title VII set (race, color, religion, sex, national origin)."
     },
     {
+      "topic": "discrimination.coverage",
+      "value": "1 or more employees (no minimum size threshold)",
+      "summary": "South Dakota's Human Relations Act defines 'employer' as any person within the state who hires or employs any employee, with no minimum headcount -- broader than federal Title VII/ADA's 15-employee threshold.",
+      "citation": "SDCL 20-13-1(7)",
+      "sourceUrl": "https://sdlegislature.gov/Statutes/20-13-1",
+      "sourceAgency": "South Dakota Legislative Research Council (South Dakota Codified Laws)",
+      "lastChecked": "2026-08-25",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Confirmed directly against the primary statute text (fetched via sdlegislature.gov's statute API): 'Employer,' any person within the State of South Dakota who hires or employs any employee, and any person wherever situated who hires or employs any employee whose services are to be partially or wholly performed in the State of South Dakota. No employee-count minimum appears in the definition."
+    },
+    {
       "topic": "discrimination.ageCoverage",
       "value": "not covered by state law; only federal ADEA applies",
       "summary": "Unlike federal law, South Dakota's human rights law does not prohibit age discrimination; age is covered only under the federal ADEA.",

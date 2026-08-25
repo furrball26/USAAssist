@@ -53,6 +53,18 @@
       "notes": "Official source confirms the statute prohibits disability discrimination but does not detail a reasonable-accommodation/interactive-process mandate; scope of accommodation duty should be verified against the statute text and case law before relying on it."
     },
     {
+      "topic": "discrimination.coverage",
+      "value": "8 or more employees (1+ for retaliation claims)",
+      "summary": "The Tennessee Human Rights Act covers employers (private and public) with 8 or more employees within the state -- a lower threshold than federal Title VII/ADA's 15-employee floor -- while a retaliation claim can be brought against an employer with as few as 1 employee.",
+      "citation": "Tenn. Code Ann. § 4-21-102 (definition of 'employer')",
+      "sourceUrl": "https://www.tn.gov/content/dam/tn/humanrights/UnderstandingTHRC_1-29-2020.pdf",
+      "sourceAgency": "Tennessee Human Rights Commission",
+      "lastChecked": "2026-08-25",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Confirmed directly against an official THRC presentation ('Employment: 8 or more employees/15 or more if filed with EEOC; At least 1 employee for retaliation claims'). No freely-accessible official full-text Tennessee Code portal was found this session to independently re-verify the exact codified definition text at § 4-21-102 (Tennessee's official code is behind a LexisNexis paywall) -- this entry relies on the THRC's own official summary rather than the raw statute text."
+    },
+    {
       "topic": "retaliation.whistleblower",
       "value": "Tennessee Public Protection Act (Whistleblower Law), Tenn. Code Ann. § 50-1-304",
       "summary": "Tennessee's whistleblower statute protects employees from retaliatory discharge for refusing to participate in, or remain silent about, illegal activities.",

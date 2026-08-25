@@ -59,6 +59,18 @@
       "notes": "Gender is generally read to include pregnancy. ACRA does NOT cover age (age claims proceed under federal ADEA), sexual orientation, or gender identity. Source is a 2001 federal review; confirm current classes against the live statute text of § 16-123-107."
     },
     {
+      "topic": "discrimination.coverage",
+      "value": 9,
+      "summary": "The Arkansas Civil Rights Act covers employers with 9 or more employees in Arkansas in each of 20 or more calendar weeks in the current or preceding calendar year -- a lower threshold than federal Title VII/ADA's 15-employee floor, though still higher than a 1-employee floor.",
+      "citation": "Ark. Code Ann. § 16-123-102(5) (as enacted, Act 962 of 1993, § 3)",
+      "sourceUrl": "https://www.arkleg.state.ar.us/Home/FTPDocument?path=%2FActs%2F1993%2FPublic%2F962.pdf",
+      "sourceAgency": "Arkansas General Assembly (enacting Act 962 of 1993)",
+      "lastChecked": "2026-08-25",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Confirmed directly against the primary enacting-Act PDF (Act 962 of 1993, Section 3, definition of 'Employer'): 'a person who employs nine (9) or more employees in the State of Arkansas in each of twenty (20) or more calendar weeks in the current or preceding calendar year.' The current codified subsection letter/number (secondary sources cite it as both (5) and (7) depending on year) was not independently re-verified against a live, freely-accessible official Arkansas Code portal this session -- no such reliably fetchable free official full-text code site was found (see also final-pay and deadlines.wageClaim notes in this file). VERIFY the current subsection citation if precision on the subsection letter matters."
+    },
+    {
       "topic": "deadlines.discriminationComplaint",
       "value": "no state administrative agency (court filing only)",
       "summary": "Arkansas has no state fair-employment agency; ACRA claims are filed directly in court (no state administrative charge deadline), while federal charges go to the EEOC.",
