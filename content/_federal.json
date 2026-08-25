@@ -119,12 +119,57 @@
     {
       "topic": "deadlines.flsaWageClaim",
       "value": "2 years (3 if willful)",
-      "summary": "FLSA wage claims must generally be brought within 2 years, or 3 years for a willful violation.",
+      "summary": "FLSA wage claims must generally be brought within 2 years, or 3 years for a willful violation. The clock runs from each unpaid payday and keeps running -- it does not pause while a Wage and Hour Division complaint is investigated. Because each paycheck is treated as a separate violation, waiting on an investigation (or on a demand-letter/negotiation process) before deciding whether to sue can let the oldest unpaid weeks fall outside the window and become unrecoverable in a private lawsuit. Workers considering a private FLSA suit should act well before the deadline rather than assuming a pending WHD complaint protects their right to sue.",
       "citation": "29 U.S.C. § 255(a)",
       "sourceUrl": "https://www.dol.gov/agencies/whd/flsa",
       "sourceAgency": "U.S. Department of Labor, Wage and Hour Division",
-      "lastChecked": "2026-07-30",
-      "reviewed": false, "reviewedBy": null, "notes": ""
+      "lastChecked": "2026-08-24",
+      "reviewed": false, "reviewedBy": null,
+      "notes": "Summary extended 2026-08-24 (docs/flsa-process-gap.md G1) to cover continuous-accrual timing and the non-tolling effect of a WHD complaint; value unchanged. See also enforcement.paths."
+    },
+    {
+      "topic": "remedies.liquidatedDamages",
+      "value": "Equal to back wages (effectively doubles recovery)",
+      "summary": "In a private FLSA lawsuit for unpaid minimum wage or overtime, a worker who prevails can recover the unpaid wages PLUS an equal additional amount as liquidated damages -- effectively doubling the wage recovery -- unless the employer proves to the court's satisfaction that it acted in good faith and had reasonable grounds to believe its pay practice complied with the law. This is separate from, and in addition to, the underlying back wages.",
+      "citation": "29 U.S.C. § 216(b)",
+      "sourceUrl": "https://www.dol.gov/agencies/whd/compliance-assistance/handy-reference-guide-flsa",
+      "sourceAgency": "U.S. Department of Labor, Wage and Hour Division",
+      "lastChecked": "2026-08-24",
+      "reviewed": false, "reviewedBy": null,
+      "notes": "Added per docs/flsa-process-gap.md (G2). As of June 27, 2025 (WHD Field Assistance Bulletin 2025-3), WHD no longer seeks liquidated damages in administrative/investigation-stage back-wage settlements -- this liquidated-damages remedy is available through a private §216(b) lawsuit (or a court judgment in a Secretary of Labor suit), not through the administrative complaint process alone. See enforcement.paths."
+    },
+    {
+      "topic": "remedies.attorneysFees",
+      "value": "Reasonable attorney's fees + costs awarded to a prevailing plaintiff",
+      "summary": "A worker who wins an FLSA lawsuit for unpaid wages is entitled to have the court award reasonable attorney's fees and costs on top of the wages and liquidated damages recovered. This fee-shifting rule is why many wage-and-hour lawyers take these cases on a contingency basis (no upfront cost to the worker) -- their fee is intended to be paid by the losing employer, not out of the worker's recovery.",
+      "citation": "29 U.S.C. § 216(b)",
+      "sourceUrl": "https://www.dol.gov/agencies/whd/compliance-assistance/handy-reference-guide-flsa",
+      "sourceAgency": "U.S. Department of Labor, Wage and Hour Division",
+      "lastChecked": "2026-08-24",
+      "reviewed": false, "reviewedBy": null,
+      "notes": "Added per docs/flsa-process-gap.md (G2)."
+    },
+    {
+      "topic": "retaliation.flsa",
+      "value": true,
+      "summary": "It is illegal for an employer to fire, demote, cut hours, or otherwise punish a worker for asking about, complaining about (even informally or only verbally), or filing a wage/overtime claim under the FLSA -- whether the complaint goes to the employer internally, to the Wage and Hour Division, or to a court. The U.S. Supreme Court held in Kasten v. Saint-Gobain Performance Plastics Corp. (2011) that this protection covers a clear oral complaint, not only a written one. A worker retaliated against may file a WHD retaliation complaint or bring a private suit for relief including reinstatement and lost wages, separate from the underlying wage claim.",
+      "citation": "29 U.S.C. § 215(a)(3); Kasten v. Saint-Gobain Performance Plastics Corp., 563 U.S. 1 (2011)",
+      "sourceUrl": "https://www.dol.gov/agencies/whd/fact-sheets/77a-flsa-prohibiting-retaliation",
+      "sourceAgency": "U.S. Department of Labor, Wage and Hour Division",
+      "lastChecked": "2026-08-24",
+      "reviewed": false, "reviewedBy": null,
+      "notes": "Added per docs/flsa-process-gap.md (G4)."
+    },
+    {
+      "topic": "enforcement.paths",
+      "value": "WHD complaint (free, back wages only) or private lawsuit (back wages + liquidated damages + attorney's fees)",
+      "summary": "A worker generally has two ways to pursue unpaid FLSA wages, and choosing one can affect the other. (1) File a free, confidential complaint with the Wage and Hour Division (WHD); WHD can investigate and supervise payment of back wages, but as of June 27, 2025 (FAB 2025-3) WHD no longer seeks liquidated damages in administrative/investigation-stage matters -- the administrative route recovers back wages only. (2) File a private lawsuit under §216(b), which can recover back wages PLUS liquidated damages PLUS attorney's fees and costs, and can proceed as a collective action with coworkers. The two paths interact: a worker who accepts back wages paid under WHD supervision, or whose case the Secretary of Labor has already sued over, may NOT also bring a private lawsuit for those same wages. Because the statute of limitations keeps running during a WHD investigation (see deadlines.flsaWageClaim), waiting on the administrative process before deciding whether to sue carries real timing risk.",
+      "citation": "29 U.S.C. § 216(b), (c)",
+      "sourceUrl": "https://www.dol.gov/agencies/whd/compliance-assistance/handy-reference-guide-flsa",
+      "sourceAgency": "U.S. Department of Labor, Wage and Hour Division",
+      "lastChecked": "2026-08-24",
+      "reviewed": false, "reviewedBy": null,
+      "notes": "Added per docs/flsa-process-gap.md (G3). Administrative liquidated-damages practice change per WHD Field Assistance Bulletin 2025-3 (June 27, 2025), see https://www.dol.gov/newsroom/releases/whd/whd20250627. Private-suit bar upon accepting WHD-supervised payment or a Secretary's suit is 29 U.S.C. § 216(b)."
     },
     {
       "topic": "deadlines.equalPayAct",
