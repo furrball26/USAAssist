@@ -3,3 +3,6 @@ node_modules/
 .claude/settings.local.json
 chrome-headless-shell/
 test/*.png
+test/**/*.png
+test/*-shots/
+test/*-shots2/
