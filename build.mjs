@@ -10,6 +10,7 @@
  * Run:  node build.mjs
  */
 import { readFileSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { transformSync } from 'esbuild';
 
 const ROOT = new URL('.', import.meta.url).pathname;
@@ -78,7 +79,41 @@ if (aStart < 0) throw new Error('index.html: app <script>const { block not found
 const renderIdx = html.indexOf('ReactDOM.createRoot', aStart);
 const aEnd = html.indexOf('</script>', renderIdx);
 if (renderIdx < 0 || aEnd < 0) throw new Error('index.html: app block close not found');
-const newHtml = html.slice(0, aStart) + '<script>' + compiled.trim() + '</script>' + html.slice(aEnd + '</script>'.length);
+let newHtml = html.slice(0, aStart) + '<script>' + compiled.trim() + '</script>' + html.slice(aEnd + '</script>'.length);
+
+// 4c. Content-Security-Policy <meta>. index.html is fully self-contained (React,
+// ReactDOM, and the app code are all inlined as <script>...</script> blocks with no
+// `src`, fonts are base64 `data:` URIs, and the app needs zero same-origin script
+// files) — so script-src is hash-allowlisted to exactly those three inline blocks
+// rather than weakened with 'unsafe-inline'. Recomputed fresh on every build so a
+// changed inline script always gets a matching, correct hash (never a stale one).
+// Strip any previously-injected CSP meta first so re-running build.mjs stays idempotent.
+newHtml = newHtml.replace(/<meta http-equiv="Content-Security-Policy"[^>]*>\n/, '');
+
+const scriptHashes = [...newHtml.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(
+  (m) => 'sha256-' + createHash('sha256').update(m[1], 'utf8').digest('base64')
+);
+if (scriptHashes.length !== 3) {
+  throw new Error(`index.html: expected exactly 3 inline <script> blocks (react, react-dom, app), found ${scriptHashes.length}`);
+}
+const csp = [
+  "default-src 'none'",
+  `script-src 'self' ${scriptHashes.map((h) => `'${h}'`).join(' ')}`,
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data:",
+  "font-src 'self' data:",
+  // CONTENT_BASE is same-origin ('' on GitHub Pages/local; index.html never sets
+  // window.CONTENT_BASE or a worklaw-content-base <meta>) — only the hardcoded
+  // SHA-pinned CONTENT_FALLBACK_BASE (raw.githubusercontent.com) is ever cross-origin.
+  "connect-src 'self' https://raw.githubusercontent.com",
+  "object-src 'none'",
+  "base-uri 'none'",
+  "form-action 'none'",
+].join('; ') + ';';
+const cspMeta = `<meta http-equiv="Content-Security-Policy" content="${csp}">\n`;
+newHtml = newHtml.replace('<meta charset="utf-8">\n', (m) => m + cspMeta);
+if (!newHtml.includes(cspMeta)) throw new Error('index.html: could not inject CSP <meta> after <meta charset="utf-8">');
+
 writeFileSync(ROOT + 'index.html', newHtml);
 
 // 5. Write assets/app.js.
