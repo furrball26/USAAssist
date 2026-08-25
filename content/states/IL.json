@@ -114,6 +114,18 @@
       "notes": "Extended from 300 days to 2 years effective Jan 1, 2025 (Public Act 103-0973). Housing violations remain 1 year. Longer than the federal EEOC 180/300-day deadlines."
     },
     {
+      "topic": "nonCompete.enforceability",
+      "value": "limited",
+      "summary": "The Illinois Freedom to Work Act voids non-compete agreements with lower-paid workers: an employer may not enter into a covenant not to compete unless the employee's actual or expected annualized earnings exceed $75,000/year (rising to $80,000 in 2027, $85,000 in 2032, $90,000 in 2037), and may not enter into a covenant not to solicit unless earnings exceed $45,000/year (rising on the same schedule to $47,500, $50,000, $52,500). A covenant entered into in violation is void and unenforceable, and non-competes are banned outright for construction-industry employees covered by a collective bargaining agreement and for many healthcare/other statutorily exempted workers.",
+      "citation": "820 ILCS 90/10",
+      "sourceUrl": "https://www.ilga.gov/Legislation/ILCS/Articles?ActID=3737&ChapterID=68",
+      "sourceAgency": "Illinois General Assembly (Illinois Compiled Statutes)",
+      "lastChecked": "2026-08-25",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Confirmed directly against primary statute text (820 ILCS 90/10(a)-(b)). The Act (as amended, Public Act 102-358, eff. Jan 1, 2022) also requires 14 days' advance notice before signing and advises the employee to consult an attorney; a prevailing employee recovers costs and reasonable attorney fees from an employer who sues to enforce a void covenant."
+    },
+    {
       "topic": "final-pay",
       "value": "next regular payday",
       "summary": "Illinois requires an employer to pay a separated employee's final compensation in full at the time of separation if possible, but no later than the next regularly scheduled payday.",

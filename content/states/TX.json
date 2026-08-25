@@ -53,6 +53,30 @@
       "notes": "Applies to the private civil action for minimum-wage violations (Section 62.201 liability), distinct from the 180-day TWC Payday Law claim."
     },
     {
+      "topic": "nonCompete.enforceability",
+      "value": "enforceable-with-conditions",
+      "summary": "Texas enforces a non-compete covenant only if it is ancillary to (part of) an otherwise-enforceable agreement at the time it is made, and contains limitations on time, geographic area, and scope of restrained activity that are reasonable and do not impose a greater restraint than necessary to protect the employer's goodwill or other business interest. A court may reform (narrow) an overbroad covenant rather than void it, though the employer's available damages before reformation may be limited.",
+      "citation": "Tex. Bus. & Com. Code §§ 15.50-15.51",
+      "sourceUrl": "https://statutes.capitol.texas.gov/Docs/BC/htm/BC.15.htm",
+      "sourceAgency": "Texas Legislature (Texas Statutes)",
+      "lastChecked": "2026-08-25",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "This is a two-step test (threshold 'otherwise enforceable agreement' + ancillary covenant, then a reasonableness inquiry); it does not turn on employee pay level or industry generally, unlike Illinois's earnings-threshold approach."
+    },
+    {
+      "topic": "final-pay",
+      "value": "within 6 calendar days of an involuntary separation; by the next regularly scheduled payday for a voluntary quit",
+      "summary": "Under the Texas Payday Law, if an employee is laid off, discharged, or otherwise involuntarily separated, final wages are due within six calendar days of the separation. If an employee quits, resigns, or otherwise leaves voluntarily, final wages are due on the next regularly scheduled payday.",
+      "citation": "Tex. Labor Code § 61.014",
+      "sourceUrl": "https://www.twc.texas.gov/programs/wage-and-hour/texas-payday-law",
+      "sourceAgency": "Texas Workforce Commission",
+      "lastChecked": "2026-08-25",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "This is the Payday Law's final-pay TIMING rule, distinct from the 180-day administrative filing deadline (deadlines.wageClaim) and the 2-year civil-suit limitations period for Texas Minimum Wage Act claims (final-pay.wageRecoveryLimitations). '6 calendar days' includes weekends/holidays, not business days."
+    },
+    {
       "topic": "discrimination.protectedClasses",
       "value": ["race", "color", "disability", "religion", "sex (including pregnancy, childbirth, and related medical conditions)", "national origin", "age (40 or older)"],
       "summary": "The Texas Commission on Human Rights Act bars employment discrimination on the same bases as federal law, consolidated into one state statute, with pregnancy expressly included within sex.",

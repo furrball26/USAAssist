@@ -129,6 +129,18 @@
       "notes": "Effective Jan 1, 2026. Applies to the state executive and administrative exemptions only; New York sets no separate state salary threshold for the professional exemption, which continues to use the federal $684/week floor. The threshold rises annually — VERIFY 2027 figure when published. The primary PDF blocks automated fetch; figure cross-confirmed via multiple secondary legal-industry sources citing this NYSDOL wage order (12 NYCRR Part 142) before entry — re-verify against the primary source."
     },
     {
+      "topic": "nonCompete.enforceability",
+      "value": "enforceable-with-conditions",
+      "summary": "New York has no comprehensive statutory ban on employee non-compete agreements (a 2023 bill to prohibit most non-competes was vetoed). Courts and the Attorney General apply a common-law reasonableness test: a non-compete is enforceable only to the extent it is no greater than necessary to protect the employer's legitimate interests, does not impose undue hardship on the employee, is not injurious to the public, and is reasonable in time period and geographic scope. Broadcast employers may not enforce non-competes against most on-air employees.",
+      "citation": "BDO Seidman v. Hirshberg, 93 N.Y.2d 382 (1999) (common-law standard); N.Y. Labor Law § 202-k (broadcast employees)",
+      "sourceUrl": "https://ag.ny.gov/resources/individuals/workers-rights/noncompete-agreements",
+      "sourceAgency": "New York State Attorney General",
+      "lastChecked": "2026-08-25",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "As of Jan 2026 the legislature is again considering a broader statutory ban (e.g. A10023/S4641-A, mirroring the bill Gov. Hochul vetoed in Dec 2023); no such ban is currently in effect. This entry may need revision if new legislation is enacted -- VERIFY periodically."
+    },
+    {
       "topic": "final-pay",
       "value": "by the regular payday for the pay period of termination",
       "summary": "When employment ends, New York requires the employer to pay all wages owed no later than the regular payday for the pay period during which the termination occurred (by mail if the employee requests).",

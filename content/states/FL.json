@@ -82,6 +82,18 @@
       "notes": "Statute number 448.102 confirmed via official statute site listing; exact section text not individually fetched. 'Employer' 10+ employees per 448.101(3). Remedies include reinstatement, back pay, and attorney's fees under 448.103."
     },
     {
+      "topic": "nonCompete.enforceability",
+      "value": "enforceable-with-conditions",
+      "summary": "Florida enforces reasonable non-compete (restrictive covenant) agreements: they must be in a signed writing, and the employer must plead and prove a legitimate business interest (e.g., trade secrets, confidential business information, substantial customer or client relationships) justifying the restraint, with time and geographic limits reasonable under the statute. A separate 2025 law (the CHOICE Act) lets employers offer 'covered' non-compete and garden-leave agreements of up to 4 years to higher-earning employees, with courts required to issue injunctions enforcing them, subject to specific wage and notice conditions; it does not replace the general statute for agreements outside its scope.",
+      "citation": "Fla. Stat. § 542.335; Fla. Stat. § 542.336 (CHOICE Act, eff. July 3, 2025)",
+      "sourceUrl": "https://www.leg.state.fl.us/statutes/index.cfm?App_mode=Display_Statute&URL=0500-0599/0542/Sections/0542.335.html",
+      "sourceAgency": "Florida Legislature (Florida Statutes)",
+      "lastChecked": "2026-08-25",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Section 542.335 places the burden on the employer to justify the restraint and requires reasonableness in time/area/line of business; courts may modify (blue-pencil) an overbroad covenant rather than void it outright. The CHOICE Act (542.336) is a separate, employer-favorable track for covered agreements with employees earning more than twice the average annual wage of the county where the employer is headquartered or the employee resides -- VERIFY the current wage threshold and scope before relying on it for a specific case."
+    },
+    {
       "topic": "deadlines.wageClaim",
       "value": "2 years (general wages); 4 years, or 5 years if willful, for minimum-wage claims",
       "summary": "General actions to recover wages/overtime have a 2-year limitations period, while minimum-wage claims carry a 4-year period (5 years for willful violations) under the state constitution.",
