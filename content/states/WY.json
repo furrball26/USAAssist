@@ -31,7 +31,7 @@
       "value": ["age 40+", "and the federal classes (via the Wyoming Fair Employment Practices Act)"],
       "summary": "The Wyoming Fair Employment Practices Act prohibits discrimination on the federal bases and is enforced by the Wyoming Dept of Workforce Services.",
       "citation": "Wyo. Stat. § 27-9-105",
-      "sourceUrl": "https://dws.wyo.gov/dws-division/labor-standards/discrimination/",
+      "sourceUrl": "https://dws.wyo.gov/dws-division/labor-standards/",
       "sourceAgency": "Wyoming Dept of Workforce Services",
       "lastChecked": "2026-07-30",
       "reviewed": false, "reviewedBy": null,
@@ -42,7 +42,7 @@
       "value": "2+ employees",
       "summary": "The Wyoming Fair Employment Practices Act applies to employers with two or more employees — broader than the federal 15-employee threshold.",
       "citation": "Wyo. Stat. § 27-9-102",
-      "sourceUrl": "https://dws.wyo.gov/dws-division/labor-standards/discrimination/",
+      "sourceUrl": "https://dws.wyo.gov/dws-division/labor-standards/",
       "sourceAgency": "Wyoming Dept of Workforce Services",
       "lastChecked": "2026-07-30",
       "reviewed": false, "reviewedBy": null,
@@ -95,6 +95,6 @@
   ],
   "agencies": {
     "wageHour": { "name": "Wyoming Dept of Workforce Services, Labor Standards", "url": "https://dws.wyo.gov/dws-division/labor-standards/" },
-    "discrimination": { "name": "Wyoming Dept of Workforce Services (Fair Employment)", "url": "https://dws.wyo.gov/dws-division/labor-standards/discrimination/" }
+    "discrimination": { "name": "Wyoming Dept of Workforce Services (Fair Employment)", "url": "https://dws.wyo.gov/dws-division/labor-standards/" }
   }
 }

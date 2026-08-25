@@ -71,7 +71,7 @@
       "value": "15+ employees",
       "summary": "Title VII and the ADA cover employers with 15 or more employees; the ADEA covers employers with 20 or more.",
       "citation": "42 U.S.C. § 2000e(b); 42 U.S.C. § 12111(5); 29 U.S.C. § 630(b)",
-      "sourceUrl": "https://www.eeoc.gov/employers/small-business/what-laws-does-eeoc-enforce",
+      "sourceUrl": "https://www.eeoc.gov/employers/small-business/small-business-requirements",
       "sourceAgency": "U.S. Equal Employment Opportunity Commission",
       "lastChecked": "2026-07-30",
       "reviewed": false, "reviewedBy": null, "notes": "ADEA threshold is 20 employees, not 15."
@@ -208,7 +208,7 @@
       "value": "21 days consider / 7 days revoke",
       "summary": "For a valid waiver of age claims in severance, workers 40+ get at least 21 days to consider (45 in a group layoff) and 7 days to revoke after signing.",
       "citation": "29 U.S.C. § 626(f) (OWBPA)",
-      "sourceUrl": "https://www.eeoc.gov/laws/guidance/understanding-waivers-discrimination-claims-employee-severance-agreements",
+      "sourceUrl": "https://www.eeoc.gov/laws/guidance/qa-understanding-waivers-discrimination-claims-employee-severance-agreements",
       "sourceAgency": "U.S. Equal Employment Opportunity Commission",
       "lastChecked": "2026-07-30",
       "reviewed": false, "reviewedBy": null, "notes": ""

@@ -84,12 +84,12 @@
       "value": "next regular payday",
       "summary": "Final wages (whether the employee quits or is discharged) are due on or before the next regularly scheduled payday.",
       "citation": "Ind. Code 22-2-5-1, 22-2-9-2",
-      "sourceUrl": "https://secure.in.gov/dol/wage-and-hour/wage-and-hour-faqs/",
-      "sourceAgency": "Indiana Department of Labor",
-      "lastChecked": "2026-07-30",
+      "sourceUrl": "https://iga.in.gov/laws/current/ic/titles/22/",
+      "sourceAgency": "Indiana General Assembly (Indiana Code, Title 22)",
+      "lastChecked": "2026-08-25",
       "reviewed": false,
       "reviewedBy": null,
-      "notes": "Indiana has no requirement for immediate final pay upon discharge; regular payday timing applies. Regular pay must occur at least semi-monthly/biweekly."
+      "notes": "Indiana has no requirement for immediate final pay upon discharge; regular payday timing applies. Regular pay must occur at least semi-monthly/biweekly. sourceUrl updated 2026-08-25: the prior Indiana DOL FAQ page (secure.in.gov/dol/wage-and-hour/wage-and-hour-faqs/, and its www.in.gov mirror) returned 404 on verification, so this now cites the current Indiana Code Title 22 portal (the primary statutory source for Ind. Code 22-2-5-1 and 22-2-9-2) instead; re-confirm if IDOL republishes a live FAQ page."
     },
     {
       "topic": "deadlines.wageClaim",
