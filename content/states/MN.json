@@ -116,6 +116,18 @@
       "notes": "One year from the date discrimination occurred. Verify the exact statutory subdivision citation (363A.28, subd. 3) against current statute."
     },
     {
+      "topic": "nonCompete.enforceability",
+      "value": "banned/voidable",
+      "summary": "Minnesota voids employee non-compete agreements: any covenant not to compete contained in a contract or agreement is void and unenforceable, with narrow exceptions for agreements made in connection with the sale of a business or in anticipation of dissolving a partnership, LLC, or corporation. The ban applies to covenants entered into on or after July 1, 2023 (agreements from before that date are analyzed under prior common law). Non-solicitation and confidentiality/trade-secret agreements are separately defined and are not automatically void.",
+      "citation": "Minn. Stat. § 181.988",
+      "sourceUrl": "https://www.revisor.mn.gov/statutes/cite/181.988",
+      "sourceAgency": "Minnesota Office of the Revisor of Statutes",
+      "lastChecked": "2026-08-25",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Confirmed directly against primary statute text (subd. 1-2). A court may award a prevailing employee reasonable attorney fees in addition to injunctive relief and other remedies. The law also restricts choice-of-law/venue clauses that would apply another state's law or require litigation outside Minnesota for a Minnesota employee (subd. 3)."
+    },
+    {
       "topic": "final-pay",
       "value": "Discharge: due within 24 hours of demand; resignation: next payday (or within 20 days)",
       "summary": "Minnesota requires final wages of a discharged employee within 24 hours of demand, and a resigning employee's final wages by the next regular payday, with penalty wages up to 15 days for noncompliance.",

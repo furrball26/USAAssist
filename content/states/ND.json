@@ -101,7 +101,19 @@
       "notes": "Covers actions under the FLSA and 'all other similar acts' respecting payment of wages. The period is tolled while a wage claim is pending with the Labor Commissioner (34-14-08.1(3))."
     },
     {
-      "topic": "finalPay.timing",
+      "topic": "nonCompete.enforceability",
+      "value": "banned/voidable",
+      "summary": "North Dakota voids nearly all employee non-compete agreements: a contract restraining anyone from exercising a lawful profession, trade, or business is void to that extent, with narrow exceptions for the sale of a business's goodwill and for partners/members/shareholders upon or in anticipation of dissolving a partnership, LLC, or similar entity. North Dakota courts apply the statute strictly with no judicially created reasonableness exception and no authority to narrow (blue-pencil) an overbroad covenant.",
+      "citation": "N.D.C.C. § 9-08-06",
+      "sourceUrl": "https://ndlegis.gov/cencode/t09c08.pdf",
+      "sourceAgency": "North Dakota Legislative Branch (North Dakota Century Code)",
+      "lastChecked": "2026-08-25",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "This statute traces to the Dakota Territory's 1865 adoption of the Field Civil Code and predates statehood. Unlike California's parallel rule, North Dakota's exceptions are limited to the sale-of-goodwill and dissolution scenarios; ordinary employer/employee non-compete restraints are void with no reasonableness test."
+    },
+    {
+      "topic": "final-pay.timing",
       "value": "due on the next regular payday established in advance",
       "summary": "On discharge, voluntary separation, or suspension, an employee's unpaid wages become due on the regular paydays the employer set in advance for the periods worked; there is no immediate final-pay requirement.",
       "citation": "N.D.C.C. 34-14-03",

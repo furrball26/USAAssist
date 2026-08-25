@@ -212,6 +212,17 @@
       "sourceAgency": "U.S. Equal Employment Opportunity Commission",
       "lastChecked": "2026-07-30",
       "reviewed": false, "reviewedBy": null, "notes": ""
+    },
+    {
+      "topic": "nonCompete.ftcRuleStatus",
+      "value": "no federal rule in effect; governed by state law",
+      "summary": "The FTC's 2024 rule that would have banned most post-employment non-compete agreements nationwide is not in effect. A federal district court vacated the rule, and on September 5, 2025 the FTC voted 3-1 to dismiss its appeals (Ryan LLC v. FTC, 5th Cir.; Properties of the Villages v. FTC, 11th Cir.) and accede to that vacatur; the rule was removed from the Code of Federal Regulations effective February 12, 2026. Non-compete enforceability is therefore governed entirely by state law (see each state's nonCompete.enforceability fact), though the FTC has said it will continue to evaluate individual non-competes case-by-case under its general unfair-methods-of-competition authority.",
+      "citation": "89 Fed. Reg. 38342 (May 7, 2024) (vacated); FTC dismissal of appeals, Sept. 5, 2025",
+      "sourceUrl": "https://www.ftc.gov/news-events/news/press-releases/2025/09/federal-trade-commission-files-accede-vacatur-non-compete-clause-rule",
+      "sourceAgency": "U.S. Federal Trade Commission",
+      "lastChecked": "2026-08-25",
+      "reviewed": false, "reviewedBy": null,
+      "notes": "This is a status note about the ABSENCE of federal preemption, not a substantive federal non-compete rule -- workers and employers should look to their state's non-compete law (see state files) for the applicable enforceability standard."
     }
   ]
 }

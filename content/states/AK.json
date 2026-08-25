@@ -96,7 +96,7 @@
       "notes": "AS 23.10.130 sets a 2-year limit for minimum wage/overtime/liquidated damages actions. The 3-year figure for straight-time/promised wages reflects the general contract limitations period as stated in the DOL FAQ; verify the applicable period for a specific claim type."
     },
     {
-      "topic": "finalPay",
+      "topic": "final-pay",
       "value": "Within 3 working days of employer termination; next regular payday (at least 3 days after notice) if employee quits",
       "summary": "When an employer terminates an employee, all wages are due within three working days; when an employee quits, wages are due on the next regular payday at least three days after notice.",
       "citation": "AS 23.05.140",

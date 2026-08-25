@@ -86,6 +86,18 @@
       "notes": "Confirmed directly from the primary statute text (page verified by download). This provision protects reports/complaints/testimony tied to Title 40 wage-and-hour law (Sections 71-198.2); Oklahoma also separately protects reports of occupational health and safety violations (40 O.S. § 403(B)) and, for public employees only, government-wrongdoing reports under the Oklahoma Whistleblower Act (74 O.S. § 840-2.5) -- neither of those two was independently verified against primary text this session."
     },
     {
+      "topic": "nonCompete.enforceability",
+      "value": "limited",
+      "summary": "Oklahoma law voids most traditional non-compete restraints: a general statute bars any contract restraining someone from exercising a lawful profession, trade, or business. A specific carve-out lets an employer and employee agree that, after employment ends, the former employee will not directly solicit the sale of goods or services from the former employer's established customers -- but any other contract provision restraining post-employment competition (e.g., a broader ban on working for a competitor) is void and unenforceable.",
+      "citation": "15 O.S. § 217; 15 O.S. § 219A",
+      "sourceUrl": "https://www.oklegislature.gov/OK_Statutes/CompleteTitles/os15.pdf#page=66",
+      "sourceAgency": "Oklahoma Legislature (Oklahoma Statutes)",
+      "lastChecked": "2026-08-25",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Confirmed directly against primary statute text (15 O.S. §§ 217-219A, PDF pages 65-67): a former employee is permitted to engage in the same or similar business as the former employer as long as they do not directly solicit established customers; any conflicting contract provision is void. Section 219B separately permits reasonable employee/contractor non-solicitation agreements."
+    },
+    {
       "topic": "final-pay",
       "value": "next regular payday",
       "summary": "Upon termination (discharge or resignation), Oklahoma requires the employer to pay final wages in full at the next regular designated payday for the pay period in which the work was performed.",
