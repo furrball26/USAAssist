@@ -16,6 +16,7 @@
  */
 import { readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 
 const ROOT = new URL('..', import.meta.url).pathname;
 const problems = [];
@@ -56,12 +57,38 @@ const metaMatch = rendered.match(/<meta name="worklaw-content-base" content="htt
 if (!metaMatch) {
   problems.push('CONTENT_BASE <meta> does not show a real 40-char commit SHA (got: ' + (rendered.match(/<meta name="worklaw-content-base"[^>]*>/) || ['(not found)'])[0] + ')');
 }
-const scriptMatch = rendered.match(/<script src="https:\/\/cdn\.jsdelivr\.net\/gh\/furrball26\/USAAssist@([0-9a-f]{40})\/assets\/app\.js">/i);
+const scriptMatch = rendered.match(/<script[^>]*\bsrc="https:\/\/cdn\.jsdelivr\.net\/gh\/furrball26\/USAAssist@([0-9a-f]{40})\/assets\/app\.js"/i);
 if (!scriptMatch) {
   problems.push('app.js <script src> does not show a real 40-char commit SHA');
 }
 if (metaMatch && scriptMatch && metaMatch[1] !== scriptMatch[1]) {
   problems.push(`CONTENT_BASE sha (${metaMatch[1]}) and app.js script sha (${scriptMatch[1]}) disagree`);
+}
+
+// 4. The jsDelivr assets/app.js <script> must carry a real `integrity` attribute (SRI),
+// and its sha384 digest must match a fresh hash of the *committed* assets/app.js — a
+// stale hash (e.g. app.js changed but render-shell wasn't re-run, or someone hand-edited
+// the integrity value) would either fail SRI in the browser or, worse, silently pin to
+// the wrong bytes. Also assert crossorigin="anonymous" is present (required for SRI to
+// actually be enforced on a cross-origin <script>).
+const appScriptTagMatch = rendered.match(/<script[^>]*\bsrc="https:\/\/cdn\.jsdelivr\.net\/gh\/furrball26\/USAAssist@[0-9a-f]{40}\/assets\/app\.js"[^>]*><\/script>/i);
+if (!appScriptTagMatch) {
+  problems.push('could not find the assets/app.js <script src> tag in the rendered shell');
+} else {
+  const tag = appScriptTagMatch[0];
+  const integrityMatch = tag.match(/integrity="(sha384-[^"]+)"/);
+  if (!integrityMatch) {
+    problems.push('assets/app.js <script> tag has no integrity="sha384-…" attribute (no SRI)');
+  } else {
+    const appJs = readFileSync(ROOT + 'assets/app.js');
+    const freshHash = 'sha384-' + createHash('sha384').update(appJs).digest('base64');
+    if (integrityMatch[1] !== freshHash) {
+      problems.push(`assets/app.js <script> integrity hash is stale — tag has "${integrityMatch[1]}", a fresh hash of the committed assets/app.js is "${freshHash}"`);
+    }
+  }
+  if (!/crossorigin="anonymous"/.test(tag)) {
+    problems.push('assets/app.js <script> tag is missing crossorigin="anonymous" — required for SRI to actually be enforced on a cross-origin script');
+  }
 }
 
 if (problems.length) {

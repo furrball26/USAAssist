@@ -19,6 +19,7 @@
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 
 const ROOT = new URL('..', import.meta.url).pathname;
 
@@ -49,7 +50,25 @@ if (!devStyle) throw new Error('render-shell: could not find the app <style> blo
 if (!/<style>[\s\S]*?<\/style>/.test(template)) throw new Error('render-shell: shell template has no <style> block to sync');
 const withStyle = template.replace(/<style>[\s\S]*?<\/style>/, () => devStyle);
 
-const rendered = withStyle.split('{{SHA}}').join(sha);
+// The jsDelivr-hosted assets/app.js <script> ships with no Subresource Integrity check —
+// unlike the React/ReactDOM <script> tags right next to it, which do have `integrity=`.
+// A compromised jsDelivr edge (or a stale/wrong SHA in the URL) could otherwise serve
+// different bytes than what's committed, with the browser none the wiser. Compute the
+// sha384 digest of the *committed* assets/app.js and inject it as a real `integrity`
+// attribute at render time, so the browser refuses to execute anything that doesn't hash
+// match exactly what's in this repo at this commit.
+const appJs = readFileSync(ROOT + 'assets/app.js');
+const appJsIntegrity = 'sha384-' + createHash('sha384').update(appJs).digest('base64');
+const APP_SCRIPT_RE = /<script src="https:\/\/cdn\.jsdelivr\.net\/gh\/furrball26\/USAAssist@\{\{SHA\}\}\/assets\/app\.js"><\/script>/;
+if (!APP_SCRIPT_RE.test(withStyle)) {
+  throw new Error('render-shell: could not find the assets/app.js <script src> in vercel/index.html — template drifted');
+}
+const withIntegrity = withStyle.replace(
+  APP_SCRIPT_RE,
+  `<script crossorigin="anonymous" integrity="${appJsIntegrity}" src="https://cdn.jsdelivr.net/gh/furrball26/USAAssist@{{SHA}}/assets/app.js"></script>`
+);
+
+const rendered = withIntegrity.split('{{SHA}}').join(sha);
 
 if (args.out) {
   writeFileSync(args.out, rendered);
