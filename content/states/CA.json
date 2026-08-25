@@ -132,6 +132,30 @@
       "notes": ""
     },
     {
+      "topic": "nonCompete.enforceability",
+      "value": "banned/voidable",
+      "summary": "California voids nearly all employee non-compete agreements: every contract that restrains anyone from engaging in a lawful profession, trade, or business is void, with narrow exceptions (e.g., sale of business goodwill, dissolution of a partnership/LLC). This applies even to agreements signed outside California for a California employee, and employers can face civil penalties for presenting or trying to enforce a void non-compete.",
+      "citation": "Cal. Bus. & Prof. Code §§ 16600, 16600.1, 16600.5",
+      "sourceUrl": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=BPC&sectionNum=16600",
+      "sourceAgency": "California Legislative Information (Dept of Justice, Office of Legislative Counsel)",
+      "lastChecked": "2026-08-25",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Sections 16600.1 and 16600.5 (effective 2024) added a private right of action for employees and require employers to notify current/former employees (by Feb 14, 2024, for pre-2022 agreements) that any non-compete clause is void. Non-solicitation-of-customers and confidentiality/trade-secret provisions are analyzed separately and are not automatically void."
+    },
+    {
+      "topic": "final-pay",
+      "value": "immediate on discharge/layoff; within 72 hours (or immediately with 72 hours' notice) on quit",
+      "summary": "California requires immediate payment of all final wages when an employer discharges or lays off an employee. An employee who quits with at least 72 hours' notice must be paid immediately at the time of quitting; an employee who quits without 72 hours' notice must be paid within 72 hours.",
+      "citation": "Cal. Lab. Code §§ 201, 202",
+      "sourceUrl": "https://www.dir.ca.gov/dlse/faq_paydays.htm",
+      "sourceAgency": "California Dept of Industrial Relations, DLSE",
+      "lastChecked": "2026-08-25",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Section 203 imposes waiting-time penalties (continued daily wages, up to 30 days) for late final payment. Special timing rules apply to some industries (e.g., seasonal agriculture, motion picture production, oil drilling)."
+    },
+    {
       "topic": "severance.wageWaiver",
       "value": "earned wages not waivable",
       "summary": "Already-earned wages generally cannot be waived in a release; a severance release does not extinguish overtime already owed.",
