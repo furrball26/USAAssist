@@ -1478,9 +1478,6 @@ function App(){
       <div style={css("display:flex;gap:4px;height:6px")}>
         {[1,2,3,4].map(n => <div key={n} style={css("flex:1;border-radius:3px;background:" + (onbStep >= n ? '#2B3AA8' : 'rgba(20,24,31,.12)'))}></div>)}
       </div>
-      <div style={css("display:flex;gap:3px;height:5px;border-radius:3px;overflow:hidden")}>
-        <div style={css("flex:1;background:#E0322F")}></div><div style={css("flex:1;background:#EF7B22")}></div><div style={css("flex:1;background:#E3B505")}></div><div style={css("flex:1;background:#1F8A4C")}></div><div style={css("flex:1;background:#2B3AA8")}></div><div style={css("flex:1;background:#7A3AA8")}></div>
-      </div>
       {/* F16 — a typo or wrong pick two steps back previously had no fix except
           finishing the whole flow (or the unsafe Skip). Back only moves within
           this in-progress draft — it never touches the live case; Save/Cancel
@@ -1846,9 +1843,6 @@ function App(){
       <ModeSwitch theme="light" />
       <StorageWarningBanner />
       <LocationPill dark={false} />
-      <div style={css("display:flex;gap:3px;height:6px;border-radius:3px;overflow:hidden")}>
-        <div style={css("flex:1;background:#E0322F")}></div><div style={css("flex:1;background:#EF7B22")}></div><div style={css("flex:1;background:#E3B505")}></div><div style={css("flex:1;background:#1F8A4C")}></div><div style={css("flex:1;background:#2B3AA8")}></div><div style={css("flex:1;background:#7A3AA8")}></div>
-      </div>
       {(() => {
         const fedF = (federal && federal.facts) || [];
         const stF = (stateData && stateData.facts) || [];
