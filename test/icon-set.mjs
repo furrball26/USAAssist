@@ -43,7 +43,7 @@ try {
 // used throughout real content (e.g. "29 C.F.R. §541.600") and was only ever
 // a glyph-icon in the Rights-tab/exempt-tool call sites, which the SVG count
 // assertions below already cover.
-const BANNED_GLYPHS = ['⌂', '✦', '◷', '⚖', '◉', '⏱', '▤', '✎', '‹', '✓', '←'];
+const BANNED_GLYPHS = ['⌂', '✦', '◷', '⚖', '◉', '⏱', '▤', '✎', '‹', '✓', '←', '⚠'];
 
 async function seedAndOpen(pg, extra = {}) {
   const seed = Object.assign({
