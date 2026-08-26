@@ -473,9 +473,31 @@ const DISCRIMINATION_REPLY = { text:'Discrimination is adverse treatment — not
 
 // localStorage-backed case, so a case survives reload (single blob, best-effort).
 const STORE_KEY = 'worklaw.case.v2';
+// Coerce a few fields the App() useState initializers read with a bare `||`
+// fallback (which only catches FALSY values, not a truthy value of the wrong
+// type) into the shape those initializers — and everything downstream that
+// calls .filter/.forEach/.map on them (computeOwedBreakdown, caseStrength,
+// the chat log, ...) — actually require. Malformed persisted state (a future
+// schema change, a browser extension touching localStorage, manual tampering
+// via devtools) used to throw on the very first render with a non-array
+// `entries`, and since there is no error boundary, that took the whole app to
+// a permanently blank #root — the in-tree "Delete my case" button included,
+// since it lives inside the tree that never mounted. Reload didn't fix it
+// either, because the corrupted blob was never rewritten. Sanitizing here
+// means a malformed field is dropped in favor of a safe default instead of
+// crashing the render.
+function sanitizeCase(raw){
+  const c = (raw && typeof raw === 'object' && !Array.isArray(raw)) ? raw : {};
+  if (!Array.isArray(c.entries)) c.entries = [];
+  if (!c.done || typeof c.done !== 'object' || Array.isArray(c.done)) c.done = {};
+  if (!Array.isArray(c.messages)) c.messages = [];
+  if (!Array.isArray(c.wizPath)) c.wizPath = [];
+  if (!c.profile || typeof c.profile !== 'object' || Array.isArray(c.profile)) c.profile = {};
+  return c;
+}
 function loadCase(){
-  try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; }
-  catch(e){ return {}; }
+  try { return sanitizeCase(JSON.parse(localStorage.getItem(STORE_KEY))); }
+  catch(e){ return sanitizeCase(null); }
 }
 // R12 — localStorage.setItem silently threw and was swallowed on a full
 // quota (easily reachable via a few attachments even under the per-file/
@@ -2618,7 +2640,42 @@ function App(){
   );
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+// Last-resort catch for a render-time exception that reaches here despite
+// loadCase()'s shape sanitizing (sanitizeCase covers the fields that were
+// actually observed crashing the render, not necessarily every field a future
+// bug or a hand-edited devtools change could corrupt). Without this, ANY
+// uncaught render error takes the whole app to a permanently blank #root — the
+// in-tree "Delete my case" button included, since it lives inside the tree
+// that never mounted — and reload doesn't fix it, since the bad data is never
+// rewritten. This gives the user a real way out instead of a dead page.
+class ErrorBoundary extends React.Component {
+  constructor(props){ super(props); this.state = { hasError:false }; }
+  static getDerivedStateFromError(){ return { hasError:true }; }
+  componentDidCatch(error, info){
+    if (typeof console !== 'undefined' && console.error) console.error('WorkLaw crashed:', error, info);
+  }
+  render(){
+    if (!this.state.hasError) return this.props.children;
+    const reloadOnly = () => { if (typeof window !== 'undefined') window.location.reload(); };
+    const clearAndReload = () => {
+      try { localStorage.removeItem(STORE_KEY); } catch(e) {}
+      if (typeof window !== 'undefined') window.location.reload();
+    };
+    return (
+      <div style={css("max-width:480px;margin:60px auto;padding:28px;font-family:'Atkinson Hyperlegible',sans-serif;color:#14181F")}>
+        <h1 style={css("font:700 22px 'Atkinson Hyperlegible',sans-serif;margin:0 0 12px")}>Something went wrong</h1>
+        <p style={css("font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;margin:0 0 16px")}>WorkLaw hit an unexpected error and can't display your case right now. This is usually caused by saved data that got corrupted. Your options:</p>
+        <div style={css("display:flex;flex-direction:column;gap:10px")}>
+          <button onClick={reloadOnly} style={css("min-height:44px;padding:14px 18px;border-radius:12px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Try reloading</button>
+          <button onClick={clearAndReload} style={css("min-height:44px;padding:14px 18px;border-radius:12px;border:2px solid #B3264F;background:#fff;color:#B3264F;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Clear my saved case &amp; start over</button>
+        </div>
+        <p style={css("font:400 13px/1.5 'Atkinson Hyperlegible',sans-serif;color:#4A5162;margin:16px 0 0")}>Clearing your case removes everything WorkLaw has saved on this device — your log entries, letters and chat — and returns you to onboarding. Everything WorkLaw stores lives only in this browser, so this is a local reset, not an account action.</p>
+      </div>
+    );
+  }
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<ErrorBoundary><App /></ErrorBoundary>);
 </script>
 </body>
 </html>
