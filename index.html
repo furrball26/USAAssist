@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-o7EpQsBKMWutBz2xnk70GN8q5aOjplvOMdA/xtQnHoA='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-eevXYqDc6bdUXQj7NsgVYNa+feAGw8TnsuwhO7vmU1E='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14181F">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232B3AA8'/%3E%3Ctext x='32' y='47' font-size='42' text-anchor='middle' fill='white' font-family='Georgia,serif'%3E%C2%A7%3C/text%3E%3C/svg%3E">
@@ -844,6 +844,7 @@ const REPLIES = [
   { text: "Not today. You have 21 days to consider it and 7 days to revoke after signing. Two clauses in your copy are worth negotiating \u2014 open Review a document to see them side by side.", cites: ["29 U.S.C. \xA7626(f)"] }
 ];
 const ADA_REPLY = { text: "Put it in writing, plainly: describe your limitation and what change would help \u2014 no legal terms required. Your employer must then start an interactive process with you. I can draft that request from a template and add it to your case file.", cites: ["42 U.S.C. \xA712112"] };
+const DISCRIMINATION_REPLY = { text: 'Discrimination is adverse treatment \u2014 not hired, denied a promotion, paid less, disciplined, or fired \u2014 because of a protected characteristic: race, color, sex (including pregnancy, sexual orientation, gender identity), religion, national origin, age 40+, or disability. Harassment is unwelcome conduct tied to one of those same characteristics that is severe or pervasive enough to create a hostile work environment, or a "quid pro quo" demand tied to a job benefit. Log the dates, what was said or done, who was involved, and any witnesses \u2014 that pattern is what these claims turn on. I can draft a complaint letter to HR from your case file.', cites: ["42 U.S.C. \xA72000e-2"] };
 const STORE_KEY = "worklaw.case.v2";
 function loadCase() {
   try {
@@ -1463,9 +1464,14 @@ function App() {
     const hasDocNoun = hasWord(/\b(severance|release|agreement|contract|offer|document|paperwork|pip|nda)\b/);
     const isSeverance = hasWord(/\bseverance\b/) || hasWord(/\brelease agreement\b/) || hasSignVerb && hasDocNoun;
     const isOvertime = hasWord(/\bovertime\b/) || hasWord(/\bunpaid\b/) || hasWord(/\boff[\s-]the[\s-]clock\b/) || hasWord(/\bwages?\b/);
+    const hasDiscHarassWord = hasWord(/\bdiscriminat\w*/) || hasWord(/\bharass\w*/) || hasWord(/\bhostile work(place| environment)?\b/) || hasWord(/\bquid pro quo\b/) || hasWord(/\bunwelcome (conduct|advances?|comments?|touching)\b/);
+    const hasProtectedClassWord = hasWord(/\b(race|racial|racist|gender|sexist|religio\w*|national origin|ethnicity|ethnic|pregnan\w*|sexual orientation|gender identity|protected class)\b/);
+    const hasAdverseTreatmentWord = hasWord(/\b(denied|passed over|not promoted|treated differently|paid less|demoted|disciplined|not hired|refused to hire|written up)\b/);
+    const isDiscrimination = hasDiscHarassWord || hasProtectedClassWord && hasAdverseTreatmentWord;
     const stFacts = stateData && stateData.facts || [];
     const retaliationFact = stateFactFor(stFacts, ["retaliation", "retaliation.whistleblower", "discrimination.retaliation"]);
     const adaFact = stateFactFor(stFacts, ["disability.accommodation", "disability.interactiveProcess"]);
+    const discFact = stateFactFor(stFacts, ["discrimination.coverage", "discrimination.protectedClasses"]);
     const stateNote = " Check your state's specific rule in Rights.";
     const retaliationReply = {
       text: REPLIES[1].text + (retaliationFact ? "" : stateNote),
@@ -1475,12 +1481,16 @@ function App() {
       text: ADA_REPLY.text + (adaFact ? "" : stateNote),
       cites: adaFact && adaFact.citation ? ["42 U.S.C. \xA712112", adaFact.citation] : ["42 U.S.C. \xA712112"]
     };
+    const discriminationReply = {
+      text: DISCRIMINATION_REPLY.text + (discFact ? "" : stateNote),
+      cites: discFact && discFact.citation ? ["42 U.S.C. \xA72000e-2", discFact.citation] : ["42 U.S.C. \xA72000e-2"]
+    };
     const repliesResolved = [REPLIES[0], retaliationReply, REPLIES[2]];
     const fallbackReply = {
       text: "I can only give sample answers on a few topics: unpaid overtime and wages, discrimination and harassment, termination and retaliation, and severance or documents you've been asked to sign. Try rephrasing toward one of those. For anything else, your state labor agency or a local attorney (see Agencies) is the best next step.",
       cites: []
     };
-    const matched = isAda ? adaReply : isRetaliation ? repliesResolved[1] : isSeverance ? repliesResolved[2] : isOvertime ? repliesResolved[0] : null;
+    const matched = isAda ? adaReply : isRetaliation ? repliesResolved[1] : isDiscrimination ? discriminationReply : isSeverance ? repliesResolved[2] : isOvertime ? repliesResolved[0] : null;
     setMessages((prev) => {
       const next = prev.concat([{ role: "user", text }]);
       clearTimeout(timer.current);

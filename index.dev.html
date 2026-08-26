@@ -466,6 +466,8 @@ const REPLIES = [
 ];
 // cites resolved per-user-state in send() from stateData facts — see adaReply.
 const ADA_REPLY = { text:'Put it in writing, plainly: describe your limitation and what change would help — no legal terms required. Your employer must then start an interactive process with you. I can draft that request from a template and add it to your case file.', cites:['42 U.S.C. §12112'] };
+// cites resolved per-user-state in send() from stateData facts — see discriminationReply.
+const DISCRIMINATION_REPLY = { text:'Discrimination is adverse treatment — not hired, denied a promotion, paid less, disciplined, or fired — because of a protected characteristic: race, color, sex (including pregnancy, sexual orientation, gender identity), religion, national origin, age 40+, or disability. Harassment is unwelcome conduct tied to one of those same characteristics that is severe or pervasive enough to create a hostile work environment, or a "quid pro quo" demand tied to a job benefit. Log the dates, what was said or done, who was involved, and any witnesses — that pattern is what these claims turn on. I can draft a complaint letter to HR from your case file.', cites:['42 U.S.C. §2000e-2'] };
 
 /* ── Dynamic case model ───────────────────────────────────────────── */
 
@@ -1183,11 +1185,27 @@ function App(){
     const hasDocNoun = hasWord(/\b(severance|release|agreement|contract|offer|document|paperwork|pip|nda)\b/);
     const isSeverance = hasWord(/\bseverance\b/) || hasWord(/\brelease agreement\b/) || (hasSignVerb && hasDocNoun);
     const isOvertime = hasWord(/\bovertime\b/) || hasWord(/\bunpaid\b/) || hasWord(/\boff[\s-]the[\s-]clock\b/) || hasWord(/\bwages?\b/);
+    // Discrimination/harassment — "discriminat*"/"harass*" and the standard legal
+    // terms of art (hostile work environment, quid pro quo, unwelcome conduct) are
+    // specific enough to fire on their own. A bare protected-characteristic word
+    // (race, religion, sex...) is NOT specific enough on its own — "my religion
+    // requires ..." or "we changed the sex-ed policy" are not discrimination
+    // questions — so those only route here paired with an adverse-treatment word
+    // (denied/passed over/not promoted/paid less/demoted/fired/disciplined/not
+    // hired), the same two-word-group pairing isSeverance uses above. This is
+    // deliberately checked BEFORE isSeverance/isOvertime (a "denied ... wages"
+    // fact pattern should still be free to also hit isOvertime) but AFTER isAda/
+    // isRetaliation so it never overrides those two more specific, existing routes.
+    const hasDiscHarassWord = hasWord(/\bdiscriminat\w*/) || hasWord(/\bharass\w*/) || hasWord(/\bhostile work(place| environment)?\b/) || hasWord(/\bquid pro quo\b/) || hasWord(/\bunwelcome (conduct|advances?|comments?|touching)\b/);
+    const hasProtectedClassWord = hasWord(/\b(race|racial|racist|gender|sexist|religio\w*|national origin|ethnicity|ethnic|pregnan\w*|sexual orientation|gender identity|protected class)\b/);
+    const hasAdverseTreatmentWord = hasWord(/\b(denied|passed over|not promoted|treated differently|paid less|demoted|disciplined|not hired|refused to hire|written up)\b/);
+    const isDiscrimination = hasDiscHarassWord || (hasProtectedClassWord && hasAdverseTreatmentWord);
     // Cite the caller's actual loaded state law, not a fixed persona's state — fall back to a
     // state-neutral pointer to Rights when no state-specific fact is on file for that topic.
     const stFacts = (stateData && stateData.facts) || [];
     const retaliationFact = stateFactFor(stFacts, ['retaliation', 'retaliation.whistleblower', 'discrimination.retaliation']);
     const adaFact = stateFactFor(stFacts, ['disability.accommodation', 'disability.interactiveProcess']);
+    const discFact = stateFactFor(stFacts, ['discrimination.coverage', 'discrimination.protectedClasses']);
     const stateNote = " Check your state's specific rule in Rights.";
     const retaliationReply = {
       text: REPLIES[1].text + (retaliationFact ? '' : stateNote),
@@ -1197,6 +1215,10 @@ function App(){
       text: ADA_REPLY.text + (adaFact ? '' : stateNote),
       cites: adaFact && adaFact.citation ? ['42 U.S.C. §12112', adaFact.citation] : ['42 U.S.C. §12112']
     };
+    const discriminationReply = {
+      text: DISCRIMINATION_REPLY.text + (discFact ? '' : stateNote),
+      cites: discFact && discFact.citation ? ['42 U.S.C. §2000e-2', discFact.citation] : ['42 U.S.C. §2000e-2']
+    };
     const repliesResolved = [REPLIES[0], retaliationReply, REPLIES[2]];
     // Topic-neutral fallback for questions that match none of the known topics.
     // Never attach a statutory citation to an answer we didn't actually match —
@@ -1205,7 +1227,7 @@ function App(){
       text: "I can only give sample answers on a few topics: unpaid overtime and wages, discrimination and harassment, termination and retaliation, and severance or documents you've been asked to sign. Try rephrasing toward one of those. For anything else, your state labor agency or a local attorney (see Agencies) is the best next step.",
       cites: []
     };
-    const matched = isAda ? adaReply : isRetaliation ? repliesResolved[1] : isSeverance ? repliesResolved[2] : isOvertime ? repliesResolved[0] : null;
+    const matched = isAda ? adaReply : isRetaliation ? repliesResolved[1] : isDiscrimination ? discriminationReply : isSeverance ? repliesResolved[2] : isOvertime ? repliesResolved[0] : null;
     setMessages(prev => {
       const next = prev.concat([{ role:'user', text }]);
       clearTimeout(timer.current);
