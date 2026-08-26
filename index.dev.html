@@ -1787,6 +1787,7 @@ function App(){
             {cur.opts.map(([label, next, tag]) =>
               <button key={label} className="hoverfx" onClick={() => { setWizNode(next); setWizPath(p => p.concat([tag])); }} style={css("text-align:left;padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff;font:700 18px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer")}>{label}</button>
             )}
+            <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>This is a plain-language reading of published rules, not legal advice about your specific job.</p>
           </div>
         }
         {wizDone &&
@@ -1917,6 +1918,7 @@ function App(){
     <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
       <h1 style={css("margin:0;font:700 26px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Incident log</h1>
       <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Contemporaneous notes carry real weight. Each entry is timestamped and kept on your device.</p>
+      <p style={css("margin:0;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>This log is legal information, not legal advice — keep entries factual and talk to an attorney about how to use them.</p>
       {/* G6 (docs/flsa-process-gap.md) — the hour log was framed only as feeding the
           letter's dollar figure; it is also evidence in its own right. Your employer is
           legally required to keep accurate time/pay records (29 U.S.C. § 211(c); 29
@@ -2037,6 +2039,7 @@ function App(){
       <div style={css("padding:14px 16px;border-radius:12px;background:#FFF4D6;border:2px solid #14181F")}>
         <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}><strong>Uploaded files are not read</strong> — the picker below only notes the file name. <strong>Pasted text IS scanned</strong>, entirely on your device, for a short list of common clause keywords (release, non-disparagement, non-compete, arbitration, confidentiality, revocation period). This is a basic keyword match, not a legal opinion — it can miss real issues and flag benign text. Bring your actual document to an attorney before signing.</p>
       </div>
+      <p style={css("margin:0;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>This is legal information, not legal advice, and it is not a review of your standing to bring a claim — only an attorney can tell you that.</p>
       <label style={css("display:flex;flex-direction:column;gap:8px;padding:16px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF;cursor:pointer;text-align:center")}>
         <span style={css("font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{docName ? 'Noted: ' + docName + ' (file contents not read)' : 'Note a file name (optional)'}</span>
         <span style={css("font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>Offer, contract, NDA, severance or PIP · your file stays on your device</span>
@@ -2149,6 +2152,7 @@ function App(){
         <p style={css("margin:0 0 8px;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{evidenceCount === 0 ? 'This updates as you add entries to your incident log.' : 'Based on ' + evidenceCount + ' logged ' + (evidenceCount === 1 ? 'item' : 'items') + '. Add more to strengthen the thin areas below.'}</p>
         <p style={css("margin:0;font:400 13px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>This measures how well-documented your case is — not the merits or your odds of winning. Only an attorney can assess that.</p>
       </div>
+      <p style={css("margin:0;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>This is legal information, not legal advice.</p>
       <div style={css("display:flex;flex-direction:column;gap:12px")}>
         {strength.factors.map((f, i) =>
           <div key={i} style={css("padding:16px;border-radius:14px;border:2px solid #14181F;background:#fff")}>
@@ -2320,6 +2324,7 @@ function App(){
       <div style={css("padding:16px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F")}>
         <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>You may also want to consult an employment attorney licensed in {stateLabel}. WorkLaw does not operate a referral service or recommend specific firms — your state or local bar association's lawyer-referral service is a reliable place to start.</p>
       </div>
+      <p style={css("margin:0;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>This is legal information, not legal advice.</p>
     </div>
   );
 
