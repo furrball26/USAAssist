@@ -2035,7 +2035,7 @@ function App(){
       <label style={css("display:flex;flex-direction:column;gap:8px;padding:16px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF;cursor:pointer;text-align:center")}>
         <span style={css("font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{docName ? 'Noted: ' + docName + ' (file contents not read)' : 'Note a file name (optional)'}</span>
         <span style={css("font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>Offer, contract, NDA, severance or PIP · your file stays on your device</span>
-        <input type="file" accept=".pdf,.doc,.docx,.txt,.rtf" onChange={e => setDocName(e.target.files && e.target.files[0] ? e.target.files[0].name : '')} style={css("display:none")} />
+        <input type="file" accept=".pdf,.doc,.docx,.txt,.rtf" onChange={e => setDocName(e.target.files && e.target.files[0] ? e.target.files[0].name : '')} style={css("font:400 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
       </label>
       {docName &&
         <button onClick={() => setDocName('')} style={css("align-self:flex-start;min-height:44px;padding:10px 14px;border-radius:10px;border:2px solid #B3264F;background:#fff;color:#B3264F;font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Remove file name</button>
