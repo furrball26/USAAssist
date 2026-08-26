@@ -1236,15 +1236,26 @@ function App(){
     const hasWord = (re) => re.test(lower);
     const isAda = hasWord(/\baccommodat\w*/) || hasWord(/\bada\b/) || hasWord(/\bdisab\w*/);
     const isRetaliation = hasWord(/\bretaliat\w*/) || hasWord(/\bfired\b/) || hasWord(/\bterminat\w*/) || hasWord(/\bpushed out\b/) || hasWord(/\blet go\b/);
-    // "sign" alone is far too broad ("sign the timesheet") and must never fire on
-    // "signature"/"assign"/"design"/"resign" (the \b already excludes those — none
-    // of them start a new word at "sign"). Beyond that, require an explicit signing
-    // verb together with a document-ish noun (either order) before treating a
-    // message as being about a severance/release document, not just any signature.
-    const hasSignVerb = hasWord(/\bsign(?:ing|ed)?\b/);
-    const hasDocNoun = hasWord(/\b(severance|release|agreement|contract|offer|document|paperwork|pip|nda)\b/);
-    const isSeverance = hasWord(/\bseverance\b/) || hasWord(/\brelease agreement\b/) || (hasSignVerb && hasDocNoun);
-    const isOvertime = hasWord(/\bovertime\b/) || hasWord(/\bunpaid\b/) || hasWord(/\boff[\s-]the[\s-]clock\b/) || hasWord(/\bwages?\b/);
+    // Only route to the severance/OWBPA reply (21 days to consider, 7 to revoke —
+    // specific to a severance/release-of-claims document, 29 U.S.C. §626(f)) for a
+    // message that's actually about ONE of those documents. The previous check
+    // fired on ANY "sign + document noun" pairing — "Should I sign this NDA?", "Can
+    // I sign the offer letter?", "should I sign a new contract?" — and gave every
+    // one of them the OWBPA-specific 21/7-day answer, which is simply wrong outside
+    // an age-discrimination severance/release context. "sign" alone is separately
+    // still far too broad ("sign the timesheet") to use as a signal on its own.
+    const isSeverance = hasWord(/\bseverance\b/) || hasWord(/\b(release|separation) agreement\b/) || hasWord(/\brelease of claims\b/);
+    // A message about whether wage-and-hour law even COVERS the person (1099 /
+    // independent-contractor / misclassification questions) is a different, prior
+    // question from "was I paid correctly for hours I worked" — routing it to the
+    // overtime reply (which presupposes employee status) answers a question the
+    // user didn't ask, with a citation that reads as authoritative and is not
+    // responsive. This app has no dedicated classification content yet (tracked
+    // separately), so the honest behavior is the topic-neutral fallback, not a
+    // confident wrong answer.
+    const isClassificationQuestion = hasWord(/\b(1099|independent contractor|misclassif\w*|self-employed|gig work\w*|freelanc\w*)\b/)
+      && (hasWord(/\bcovered\b/) || hasWord(/\bw-?2\b/) || hasWord(/\bemployee\b/));
+    const isOvertime = !isClassificationQuestion && (hasWord(/\bovertime\b/) || hasWord(/\bunpaid\b/) || hasWord(/\boff[\s-]the[\s-]clock\b/) || hasWord(/\bwages?\b/));
     // Discrimination/harassment — "discriminat*"/"harass*" and the standard legal
     // terms of art (hostile work environment, quid pro quo, unwelcome conduct) are
     // specific enough to fire on their own. A bare protected-characteristic word

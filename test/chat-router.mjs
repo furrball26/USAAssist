@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 /*
- * Chat keyword-router false-positive regression test (F3).
+ * Chat keyword-router false-positive regression test (F3, and the Aug 2026
+ * automated-review Critical finding: the router's keyword matching was broad
+ * enough to give confidently wrong, citation-backed answers to two real classes
+ * of question).
  *
  * The chat's keyword router must match on word boundaries / real intent, not bare
  * substrings — "Where do I sign the timesheet?" must NOT route to the severance/
@@ -8,7 +11,13 @@
  * breakroom?" must NOT route to the termination/retaliation reply just because it
  * contains "terminat", and an unmatched question must NEVER carry a statutory
  * §-citation (the code's own rule — a citation on an unmatched reply reads as
- * authoritative for a question the app never actually understood).
+ * authoritative for a question the app never actually understood). Two more
+ * specific regressions: "sign + any document noun" (NDA, offer letter, a plain
+ * contract) must NOT get the severance/OWBPA 21/7-day reply — that reply is
+ * specific to a severance or release-of-claims document, not any document a
+ * person might sign — and a 1099/independent-contractor coverage question must
+ * NOT get the overtime reply, which presupposes employee status and never
+ * addresses the actual question asked.
  * Run: node test/chat-router.mjs
  */
 import { createServer } from 'node:http';
@@ -41,6 +50,16 @@ const CASES = [
   { q:'Should I resign from the safety committee?', expectFallback:true },
   { q:'Can I exterminate the pests in the breakroom?', expectFallback:true },
   { q:"What's a good adapter for my laptop charger?", expectFallback:true },
+  // "sign + document noun" that is NOT a severance/release document must NOT get
+  // the OWBPA 21/7-day reply — that reply is specific to severance/release-of-
+  // claims agreements, not any document a person might sign.
+  { q:'Should I sign this NDA?', expectFallback:true },
+  { q:'Can I sign the offer letter today?', expectFallback:true },
+  { q:'My manager wants me to sign a new contract, should I?', expectFallback:true },
+  // A 1099/independent-contractor coverage question must NOT get the overtime
+  // reply — that reply presupposes employee status and doesn't address whether
+  // wage-and-hour law covers the person at all.
+  { q:'I drive for a delivery app and got a 1099, not a W-2. Am I covered by wage and hour law or am I an independent contractor?', expectFallback:true },
   // Real intent must still match.
   { q:'Should I sign this severance agreement?', expectSnippet:'21 days', expectCite:'29 U.S.C. §626(f)' },
   { q:'I was fired for reporting safety issues, is that retaliation?', expectSnippet:'Retaliation means' },

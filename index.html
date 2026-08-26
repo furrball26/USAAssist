@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-8Q88Fnztnh4ndpGAGfHQ9NHiYGnEzQutGnJZ8ba8jqI='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-0Grn5xY2IYv02UggqBOLTRKA1GvVhZB+2m8nSaVm1oY='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14181F">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232B3AA8'/%3E%3Ctext x='32' y='47' font-size='42' text-anchor='middle' fill='white' font-family='Georgia,serif'%3E%C2%A7%3C/text%3E%3C/svg%3E">
@@ -1505,10 +1505,9 @@ function App() {
     const hasWord = (re) => re.test(lower);
     const isAda = hasWord(/\baccommodat\w*/) || hasWord(/\bada\b/) || hasWord(/\bdisab\w*/);
     const isRetaliation = hasWord(/\bretaliat\w*/) || hasWord(/\bfired\b/) || hasWord(/\bterminat\w*/) || hasWord(/\bpushed out\b/) || hasWord(/\blet go\b/);
-    const hasSignVerb = hasWord(/\bsign(?:ing|ed)?\b/);
-    const hasDocNoun = hasWord(/\b(severance|release|agreement|contract|offer|document|paperwork|pip|nda)\b/);
-    const isSeverance = hasWord(/\bseverance\b/) || hasWord(/\brelease agreement\b/) || hasSignVerb && hasDocNoun;
-    const isOvertime = hasWord(/\bovertime\b/) || hasWord(/\bunpaid\b/) || hasWord(/\boff[\s-]the[\s-]clock\b/) || hasWord(/\bwages?\b/);
+    const isSeverance = hasWord(/\bseverance\b/) || hasWord(/\b(release|separation) agreement\b/) || hasWord(/\brelease of claims\b/);
+    const isClassificationQuestion = hasWord(/\b(1099|independent contractor|misclassif\w*|self-employed|gig work\w*|freelanc\w*)\b/) && (hasWord(/\bcovered\b/) || hasWord(/\bw-?2\b/) || hasWord(/\bemployee\b/));
+    const isOvertime = !isClassificationQuestion && (hasWord(/\bovertime\b/) || hasWord(/\bunpaid\b/) || hasWord(/\boff[\s-]the[\s-]clock\b/) || hasWord(/\bwages?\b/));
     const hasDiscHarassWord = hasWord(/\bdiscriminat\w*/) || hasWord(/\bharass\w*/) || hasWord(/\bhostile work(place| environment)?\b/) || hasWord(/\bquid pro quo\b/) || hasWord(/\bunwelcome (conduct|advances?|comments?|touching)\b/);
     const hasProtectedClassWord = hasWord(/\b(race|racial|racist|gender|sexist|religio\w*|national origin|ethnicity|ethnic|pregnan\w*|sexual orientation|gender identity|protected class)\b/);
     const hasAdverseTreatmentWord = hasWord(/\b(denied|passed over|not promoted|treated differently|paid less|demoted|disciplined|not hired|refused to hire|written up)\b/);
