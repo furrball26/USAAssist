@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-eevXYqDc6bdUXQj7NsgVYNa+feAGw8TnsuwhO7vmU1E='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-8Q88Fnztnh4ndpGAGfHQ9NHiYGnEzQutGnJZ8ba8jqI='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14181F">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232B3AA8'/%3E%3Ctext x='32' y='47' font-size='42' text-anchor='middle' fill='white' font-family='Georgia,serif'%3E%C2%A7%3C/text%3E%3C/svg%3E">
@@ -894,18 +894,51 @@ function weekStartKey(iso) {
 }
 function computeOwedBreakdown(entries, rateNum) {
   const withHours = (entries || []).filter((e) => Number(e.hours) > 0);
-  let unpaidHrs = 0, straightHrs = 0;
-  const weeks = /* @__PURE__ */ new Set();
+  const byWeek = /* @__PURE__ */ new Map();
   withHours.forEach((e) => {
     const h = Number(e.hours) || 0;
-    if (e.payStatus === "straight") straightHrs += h;
-    else unpaidHrs += h;
-    const wk = weekStartKey(e.iso);
-    if (wk) weeks.add(wk);
+    const wk = weekStartKey(e.iso) || "__undated__";
+    const rec = byWeek.get(wk) || { unpaid: 0, straight: 0 };
+    if (e.payStatus === "straight") rec.straight += h;
+    else rec.unpaid += h;
+    byWeek.set(wk, rec);
   });
-  const totalHours = unpaidHrs + straightHrs;
-  const owedEstimate = rateNum > 0 ? unpaidHrs * rateNum * 1.5 + straightHrs * rateNum * 0.5 : 0;
-  return { totalHours, unpaidHrs, straightHrs, owedEstimate, weekCount: weeks.size || (totalHours > 0 ? 1 : 0) };
+  const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
+  let unpaidRegHrs = 0, unpaidOtHrs = 0, straightRegHrs = 0, straightOtHrs = 0;
+  byWeek.forEach((rec) => {
+    const weekTotal = rec.unpaid + rec.straight;
+    if (weekTotal <= 0) return;
+    const otHrs = Math.max(0, weekTotal - 40);
+    const regHrs = weekTotal - otHrs;
+    const unpaidShare = rec.unpaid / weekTotal;
+    unpaidOtHrs += otHrs * unpaidShare;
+    unpaidRegHrs += regHrs * unpaidShare;
+    straightOtHrs += otHrs * (1 - unpaidShare);
+    straightRegHrs += regHrs * (1 - unpaidShare);
+  });
+  unpaidRegHrs = round2(unpaidRegHrs);
+  unpaidOtHrs = round2(unpaidOtHrs);
+  straightRegHrs = round2(straightRegHrs);
+  straightOtHrs = round2(straightOtHrs);
+  const unpaidHrs = round2(unpaidRegHrs + unpaidOtHrs);
+  const straightHrs = round2(straightRegHrs + straightOtHrs);
+  const otHours = round2(unpaidOtHrs + straightOtHrs);
+  const regHours = round2(unpaidRegHrs + straightRegHrs);
+  const totalHours = round2(unpaidHrs + straightHrs);
+  const owedEstimate = rateNum > 0 ? round2(unpaidRegHrs * rateNum * 1 + unpaidOtHrs * rateNum * 1.5 + straightOtHrs * rateNum * 0.5) : 0;
+  return {
+    totalHours,
+    unpaidHrs,
+    straightHrs,
+    otHours,
+    regHours,
+    unpaidRegHrs,
+    unpaidOtHrs,
+    straightRegHrs,
+    straightOtHrs,
+    owedEstimate,
+    weekCount: byWeek.size || (totalHours > 0 ? 1 : 0)
+  };
 }
 function dateInputValue(d) {
   d = d || /* @__PURE__ */ new Date();
@@ -1125,25 +1158,37 @@ function buildLetter(ctx) {
   }
   if (kind === "wage-demand") {
     const fedCite = cite(fed, "overtime.basicRule", "29 U.S.C. \xA7 207");
+    const mwCite = cite(fed, "minimumWage.hourly", "29 U.S.C. \xA7 206(a)(1)");
     const stOTFacts = factsByPrefix(st, "overtime");
     const stOT = stOTFacts.find((f) => f.topic === "overtime.daily") || stOTFacts[0];
-    const stClause = stOT && stOT.citation && stateAddsRealOvertimeProtection(stOTFacts) ? " " + ctx.stateSel + " law (" + stOT.citation + ") provides additional overtime protection that may increase what I am owed." : "";
+    const hasRealStateOT = !!(stOT && stOT.citation && stateAddsRealOvertimeProtection(stOTFacts));
+    const stClause = hasRealStateOT ? " " + ctx.stateSel + " law (" + stOT.citation + ") provides additional overtime protection that may increase what I am owed." : "";
     const bd = computeOwedBreakdown(ctx.entries, ctx.rateNum);
-    const hrs = bd.totalHours > 0 ? bd.totalHours : ctx.unpaidHours > 0 ? ctx.unpaidHours : "[number]";
+    const hasHours = bd.totalHours > 0 || ctx.unpaidHours > 0;
     const weekPhrase = bd.weekCount > 1 ? "across " + bd.weekCount + " separate workweeks" : "in a workweek";
-    const breakdownParts = [];
-    if (bd.unpaidHrs > 0) breakdownParts.push(bd.unpaidHrs + " hours paid nothing");
-    if (bd.straightHrs > 0) breakdownParts.push(bd.straightHrs + " hours paid straight-time only, without the overtime premium");
-    const breakdownLine = breakdownParts.length ? " Of that, " + breakdownParts.join(" and ") + "." : "";
-    const rateNote = bd.straightHrs > 0 && bd.unpaidHrs > 0 ? " (one-and-one-half times my regular rate for hours I was paid nothing for, plus the one-half-time differential owed on hours already paid straight-time)" : bd.straightHrs > 0 && bd.unpaidHrs === 0 ? " (the one-half-time overtime differential owed on hours already paid straight-time)" : " (at one-and-one-half times my regular rate)";
+    const claimParts = [];
+    if (bd.unpaidOtHrs > 0) claimParts.push(bd.unpaidOtHrs + " hours worked beyond 40 hours " + weekPhrase + " that were paid nothing");
+    if (bd.straightOtHrs > 0) claimParts.push(bd.straightOtHrs + " hours worked beyond 40 hours " + weekPhrase + " that were paid only my straight-time rate, without the required overtime premium");
+    if (bd.unpaidRegHrs > 0) claimParts.push(bd.unpaidRegHrs + " hours of straight-time work" + (bd.weekCount > 1 ? " across " + bd.weekCount + " separate workweeks" : "") + " that were paid nothing at all");
+    const claimLine = claimParts.length ? "My records show " + claimParts.join(", and ") + "." : hasHours ? "My records show " + (bd.totalHours || ctx.unpaidHours) + " hours worked that were not paid at the rate required by law." : "My records show [number] hours worked that were not paid at the rate required by law.";
     const salaryNote = ctx.payType === "Salary" && ctx.rateNum > 0 ? " (an hourly-equivalent of my salary, assuming a standard 40-hour workweek)" : "";
-    const amountLine = bd.owedEstimate > 0 ? "Based on my regular rate of " + money(ctx.rateNum) + " per hour" + salaryNote + ", the overtime pay owed for these hours" + rateNote + " totals approximately " + money(bd.owedEstimate) + "." : "I request payment for these hours at the overtime rate required by law.";
+    const compositionParts = [];
+    if (bd.unpaidRegHrs > 0) compositionParts.push(bd.unpaidRegHrs + " hours at my regular rate");
+    if (bd.unpaidOtHrs > 0) compositionParts.push(bd.unpaidOtHrs + " hours at one-and-one-half times my regular rate");
+    if (bd.straightOtHrs > 0) compositionParts.push(bd.straightOtHrs + " hours at one-half times my regular rate, the overtime premium owed on hours already paid straight-time");
+    const owedKind = bd.otHours > 0 && bd.unpaidRegHrs > 0 ? "wages and overtime pay" : bd.otHours > 0 ? "overtime pay" : "wages";
+    const amountLine = bd.owedEstimate > 0 ? "Based on my regular rate of " + money(ctx.rateNum) + " per hour" + salaryNote + ", the " + owedKind + " owed \u2014 " + compositionParts.join("; ") + " \u2014 totals approximately " + money(bd.owedEstimate) + "." : "I request payment for these hours at the rate required by law.";
+    const legalBasisParts = [];
+    if (bd.otHours > 0) legalBasisParts.push("Under the federal Fair Labor Standards Act (" + fedCite + "), hours worked beyond 40 in a workweek must be paid at one-and-one-half times my regular rate of pay, less any straight-time amount already paid for them." + stClause);
+    else if (hasRealStateOT) legalBasisParts.push(ctx.stateSel + " law (" + stOT.citation + ") provides additional overtime protection for hours worked beyond a daily threshold \u2014 separate from, and potentially owed even without reaching, the federal 40-hour weekly threshold \u2014 that may increase what I am owed.");
+    if (bd.unpaidRegHrs > 0) legalBasisParts.push("The FLSA (" + mwCite + ") also requires that I be paid for all hours worked at my regular rate, whether or not they reach the overtime threshold in a given workweek.");
+    const legalBasisLine = legalBasisParts.length ? legalBasisParts.join(" ") : "Under the federal Fair Labor Standards Act (" + fedCite + "), I must be paid at least my regular rate for all hours worked." + stClause;
     const liqCite = cite(fed, "remedies.liquidatedDamages", "29 U.S.C. \xA7 216(b)");
     const liqLine = " Please note that a private lawsuit under the FLSA (" + liqCite + ") can recover these wages plus an equal amount in liquidated damages, plus attorney's fees and costs \u2014 I would prefer to resolve this directly with you first.";
     const retalCite = cite(fed, "retaliation.flsa", "29 U.S.C. \xA7 215(a)(3)");
     const retalLine = " Federal law (" + retalCite + ") prohibits retaliation against me for making this request.";
-    const subject2 = "Demand for unpaid overtime wages";
-    const body2 = date + "\n\n" + emp + "\nAttn: Payroll / Human Resources\n\nRe: " + subject2 + "\n\nTo whom it may concern:\n\nI am writing to request payment of overtime wages I earned and was not paid correctly. My records show " + hrs + " hours worked beyond 40 hours " + weekPhrase + " that were not paid at the required overtime rate." + breakdownLine + "\n\nUnder the federal Fair Labor Standards Act (" + fedCite + "), these hours must be paid at one-and-one-half times my regular rate of pay, less any straight-time amount already paid for them." + stClause + "\n\n" + amountLine + " I request payment within 14 days of the date of this letter." + liqLine + retalLine + " Please contact me to arrange payment.\n\nSincerely,\n" + name;
+    const subject2 = bd.otHours > 0 ? "Demand for unpaid overtime wages" : "Demand for unpaid wages";
+    const body2 = date + "\n\n" + emp + "\nAttn: Payroll / Human Resources\n\nRe: " + subject2 + "\n\nTo whom it may concern:\n\nI am writing to request payment of wages I earned and was not paid correctly. " + claimLine + "\n\n" + legalBasisLine + "\n\n" + amountLine + " I request payment within 14 days of the date of this letter." + liqLine + retalLine + " Please contact me to arrange payment.\n\nSincerely,\n" + name;
     return { title: "Wage demand letter", subject: subject2, body: body2 };
   }
   if (kind === "complaint") {

@@ -527,25 +527,58 @@ function weekStartKey(iso){
   sun.setDate(d.getDate() - d.getDay());
   return sun.toISOString().slice(0, 10);
 }
-// Turn logged hours entries into an owed-amount estimate that distinguishes hours
-// paid $0 (owed the full 1.5x overtime rate) from hours already paid straight-time
-// but denied the overtime premium (owed only the 0.5x differential) — a ~3x
-// overstatement if every entry is assumed unpaid — and reports how many distinct
-// workweeks the hours span, since a multi-week log is not ">40 hours in a
-// workweek" the way a single-week log is.
+// Turn logged hours entries into an owed-amount estimate. FLSA overtime (29 U.S.C.
+// § 207) is a PER-WORKWEEK threshold: only hours actually worked beyond 40 in a
+// given workweek are overtime. Entries are grouped by workweek (weekStartKey) and,
+// within each week, split into a "regular" portion (up to 40 hrs) and an
+// "overtime" portion (anything past 40) — a week with 5 logged hours has zero
+// overtime hours, no matter how many other weeks are in the log. Within a week,
+// hours paid $0 vs already paid straight-time are apportioned proportionally
+// across that week's regular/overtime split (the log doesn't record which specific
+// hour of the week was the 41st, so this is a reasonable estimate, not a precise
+// reconstruction). Owed amounts:
+//   - unpaid regular hours: the full straight-time rate (1x) — never paid at all
+//   - unpaid overtime hours: the full overtime rate (1.5x)
+//   - straight-paid regular hours: $0 — correctly paid, no overtime threshold crossed
+//   - straight-paid overtime hours: only the 0.5x premium differential still owed
 function computeOwedBreakdown(entries, rateNum){
   const withHours = (entries || []).filter(e => Number(e.hours) > 0);
-  let unpaidHrs = 0, straightHrs = 0;
-  const weeks = new Set();
+  const byWeek = new Map(); // weekKey -> { unpaid, straight }
   withHours.forEach(e => {
     const h = Number(e.hours) || 0;
-    if (e.payStatus === 'straight') straightHrs += h; else unpaidHrs += h;
-    const wk = weekStartKey(e.iso);
-    if (wk) weeks.add(wk);
+    const wk = weekStartKey(e.iso) || '__undated__';
+    const rec = byWeek.get(wk) || { unpaid: 0, straight: 0 };
+    if (e.payStatus === 'straight') rec.straight += h; else rec.unpaid += h;
+    byWeek.set(wk, rec);
   });
-  const totalHours = unpaidHrs + straightHrs;
-  const owedEstimate = rateNum > 0 ? (unpaidHrs * rateNum * 1.5) + (straightHrs * rateNum * 0.5) : 0;
-  return { totalHours, unpaidHrs, straightHrs, owedEstimate, weekCount: weeks.size || (totalHours > 0 ? 1 : 0) };
+  const round2 = n => Math.round((n + Number.EPSILON) * 100) / 100;
+  let unpaidRegHrs = 0, unpaidOtHrs = 0, straightRegHrs = 0, straightOtHrs = 0;
+  byWeek.forEach(rec => {
+    const weekTotal = rec.unpaid + rec.straight;
+    if (weekTotal <= 0) return;
+    const otHrs = Math.max(0, weekTotal - 40);
+    const regHrs = weekTotal - otHrs;
+    const unpaidShare = rec.unpaid / weekTotal;
+    unpaidOtHrs += otHrs * unpaidShare;
+    unpaidRegHrs += regHrs * unpaidShare;
+    straightOtHrs += otHrs * (1 - unpaidShare);
+    straightRegHrs += regHrs * (1 - unpaidShare);
+  });
+  unpaidRegHrs = round2(unpaidRegHrs); unpaidOtHrs = round2(unpaidOtHrs);
+  straightRegHrs = round2(straightRegHrs); straightOtHrs = round2(straightOtHrs);
+  const unpaidHrs = round2(unpaidRegHrs + unpaidOtHrs);
+  const straightHrs = round2(straightRegHrs + straightOtHrs);
+  const otHours = round2(unpaidOtHrs + straightOtHrs);
+  const regHours = round2(unpaidRegHrs + straightRegHrs);
+  const totalHours = round2(unpaidHrs + straightHrs);
+  const owedEstimate = rateNum > 0
+    ? round2((unpaidRegHrs * rateNum * 1.0) + (unpaidOtHrs * rateNum * 1.5) + (straightOtHrs * rateNum * 0.5))
+    : 0;
+  return {
+    totalHours, unpaidHrs, straightHrs, otHours, regHours,
+    unpaidRegHrs, unpaidOtHrs, straightRegHrs, straightOtHrs,
+    owedEstimate, weekCount: byWeek.size || (totalHours > 0 ? 1 : 0)
+  };
 }
 // The date-input (<input type="date">) value for a JS Date, in the browser's LOCAL
 // calendar day — not toISOString().slice(0,10), which is UTC and can land on the
@@ -780,27 +813,39 @@ function buildLetter(ctx){
 
   if (kind === 'wage-demand') {
     const fedCite = cite(fed, 'overtime.basicRule', '29 U.S.C. § 207');
+    // FLSA's basic pay requirement (used for hours that never crossed the 40-hr/
+    // workweek overtime threshold — those are unpaid straight-time wages, not an
+    // overtime violation, and citing § 207 for them would misstate the claim).
+    const mwCite = cite(fed, 'minimumWage.hourly', '29 U.S.C. § 206(a)(1)');
     const stOTFacts = factsByPrefix(st, 'overtime');
     const stOT = stOTFacts.find(f => f.topic === 'overtime.daily') || stOTFacts[0];
-    const stClause = (stOT && stOT.citation && stateAddsRealOvertimeProtection(stOTFacts))
+    // A real state daily-hours overtime trigger (CA/AK's 8-hr/day, CO's 12-hr/day,
+    // NV's 24-hour-period rule, etc.) is independent of the FEDERAL 40-hr/WEEK
+    // threshold below — it can apply even in a workweek that never reached 40
+    // hours, so it must not be gated on bd.otHours.
+    const hasRealStateOT = !!(stOT && stOT.citation && stateAddsRealOvertimeProtection(stOTFacts));
+    const stClause = hasRealStateOT
       ? ' ' + ctx.stateSel + ' law (' + stOT.citation + ') provides additional overtime protection that may increase what I am owed.'
       : '';
-    // Distinguish hours paid $0 (owed the full 1.5x rate) from hours already paid
-    // straight-time but denied the overtime premium (owed only the 0.5x
-    // differential — the 1.5x figure overstates that portion by 3x), and group by
-    // workweek so a multi-week log isn't described as ">40 hrs in a workweek".
+    // FLSA overtime is a PER-WORKWEEK threshold — computeOwedBreakdown only counts
+    // hours actually over 40 in their own workweek as overtime (otHours); hours
+    // that never crossed 40 that week are unpaid straight-time wages (unpaidRegHrs),
+    // not overtime, and must not be described or priced as if they were.
     const bd = computeOwedBreakdown(ctx.entries, ctx.rateNum);
-    const hrs = bd.totalHours > 0 ? bd.totalHours : (ctx.unpaidHours > 0 ? ctx.unpaidHours : '[number]');
+    const hasHours = bd.totalHours > 0 || ctx.unpaidHours > 0;
     const weekPhrase = bd.weekCount > 1 ? 'across ' + bd.weekCount + ' separate workweeks' : 'in a workweek';
-    const breakdownParts = [];
-    if (bd.unpaidHrs > 0) breakdownParts.push(bd.unpaidHrs + ' hours paid nothing');
-    if (bd.straightHrs > 0) breakdownParts.push(bd.straightHrs + ' hours paid straight-time only, without the overtime premium');
-    const breakdownLine = breakdownParts.length ? ' Of that, ' + breakdownParts.join(' and ') + '.' : '';
-    const rateNote = bd.straightHrs > 0 && bd.unpaidHrs > 0
-      ? ' (one-and-one-half times my regular rate for hours I was paid nothing for, plus the one-half-time differential owed on hours already paid straight-time)'
-      : bd.straightHrs > 0 && bd.unpaidHrs === 0
-      ? ' (the one-half-time overtime differential owed on hours already paid straight-time)'
-      : ' (at one-and-one-half times my regular rate)';
+    // Describe each priced component separately so the letter never claims "beyond
+    // 40 hours" for hours that weren't, and never applies the 1.5x/0.5x overtime
+    // multipliers to hours that didn't earn them.
+    const claimParts = [];
+    if (bd.unpaidOtHrs > 0) claimParts.push(bd.unpaidOtHrs + ' hours worked beyond 40 hours ' + weekPhrase + ' that were paid nothing');
+    if (bd.straightOtHrs > 0) claimParts.push(bd.straightOtHrs + ' hours worked beyond 40 hours ' + weekPhrase + ' that were paid only my straight-time rate, without the required overtime premium');
+    if (bd.unpaidRegHrs > 0) claimParts.push(bd.unpaidRegHrs + ' hours of straight-time work' + (bd.weekCount > 1 ? ' across ' + bd.weekCount + ' separate workweeks' : '') + ' that were paid nothing at all');
+    const claimLine = claimParts.length
+      ? 'My records show ' + claimParts.join(', and ') + '.'
+      : hasHours
+      ? 'My records show ' + (bd.totalHours || ctx.unpaidHours) + ' hours worked that were not paid at the rate required by law.'
+      : 'My records show [number] hours worked that were not paid at the rate required by law.';
     // A salaried worker's "regular rate" here is an hourly-equivalent derived from
     // their stated annual salary (see hourlyEquivFromSalary) — say so, since it's
     // an assumption (a standard 40-hour workweek, 29 C.F.R. § 778.113), not a
@@ -808,9 +853,24 @@ function buildLetter(ctx){
     const salaryNote = ctx.payType === 'Salary' && ctx.rateNum > 0
       ? ' (an hourly-equivalent of my salary, assuming a standard 40-hour workweek)'
       : '';
+    const compositionParts = [];
+    if (bd.unpaidRegHrs > 0) compositionParts.push(bd.unpaidRegHrs + ' hours at my regular rate');
+    if (bd.unpaidOtHrs > 0) compositionParts.push(bd.unpaidOtHrs + ' hours at one-and-one-half times my regular rate');
+    if (bd.straightOtHrs > 0) compositionParts.push(bd.straightOtHrs + ' hours at one-half times my regular rate, the overtime premium owed on hours already paid straight-time');
+    const owedKind = bd.otHours > 0 && bd.unpaidRegHrs > 0 ? 'wages and overtime pay' : bd.otHours > 0 ? 'overtime pay' : 'wages';
     const amountLine = bd.owedEstimate > 0
-      ? 'Based on my regular rate of ' + money(ctx.rateNum) + ' per hour' + salaryNote + ', the overtime pay owed for these hours' + rateNote + ' totals approximately ' + money(bd.owedEstimate) + '.'
-      : 'I request payment for these hours at the overtime rate required by law.';
+      ? 'Based on my regular rate of ' + money(ctx.rateNum) + ' per hour' + salaryNote + ', the ' + owedKind + ' owed — ' + compositionParts.join('; ') + ' — totals approximately ' + money(bd.owedEstimate) + '.'
+      : 'I request payment for these hours at the rate required by law.';
+    // Cite the overtime provision only for hours that actually crossed the 40-hr
+    // threshold; cite the basic wage-payment requirement for hours that didn't. A
+    // real state daily-OT trigger gets its own sentence when the federal weekly
+    // threshold wasn't reached (it's a separate, day-level rule the app's own hours
+    // log doesn't evaluate) — it's folded into the federal sentence when it was.
+    const legalBasisParts = [];
+    if (bd.otHours > 0) legalBasisParts.push('Under the federal Fair Labor Standards Act (' + fedCite + '), hours worked beyond 40 in a workweek must be paid at one-and-one-half times my regular rate of pay, less any straight-time amount already paid for them.' + stClause);
+    else if (hasRealStateOT) legalBasisParts.push(ctx.stateSel + ' law (' + stOT.citation + ') provides additional overtime protection for hours worked beyond a daily threshold — separate from, and potentially owed even without reaching, the federal 40-hour weekly threshold — that may increase what I am owed.');
+    if (bd.unpaidRegHrs > 0) legalBasisParts.push('The FLSA (' + mwCite + ') also requires that I be paid for all hours worked at my regular rate, whether or not they reach the overtime threshold in a given workweek.');
+    const legalBasisLine = legalBasisParts.length ? legalBasisParts.join(' ') : 'Under the federal Fair Labor Standards Act (' + fedCite + '), I must be paid at least my regular rate for all hours worked.' + stClause;
     // G2 (docs/flsa-process-gap.md) — this letter's dollar figure is the straight
     // unpaid premium only; name §216(b) liquidated damages + attorney's fees as real
     // leverage behind the request, not just an internal ask with a self-imposed deadline.
@@ -819,10 +879,10 @@ function buildLetter(ctx){
     // G4 — same retaliation protection as the classification-request letter above.
     const retalCite = cite(fed, 'retaliation.flsa', '29 U.S.C. § 215(a)(3)');
     const retalLine = ' Federal law (' + retalCite + ') prohibits retaliation against me for making this request.';
-    const subject = 'Demand for unpaid overtime wages';
+    const subject = bd.otHours > 0 ? 'Demand for unpaid overtime wages' : 'Demand for unpaid wages';
     const body = date + '\n\n' + emp + '\nAttn: Payroll / Human Resources\n\nRe: ' + subject + '\n\nTo whom it may concern:\n\n' +
-      'I am writing to request payment of overtime wages I earned and was not paid correctly. My records show ' + hrs + ' hours worked beyond 40 hours ' + weekPhrase + ' that were not paid at the required overtime rate.' + breakdownLine + '\n\n' +
-      'Under the federal Fair Labor Standards Act (' + fedCite + '), these hours must be paid at one-and-one-half times my regular rate of pay, less any straight-time amount already paid for them.' + stClause + '\n\n' +
+      'I am writing to request payment of wages I earned and was not paid correctly. ' + claimLine + '\n\n' +
+      legalBasisLine + '\n\n' +
       amountLine + ' I request payment within 14 days of the date of this letter.' + liqLine + retalLine + ' Please contact me to arrange payment.\n\nSincerely,\n' + name;
     return { title: 'Wage demand letter', subject, body };
   }
