@@ -2478,10 +2478,14 @@ function App(){
         {stateData && !stReviewed ?
           <div style={css("padding:16px 18px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F")}>
             <p style={css("margin:0 0 4px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Draft — {stName} guidance is pending attorney review</p>
-            <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>These state items are compiled from official sources but not yet verified by counsel. The federal protections below apply nationwide.</p>
+            <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>These state items are compiled from official sources but not yet verified by counsel.{fedFacts.length ? ' The federal protections below apply nationwide.' : ''}</p>
           </div> : null}
         {stateData === undefined ? <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Loading {stName} rules…</p> : null}
-        {stateErr ? <p style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load {stName} rules. Check your connection and reopen — this is not a confirmation that no extra state protections apply. The federal protections below still apply nationwide.</p> : null}
+        {/* If the FEDERAL fetch also failed (contentErr), fedFacts is empty and the
+            block below never renders — so don't promise "the federal protections
+            below" when there's nothing below. That promise only holds when the
+            federal facts actually loaded. */}
+        {stateErr ? <p style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load {stName} rules. Check your connection and reopen — this is not a confirmation that no extra state protections apply.{fedFacts.length ? ' The federal protections below still apply nationwide.' : ' Federal protections could not be loaded either — try again once you have a connection.'}</p> : null}
 
         {stFacts.length ?
           <div style={css("display:flex;flex-direction:column;gap:12px")}>
