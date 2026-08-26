@@ -545,6 +545,58 @@ function computeOwedBreakdown(entries, rateNum){
   const owedEstimate = rateNum > 0 ? (unpaidHrs * rateNum * 1.5) + (straightHrs * rateNum * 0.5) : 0;
   return { totalHours, unpaidHrs, straightHrs, owedEstimate, weekCount: weeks.size || (totalHours > 0 ? 1 : 0) };
 }
+// The date-input (<input type="date">) value for a JS Date, in the browser's LOCAL
+// calendar day — not toISOString().slice(0,10), which is UTC and can land on the
+// wrong day for users west of UTC. Used both for the "Date worked" field's default
+// (today) and its `max` (no future dates), and to pre-fill it from a stored entry.
+function dateInputValue(d){
+  d = d || new Date();
+  const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), day = String(d.getDate()).padStart(2, '0');
+  return y + '-' + m + '-' + day;
+}
+// The "HH:MM" local time-of-day a stored entry's iso timestamp falls on, so
+// re-opening an entry for edit (without touching the date/start/end fields) can
+// reconstruct the exact same iso instead of drifting to "right now".
+function isoTimeHHMM(iso){
+  const d = iso ? new Date(iso) : null;
+  if (!d || isNaN(d.getTime())) return null;
+  return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+}
+// Combine a "YYYY-MM-DD" date-input value with an optional "HH:MM" time-input
+// value into an ISO timestamp, using the LOCAL calendar day/time (not UTC — see
+// dateInputValue) so an entry's weekStartKey lands on the workweek the user
+// actually picked. Falls back to the current clock time when no time is given,
+// same as the previous "always right now" behavior for a freshly-added entry.
+function isoFromDateAndTime(dateStr, timeStr){
+  if (!dateStr) return new Date().toISOString();
+  const [y, m, day] = dateStr.split('-').map(Number);
+  const now = new Date();
+  let hh = now.getHours(), mm = now.getMinutes(), ss = now.getSeconds();
+  if (timeStr) { const [th, tm] = timeStr.split(':').map(Number); hh = th; mm = tm; ss = 0; }
+  return new Date(y, (m || 1) - 1, day || 1, hh, mm, ss).toISOString();
+}
+// Duration between a "HH:MM" start and end time-input pair, in hours rounded to
+// the nearest quarter-hour. An end time earlier than (or equal to) the start is
+// treated as an overnight shift that crosses midnight (+24h) rather than shown
+// as a validation error — the simpler correct reading for the common case (a
+// shift that starts one evening and ends the next morning), and the resulting
+// hours still pass through the same ENTRY_HOURS_WARN_MAX sanity check as any
+// other entry if that reading is wrong for a given input.
+function computeHoursFromTimes(startTime, endTime){
+  if (!startTime || !endTime) return null;
+  const toMin = (t) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+  let diff = toMin(endTime) - toMin(startTime);
+  let overnight = false;
+  if (diff <= 0) { diff += 24 * 60; overnight = true; }
+  return { hours: Math.round((diff / 60) * 4) / 4, overnight };
+}
+// "HH:MM" (24h) -> "H:MM AM/PM" for the log-entry timeline display.
+function formatTime12(t){
+  if (!t) return '';
+  const [h, m] = t.split(':').map(Number);
+  const ap = h < 12 ? 'AM' : 'PM', hh = h % 12 || 12;
+  return hh + ':' + String(m).padStart(2, '0') + ' ' + ap;
+}
 // A short, stable case number derived from the case-open date (no fake persona).
 function caseNo(iso){
   const d = iso ? new Date(iso) : new Date();
@@ -941,7 +993,10 @@ function App(){
   const [typing, setTyping] = useState(false);
   const [logKind, setLogKind] = useState('Wage & hour');
   const [logNote, setLogNote] = useState('');
-  const [logHours, setLogHours] = useState('');
+  const [logHours, setLogHours] = useState(''); // manual hours fallback — used only when start/end time are not both set
+  const [logDate, setLogDate] = useState(() => dateInputValue()); // "Date worked" — defaults to today, drives the entry's iso/workweek
+  const [logStartTime, setLogStartTime] = useState('');
+  const [logEndTime, setLogEndTime] = useState('');
   const [logPayStatus, setLogPayStatus] = useState('unpaid'); // 'unpaid' (paid $0) | 'straight' (paid straight-time only)
   const [logAttachment, setLogAttachment] = useState(null); // { name, type, size, dataUrl } | null — staged file/photo for the entry form (F15)
   const [logAttachmentError, setLogAttachmentError] = useState('');
@@ -1074,6 +1129,14 @@ function App(){
   // never actually done for it. Only fires on an actual change, never on the
   // initial mount (prevIssueRef starts equal to the just-loaded `issue`).
   const prevIssueRef = useRef(issue);
+  // Snapshot of the date/start/end an Hours log entry's edit form was pre-filled
+  // with (see Log()/startEdit) — must live at the App level, not inside Log(),
+  // because screens are invoked as plain functions (Current(), not <Current/>;
+  // see the render below), so any hook called inside a screen renderer is really
+  // an extra hook of THIS component and its count must stay identical no matter
+  // which screen is showing, or React throws "rendered more/fewer hooks" (#310)
+  // the moment the user navigates to/from a different screen.
+  const logEditOriginalRef = useRef(null);
   useEffect(() => {
     if (prevIssueRef.current !== issue) setDone({});
     prevIssueRef.current = issue;
@@ -1864,7 +1927,19 @@ function App(){
     const logBreakdown = computeOwedBreakdown(entries, rateNum);
     const editing = editingEntryIdx != null && entries[editingEntryIdx];
     const PLACEHOLDER_BODY = 'No detail added yet — tap to edit while it is fresh.';
-    const resetForm = () => { setLogNote(''); setLogHours(''); setLogPayStatus('unpaid'); setLogAttachment(null); setLogAttachmentError(''); setEditingEntryIdx(null); };
+    // editOriginalRef (App-level logEditOriginalRef — see there for why it can't
+    // be a local hook here) snapshots the date/start/end an Hours edit was
+    // pre-filled with, so submit() can tell "the user actually changed the
+    // date/time" from "note-only edit" — an untouched edit keeps the entry's
+    // exact original date/iso rather than round-tripping it through
+    // new Date(...)/toISOString(), which is a no-op in UTC but can shift the
+    // printed clock time in other timezones.
+    const editOriginalRef = logEditOriginalRef;
+    // Start/end time, when both are set, computes the hours worked — it wins over
+    // the manual "Hours" fallback field so the two can never silently disagree.
+    const computedHours = kind.asksHours ? computeHoursFromTimes(logStartTime, logEndTime) : null;
+    const finalHours = computedHours != null ? computedHours.hours : (Number(logHours) || 0);
+    const resetForm = () => { setLogNote(''); setLogHours(''); setLogDate(dateInputValue()); setLogStartTime(''); setLogEndTime(''); editOriginalRef.current = null; setLogPayStatus('unpaid'); setLogAttachment(null); setLogAttachmentError(''); setEditingEntryIdx(null); };
     // F15 — read the picked file into a data URL (kept on-device, same model as
     // everything else in the case) with a hard size cap so one attachment
     // can't eat the shared localStorage quota the whole case relies on.
@@ -1891,11 +1966,32 @@ function App(){
     };
     const submit = () => {
       const fields = { title: kind.title, body: logNote.trim() || PLACEHOLDER_BODY,
-        color: kind.color, tag: kind.tag, hours: kind.asksHours ? (Number(logHours) || 0) : undefined,
-        payStatus: kind.asksHours ? logPayStatus : undefined, attachment: logAttachment || undefined };
+        color: kind.color, tag: kind.tag, hours: kind.asksHours ? finalHours : undefined,
+        payStatus: kind.asksHours ? logPayStatus : undefined,
+        startTime: kind.asksHours ? (logStartTime || undefined) : undefined,
+        endTime: kind.asksHours ? (logEndTime || undefined) : undefined,
+        attachment: logAttachment || undefined };
+      if (kind.asksHours) {
+        // The user picks the DATE the hours were worked (default today, no future
+        // dates) — that, not "now", is what must feed weekStartKey so the workweek
+        // grouping behind computeOwedBreakdown is correct. When EDITING, only
+        // recompute date/iso if the date/start/end fields actually changed from
+        // what the edit form was pre-filled with (editOriginalRef) — an untouched
+        // note-only edit keeps the entry's exact original date/iso verbatim,
+        // rather than round-tripping through new Date(...)/toISOString(), which
+        // is a no-op in UTC but can print a different local clock time in other
+        // timezones.
+        const orig = editOriginalRef.current;
+        const dateTouched = !editing || !orig || logDate !== orig.date || logStartTime !== orig.startTime || logEndTime !== orig.endTime;
+        if (dateTouched) {
+          fields.iso = isoFromDateAndTime(logDate, logStartTime);
+          fields.date = stamp(new Date(fields.iso));
+        }
+      }
       if (editing) {
-        // Preserve the original date/iso timestamp — only the editable fields
-        // change; the entry keeps its place in the timeline.
+        // Non-hours kinds: preserve the original date/iso timestamp — only the
+        // editable fields change. Hours entries: date/iso above reflect the
+        // (possibly re-picked) date/start time.
         setEntries(p => p.map((e, idx) => idx === editingEntryIdx ? Object.assign({}, e, fields) : e));
       } else {
         addEntry(fields);
@@ -1908,6 +2004,12 @@ function App(){
       setLogKind(k.tag);
       setLogNote(e.body === PLACEHOLDER_BODY ? '' : (e.body || ''));
       setLogHours(e.hours ? String(e.hours) : '');
+      const prefillDate = k.asksHours && e.iso ? dateInputValue(new Date(e.iso)) : dateInputValue();
+      const prefillStart = e.startTime || '', prefillEnd = e.endTime || '';
+      setLogDate(prefillDate);
+      setLogStartTime(prefillStart);
+      setLogEndTime(prefillEnd);
+      editOriginalRef.current = { date: prefillDate, startTime: prefillStart, endTime: prefillEnd };
       setLogPayStatus(e.payStatus || 'unpaid');
       setLogAttachment(e.attachment || null);
       setLogAttachmentError('');
@@ -1944,12 +2046,26 @@ function App(){
         </div>
         {kind.asksHours &&
           <div style={css("display:flex;flex-direction:column;gap:10px")}>
-            <div style={css("display:flex;align-items:center;gap:10px")}>
-              <label htmlFor="log-hours" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Hours</label>
-              <input id="log-hours" type="number" min="0" max={ENTRY_HOURS_WARN_MAX} step="0.5" value={logHours} onChange={e => setLogHours(e.target.value)} placeholder="e.g. 6.5" style={css("width:110px;padding:11px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif")} />
+            <div style={css("display:flex;align-items:center;gap:10px;flex-wrap:wrap")}>
+              <label htmlFor="log-date" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Date worked</label>
+              <input id="log-date" type="date" value={logDate} max={dateInputValue()} onChange={e => setLogDate(e.target.value)} style={css("min-height:44px;padding:10px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif")} />
             </div>
-            {Number(logHours) > ENTRY_HOURS_WARN_MAX &&
-              <p role="alert" style={css("margin:0;padding:10px 12px;border-radius:10px;background:#FFF4D6;border:2px solid #14181F;font:700 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#6B4B00")}>{Number(logHours)} hours is more than {ENTRY_HOURS_WARN_MAX} — well over 2 full workweeks for one entry. Double-check this figure, or log separate entries per pay period.</p>
+            <div style={css("display:flex;align-items:center;gap:10px;flex-wrap:wrap")}>
+              <label htmlFor="log-start" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Start time</label>
+              <input id="log-start" type="time" value={logStartTime} onChange={e => setLogStartTime(e.target.value)} style={css("min-height:44px;padding:10px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif")} />
+              <label htmlFor="log-end" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>End time</label>
+              <input id="log-end" type="time" value={logEndTime} onChange={e => setLogEndTime(e.target.value)} style={css("min-height:44px;padding:10px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif")} />
+            </div>
+            {computedHours != null ?
+              <p role="status" style={css("margin:0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Time logged: {computedHours.hours} {computedHours.hours === 1 ? 'hour' : 'hours'}{computedHours.overnight ? ' — treated as an overnight shift ending the next day' : ''}</p>
+              :
+              <div style={css("display:flex;align-items:center;gap:10px")}>
+                <label htmlFor="log-hours" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Hours (or set start/end time above)</label>
+                <input id="log-hours" type="number" min="0" max={ENTRY_HOURS_WARN_MAX} step="0.5" value={logHours} onChange={e => setLogHours(e.target.value)} placeholder="e.g. 6.5" style={css("width:110px;padding:11px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif")} />
+              </div>
+            }
+            {finalHours > ENTRY_HOURS_WARN_MAX &&
+              <p role="alert" style={css("margin:0;padding:10px 12px;border-radius:10px;background:#FFF4D6;border:2px solid #14181F;font:700 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#6B4B00")}>{finalHours} hours is more than {ENTRY_HOURS_WARN_MAX} — well over 2 full workweeks for one entry. Double-check this figure, or log separate entries per pay period.</p>
             }
             <div role="group" aria-label="Were these hours paid?" style={css("display:flex;gap:8px;flex-wrap:wrap")}>
               {[['unpaid','Not paid at all'],['straight','Paid straight-time only']].map(([v, label]) =>
@@ -2007,7 +2123,7 @@ function App(){
                 <span style={css("flex:1;width:3px;background:rgba(20,24,31,.15)")}></span>
               </div>
               <div style={css('padding-bottom:18px;flex:1;border-radius:12px;' + (editingEntryIdx === i ? 'outline:2px solid #6B4B00;outline-offset:6px;' : ''))}>
-                <p style={css("margin:0 0 3px;font:600 13px 'IBM Plex Mono',monospace;color:#4A5162")}>{e.date}</p>
+                <p style={css("margin:0 0 3px;font:600 13px 'IBM Plex Mono',monospace;color:#4A5162")}>{e.date}{e.startTime && e.endTime ? ' · ' + formatTime12(e.startTime) + '–' + formatTime12(e.endTime) : ''}</p>
                 <p style={css("margin:0 0 5px;font:700 18px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{e.title}{e.hours ? ' — ' + e.hours + ' hrs' : ''}</p>
                 <p style={css("margin:0 0 8px;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{e.body}</p>
                 {e.attachment &&
