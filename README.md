@@ -109,6 +109,18 @@ of a hand-maintained artifact living only in the Vercel dashboard.
    extracts the SHA it's actually pinned to, and diffs it against `origin/main` (read-only;
    requires network access to the live site).
 
+### Maintenance
+
+- **`CONTENT_FALLBACK_BASE`** (in `index.dev.html`) is a SHA-pinned
+  `raw.githubusercontent.com` URL that `fetchContentJson()` falls back to once if the
+  primary `CONTENT_BASE` fetch fails — it's the degraded-network path. Because it's
+  pinned to a fixed commit, it goes stale over time (a user on that path could be served
+  outdated law data). `npm run check-fallback-freshness` (part of `npm run verify`, always
+  exits 0 — a warning, not a build-breaker) checks it against `origin/main` and warns if
+  it's more than 30 days or 20 commits behind. **Only `wl-builder` may bump the SHA** (it's
+  an edit inside `index.dev.html`'s app code) — routinely update it to a recent known-good
+  commit as part of normal maintenance, then rebuild and commit.
+
 ### Rollback
 
 worklaw.app is just a static shell pointing at an immutable, SHA-pinned jsDelivr URL — there
