@@ -2290,22 +2290,28 @@ function App(){
         </div>
         {kind.asksHours &&
           <div style={css("display:flex;flex-direction:column;gap:10px")}>
-            <div style={css("display:flex;align-items:center;gap:10px;flex-wrap:wrap")}>
+            {/* Field layout: label ABOVE input (matching the rest of the form), with
+                Start/End time in a 2-col grid so the pair never wraps mid-field. */}
+            <div style={css("display:flex;flex-direction:column;gap:6px")}>
               <label htmlFor="log-date" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Date worked</label>
-              <input id="log-date" type="date" value={logDate} max={dateInputValue()} onChange={e => setLogDate(e.target.value)} style={css("min-height:44px;padding:10px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif")} />
+              <input id="log-date" type="date" value={logDate} max={dateInputValue()} onChange={e => setLogDate(e.target.value)} style={css("width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif")} />
             </div>
-            <div style={css("display:flex;align-items:center;gap:10px;flex-wrap:wrap")}>
-              <label htmlFor="log-start" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Start time</label>
-              <input id="log-start" type="time" value={logStartTime} onChange={e => setLogStartTime(e.target.value)} style={css("min-height:44px;padding:10px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif")} />
-              <label htmlFor="log-end" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>End time</label>
-              <input id="log-end" type="time" value={logEndTime} onChange={e => setLogEndTime(e.target.value)} style={css("min-height:44px;padding:10px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif")} />
+            <div style={css("display:grid;grid-template-columns:1fr 1fr;gap:10px")}>
+              <div style={css("display:flex;flex-direction:column;gap:6px;min-width:0")}>
+                <label htmlFor="log-start" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Start time</label>
+                <input id="log-start" type="time" value={logStartTime} onChange={e => setLogStartTime(e.target.value)} style={css("width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif")} />
+              </div>
+              <div style={css("display:flex;flex-direction:column;gap:6px;min-width:0")}>
+                <label htmlFor="log-end" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>End time</label>
+                <input id="log-end" type="time" value={logEndTime} onChange={e => setLogEndTime(e.target.value)} style={css("width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif")} />
+              </div>
             </div>
             {computedHours != null ?
               <p role="status" style={css("margin:0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Time logged: {computedHours.hours} {computedHours.hours === 1 ? 'hour' : 'hours'}{computedHours.overnight ? ' — treated as an overnight shift ending the next day' : ''}</p>
               :
-              <div style={css("display:flex;align-items:center;gap:10px")}>
-                <label htmlFor="log-hours" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Hours (or set start/end time above)</label>
-                <input id="log-hours" type="number" min="0" max={ENTRY_HOURS_WARN_MAX} step="0.5" value={logHours} onChange={e => setLogHours(e.target.value)} placeholder="e.g. 6.5" style={css("width:110px;padding:11px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif")} />
+              <div style={css("display:flex;flex-direction:column;gap:6px")}>
+                <label htmlFor="log-hours" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Hours <span style={css("font-weight:400;color:#4A5162")}>(or set start/end time above)</span></label>
+                <input id="log-hours" type="number" min="0" max={ENTRY_HOURS_WARN_MAX} step="0.5" value={logHours} onChange={e => setLogHours(e.target.value)} placeholder="e.g. 6.5" style={css("width:160px;max-width:100%;box-sizing:border-box;min-height:44px;padding:11px 12px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif")} />
               </div>
             }
             {finalHours > ENTRY_HOURS_WARN_MAX &&
