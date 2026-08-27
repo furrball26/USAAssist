@@ -386,7 +386,7 @@ const RESULTS = {
 
 const TREE = {
   start: { q:'How are you paid?', help:'Most exemptions require a fixed salary — this is the salary-basis test.', opts:[['A fixed salary every period','salaryLevel','SALARY'],['Hourly','hourlyType','HOURLY'],['Commission or piece rate','r_commission','COMMISSION'],['I am an outside salesperson','outsideSales','OUTSIDE SALES']] },
-  salaryLevel: { q:'Is your salary at least $684 per week?', help:'That is $35,568/year — the federal salary-level test. Some states set a higher salary floor; the panel below shows your state’s figure alongside the federal one.', opts:[['Yes, $684/week or more','hceCheck','≥ $684/WK'],['No, less than that','r_salary_low','< $684/WK'],['Not sure','duties','SALARY ?']] },
+  salaryLevel: { q:'Is your salary at least $684 per week?', help:'That is $35,568/year — the federal salary-level test. Some states set a higher salary floor; your state’s figure alongside the federal one will be shown on your result.', opts:[['Yes, $684/week or more','hceCheck','≥ $684/WK'],['No, less than that','r_salary_low','< $684/WK'],['Not sure','duties','SALARY ?']] },
   // G7 — asked only after the salary floor is cleared, before the ordinary duties
   // question, so a high earner who would otherwise land in "routine tasks" (or another
   // duty that fails the FULL duties test) still gets a shot at the relaxed HCE test.
@@ -1798,6 +1798,14 @@ function App(){
               if (target.letterType) setLetterType(target.letterType);
               setScreen(target.screen);
             }} className="surfacefx" style={css("padding:22px;border-radius:16px;border:none;background:#14181F;color:#fff;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{primary[0]}</button>
+            {/* usertest — Plain mode's single primary CTA routes by step index, and for a
+                wage case that CTA can be "Confirm my classification" / "Ask for the money"
+                depending which step is next, burying the self-check the moment step 0 (ask
+                HR in writing) is marked done. Wage users need a direct, plainly-labeled way
+                to check exemption status no matter which step is current. */}
+            {K === 'wage' &&
+              <button onClick={nav('wizard')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Am I exempt from overtime?</button>
+            }
             <button onClick={nav('log')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{K === 'wage' ? 'Add hours I worked' : 'Add to my log'}</button>
             <button onClick={nav('agencies')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Where to file a complaint</button>
           </>
@@ -1927,6 +1935,13 @@ function App(){
                 of promising a wage-demand letter the user can't actually get here. */}
             {result.v === 'non' && cfg.key === 'wage' &&
               <button onClick={() => { setLetterType('wage-demand'); setLetterEdit(null); setScreen('letter'); }} style={css("padding:18px;border-radius:16px;border:none;background:#2B3AA8;color:#fff;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Draft a wage demand letter</button>
+            }
+            {/* usertest — a non-exempt result told the user they're owed overtime and
+                offered to draft a demand letter, but the letter's dollar figure comes
+                straight from the incident log — with nothing logged yet, that's a $0
+                letter. Route to the log directly from here, not just from Home. */}
+            {result.v === 'non' && cfg.key === 'wage' &&
+              <button onClick={nav('log')} className="hoverfx" style={css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Log my hours</button>
             }
             {result.v === 'non' && cfg.key !== 'wage' &&
               <button onClick={nav('chat')} style={css("padding:18px;border-radius:16px;border:none;background:#2B3AA8;color:#fff;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Ask the AI about unpaid overtime</button>
