@@ -1373,7 +1373,7 @@ function App(){
           <Icon name="back" size={18} /> Back
         </button>
       }
-      <h1 style={css("margin:0;font:700 30px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{ONB_TITLES[onbStep]}</h1>
+      <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{ONB_TITLES[onbStep]}</h1>
       <p style={css("margin:0;font:400 18px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty")}>{editing ? 'Nothing changes until you tap Save at the end.' : ONB_BODIES[onbStep]}</p>
 
       {onbStep === 1 &&
@@ -1422,13 +1422,21 @@ function App(){
 
       {onbStep === 3 &&
         <div role="radiogroup" aria-label="What brings you here?" style={css("display:flex;flex-direction:column;gap:12px")}>
-          {ISSUE_LIST.map(([name, desc]) =>
-            <button key={name} onClick={() => setDIssue(name)} role="radio" aria-checked={dIssue === name}
-              style={css('text-align:left;display:flex;flex-direction:column;gap:5px;padding:18px;border-radius:16px;border:2px solid ' + (dIssue === name ? '#2B3AA8' : '#14181F') + ';background:' + (dIssue === name ? '#EEF1FF' : '#fff') + ';cursor:pointer')}>
-              <span style={css("font:700 18px 'Atkinson Hyperlegible',sans-serif")}>{name}</span>
-              <span style={css("font:400 15px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{desc}</span>
+          {ISSUE_LIST.map(([name, desc]) => {
+            const on = dIssue === name;
+            // C1 — the selected-state token for an in-form data selection (this radio,
+            // the Log entry-type/paid-status pills) is a solid #2B3AA8 inverted fill
+            // with white text, not a light tint — the tint read too weak next to those
+            // other pills' stronger selected state. Structural view toggles (ModeSwitch)
+            // use the separate #14181F ink-fill token instead.
+            return (
+            <button key={name} onClick={() => setDIssue(name)} role="radio" aria-checked={on} className="surfacefx"
+              style={css('text-align:left;display:flex;flex-direction:column;gap:5px;padding:18px;border-radius:16px;border:2px solid ' + (on ? '#2B3AA8' : '#14181F') + ';background:' + (on ? '#2B3AA8' : '#fff') + ';cursor:pointer')}>
+              <span style={css("font:700 18px 'Atkinson Hyperlegible',sans-serif;color:" + (on ? '#fff' : '#14181F'))}>{name}</span>
+              <span style={css("font:400 15px/1.4 'Atkinson Hyperlegible',sans-serif;color:" + (on ? '#DDE2FF' : '#4A5162'))}>{desc}</span>
             </button>
-          )}
+            );
+          })}
         </div>
       }
 
@@ -1528,10 +1536,14 @@ function App(){
       <div role="group" aria-label="Dashboard view" style={css("display:flex;gap:6px;margin-bottom:4px")}>
         {modes.map(([k, label]) => {
           const on = homeMode === k;
-          const border = dark ? '#fff' : '#14181F';
-          const bg = on ? (dark ? '#FFF4D6' : '#14181F') : 'transparent';
-          const color = on ? (dark ? '#14181F' : '#fff') : (dark ? '#fff' : '#14181F');
-          return <button key={k} onClick={() => setHomeMode(k)} aria-pressed={on} style={css('flex:1;min-height:44px;padding:13px 6px;border-radius:999px;border:2px solid ' + border + ';background:' + bg + ';color:' + color + ";font:700 13px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{label}</button>;
+          // C1 — a structural view toggle (this switch, not an in-form data
+          // selection) uses the OTHER selected-state token: a solid #14181F
+          // ink fill, the same on either theme, instead of the previous
+          // dark-theme-only light-yellow fill (#FFF4D6) that didn't match.
+          const border = on ? '#14181F' : (dark ? '#fff' : '#14181F');
+          const bg = on ? '#14181F' : 'transparent';
+          const color = on ? '#fff' : (dark ? '#fff' : '#14181F');
+          return <button key={k} onClick={() => setHomeMode(k)} aria-pressed={on} className="surfacefx" style={css('flex:1;min-height:44px;padding:13px 6px;border-radius:999px;border:2px solid ' + border + ';background:' + bg + ';color:' + color + ";font:700 13px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{label}</button>;
         })}
       </div>
     );
@@ -1560,7 +1572,7 @@ function App(){
       </div>
 
       <div>
-        <h1 style={css("margin:0 0 6px;font:700 30px/1.12 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{youName ? youName + ' — ' + cfg.caseTitle.toLowerCase() : cfg.caseTitle}</h1>
+        <h1 style={css("margin:0 0 6px;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{youName ? youName + ' — ' + cfg.caseTitle.toLowerCase() : cfg.caseTitle}</h1>
         <p style={css("margin:0;font:400 17px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{employerName ? employerName + ' · ' : ''}Opened {openedLabel} · {evidenceCount} evidence {evidenceCount === 1 ? 'item' : 'items'}</p>
       </div>
 
@@ -2164,7 +2176,7 @@ function App(){
     return (
     <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
       <button onClick={nav('home')} style={css("align-self:flex-start;display:flex;align-items:center;gap:4px;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}><Icon name="back" size={18} /> Dashboard</button>
-      <h1 style={css("margin:0;font:700 26px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Review a document</h1>
+      <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Review a document</h1>
       <div style={css("padding:14px 16px;border-radius:12px;background:#FFF4D6;border:2px solid #14181F")}>
         <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}><strong>Uploaded files are not read</strong> — the picker below only notes the file name. <strong>Pasted text IS scanned</strong>, entirely on your device, for a short list of common clause keywords (release, non-disparagement, non-compete, arbitration, confidentiality, revocation period). This is a basic keyword match, not a legal opinion — it can miss real issues and flag benign text. Bring your actual document to an attorney before signing.</p>
       </div>
@@ -2239,7 +2251,7 @@ function App(){
           })}
         </div>
       }
-      <h1 style={css("margin:0;font:700 26px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{gen.title}</h1>
+      <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{gen.title}</h1>
       <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{built}</p>
       {(!youName || !employerName) &&
         <div style={css("padding:12px 15px;border-radius:12px;background:#FFF4D6;border:2px solid #14181F")}>
@@ -2275,7 +2287,7 @@ function App(){
   const Strength = () => (
     <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:18px")}>
       <button onClick={nav('home')} style={css("align-self:flex-start;display:flex;align-items:center;gap:4px;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}><Icon name="back" size={18} /> Dashboard</button>
-      <h1 style={css("margin:0;font:700 26px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>What makes your case</h1>
+      <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>What makes your case</h1>
       <div style={css("padding:16px 18px;border-radius:14px;background:#E8F6EE;border:2px solid #14181F")}>
         <p style={css("margin:0 0 4px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Overall: {strength.label}</p>
         <p style={css("margin:0 0 8px;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{evidenceCount === 0 ? 'This updates as you add entries to your incident log.' : 'Based on ' + evidenceCount + ' logged ' + (evidenceCount === 1 ? 'item' : 'items') + '. Add more to strengthen the thin areas below.'}</p>
@@ -2346,7 +2358,7 @@ function App(){
     const stReviewed = !!(stateData && stateData.reviewed === true);
     return (
       <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
-        <h1 style={css("margin:0;font:700 26px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Rights library</h1>
+        <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Rights library</h1>
         <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Federal protections apply everywhere; {stName} rules are layered on top. Each item links to its official source.</p>
 
         {contentErr ? <p style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load the rights dataset. Check your connection and reopen.</p> : null}
@@ -2378,7 +2390,7 @@ function App(){
 
   const Agencies = () => (
     <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
-      <h1 style={css("margin:0;font:700 26px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Where to file a complaint</h1>
+      <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Where to file a complaint</h1>
       <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Official agencies that enforce employment law in {stateLabel}, near {countyShort} — free to contact directly.</p>
       {(() => {
         const ag = (stateData && stateData.agencies) || {};
