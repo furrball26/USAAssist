@@ -15,14 +15,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
 
-      - run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
       # test/smoke.mjs and friends launch puppeteer-core against a locally-present
       # chrome-headless-shell binary (see test/smoke.mjs) — puppeteer-core itself never
       # downloads a browser, and chrome-headless-shell/ is gitignored (developer-machine
       # cache), so CI must fetch it explicitly. --path . lands it at ./chrome-headless-shell,
       # exactly where the tests' `find` call looks.
-      - run: npx @puppeteer/browsers install chrome-headless-shell --path .
+      - name: Provision headless Chrome for Puppeteer suites
+        run: npx --yes @puppeteer/browsers install chrome-headless-shell --path .
 
-      - run: npm run verify
+      - name: Run full verify (build + validators + Puppeteer suites)
+        run: npm run verify
