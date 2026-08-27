@@ -1154,7 +1154,7 @@ function App(){
   // "opened N days ago" figure.
   const startFreshCase = useCallback(() => {
     if (typeof window !== 'undefined' && window.confirm &&
-        !window.confirm('Start a fresh case? This clears your incident log, step progress, letters and chat for a new case. Your state, county, name and employer stay set — change those with the ' + '◉' + ' button if this is a different employer.')) return;
+        !window.confirm('Start a fresh case? This clears your incident log, step progress, letters and chat for a new case. Your state, county, name and employer stay set — change those with the location pill showing your county and state at the top of Home if this is a different employer.')) return;
     setDone({}); setEntries([]); setLogNote(''); setLogHours(''); setLogPayStatus('unpaid'); setEditingEntryIdx(null);
     setMessages([{ role:'ai', text: issueCfg(issue).chatSeed }]);
     setLetterEdit(null); setLetterType(null); setDocName(''); setDocText(''); setCaseFileDownloaded(false); setExportPath('');
@@ -1349,9 +1349,6 @@ function App(){
     <div style={css("padding:20px 24px 40px;display:flex;flex-direction:column;gap:22px")}>
       <div style={css("display:flex;gap:4px;height:6px")}>
         {[1,2,3,4].map(n => <div key={n} style={css("flex:1;border-radius:3px;background:" + (onbStep >= n ? '#2B3AA8' : 'rgba(20,24,31,.12)'))}></div>)}
-      </div>
-      <div style={css("display:flex;gap:3px;height:5px;border-radius:3px;overflow:hidden")}>
-        <div style={css("flex:1;background:#E0322F")}></div><div style={css("flex:1;background:#EF7B22")}></div><div style={css("flex:1;background:#E3B505")}></div><div style={css("flex:1;background:#1F8A4C")}></div><div style={css("flex:1;background:#2B3AA8")}></div><div style={css("flex:1;background:#7A3AA8")}></div>
       </div>
       {/* F16 — a typo or wrong pick two steps back previously had no fix except
           finishing the whole flow (or the unsafe Skip). Back only moves within
@@ -1703,9 +1700,6 @@ function App(){
     <div style={css("padding:14px 22px 28px;display:flex;flex-direction:column;gap:16px;min-height:100%")}>
       <ModeSwitch theme="light" />
       <LocationPill dark={false} />
-      <div style={css("display:flex;gap:3px;height:6px;border-radius:3px;overflow:hidden")}>
-        <div style={css("flex:1;background:#E0322F")}></div><div style={css("flex:1;background:#EF7B22")}></div><div style={css("flex:1;background:#E3B505")}></div><div style={css("flex:1;background:#1F8A4C")}></div><div style={css("flex:1;background:#2B3AA8")}></div><div style={css("flex:1;background:#7A3AA8")}></div>
-      </div>
       {(() => {
         const fedF = (federal && federal.facts) || [];
         const stF = (stateData && stateData.facts) || [];
@@ -2161,8 +2155,8 @@ function App(){
         <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}><strong>Uploaded files are not read</strong> — the picker below only notes the file name. <strong>Pasted text IS scanned</strong>, entirely on your device, for a short list of common clause keywords (release, non-disparagement, non-compete, arbitration, confidentiality, revocation period). This is a basic keyword match, not a legal opinion — it can miss real issues and flag benign text. Bring your actual document to an attorney before signing.</p>
       </div>
       <p style={css("margin:0;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>This is legal information, not legal advice, and it is not a review of your standing to bring a claim — only an attorney can tell you that.</p>
-      <label style={css("display:flex;flex-direction:column;gap:8px;padding:16px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF;cursor:pointer;text-align:center")}>
-        <span style={css("font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{docName ? 'Noted: ' + docName + ' (file contents not read)' : 'Note a file name (optional)'}</span>
+      <label style={css("display:flex;flex-direction:column;gap:8px;padding:16px;border-radius:16px;border:2px solid #14181F;background:#fff;cursor:pointer;text-align:center")}>
+        <span style={css("font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{docName ? 'Noted: ' + docName + ' (file contents not read)' : 'Note a file name (optional)'}</span>
         <span style={css("font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>Offer, contract, NDA, severance or PIP · your file stays on your device</span>
         <input type="file" accept=".pdf,.doc,.docx,.txt,.rtf" onChange={e => setDocName(e.target.files && e.target.files[0] ? e.target.files[0].name : '')} style={css("font:400 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
       </label>
