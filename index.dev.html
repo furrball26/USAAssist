@@ -1739,6 +1739,18 @@ function App(){
       : "align-self:flex-start;min-height:44px;display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;border:2px solid #14181F;background:#FFF;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer")}><Icon name="location-pin" size={18} /> {locationLabel}</button>
   );
 
+  // wl-ux HIGH #1 — the "{STATE} (DRAFT)" tag appeared with no explanation on the
+  // Wizard result's "What applies in {state}" panel, while the Rights tab explains
+  // what "(DRAFT)" means (pending attorney review) right above its own tag. Shared
+  // so every place the tag appears carries the same reassuring, honest explainer —
+  // only shown once state data has loaded and is not yet reviewed.
+  const DraftStateNotice = ({ stName, extra }) => (
+    <div style={css("padding:16px 18px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F")}>
+      <p style={css("margin:0 0 4px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Draft — {stName} guidance is pending attorney review</p>
+      <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>These state items are compiled from official sources but not yet verified by counsel.{extra ? ' ' + extra : ''}</p>
+    </div>
+  );
+
   // R12 — surfaces the "last save failed" state (see storageWarning above) so it's
   // not silently swallowed. Shared across every home mode (Standard/Action/Plain)
   // and the Log screen — the two places data loss matters most — using the same
@@ -2102,6 +2114,7 @@ function App(){
                     <p style={css("margin:0 0 8px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load federal rules. Check your connection and reopen.</p> :
                     <p style={css("margin:0 0 8px;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>Loading…</p>}
                   <p style={css("margin:10px 0 4px;font:700 13px 'IBM Plex Mono',monospace;color:#1B2778;letter-spacing:.04em")}>{stateSel ? stateSel.toUpperCase() : stateLabel.toUpperCase()}{stRev ? '' : ' (DRAFT)'}</p>
+                  {stateData && !stRev && <div style={css("margin:0 0 8px")}><DraftStateNotice stName={stateLabel} /></div>}
                   {stOT.length ? stOT.map(line) : stateErr ?
                     <p style={css("margin:0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load {stateLabel} rules. Check your connection and reopen — this is not a confirmation that no extra state rule applies.</p> :
                     stateData === undefined ?
@@ -2587,10 +2600,7 @@ function App(){
         {!federal && !contentErr ? <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Loading…</p> : null}
 
         {stateData && !stReviewed ?
-          <div style={css("padding:16px 18px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F")}>
-            <p style={css("margin:0 0 4px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Draft — {stName} guidance is pending attorney review</p>
-            <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>These state items are compiled from official sources but not yet verified by counsel.{fedFacts.length ? ' The federal protections below apply nationwide.' : ''}</p>
-          </div> : null}
+          <DraftStateNotice stName={stName} extra={fedFacts.length ? 'The federal protections below apply nationwide.' : ''} /> : null}
         {stateData === undefined ? <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Loading {stName} rules…</p> : null}
         {/* If the FEDERAL fetch also failed (contentErr), fedFacts is empty and the
             block below never renders — so don't promise "the federal protections
