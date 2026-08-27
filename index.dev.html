@@ -57,8 +57,21 @@
     padding:0 26px 8px;font:700 14px 'IBM Plex Mono',monospace;color:#14181F;
   }
   .scrollarea{flex:1;overflow-y:auto;overflow-x:hidden}
-  .hoverfx{transition:background .12s ease}
+  /* Interaction-state utilities — most interactive elements only had a resting
+     state and a keyboard :focus-visible ring, with no hover or pressed feedback
+     for a mouse/trackpad user. .hoverfx suits plain white/cream surfaces (it
+     swaps the background to the app's light-blue tint). .surfacefx is the
+     companion for elements that already carry their OWN inline background
+     color (colored cards, selected pills, the translucent LocationPill on a
+     navy hero) — a flat background swap would fight that color, so it darkens
+     whatever is already there via filter:brightness instead. Both add a
+     slightly stronger :active (pressed) state plus a 1px press-down nudge. */
+  .hoverfx{transition:background .12s ease, transform .05s ease}
   .hoverfx:hover{background:#EEF1FF !important}
+  .hoverfx:active{background:#D9E0FF !important; transform:translateY(1px)}
+  .surfacefx{transition:filter .12s ease, transform .05s ease}
+  .surfacefx:hover{filter:brightness(.95)}
+  .surfacefx:active{filter:brightness(.88); transform:translateY(1px)}
   /* order:2 keeps the tab bar last visually (bottom of the phone/tablet flex
      column) even though it's now first in DOM order (R3) — flex/grid `order`
      only changes paint order, never keyboard tab order, so this restores the
@@ -1264,7 +1277,7 @@ function App(){
   const OshaWatch = ({ dark }) => {
     if (!oshaFact) return null;
     return (
-      <button onClick={nav('strength')} style={css(dark
+      <button onClick={nav('strength')} className="surfacefx" style={css(dark
         ? "text-align:left;padding:14px 16px;border-radius:12px;border:2px solid #FFB4C4;background:rgba(179,38,79,.35);cursor:pointer;display:flex;flex-direction:column;gap:4px"
         : "text-align:left;padding:16px 18px;border-radius:14px;border:2px solid #B3264F;background:#FFE7EC;cursor:pointer;display:flex;flex-direction:column;gap:4px")}>
         <span style={css("font:700 " + (dark ? '12px' : '13px') + " 'IBM Plex Mono',monospace;color:" + (dark ? '#FFE3EA' : '#8A1438') + ";letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px")}><Icon name="alert" size={dark ? 13 : 14} /> OSHA WHISTLEBLOWER DEADLINE</span>
@@ -1285,7 +1298,7 @@ function App(){
   const DocDeadlineWatch = ({ dark }) => {
     if (cfg.key !== 'document') return null;
     return (
-      <button onClick={nav('strength')} style={css(dark
+      <button onClick={nav('strength')} className="surfacefx" style={css(dark
         ? "text-align:left;padding:14px 16px;border-radius:12px;border:2px solid rgba(255,255,255,.4);background:rgba(255,255,255,.14);cursor:pointer;display:flex;flex-direction:column;gap:4px"
         : "text-align:left;padding:16px 18px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;flex-direction:column;gap:4px")}>
         <span style={css("font:700 " + (dark ? '12px' : '13px') + " 'IBM Plex Mono',monospace;color:" + (dark ? '#DDE2FF' : '#14181F') + ";letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px")}><Icon name="deadline-clock" size={dark ? 13 : 14} /> DEADLINE WATCH · GENERAL FEDERAL RULE</span>
@@ -1309,7 +1322,7 @@ function App(){
     const enf = factByTopic(fedF, 'enforcement.paths');
     const liq = factByTopic(fedF, 'remedies.liquidatedDamages');
     const fees = factByTopic(fedF, 'remedies.attorneysFees');
-    const src = f => { const u = f && safeUrl(f.sourceUrl); return u ? <a href={u} target="_blank" rel="noopener noreferrer" style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null; };
+    const src = f => { const u = f && safeUrl(f.sourceUrl); return u ? <a href={u} target="_blank" rel="noopener noreferrer" className="hoverfx" style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null; };
     return (
       <div style={css("padding:18px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF;display:flex;flex-direction:column;gap:10px")}>
         <p style={css("margin:0;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>How to actually recover this</p>
@@ -1533,7 +1546,7 @@ function App(){
   // without switching modes first. Shared across all three so it's always
   // reachable, styled per the calling mode's theme (light card vs. dark hero).
   const LocationPill = ({ dark }) => (
-    <button onClick={openEditFlow} aria-label={'Edit your state, county or issue — currently ' + locationLabel} style={css(dark
+    <button onClick={openEditFlow} aria-label={'Edit your state, county or issue — currently ' + locationLabel} className="surfacefx" style={css(dark
       ? "align-self:flex-start;min-height:44px;display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;border:2px solid rgba(255,255,255,.6);background:rgba(255,255,255,.1);font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#fff;cursor:pointer"
       : "align-self:flex-start;min-height:44px;display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;border:2px solid #14181F;background:#FFF;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer")}><Icon name="location-pin" size={18} /> {locationLabel}</button>
   );
@@ -1556,7 +1569,7 @@ function App(){
         const stF = (stateData && stateData.facts) || [];
         const dl = pickDeadlineFactAcross(stF, fedF, cfg.key);
         return dl ? (
-          <button onClick={nav('strength')} style={css("text-align:left;padding:16px 18px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;flex-direction:column;gap:4px")}>
+          <button onClick={nav('strength')} className="surfacefx" style={css("text-align:left;padding:16px 18px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;flex-direction:column;gap:4px")}>
             <span style={css("font:700 13px 'IBM Plex Mono',monospace;color:#14181F;letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px")}><Icon name="deadline-clock" size={14} /> DEADLINE WATCH</span>
             <span style={css("font:700 18px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{dl.value || dl.summary}</span>
             <span style={css("font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{dl.summary}</span>
@@ -1569,7 +1582,7 @@ function App(){
       <OshaWatch dark={false} />
       <WageRecoverPanel />
 
-      <button onClick={nav('strength')} style={css("text-align:left;padding:20px;border-radius:18px;border:2px solid #14181F;background:#E8F6EE;cursor:pointer;display:flex;flex-direction:column;gap:14px")}>
+      <button onClick={nav('strength')} className="surfacefx" style={css("text-align:left;padding:20px;border-radius:18px;border:2px solid #14181F;background:#E8F6EE;cursor:pointer;display:flex;flex-direction:column;gap:14px")}>
         <div style={css("display:flex;align-items:baseline;justify-content:space-between")}>
           <span style={css("font:700 15px 'IBM Plex Mono',monospace;color:#14181F;letter-spacing:.04em")}>CASE STRENGTH</span>
           <span style={css("font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#136B3C")}>View →</span>
@@ -1592,6 +1605,7 @@ function App(){
               <div key={i} style={css("display:flex;align-items:stretch;gap:8px")}>
                 <button onClick={() => setDone(p => Object.assign({}, p, { [i]: !p[i] }))}
                   role="checkbox" aria-checked={on} aria-label={(on ? 'Mark not done: ' : 'Mark done: ') + text}
+                  className="surfacefx"
                   style={css('flex:none;width:54px;border-radius:14px;border:2px solid #14181F;background:' + (on ? '#E8F6EE' : '#fff') + ';cursor:pointer;display:flex;align-items:center;justify-content:center')}>
                   <span aria-hidden="true" style={css('width:30px;height:30px;border-radius:8px;border:2px solid #14181F;background:' + (on ? '#1F8A4C' : '#fff') + ';color:#fff;display:flex;align-items:center;justify-content:center')}>
                     {on && <Icon name="check" size={18} />}
@@ -1601,7 +1615,7 @@ function App(){
                   setDone(p => Object.assign({}, p, { [i]: true }));
                   if (target.letterType) setLetterType(target.letterType);
                   setScreen(target.screen);
-                }} style={css('flex:1;text-align:left;padding:16px;border-radius:14px;border:2px solid #14181F;background:' + (on ? '#E8F6EE' : '#fff') + ';cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px')}>
+                }} className="surfacefx" style={css('flex:1;text-align:left;padding:16px;border-radius:14px;border:2px solid #14181F;background:' + (on ? '#E8F6EE' : '#fff') + ';cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px')}>
                   <span style={css("font:700 17px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-decoration:" + (on ? 'line-through' : 'none'))}>{text}</span>
                   <span aria-hidden="true" style={css("flex:none;font:700 20px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8")}>→</span>
                 </button>
@@ -1614,26 +1628,26 @@ function App(){
       <div>
         <h2 style={css("margin:0 0 12px;font:700 20px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Tools</h2>
         <div style={css("display:grid;grid-template-columns:1fr 1fr;gap:10px")}>
-          <button onClick={nav('wizard')} style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#FFF4D6;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
+          <button onClick={nav('wizard')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#FFF4D6;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
             <span aria-hidden="true"><Icon name="rights" size={24} /></span>
             <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Am I exempt from overtime?</span>
           </button>
-          <button onClick={nav('log')} style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#F1EAFB;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
+          <button onClick={nav('log')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#F1EAFB;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
             <span aria-hidden="true"><Icon name="log" size={24} /></span>
             <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Log an incident or hours</span>
           </button>
-          <button onClick={nav('doc')} style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#EEF1FF;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
+          <button onClick={nav('doc')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#EEF1FF;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
             <span aria-hidden="true"><Icon name="document" size={24} /></span>
             <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Review a document</span>
           </button>
-          <button onClick={nav('letter')} style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#E8F6EE;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
+          <button onClick={nav('letter')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#E8F6EE;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
             <span aria-hidden="true"><Icon name="pencil" size={24} /></span>
             <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Draft a letter</span>
           </button>
         </div>
       </div>
 
-      <button onClick={nav('agencies')} style={css("text-align:left;padding:18px 20px;border-radius:16px;border:2px solid #2B3AA8;background:#fff;cursor:pointer;display:flex;flex-direction:column;gap:6px")}>
+      <button onClick={nav('agencies')} className="hoverfx" style={css("text-align:left;padding:18px 20px;border-radius:16px;border:2px solid #2B3AA8;background:#fff;cursor:pointer;display:flex;flex-direction:column;gap:6px")}>
         <span style={css("font:700 18px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Ready to file a complaint?</span>
         <span style={css("font:400 16px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>See the free government agencies that handle this near {countyShort}. Your case file exports in one tap.</span>
       </button>
@@ -1658,7 +1672,7 @@ function App(){
         const stF = (stateData && stateData.facts) || [];
         const dl = pickDeadlineFactAcross(stF, fedF, cfg.key);
         return dl ? (
-          <button onClick={nav('strength')} style={css("text-align:left;padding:14px 16px;border-radius:12px;border:2px solid rgba(255,255,255,.4);background:rgba(255,255,255,.14);cursor:pointer;display:flex;flex-direction:column;gap:4px")}>
+          <button onClick={nav('strength')} className="surfacefx" style={css("text-align:left;padding:14px 16px;border-radius:12px;border:2px solid rgba(255,255,255,.4);background:rgba(255,255,255,.14);cursor:pointer;display:flex;flex-direction:column;gap:4px")}>
             <span style={css("font:700 12px 'IBM Plex Mono',monospace;color:#DDE2FF;letter-spacing:.05em;display:inline-flex;align-items:center;gap:6px")}><Icon name="deadline-clock" size={13} /> DEADLINE WATCH</span>
             <span style={css("font:700 16px/1.3 'Atkinson Hyperlegible',sans-serif;color:#fff")}>{dl.value || dl.summary}</span>
             {/* G1 (docs/flsa-process-gap.md) — the clock is not paused by a WHD complaint. */}
@@ -1675,9 +1689,9 @@ function App(){
           setDone(p => Object.assign({}, p, { [stepIdx]: true }));
           if (target.letterType) setLetterType(target.letterType);
           setScreen(target.screen);
-        }} style={css("padding:20px;border-radius:16px;border:none;background:#FFF4D6;color:#14181F;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Do this step</button>
-        <button onClick={() => setDone(p => Object.assign({}, p, { [Math.min(doneCount, cfg.steps.length - 1)]: true }))} style={css("padding:20px;border-radius:16px;border:2px solid #fff;background:transparent;color:#fff;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Mark it done</button>
-        <button onClick={nav('rights')} style={css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.6);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Why this matters</button>
+        }} className="surfacefx" style={css("padding:20px;border-radius:16px;border:none;background:#FFF4D6;color:#14181F;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Do this step</button>
+        <button onClick={() => setDone(p => Object.assign({}, p, { [Math.min(doneCount, cfg.steps.length - 1)]: true }))} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid #fff;background:transparent;color:#fff;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Mark it done</button>
+        <button onClick={nav('rights')} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.6);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Why this matters</button>
       </div>
       {/* WebKit fix: a flex-grow spacer pins the footer to the bottom without the
           Safari auto-margin-in-overflowing-flex-column overlap bug (see margin-top:auto). */}
@@ -1705,7 +1719,7 @@ function App(){
         const stF = (stateData && stateData.facts) || [];
         const dl = pickDeadlineFactAcross(stF, fedF, cfg.key);
         return dl ? (
-          <button onClick={nav('strength')} style={css("text-align:left;padding:18px 20px;border-radius:16px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;flex-direction:column;gap:6px")}>
+          <button onClick={nav('strength')} className="surfacefx" style={css("text-align:left;padding:18px 20px;border-radius:16px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;flex-direction:column;gap:6px")}>
             <span style={css("font:700 15px 'IBM Plex Mono',monospace;color:#14181F;letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px")}><Icon name="deadline-clock" size={16} /> DEADLINE WATCH</span>
             <span style={css("font:700 22px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{dl.value || dl.summary}</span>
             <span style={css("font:400 17px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{dl.summary}</span>
@@ -1771,9 +1785,9 @@ function App(){
               setDone(p => Object.assign({}, p, { [stepIdx]: true }));
               if (target.letterType) setLetterType(target.letterType);
               setScreen(target.screen);
-            }} style={css("padding:22px;border-radius:16px;border:none;background:#14181F;color:#fff;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{primary[0]}</button>
-            <button onClick={nav('log')} style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{K === 'wage' ? 'Add hours I worked' : 'Add to my log'}</button>
-            <button onClick={nav('agencies')} style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Where to file a complaint</button>
+            }} className="surfacefx" style={css("padding:22px;border-radius:16px;border:none;background:#14181F;color:#fff;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{primary[0]}</button>
+            <button onClick={nav('log')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{K === 'wage' ? 'Add hours I worked' : 'Add to my log'}</button>
+            <button onClick={nav('agencies')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Where to file a complaint</button>
           </>
         );
       })()}
@@ -1868,7 +1882,7 @@ function App(){
               const stRev = !!(stateData && stateData.reviewed === true);
               const fedOT = [factByTopic(fedF,'overtime.basicRule'), factByTopic(fedF,'overtime.salaryLevelWeekly')].filter(Boolean);
               const stOT = factsByPrefix(stF,'overtime').concat([factByTopic(stF,'minimumWage.hourly')].filter(Boolean));
-              const line = f => { const u = safeUrl(f.sourceUrl); return <p key={f.topic} style={css("margin:0 0 8px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{f.summary} {u ? <a href={u} target="_blank" rel="noopener noreferrer" style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null}</p>; };
+              const line = f => { const u = safeUrl(f.sourceUrl); return <p key={f.topic} style={css("margin:0 0 8px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{f.summary} {u ? <a href={u} target="_blank" rel="noopener noreferrer" className="hoverfx" style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null}</p>; };
               return (
                 <div style={css("padding:18px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF")}>
                   <p style={css("margin:0 0 10px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>What applies in {stateLabel}</p>
@@ -2035,7 +2049,7 @@ function App(){
         {editing && <p role="status" style={css("margin:0;font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#6B4B00")}>Editing the entry from {entries[editingEntryIdx].date}</p>}
         <div role="group" aria-label="Entry type" style={css("display:flex;gap:8px;flex-wrap:wrap")}>
           {LOG_KINDS.map(k =>
-            <button key={k.tag} onClick={() => setLogKind(k.tag)} aria-pressed={logKind === k.tag} style={css('min-height:44px;padding:10px 13px;border-radius:999px;border:2px solid ' + (logKind === k.tag ? '#2B3AA8' : '#14181F') + ';background:' + (logKind === k.tag ? '#2B3AA8' : '#fff') + ';color:' + (logKind === k.tag ? '#fff' : '#14181F') + ";font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{k.label.replace('+ ','')}</button>
+            <button key={k.tag} onClick={() => setLogKind(k.tag)} aria-pressed={logKind === k.tag} className="surfacefx" style={css('min-height:44px;padding:10px 13px;border-radius:999px;border:2px solid ' + (logKind === k.tag ? '#2B3AA8' : '#14181F') + ';background:' + (logKind === k.tag ? '#2B3AA8' : '#fff') + ';color:' + (logKind === k.tag ? '#fff' : '#14181F') + ";font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{k.label.replace('+ ','')}</button>
           )}
         </div>
         {kind.asksHours &&
@@ -2063,7 +2077,7 @@ function App(){
             }
             <div role="group" aria-label="Were these hours paid?" style={css("display:flex;gap:8px;flex-wrap:wrap")}>
               {[['unpaid','Not paid at all'],['straight','Paid straight-time only']].map(([v, label]) =>
-                <button key={v} type="button" onClick={() => setLogPayStatus(v)} aria-pressed={logPayStatus === v} style={css('min-height:44px;padding:10px 13px;border-radius:999px;border:2px solid ' + (logPayStatus === v ? '#2B3AA8' : '#14181F') + ';background:' + (logPayStatus === v ? '#2B3AA8' : '#fff') + ';color:' + (logPayStatus === v ? '#fff' : '#14181F') + ";font:700 13px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{label}</button>
+                <button key={v} type="button" onClick={() => setLogPayStatus(v)} aria-pressed={logPayStatus === v} className="surfacefx" style={css('min-height:44px;padding:10px 13px;border-radius:999px;border:2px solid ' + (logPayStatus === v ? '#2B3AA8' : '#14181F') + ';background:' + (logPayStatus === v ? '#2B3AA8' : '#fff') + ';color:' + (logPayStatus === v ? '#fff' : '#14181F') + ";font:700 13px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{label}</button>
               )}
             </div>
             <p style={css("margin:0;font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{logPayStatus === 'straight' ? 'Owed at the 0.5× overtime differential (you already got straight time for these hours).' : 'Owed at the full 1.5× overtime rate.'}</p>
@@ -2287,7 +2301,7 @@ function App(){
         const stF = (stateData && stateData.facts) || [];
         const fedDL = pickDeadlineFact(fedF, cfg.key);
         const stDL = pickDeadlineFact(stF, cfg.key);
-        const src = f => { const u = f && safeUrl(f.sourceUrl); return u ? <a href={u} target="_blank" rel="noopener noreferrer" style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null; };
+        const src = f => { const u = f && safeUrl(f.sourceUrl); return u ? <a href={u} target="_blank" rel="noopener noreferrer" className="hoverfx" style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null; };
         return (
           <div style={css("padding:18px;border-radius:16px;background:#F0EDE5;border:2px solid #14181F")}>
             <p style={css("margin:0 0 8px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Deadline watch — {stateLabel}</p>
@@ -2318,7 +2332,7 @@ function App(){
       <p style={css("margin:0 0 12px;font:400 16px/1.5 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{f.summary}</p>
       <div style={css("display:flex;gap:8px;flex-wrap:wrap;align-items:center")}>
         {f.citation ? <span style={css("padding:7px 11px;border-radius:8px;background:#EEF1FF;font:600 13px 'IBM Plex Mono',monospace;color:#1B2778")}>{f.citation}</span> : null}
-        {safeUrl(f.sourceUrl) ? <a href={safeUrl(f.sourceUrl)} target="_blank" rel="noopener noreferrer" style={css("display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:7px 11px;border-radius:8px;background:#fff;border:2px solid #2B3AA8;font:600 13px 'IBM Plex Mono',monospace;color:#2B3AA8;text-decoration:none")}>Source ↗</a> : null}
+        {safeUrl(f.sourceUrl) ? <a href={safeUrl(f.sourceUrl)} target="_blank" rel="noopener noreferrer" className="hoverfx" style={css("display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:7px 11px;border-radius:8px;background:#fff;border:2px solid #2B3AA8;font:600 13px 'IBM Plex Mono',monospace;color:#2B3AA8;text-decoration:none")}>Source ↗</a> : null}
         <span style={css('padding:7px 11px;border-radius:8px;background:' + scopeTone + ";border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace;color:#14181F")}>{scopeLabel}</span>
       </div>
     </div>
@@ -2404,7 +2418,7 @@ function App(){
           <div style={css("padding:16px 18px;border-radius:14px;background:#E8F6EE;border:2px solid #14181F;display:flex;flex-direction:column;gap:8px")}>
             <p style={css("margin:0;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>File directly with the enforcing agencies — free</p>
             <p style={css("margin:0 0 2px;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#25302B")}>You can bring a complaint to the government agencies that enforce these laws in {stateLabel}, at no cost:</p>
-            {links.map(([label, url], i) => <a key={i} href={url} target="_blank" rel="noopener noreferrer" style={css("display:flex;align-items:center;min-height:44px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#136B3C;text-decoration:underline")}>{label} ↗</a>)}
+            {links.map(([label, url], i) => <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="hoverfx" style={css("display:flex;align-items:center;min-height:44px;padding:0 4px;border-radius:8px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#136B3C;text-decoration:underline")}>{label} ↗</a>)}
           </div>
         );
       })()}
@@ -2418,7 +2432,7 @@ function App(){
         return (
           <div style={css("padding:16px 18px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F;display:flex;flex-direction:column;gap:6px")}>
             <p style={css("margin:0;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>You are protected from retaliation for speaking up</p>
-            <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>It is illegal for your employer to retaliate against you — fire, demote, cut your hours, or otherwise punish you — for asking about, complaining about, or filing a wage claim, even an internal or verbal complaint. {retal ? retal.citation : '29 U.S.C. § 215(a)(3)'}{u ? <> · <a href={u} target="_blank" rel="noopener noreferrer" style={css("color:#2B3AA8;font:600 13px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a></> : null}</p>
+            <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>It is illegal for your employer to retaliate against you — fire, demote, cut your hours, or otherwise punish you — for asking about, complaining about, or filing a wage claim, even an internal or verbal complaint. {retal ? retal.citation : '29 U.S.C. § 215(a)(3)'}{u ? <> · <a href={u} target="_blank" rel="noopener noreferrer" className="hoverfx" style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 13px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a></> : null}</p>
           </div>
         );
       })()}
