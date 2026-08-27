@@ -33,8 +33,11 @@ let fails = 0;
 
 try {
 
-// $41,600/yr -> hourly-equivalent = 41600/52/40 = $20.00/hr exactly, times 10
-// unpaid hours * 1.5 = $300.00 — a clean, checkable figure.
+// $41,600/yr -> hourly-equivalent = 41600/52/40 = $20.00/hr exactly. The 10
+// unpaid hours are logged in a single workweek that never reaches the 40-hr
+// overtime threshold, so they're owed at the straight 1x rate ($200.00), not
+// the 1.5x overtime rate — a clean, checkable figure that also exercises the
+// per-workweek 40-hr threshold for a salaried worker's hourly-equivalent rate.
 {
   const pg = await b.newPage();
   const errs = [];
@@ -63,7 +66,8 @@ try {
   if (!letterText) problems.push('wage-demand letter body not found');
   else {
     if (!letterText.includes('$20.00 per hour')) problems.push('expected hourly-equivalent $20.00/hr from a $41,600 salary, got: ' + JSON.stringify(letterText));
-    if (!letterText.includes('$300.00')) problems.push('expected owed estimate $300.00 (10 hrs * $20.00 * 1.5), got: ' + JSON.stringify(letterText));
+    if (!letterText.includes('$200.00')) problems.push('expected owed estimate $200.00 (10 hrs * $20.00 * 1.0 — under the 40-hr/week overtime threshold), got: ' + JSON.stringify(letterText));
+    if (letterText.includes('$300.00')) problems.push('letter shows the OLD overstated figure ($300.00 = 10*20*1.5), wrongly applying the overtime multiplier to a sub-40-hr workweek');
     if (!/hourly-equivalent/.test(letterText)) problems.push('letter does not disclose the figure is a salary-derived hourly-equivalent (transparency)');
   }
   errs.forEach(e => problems.push(e));
