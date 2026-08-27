@@ -19,6 +19,16 @@
  *       gate (content/README.md: "the app renders a state as authoritative only when its
  *       data is reviewed: true"); a stray `true` before counsel sign-off would silently
  *       promote unreviewed legal content to authoritative in the app. Hard fail.
+ *   (e) No duplicate `topic` within a single file's facts[]. The app's factByTopic()
+ *       (index.dev.html) does `facts.find(f => f.topic === topic)` — a duplicate topic in
+ *       the same file would silently shadow the second entry (never rendered, never an
+ *       error), which is exactly the kind of data-shape defect this script exists to catch.
+ *       Scoped per-file, not globally: the same topic legitimately repeats across different
+ *       state files (e.g. "overtime.basicRule" in every state). Hard fail.
+ *   (f) Staleness WARNING: a fact whose `lastChecked` is unparseable as a date, or older
+ *       than STALE_DAYS (default 365, override with WORKLAW_STALE_DAYS env var), is
+ *       flagged. This is a hygiene signal for wl-content to re-verify against the live
+ *       source — it is not a legal-accuracy judgment, so it's a warning, not a hard fail.
  *
  * Exit 0 = pass (warnings allowed). Exit 1 = any hard failure.
  * Run: node automation/validate-content.mjs
@@ -41,6 +51,10 @@ const HOST_ALLOWLIST = new Set([
   'nmonesource.com',       // New Mexico Compilation Commission — official statute portal
   'www.floridajobs.org',   // Florida Dept of Commerce — FL has no separate state DOL
 ]);
+
+// Staleness threshold for the lastChecked warning (days). Configurable via env var so
+// wl-content/wl-qa can tighten or loosen it (e.g. in a CI job) without editing this script.
+const STALE_DAYS = Number(process.env.WORKLAW_STALE_DAYS) > 0 ? Number(process.env.WORKLAW_STALE_DAYS) : 365;
 
 const errors = [];
 const warnings = [];
@@ -77,6 +91,7 @@ function checkFile(relPath) {
     return;
   }
 
+  const topicsSeen = new Map(); // topic -> first fact index it appeared at, this file only
   data.facts.forEach((fact, i) => {
     const label = `${relPath} facts[${i}]${fact && fact.topic ? ` (${fact.topic})` : ''}`;
 
@@ -94,6 +109,30 @@ function checkFile(relPath) {
     }
     if ('topic' in fact && (!fact.topic || typeof fact.topic !== 'string')) {
       err(`${label}: "topic" must be a non-empty string`);
+    }
+
+    // (e) duplicate topic within this file — the app's factByTopic() would silently return
+    // only the FIRST match and shadow every later one, so this is a hard fail, not a warning.
+    if (typeof fact.topic === 'string' && fact.topic) {
+      if (topicsSeen.has(fact.topic)) {
+        err(`${label}: duplicate topic "${fact.topic}" (first seen at facts[${topicsSeen.get(fact.topic)}]) — factByTopic() would silently shadow this entry and it would never render`);
+      } else {
+        topicsSeen.set(fact.topic, i);
+      }
+    }
+
+    // (f) staleness warning — unparseable or older than STALE_DAYS. Not a hard fail: this
+    // is a hygiene signal for wl-content to re-verify, not a legal-accuracy judgment.
+    if (typeof fact.lastChecked === 'string' && fact.lastChecked) {
+      const parsed = new Date(fact.lastChecked);
+      if (Number.isNaN(parsed.getTime())) {
+        warn(`${label}: lastChecked "${fact.lastChecked}" is not a parseable date`);
+      } else {
+        const ageDays = Math.floor((Date.now() - parsed.getTime()) / 86400000);
+        if (ageDays > STALE_DAYS) {
+          warn(`${label}: lastChecked "${fact.lastChecked}" is ${ageDays} day(s) old (> ${STALE_DAYS}) — consider re-verifying against the source`);
+        }
+      }
     }
 
     if (fact.reviewed === true) {
