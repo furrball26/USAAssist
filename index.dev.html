@@ -143,7 +143,7 @@ const CONTENT_BASE = (typeof window !== 'undefined' && window.CONTENT_BASE)
 // SHA-pinned fallback source for the same content/ path, tried once if the primary
 // CONTENT_BASE fetch fails (network error or non-2xx) before surfacing the error state.
 // Bump this SHA as part of routine maintenance so it stays a recent known-good commit.
-const CONTENT_FALLBACK_BASE = 'https://raw.githubusercontent.com/furrball26/USAAssist/2394a3fd80b0102915e76d7c98729ecb87cc825c/';
+const CONTENT_FALLBACK_BASE = 'https://raw.githubusercontent.com/furrball26/USAAssist/030ecd3e6d3db0a906655d3ce9f757a11dcf2bce/';
 function fetchContentJson(path){
   return fetch(CONTENT_BASE + path)
     .then(r => { if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
@@ -455,8 +455,8 @@ const ISSUE_LIST = [
   ['Unpaid overtime or wages','Hours past 40, off-the-clock work, missed breaks'],
   ['Harassment or a hostile workplace','Conduct based on a protected characteristic'],
   ['Discrimination','Race, gender, sexual orientation, gender identity, disability, age'],
-  ['Fired or pushed out','Retaliation, wrongful termination, constructive discharge'],
-  ['A document to review','Offer, contract, NDA, severance, PIP']
+  ['Fired or pushed out','Retaliation, wrongful termination, constructive discharge, final pay, last paycheck'],
+  ['A document to review','Offer, contract, NDA, severance, PIP, non-compete']
 ];
 
 const PROMPT_TEXTS =['Can my boss refuse to pay overtime?','How do I ask for an ADA accommodation?','What counts as retaliation?','Should I sign this severance?'];
@@ -953,6 +953,25 @@ const ATTACHMENT_MAX_BYTES = 1.5 * 1024 * 1024; // 1.5MB per attachment
 // case, not just attachments). Cap the SUM of attachment bytes across every
 // logged entry, checked before a new attachment is staged.
 const ATTACHMENT_TOTAL_MAX_BYTES = 6 * 1024 * 1024; // 6MB total across the case
+// wl-security — an attachment is stored and later re-rendered as a data URL (an
+// <img src> when its type starts with "image/", or an <a href download>
+// otherwise). image/svg+xml is a text/XML format that can carry an inline
+// <script>, and .html/.htm can too — either can be crafted to run script if the
+// stored data URL is ever opened outside the constrained <img>/download
+// contexts this app uses. Defense-in-depth: keep svg out of the file-picker's
+// accept list entirely, AND re-check the browser-reported MIME type against
+// this allow-list before FileReader ever reads the bytes, so a renamed-extension
+// or spoofed-accept file is still rejected rather than silently staged.
+const ATTACHMENT_ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/heic', 'image/heif',
+  'application/pdf', 'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
+function isAllowedAttachmentType(file){
+  // Some browsers report an empty file.type for a handful of legitimate local
+  // files (notably .doc/.rtf on some OSes) — fall back to the file extension
+  // only in that specific case, never to override a type the browser DID report.
+  if (file.type) return ATTACHMENT_ALLOWED_TYPES.includes(file.type);
+  return /\.(pdf|docx?|txt|rtf)$/i.test(file.name || '');
+}
 
 // Quick-add kinds for the incident log (shared; optional hours capture for wage claims).
 const LOG_KINDS = [
@@ -967,6 +986,11 @@ const LOG_KINDS = [
 function App(){
   const [saved] = useState(loadCase); // one-time read of persisted case
   const [onboarded, setOnboarded] = useState(() => !!saved.onboarded);
+  // wl-security — a one-time reminder, shown the first time this browser actually
+  // holds identifying case data (name/employer), that it's plain-text and
+  // device-local — never shown again once seen, tracked in the persisted case
+  // itself so it survives a reload but genuinely never repeats.
+  const [privacyNoteSeen, setPrivacyNoteSeen] = useState(() => !!saved.privacyNoteSeen);
   // F-history — browsers keep a session-history entry's pushState/replaceState
   // `state` object across a plain reload (F5), even though our own React state
   // resets. So on first mount, prefer whatever screen the current history
@@ -1081,13 +1105,13 @@ function App(){
   // on reload because they weren't in this list.
   useEffect(() => {
     const result = saveCase({ onboarded, stateSel, county, issue, profile, caseOpened, homeMode, done, messages, entries,
-      letterEdit, letterType, wizNode, wizPath, docName, docText });
+      letterEdit, letterType, wizNode, wizPath, docName, docText, privacyNoteSeen });
     // R12 — surface a real "wasn't saved" warning instead of pretending the
     // save succeeded; clears itself the moment a save actually goes through
     // again (e.g. after the user frees up space or exports and starts fresh).
     setStorageWarning(!result.ok);
   }, [onboarded, stateSel, county, issue, profile, caseOpened, homeMode, done, messages, entries,
-      letterEdit, letterType, wizNode, wizPath, docName, docText]);
+      letterEdit, letterType, wizNode, wizPath, docName, docText, privacyNoteSeen]);
 
   // Load the source-cited legal-content dataset (federal once; state on selection change).
   useEffect(() => {
@@ -1986,6 +2010,12 @@ function App(){
         setLogAttachmentError('That file is ' + (Math.round(file.size / 1024 / 1024 * 10) / 10) + 'MB — attachments are limited to ' + (ATTACHMENT_MAX_BYTES / 1024 / 1024) + 'MB. Try a smaller photo or a cropped screenshot.');
         return;
       }
+      // wl-security — reject before ever reading the bytes into a data URL. See
+      // isAllowedAttachmentType above for why (svg/html can carry script).
+      if (!isAllowedAttachmentType(file)) {
+        setLogAttachmentError('That file type is not supported here — attach a photo (JPEG, PNG, GIF, WEBP, HEIC), PDF, Word doc or .txt file instead.');
+        return;
+      }
       // R12 — the sum of every OTHER entry's attachment, plus this file
       // (minus whatever's already staged for the entry being edited, so
       // re-picking a file while editing doesn't double-count it).
@@ -2114,7 +2144,7 @@ function App(){
         <div style={css("display:flex;flex-direction:column;gap:8px")}>
           <label htmlFor="log-attachment" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Attach a photo or file (optional)</label>
           {!logAttachment &&
-            <input id="log-attachment" type="file" accept="image/*,.pdf,.doc,.docx,.txt" onChange={onAttachmentChange} aria-describedby="log-attachment-hint" style={css("font:400 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
+            <input id="log-attachment" type="file" accept="image/jpeg,image/png,image/gif,image/webp,image/heic,image/heif,.pdf,.doc,.docx,.txt" onChange={onAttachmentChange} aria-describedby="log-attachment-hint" style={css("font:400 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
           }
           {logAttachmentError &&
             <p role="alert" style={css("margin:0;padding:10px 12px;border-radius:10px;background:#FFE7EC;border:2px solid #B3264F;font:700 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#8A1438")}>{logAttachmentError}</p>
@@ -2480,6 +2510,19 @@ function App(){
       <div style={css("padding:16px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F")}>
         <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>You may also want to consult an employment attorney licensed in {stateLabel}. WorkLaw does not operate a referral service or recommend specific firms — your state or local bar association's lawyer-referral service is a reliable place to start.</p>
       </div>
+      {/* wl-security/usertest — "Delete my case" previously lived only in the Home
+          footer. Also reachable from here, since Agencies is the natural "I'm done,
+          I'm handing this off to an agency/attorney" screen a user reaches after
+          exporting their case file above — a moment they may want to clear the
+          browser right after. */}
+      <div style={css("padding:16px;border-radius:14px;border:2px solid #14181F;background:#fff;display:flex;flex-direction:column;gap:10px")}>
+        <p style={css("margin:0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Manage your case data</p>
+        <p style={css("margin:0;font:400 13px/1.5 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Everything you enter stays in this browser on this device — nothing is uploaded. On a shared or work computer, delete your case when you’re done.</p>
+        <div style={css("display:flex;gap:10px;flex-wrap:wrap")}>
+          <button onClick={startFreshCase} className="hoverfx" style={css("padding:12px 16px;border-radius:12px;border:2px solid #14181F;background:transparent;color:#14181F;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;min-height:44px")}>Start a fresh case</button>
+          <button onClick={clearCase} className="hoverfx" style={css("padding:12px 16px;border-radius:12px;border:2px solid #B3264F;background:transparent;color:#B3264F;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;min-height:44px")}>Delete my case &amp; start over</button>
+        </div>
+      </div>
       <p style={css("margin:0;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>This is legal information, not legal advice.</p>
     </div>
   );
@@ -2526,6 +2569,17 @@ function App(){
               stable tree instead of remounting on every keystroke — remounting was
               destroying the chat/onboarding/letter inputs and jumping scroll. */}
           {Current()}
+          {/* wl-security/usertest — a one-time reminder the first time this browser
+              actually holds identifying case data (name/employer), not buried in the
+              always-present footer note below (which a user skims past once it's
+              always there) — shown once, on Home, then never again (privacyNoteSeen
+              persists in the saved case). */}
+          {screen === 'home' && !privacyNoteSeen && (profile.name || '').trim() + (profile.employer || '').trim() &&
+            <div style={css("margin:14px 22px 0;padding:16px;border-radius:14px;border:2px solid #14181F;background:#FFF4D6;display:flex;flex-direction:column;gap:10px")}>
+              <p style={css("margin:0;font:700 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Your name and employer are saved only in this browser, in plain text — don’t use a shared or public computer if this needs to stay private.</p>
+              <button onClick={() => setPrivacyNoteSeen(true)} className="hoverfx" style={css("align-self:flex-start;min-height:44px;padding:10px 16px;border-radius:10px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Got it</button>
+            </div>
+          }
           {screen === 'home' && (() => {
             const dark = altHome === 'action';
             return (
