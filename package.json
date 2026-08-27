@@ -4,6 +4,9 @@
   "private": true,
   "description": "WorkLaw — build + smoke-test tooling for the self-contained app",
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "build": "node build.mjs",
     "test": "node test/smoke.mjs",

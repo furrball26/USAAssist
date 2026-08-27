@@ -65,7 +65,7 @@ via esbuild) and splices the app block into `index.html` — the React/font inli
 untouched. A headless smoke test and a multi-state persona test guard against regressions.
 
 ```sh
-npm install        # esbuild + puppeteer-core (dev-only; see package.json)
+npm ci             # esbuild + puppeteer-core (dev-only; see package.json), from the committed lockfile
 npm run build      # index.dev.html → index.html + assets/app.js
 npm test           # headless smoke test (all screens, home modes, persistence)
 node test/persona.mjs   # multi-state / multi-issue consistency + no-leakage check
