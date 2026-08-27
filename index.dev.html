@@ -261,7 +261,15 @@ function pickDeadlineFactAcross(stateFacts, fedFacts, issueKey){
 // sue can let the oldest weeks age out of a private lawsuit. Shown wherever the app
 // surfaces the wage deadline, and on the non-exempt wizard result — a static "2 years (3
 // if willful)" figure alone reads as if the clock pauses while the process plays out.
-const FLSA_SOL_TIMING_NOTE = 'This 2–3 year deadline keeps running while you wait. Filing with the Labor Department does not pause it for a lawsuit — talk to an attorney before the oldest weeks age out.';
+//
+// wl-ux HIGH #7 — a "180 days" state claim deadline and this 2–3 year federal
+// lawsuit deadline are TWO DIFFERENT clocks, but when this note was appended
+// straight after the state value in the same card with no separation, "This
+// 2–3 year deadline" read as if it described the value just above it. Reworded
+// to name its own referent ("the federal FLSA lawsuit deadline") and always
+// rendered via FlsaSolNote, its own labeled sub-block, never as a bare inline
+// continuation of another deadline's text.
+const FLSA_SOL_TIMING_NOTE = 'Separately, the federal FLSA lawsuit deadline is 2–3 years, and it keeps running while you wait — filing with the Labor Department does not pause it. Talk to an attorney before the oldest weeks age out.';
 
 // F4 — a worker fired/pushed out for reporting a safety hazard has a SEPARATE,
 // much shorter federal deadline (OSHA Section 11(c) whistleblower complaint,
@@ -1460,6 +1468,22 @@ function App(){
     );
   };
 
+  // wl-ux HIGH #7 — the state claim deadline shown in a Deadline Watch card and
+  // this federal FLSA lawsuit statute of limitations are two DIFFERENT clocks.
+  // Previously the SOL note was appended as a plain inline span right after the
+  // state value with no visual break, so "This 2–3 year deadline" read as a
+  // restatement of the value just above it. This renders it as its own bordered,
+  // labeled sub-block — same pattern as OshaWatch's distinct card — everywhere
+  // FLSA_SOL_TIMING_NOTE is shown for a wage case.
+  const FlsaSolNote = ({ dark }) => (
+    <div style={css((dark
+      ? "padding:10px 12px;border-radius:10px;border:2px solid rgba(255,227,166,.7);background:rgba(255,255,255,.14)"
+      : "padding:10px 12px;border-radius:10px;border:2px solid #14181F;background:#FFF4D6") + ";display:flex;flex-direction:column;gap:3px")}>
+      <span style={css("font:700 12px 'IBM Plex Mono',monospace;color:" + (dark ? '#FFE3A6' : '#8A5A00') + ";letter-spacing:.04em")}>SEPARATE CLOCK · FEDERAL LAWSUIT DEADLINE</span>
+      <span style={css("font:700 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:" + (dark ? '#FFE3A6' : '#6B4B00'))}>{FLSA_SOL_TIMING_NOTE}</span>
+    </div>
+  );
+
   // G2/G3 (docs/flsa-process-gap.md) — the app routed wage users to WHD as free/first
   // without ever describing the OTHER path (a private §216(b) lawsuit), that it can
   // recover roughly DOUBLE the back wages plus attorney's fees, or that accepting a
@@ -1751,7 +1775,7 @@ function App(){
             <span style={css("font:700 18px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{dl.value || dl.summary}</span>
             <span style={css("font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{dl.summary}</span>
             {/* G1 (docs/flsa-process-gap.md) — the clock is not paused by a WHD complaint. */}
-            {cfg.key === 'wage' && <span style={css("font:700 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#8A5A00")}>{FLSA_SOL_TIMING_NOTE}</span>}
+            {cfg.key === 'wage' && <FlsaSolNote dark={false} />}
           </button>
         ) : null;
       })()}
@@ -1854,7 +1878,7 @@ function App(){
             <span style={css("font:700 12px 'IBM Plex Mono',monospace;color:#DDE2FF;letter-spacing:.05em;display:inline-flex;align-items:center;gap:6px")}><Icon name="deadline-clock" size={13} /> DEADLINE WATCH</span>
             <span style={css("font:700 16px/1.3 'Atkinson Hyperlegible',sans-serif;color:#fff")}>{dl.value || dl.summary}</span>
             {/* G1 (docs/flsa-process-gap.md) — the clock is not paused by a WHD complaint. */}
-            {cfg.key === 'wage' && <span style={css("font:700 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#FFE3A6")}>{FLSA_SOL_TIMING_NOTE}</span>}
+            {cfg.key === 'wage' && <FlsaSolNote dark={true} />}
           </button>
         ) : null;
       })()}
@@ -1903,7 +1927,7 @@ function App(){
             <span style={css("font:700 22px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{dl.value || dl.summary}</span>
             <span style={css("font:400 17px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{dl.summary}</span>
             {/* G1 (docs/flsa-process-gap.md) — the clock is not paused by a WHD complaint. */}
-            {cfg.key === 'wage' && <span style={css("font:700 15px/1.4 'Atkinson Hyperlegible',sans-serif;color:#8A5A00")}>{FLSA_SOL_TIMING_NOTE}</span>}
+            {cfg.key === 'wage' && <FlsaSolNote dark={false} />}
           </button>
         ) : null;
       })()}
@@ -2092,9 +2116,7 @@ function App(){
             {/* G1/G2/G3 (docs/flsa-process-gap.md) — a non-exempt result is exactly the
                 moment a user needs the SOL timing warning and the WHD-vs-lawsuit trade-off,
                 before they act on "you're owed overtime" by only sending a demand letter. */}
-            {result.v === 'non' && cfg.key === 'wage' &&
-              <p style={css("margin:0;padding:12px 14px;border-radius:12px;background:#FFF4D6;border:2px solid #14181F;font:700 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#6B4B00")}>{FLSA_SOL_TIMING_NOTE}</p>
-            }
+            {result.v === 'non' && cfg.key === 'wage' && <FlsaSolNote dark={false} />}
             {result.v === 'non' && <WageRecoverPanel />}
             {/* The wage-demand letter only exists for the wage issue (letterKindsFor).
                 For a non-wage issue (e.g. discrimination/termination) the Letter screen
@@ -2529,7 +2551,7 @@ function App(){
                 here since this is the screen a user consults when weighing "wait for WHD"
                 vs. "act now". */}
             {cfg.key === 'wage' &&
-              <p style={css("margin:0 0 8px;padding:10px 12px;border-radius:10px;background:#FFF4D6;border:2px solid #14181F;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#6B4B00")}>{FLSA_SOL_TIMING_NOTE}</p>
+              <div style={css("margin:0 0 8px")}><FlsaSolNote dark={false} /></div>
             }
             <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Act well before the earliest deadline — a claim filed late is usually barred. Confirm your exact date with an attorney.</p>
           </div>
