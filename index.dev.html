@@ -2198,7 +2198,12 @@ function App(){
             <div style={css("display:flex;flex-direction:column;gap:6px")}>
               <label htmlFor="onb-rate" style={css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>HOURLY RATE (OPTIONAL)</label>
               <input id="onb-rate" type="number" min="0" max={RATE_WARN_MAX} step="0.5" value={dProfile.rate} onChange={e => setDProfile(p => Object.assign({}, p, { rate:e.target.value }))} placeholder="e.g. 24.00" style={css("width:150px;padding:14px;border-radius:12px;border:2px solid #14181F;font:400 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
-              <span style={css("font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Used to estimate overtime owed in your demand letter.</span>
+              {/* Flow audit finding #5 — this field is collected for every issue (pay
+                  drives back-pay/damages estimates generally), but the old copy was
+                  overtime/classification-specific regardless of which issue the user
+                  actually picked. Show the FLSA-specific framing only for a wage case;
+                  everything else gets issue-neutral copy. */}
+              <span style={css("font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{dIssue && issueCfg(dIssue).key === 'wage' ? 'Used to estimate overtime owed in your demand letter.' : 'Used to estimate back pay and damages where relevant.'}</span>
               {Number(dProfile.rate) > RATE_WARN_MAX &&
                 <p role="alert" style={css("margin:0;padding:10px 12px;border-radius:10px;background:#FFF4D6;border:2px solid #14181F;font:700 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#6B4B00")}>That’s an unusually high hourly rate ({money(Number(dProfile.rate))}/hr) — double-check it. It feeds directly into your owed-amount estimate and letters.</p>
               }
@@ -2208,7 +2213,10 @@ function App(){
             <div style={css("display:flex;flex-direction:column;gap:6px")}>
               <label htmlFor="onb-salary" style={css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>ANNUAL SALARY (OPTIONAL)</label>
               <input id="onb-salary" type="number" min="0" step="500" value={dProfile.salary} onChange={e => setDProfile(p => Object.assign({}, p, { salary:e.target.value }))} placeholder="e.g. 52000" style={css("width:180px;padding:14px;border-radius:12px;border:2px solid #14181F;font:400 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
-              <span style={css("font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>If your classification check finds you should have been paid overtime, we estimate an hourly-equivalent rate assuming a standard 40-hour workweek (29 C.F.R. § 778.113) — {dProfile.salary && Number(dProfile.salary) > 0 ? 'currently ' + money(hourlyEquivFromSalary(dProfile.salary)) + '/hr equivalent.' : 'not a substitute for confirming your actual pay structure with an attorney.'}</span>
+              {/* See the hourly help text above — same fix, salary version. */}
+              <span style={css("font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{dIssue && issueCfg(dIssue).key === 'wage'
+                ? 'If your classification check finds you should have been paid overtime, we estimate an hourly-equivalent rate assuming a standard 40-hour workweek (29 C.F.R. § 778.113) — ' + (dProfile.salary && Number(dProfile.salary) > 0 ? 'currently ' + money(hourlyEquivFromSalary(dProfile.salary)) + '/hr equivalent.' : 'not a substitute for confirming your actual pay structure with an attorney.')
+                : 'Used to estimate back pay and damages where relevant.'}</span>
               {hourlyEquivFromSalary(dProfile.salary) > RATE_WARN_MAX &&
                 <p role="alert" style={css("margin:0;padding:10px 12px;border-radius:10px;background:#FFF4D6;border:2px solid #14181F;font:700 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#6B4B00")}>That’s an unusually high salary (hourly-equivalent {money(hourlyEquivFromSalary(dProfile.salary))}/hr) — double-check it. It feeds directly into your owed-amount estimate and letters.</p>
               }
