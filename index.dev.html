@@ -1319,7 +1319,7 @@ function App(){
     const enf = factByTopic(fedF, 'enforcement.paths');
     const liq = factByTopic(fedF, 'remedies.liquidatedDamages');
     const fees = factByTopic(fedF, 'remedies.attorneysFees');
-    const src = f => { const u = f && safeUrl(f.sourceUrl); return u ? <a href={u} target="_blank" rel="noopener noreferrer" style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null; };
+    const src = f => { const u = f && safeUrl(f.sourceUrl); return u ? <a href={u} target="_blank" rel="noopener noreferrer" aria-label={'Official source for ' + (f.citation || f.topic)} style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null; };
     return (
       <div style={css("padding:18px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF;display:flex;flex-direction:column;gap:10px")}>
         <p style={css("margin:0;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>How to actually recover this</p>
@@ -1889,7 +1889,7 @@ function App(){
               const stRev = !!(stateData && stateData.reviewed === true);
               const fedOT = [factByTopic(fedF,'overtime.basicRule'), factByTopic(fedF,'overtime.salaryLevelWeekly')].filter(Boolean);
               const stOT = factsByPrefix(stF,'overtime').concat([factByTopic(stF,'minimumWage.hourly')].filter(Boolean));
-              const line = f => { const u = safeUrl(f.sourceUrl); return <p key={f.topic} style={css("margin:0 0 8px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{f.summary} {u ? <a href={u} target="_blank" rel="noopener noreferrer" style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null}</p>; };
+              const line = f => { const u = safeUrl(f.sourceUrl); return <p key={f.topic} style={css("margin:0 0 8px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{f.summary} {u ? <a href={u} target="_blank" rel="noopener noreferrer" aria-label={'Official source for ' + (f.citation || f.topic)} style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null}</p>; };
               return (
                 <div style={css("padding:18px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF")}>
                   <p style={css("margin:0 0 10px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>What applies in {stateLabel}</p>
@@ -2308,7 +2308,7 @@ function App(){
         const stF = (stateData && stateData.facts) || [];
         const fedDL = pickDeadlineFact(fedF, cfg.key);
         const stDL = pickDeadlineFact(stF, cfg.key);
-        const src = f => { const u = f && safeUrl(f.sourceUrl); return u ? <a href={u} target="_blank" rel="noopener noreferrer" style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null; };
+        const src = f => { const u = f && safeUrl(f.sourceUrl); return u ? <a href={u} target="_blank" rel="noopener noreferrer" aria-label={'Official source for ' + (f.citation || f.topic)} style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null; };
         return (
           <div style={css("padding:18px;border-radius:16px;background:#F0EDE5;border:2px solid #14181F")}>
             <p style={css("margin:0 0 8px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Deadline watch — {stateLabel}</p>
@@ -2339,7 +2339,7 @@ function App(){
       <p style={css("margin:0 0 12px;font:400 16px/1.5 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{f.summary}</p>
       <div style={css("display:flex;gap:8px;flex-wrap:wrap;align-items:center")}>
         {f.citation ? <span style={css("padding:7px 11px;border-radius:8px;background:#EEF1FF;font:600 13px 'IBM Plex Mono',monospace;color:#1B2778")}>{f.citation}</span> : null}
-        {safeUrl(f.sourceUrl) ? <a href={safeUrl(f.sourceUrl)} target="_blank" rel="noopener noreferrer" style={css("display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:7px 11px;border-radius:8px;background:#fff;border:2px solid #2B3AA8;font:600 13px 'IBM Plex Mono',monospace;color:#2B3AA8;text-decoration:none")}>Source ↗</a> : null}
+        {safeUrl(f.sourceUrl) ? <a href={safeUrl(f.sourceUrl)} target="_blank" rel="noopener noreferrer" aria-label={'Official source for ' + (f.citation || f.topic)} style={css("display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:7px 11px;border-radius:8px;background:#fff;border:2px solid #2B3AA8;font:600 13px 'IBM Plex Mono',monospace;color:#2B3AA8;text-decoration:none")}>Source ↗</a> : null}
         <span style={css('padding:7px 11px;border-radius:8px;background:' + scopeTone + ";border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace;color:#14181F")}>{scopeLabel}</span>
       </div>
     </div>
@@ -2440,7 +2440,7 @@ function App(){
         return (
           <div style={css("padding:16px 18px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F;display:flex;flex-direction:column;gap:6px")}>
             <p style={css("margin:0;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>You are protected from retaliation for speaking up</p>
-            <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>It is illegal for your employer to retaliate against you — fire, demote, cut your hours, or otherwise punish you — for asking about, complaining about, or filing a wage claim, even an internal or verbal complaint. {retal ? retal.citation : '29 U.S.C. § 215(a)(3)'}{u ? <> · <a href={u} target="_blank" rel="noopener noreferrer" style={css("color:#2B3AA8;font:600 13px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a></> : null}</p>
+            <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>It is illegal for your employer to retaliate against you — fire, demote, cut your hours, or otherwise punish you — for asking about, complaining about, or filing a wage claim, even an internal or verbal complaint. {retal ? retal.citation : '29 U.S.C. § 215(a)(3)'}{u ? <> · <a href={u} target="_blank" rel="noopener noreferrer" aria-label={'Official source for ' + (retal.citation || retal.topic)} style={css("color:#2B3AA8;font:600 13px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a></> : null}</p>
           </div>
         );
       })()}
