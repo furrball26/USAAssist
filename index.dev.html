@@ -545,9 +545,24 @@ const TREE_HARASSMENT = {
   reported: { q:'Did you report it internally, and what happened?', help:'Reporting is not required to have a claim, but it can matter for what an employer can be held liable for.', opts:[['I reported it and nothing changed','r_h_hostile','REPORTED: NO ACTION'],['I reported it and it was addressed','r_h_hostile','REPORTED: FIXED'],['I have not reported it','r_h_hostile','NOT REPORTED']] },
 };
 
-// Per-issue federal fact topics the wizard result screen cites for harassment —
-// pulled live via factByTopic, never hardcoded legal text.
+// wl-builder — DISCRIMINATION self-check (issue key 'discrimination'). Same
+// pattern as the harassment tree above.
+const RESULTS_DISCRIMINATION = {
+  r_d_coverage_gap: { v:'maybe', title:'Federal coverage may not reach this employer', body:'Title VII and the ADA generally apply to employers with 15 or more employees (the ADEA, 20 or more) — under that size, federal discrimination law may not apply. Many states set a lower threshold or have their own law that reaches smaller employers; check what applies in your state below before assuming there is no claim.', cites:['42 U.S.C. §2000e(b)','42 U.S.C. §12111(5)'] },
+  r_d_thin: { v:'maybe', title:'An adverse action alone may not be enough yet', body:'A protected characteristic plus an adverse action is a start, but courts generally also look for something connecting the two — a comparator treated better, or a stated reason that looks false or keeps shifting. Document the details: who else was in a similar spot, what you were told, and whether that explanation changed over time.', cites:['42 U.S.C. §2000e-2 (Title VII)'] },
+  r_d_shape: { v:'ex', title:'This has the shape of a discrimination claim', body:'Your situation may have the elements courts generally look for: a protected characteristic, a real adverse action, and a comparator or pretext signal connecting them. This is general information about the legal framework, not a legal opinion about your situation — an attorney would still need to review the specifics, and the deadline below is real.', cites:['42 U.S.C. §2000e-2 (Title VII)','Bostock v. Clayton County (2020)'] },
+};
+const TREE_DISCRIMINATION = {
+  start: { q:'Which protected characteristic is involved?', help:'Federal law covers race, color, religion, sex (including pregnancy, sexual orientation and gender identity), national origin, age 40+, disability, and genetic information.', opts:[['One of those is involved','employerSize','CHARACTERISTIC: NAMED'],['Not sure','employerSize','CHARACTERISTIC: NOT SURE']] },
+  employerSize: { q:'How many employees does your employer have?', help:'Title VII and the ADA generally cover employers with 15+ employees (the ADEA, 20+). Some states cover smaller employers too — check the panel on your result.', opts:[['15 or more','adverseAction','SIZE: 15+'],['Fewer than 15','r_d_coverage_gap','SIZE: <15'],['Not sure','adverseAction','SIZE: NOT SURE']] },
+  adverseAction: { q:'What adverse action was taken?', help:'An adverse action is a real, tangible change — not just an uncomfortable conversation.', opts:[['Fired','comparator','ACTION: FIRED'],['Not hired or not promoted','comparator','ACTION: NOT HIRED/PROMOTED'],['Demoted or pay cut','comparator','ACTION: DEMOTED/PAY CUT'],['Disciplined','comparator','ACTION: DISCIPLINED'],['Other','comparator','ACTION: OTHER']] },
+  comparator: { q:'Was someone NOT in your protected group treated better in a similar situation — or did the employer’s stated reason seem false or keep shifting?', help:'Courts generally look for a comparator (someone similarly situated treated better) or a pretext signal (a reason that does not hold up) connecting the adverse action to the protected characteristic.', opts:[['Yes, someone was treated better (a comparator)','r_d_shape','COMPARATOR: YES'],['The stated reason seems false or has changed','r_d_shape','PRETEXT SIGNAL'],['No','r_d_thin','COMPARATOR: NO'],['Not sure','r_d_thin','COMPARATOR: NOT SURE']] },
+};
+
+// Per-issue federal fact topics the wizard result screen cites for harassment/
+// discrimination — pulled live via factByTopic, never hardcoded legal text.
 const HARASSMENT_FACT_TOPICS = ['harassment.hostileEnvironmentStandard', 'harassment.employerLiability', 'harassment.reporting'];
+const DISCRIMINATION_FACT_TOPICS = ['discrimination.protectedClasses', 'discrimination.coverageTitleVII'];
 
 const TREE_WAGE = {
   start: { q:'How are you paid?', help:'Most exemptions require a fixed salary — this is the salary-basis test.', opts:[['A fixed salary every period','salaryLevel','SALARY'],['Hourly','hourlyType','HOURLY'],['Commission or piece rate','r_commission','COMMISSION'],['I am an outside salesperson','outsideSales','OUTSIDE SALES']] },
@@ -577,6 +592,11 @@ const WIZARD_CONFIG = {
   harassment: {
     tree: TREE_HARASSMENT, results: RESULTS_HARASSMENT, tag: 'HARASSMENT IDENTIFIER', doneTitle: 'What this may mean',
     qDisclaimer: 'This is general information about how harassment law generally works, not a legal opinion about your situation — talk to an attorney.',
+    doneDisclaimer: 'This is general information, not a legal opinion about your situation — talk to an attorney.',
+  },
+  discrimination: {
+    tree: TREE_DISCRIMINATION, results: RESULTS_DISCRIMINATION, tag: 'DISCRIMINATION IDENTIFIER', doneTitle: 'What this may mean',
+    qDisclaimer: 'This is general information about how discrimination law generally works, not a legal opinion about your situation — talk to an attorney.',
     doneDisclaimer: 'This is general information, not a legal opinion about your situation — talk to an attorney.',
   },
 };
@@ -1437,10 +1457,10 @@ function buildCaseFile(ctx){
     }
   } else {
     lines.push('Claim type: ' + (ctx.caseTitle || ctx.issue || 'Employment issue'));
-    if (ctx.cfgKey === 'harassment') {
+    if (ctx.cfgKey === 'harassment' || ctx.cfgKey === 'discrimination') {
       const wcfg = wizardConfigFor(ctx.cfgKey);
       const wizResult = wcfg.results[ctx.wizNode];
-      lines.push('Harassment self-check: ' + (wizResult ? wizResult.title + ' — informational only, not a legal opinion' : 'Not yet run.'));
+      lines.push((ctx.cfgKey === 'harassment' ? 'Harassment' : 'Discrimination') + ' self-check: ' + (wizResult ? wizResult.title + ' — informational only, not a legal opinion' : 'Not yet run.'));
     }
   }
 
@@ -2510,12 +2530,18 @@ function App(){
               <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Am I exempt from overtime?</span>
             </button>
           }
-          {/* Harassment identifier — same tile, gated to its own issue the same
-              way the overtime self-check is gated to cfg.key === 'wage'. */}
+          {/* Harassment/discrimination identifiers — same tile, gated to their own
+              issue the same way the overtime self-check is gated to cfg.key === 'wage'. */}
           {cfg.key === 'harassment' &&
             <button onClick={nav('wizard')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#FFF4D6;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
               <span aria-hidden="true"><Icon name="rights" size={24} /></span>
               <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Is this harassment?</span>
+            </button>
+          }
+          {cfg.key === 'discrimination' &&
+            <button onClick={nav('wizard')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#FFF4D6;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
+              <span aria-hidden="true"><Icon name="rights" size={24} /></span>
+              <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Is this discrimination?</span>
             </button>
           }
           <button onClick={nav('log')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#F1EAFB;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
@@ -2589,12 +2615,15 @@ function App(){
       })()}
       <DocDeadlineWatch dark={true} />
       <OshaWatch dark={true} />
-      {/* Harassment identifier tool — same visibility rule as the wage wizard's
-          Standard/Plain tiles (cfg.key guard), surfaced here as its own
-          affordance since Action-first's step routing doesn't reach 'wizard'
-          for this issue. */}
+      {/* Harassment/discrimination identifier tool — same visibility rule as the
+          wage wizard's Standard/Plain tiles (cfg.key guard), surfaced here as its
+          own affordance since Action-first's step routing doesn't reach 'wizard'
+          for these two issues. */}
       {cfg.key === 'harassment' &&
         <button onClick={nav('wizard')} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.6);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Is this harassment?</button>
+      }
+      {cfg.key === 'discrimination' &&
+        <button onClick={nav('wizard')} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.6);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Is this discrimination?</button>
       }
       <div style={css("display:flex;flex-direction:column;gap:12px")}>
         <button onClick={() => {
@@ -2728,10 +2757,13 @@ function App(){
             {K === 'wage' &&
               <button onClick={nav('wizard')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Am I exempt from overtime?</button>
             }
-            {/* Harassment identifier — same always-visible, direct way in as the
-                wage self-check above (cfg.key guard). */}
+            {/* Harassment/discrimination identifier — same always-visible, direct
+                way in as the wage self-check above (cfg.key guard). */}
             {K === 'harassment' &&
               <button onClick={nav('wizard')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Is this harassment?</button>
+            }
+            {K === 'discrimination' &&
+              <button onClick={nav('wizard')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Is this discrimination?</button>
             }
             <button onClick={nav('log')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{K === 'wage' ? 'Add hours I worked' : 'Add to my log'}</button>
             {/* usertest — same reachability gap as HomeAction above: the primary CTA's
@@ -2817,7 +2849,7 @@ function App(){
     const wizDone = !!result;
     const cur = wcfg.tree[wizNode] || wcfg.tree.start;
     const depth = wizPath.length + 1;
-    const isIdentifier = cfg.key === 'harassment';
+    const isIdentifier = cfg.key === 'harassment' || cfg.key === 'discrimination';
     const goLog = (kind) => { setLogKind(kind); setScreen('log'); };
     const goLetter = (type) => { setLetterType(type); setLetterEdit(null); setScreen('letter'); };
     return (
@@ -2872,18 +2904,20 @@ function App(){
                 </div>
               );
             })()}
-            {/* Harassment equivalent of the wage "What applies in {state}" panel
-                above — cites live content facts (never hardcoded legal text) via
-                factByTopic/HARASSMENT_FACT_TOPICS. No state file carries a
-                dedicated "harassment.*" topic (only "discrimination.*"), and a
-                state's own anti-discrimination statute generally also covers
-                harassment claims, so this section reuses the state's
-                discrimination.* facts with a note explaining why. */}
+            {/* Harassment/discrimination equivalent of the wage "What applies in
+                {state}" panel above — cites live content facts (never hardcoded
+                legal text) via factByTopic/HARASSMENT_FACT_TOPICS/
+                DISCRIMINATION_FACT_TOPICS. No state file carries a dedicated
+                "harassment.*" topic (only "discrimination.*"), and a state's own
+                anti-discrimination statute generally also covers harassment
+                claims, so the harassment identifier's state section reuses the
+                state's discrimination.* facts with a note explaining why. */}
             {isIdentifier && (() => {
               const fedF = (federal && federal.facts) || [];
               const stF = (stateData && stateData.facts) || [];
               const stRev = !!(stateData && stateData.reviewed === true);
-              const fedFacts = HARASSMENT_FACT_TOPICS.map(t => factByTopic(fedF, t)).filter(Boolean);
+              const fedTopics = cfg.key === 'harassment' ? HARASSMENT_FACT_TOPICS : DISCRIMINATION_FACT_TOPICS;
+              const fedFacts = fedTopics.map(t => factByTopic(fedF, t)).filter(Boolean);
               const stFacts = factsByPrefix(stF, 'discrimination');
               const line = f => { const u = safeUrl(f.sourceUrl); return <p key={f.topic} style={css("margin:0 0 8px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{f.summary} {u ? <a href={u} target="_blank" rel="noopener noreferrer" className="hoverfx" style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null}</p>; };
               return (
@@ -2970,6 +3004,11 @@ function App(){
             {cfg.key === 'harassment' && <>
               <button onClick={() => goLog('Witness')} className="hoverfx" style={css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Log a witness</button>
               <button onClick={() => goLog('Statement')} className="hoverfx" style={css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Log what happened</button>
+              <button onClick={() => goLetter('complaint')} style={css("padding:18px;border-radius:16px;border:none;background:#2B3AA8;color:#fff;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Draft a complaint letter</button>
+            </>}
+            {cfg.key === 'discrimination' && <>
+              <button onClick={() => goLog('Statement')} className="hoverfx" style={css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Log this decision</button>
+              <button onClick={() => goLog('Records')} className="hoverfx" style={css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Save comparator or pay records</button>
               <button onClick={() => goLetter('complaint')} style={css("padding:18px;border-radius:16px;border:none;background:#2B3AA8;color:#fff;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Draft a complaint letter</button>
             </>}
             {result.v === 'non' && !isIdentifier && cfg.key !== 'wage' &&
