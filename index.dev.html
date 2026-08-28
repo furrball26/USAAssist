@@ -978,7 +978,7 @@ function buildLetter(ctx){
       '3. A copy of the written job description and the job duties the company relies on for that classification.\n\n' +
       'My classification determines whether I am owed overtime for hours worked over 40 in a workweek. Under the FLSA, exempt status turns on my actual salary and job duties, not my job title (29 C.F.R. § 541.2). Please respond in writing within 14 days.\n\n' +
       'Federal law (' + retalCite + ') prohibits retaliation against me for making this request.\n\nSincerely,\n' + name;
-    return { title: 'Overtime classification request', subject, body };
+    return { title: 'Overtime classification request', subject, body, usesStateLaw: false };
   }
 
   if (kind === 'review-time-request') {
@@ -990,7 +990,7 @@ function buildLetter(ctx){
       '2. Confirmation of any period I have to revoke my signature after signing, if applicable.\n' +
       '3. A copy of any attachments referenced in the document (benefit summaries, release scope, etc.) that were not included.\n\n' +
       'I want to fully understand what I am giving up before I sign anything, and I am not agreeing to any deadline shorter than what the document itself provides. Please confirm these dates in writing.\n\nSincerely,\n' + name;
-    return { title: 'Request for time to review', subject, body };
+    return { title: 'Request for time to review', subject, body, usesStateLaw: false };
   }
 
   if (kind === 'wage-demand') {
@@ -1066,7 +1066,7 @@ function buildLetter(ctx){
       'I am writing to request payment of wages I earned and was not paid correctly. ' + claimLine + '\n\n' +
       legalBasisLine + '\n\n' +
       amountLine + ' I request payment within 14 days of the date of this letter.' + liqLine + retalLine + ' Please contact me to arrange payment.\n\nSincerely,\n' + name;
-    return { title: 'Wage demand letter', subject, body };
+    return { title: 'Wage demand letter', subject, body, usesStateLaw: hasRealStateOT };
   }
 
   if (kind === 'complaint') {
@@ -1079,7 +1079,7 @@ function buildLetter(ctx){
     const body = date + '\n\n' + emp + '\nAttn: Human Resources\n\nRe: ' + subject + '\n\nTo whom it may concern:\n\n' +
       'I am formally reporting conduct at work that I believe violates Title VII of the Civil Rights Act of 1964' + stClause + '. I am asking that the conduct stop and that the company promptly and impartially investigate.' + list + '\n\n' +
       'The law prohibits retaliation against me for making this good-faith complaint. I ask that this letter be placed in my personnel file.\n\nSincerely,\n' + name;
-    return { title: 'Complaint letter', subject, body };
+    return { title: 'Complaint letter', subject, body, usesStateLaw: !!stCite };
   }
 
   if (kind === 'accommodation-request') {
@@ -1095,15 +1095,34 @@ function buildLetter(ctx){
       'My limitation is: [describe your limitation in plain terms — no legal or medical terms required].\n' +
       'The change that would help is: [describe the accommodation you are requesting].\n\n' +
       'I understand this begins an interactive process between us to identify an effective accommodation, and I am glad to discuss options. Please confirm receipt in writing and let me know a good time to talk this week.\n\nSincerely,\n' + name;
-    return { title: 'Accommodation request letter', subject, body };
+    return { title: 'Accommodation request letter', subject, body, usesStateLaw: !!(stFact && stFact.citation) };
   }
 
   // records-request (termination, document review, or generic)
+  // qa MEDIUM #11 — this was fully generic ("within the time required by [state]
+  // law") with no cite() call, unlike every other letter kind above, even though
+  // the state's own final-pay fact (e.g. TX: 6 calendar days, Tex. Labor Code
+  // § 61.014) is already fetched into stateData and just went unused here. Topic
+  // name isn't consistent across states (bare "final-pay" in 46 files, dotted
+  // variants like "final-pay.timing"/"final-pay.wageClaim" in a few that have no
+  // bare "final-pay" fact) — EXCEPT Texas, which has both: a bare "final-pay"
+  // (the 6-day final-paycheck timing rule this letter is actually about) and a
+  // separate "final-pay.wageRecoveryLimitations" (an unrelated 2-year civil-suit
+  // SOL). Prefer the exact bare topic first so TX doesn't pick the wrong one;
+  // only prefix-match for the states whose only final-pay fact is dotted.
+  const finalPayFact = factByTopic(st, 'final-pay') || factsByPrefix(st, 'final-pay')[0];
+  const finalPayUsed = !!(finalPayFact && finalPayFact.citation);
+  // A short duration phrase reads naturally after "within..."; a full fact
+  // summary does not, so when we have the actual state rule, replace the
+  // generic clause with its own sentence instead of splicing the two together.
+  const finalPayLine = finalPayUsed
+    ? 'Please provide the final pay records promptly. ' + finalPayFact.summary + ' (' + finalPayFact.citation + ')'
+    : 'Please provide the records in writing within the time required by ' + ctx.stateSel + ' law';
   const subject = 'Request for personnel file and pay records';
   const body = date + '\n\n' + emp + '\nAttn: Human Resources\n\nRe: ' + subject + '\n\nTo whom it may concern:\n\n' +
     'I request a complete copy of my personnel file, including performance records, disciplinary records, time records, and all final pay records. Many states require an employer to provide these within a set period after a written request.\n\n' +
-    'Please provide the records in writing within the time required by ' + ctx.stateSel + ' law. I am making this request to keep an accurate record of my employment.\n\nSincerely,\n' + name;
-  return { title: 'Records request letter', subject, body };
+    finalPayLine + '. I am making this request to keep an accurate record of my employment.\n\nSincerely,\n' + name;
+  return { title: 'Records request letter', subject, body, usesStateLaw: finalPayUsed };
 }
 
 // Build a portable case-file summary from the user's real inputs.
@@ -2679,6 +2698,15 @@ function App(){
     // implausible number of hours before the user sends this to their employer.
     const hasAbsurdRate = activeKind === 'wage-demand' && rateNum > RATE_WARN_MAX;
     const absurdEntry = activeKind === 'wage-demand' && (entries || []).find(e => Number(e.hours) > ENTRY_HOURS_WARN_MAX);
+    // usertest HIGH #9 — this letter can cite a state-law fact as settled (a real
+    // citation like "N.Y. Executive Law § 292(5)") while the Rights tab, using that
+    // SAME underlying fact, explicitly flags it "(DRAFT)" / "pending attorney
+    // review" (see RightsLib's stReviewed / DraftStateNotice). A user could send
+    // real correspondence citing law the app elsewhere admits isn't verified, with
+    // no warning at the point of use. gen.usesStateLaw is set per-kind above,
+    // true only when this specific generated letter actually embedded a state
+    // citation (not every letter does).
+    const stateLawUnreviewed = gen.usesStateLaw && stateData && stateData.reviewed !== true;
     return (
     <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
       <button onClick={nav('home')} style={css("align-self:flex-start;display:flex;align-items:center;gap:4px;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}><Icon name="back" size={18} /> Dashboard</button>
@@ -2695,6 +2723,11 @@ function App(){
       }
       <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{gen.title}</h1>
       <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{built}</p>
+      {stateLawUnreviewed &&
+        <div style={css("padding:12px 15px;border-radius:12px;background:#FFF4D6;border:2px solid #14181F")}>
+          <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>This letter cites a {stateLabel} law that, like the rest of this app's {stateLabel} content, is marked <strong>(DRAFT)</strong> on the Rights tab — not yet verified by counsel. The citation is sourced from an official government site, but confirm it before sending.</p>
+        </div>
+      }
       {(!youName || !employerName) &&
         <div style={css("padding:12px 15px;border-radius:12px;background:#FFF4D6;border:2px solid #14181F")}>
           <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Fill in {[!youName ? 'your name' : null, !employerName ? 'your employer' : null].filter(Boolean).join(' and ')} on the dashboard location screen (or edit the text below) to complete the bracketed fields.</p>
