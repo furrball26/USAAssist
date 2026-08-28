@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-ySYodD+FTetzYViDjGCtpPc+oY/8s4qFnv5EdjssDs8='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-/E7dHeIiA+MAijOdB+yMMksgqmNXyhz71LRiVOhmqcA='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14181F">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232B3AA8'/%3E%3Ctext x='32' y='47' font-size='42' text-anchor='middle' fill='white' font-family='Georgia,serif'%3E%C2%A7%3C/text%3E%3C/svg%3E">
@@ -556,6 +556,9 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 })();
 </script>
 <script>const { useState, useRef, useEffect, useCallback } = React;
+if (typeof window !== "undefined" && window.top !== window.self) {
+  window.top.location.href = window.self.location.href;
+}
 const CONTENT_BASE = typeof window !== "undefined" && window.CONTENT_BASE || typeof document !== "undefined" && document.querySelector('meta[name="worklaw-content-base"]') && document.querySelector('meta[name="worklaw-content-base"]').getAttribute("content") || "";
 const CONTENT_FALLBACK_BASE = "https://raw.githubusercontent.com/furrball26/USAAssist/2394a3fd80b0102915e76d7c98729ecb87cc825c/";
 function fetchContentJson(path) {
