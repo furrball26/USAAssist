@@ -899,13 +899,24 @@ function fmtDate(d){ d = d || new Date(); return MONTHS_FULL[d.getMonth()] + ' '
 // confirm your classification first, then demand unpaid wages.
 const LETTER_LABELS = { 'classification-request':'Classification request', 'wage-demand':'Wage demand', 'complaint':'Complaint letter', 'records-request':'Records request', 'review-time-request':'Request more time', 'accommodation-request':'Accommodation request' };
 function letterKindsFor(issueKey, cfgLetterKind){
-  if (issueKey === 'wage') return ['classification-request', 'wage-demand'];
+  let kinds;
+  if (issueKey === 'wage') kinds = ['classification-request', 'wage-demand'];
   // The chat's ADA reply promises "I can draft that request from a template" for
   // any accommodation question — make that real for discrimination cases (the
   // issue bucket ADA/disability falls under; see ISSUE_LIST), not just a generic
   // Title VII complaint letter.
-  if (issueKey === 'discrimination') return ['complaint', 'accommodation-request'];
-  return [cfgLetterKind || 'records-request'];
+  else if (issueKey === 'discrimination') kinds = ['complaint', 'accommodation-request'];
+  else kinds = [cfgLetterKind || 'records-request'];
+  // usertest (review #1, Critical finding #2) — the "How do I ask for an ADA
+  // accommodation?" quick-prompt (PROMPT_TEXTS) and ADA_REPLY's "I can draft that
+  // request... and add it to your case file" promise are shown in EVERY chat
+  // session, regardless of the user's onboarding issue — not just discrimination.
+  // Without this, a harassment/wage/termination/document/general-issue user got
+  // the identical promise and then found no such letter anywhere. Make the
+  // accommodation-request template reachable from every issue so the promise is
+  // true for whoever the chat actually made it to.
+  if (!kinds.includes('accommodation-request')) kinds = kinds.concat('accommodation-request');
+  return kinds;
 }
 
 // Where a given step actually leads, per-step — not a single issue-level letterKind
@@ -2042,6 +2053,16 @@ function App(){
           setScreen(target.screen);
         }} className="surfacefx" style={css("padding:20px;border-radius:16px;border:none;background:#FFF4D6;color:#14181F;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Do this step</button>
         <button onClick={() => setDone(p => Object.assign({}, p, { [stepKey(cfg, Math.min(doneCount, cfg.steps.length - 1))]: true }))} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid #fff;background:transparent;color:#fff;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Mark it done</button>
+        {/* usertest — the step CTA above only reaches the Letter screen on the one
+            step index (if any) whose stepScreens entry is 'letter'; harassment,
+            discrimination, document and the generic issue never have one, so without
+            this, Action-first mode has no path to that issue's letter at all (matches
+            the always-visible "Draft a letter" card HomeStandard's Tools grid keeps
+            for the same reason, scoped the same way: wage already reaches both its
+            letters through the step list and the wizard). */}
+        {cfg.key !== 'wage' &&
+          <button onClick={nav('letter')} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.6);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Draft a letter</button>
+        }
         <button onClick={nav('rights')} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.6);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Why this matters</button>
       </div>
       {/* WebKit fix: a flex-grow spacer pins the footer to the bottom without the
@@ -2150,6 +2171,12 @@ function App(){
               <button onClick={nav('wizard')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Am I exempt from overtime?</button>
             }
             <button onClick={nav('log')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{K === 'wage' ? 'Add hours I worked' : 'Add to my log'}</button>
+            {/* usertest — same reachability gap as HomeAction above: the primary CTA's
+                step routing never lands on 'letter' for harassment/discrimination/
+                document/general, so Plain mode needs its own always-visible way in. */}
+            {K !== 'wage' &&
+              <button onClick={nav('letter')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Draft a letter</button>
+            }
             <button onClick={nav('agencies')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Where to file a complaint</button>
           </>
         );
@@ -2659,7 +2686,10 @@ function App(){
         <div role="group" aria-label="Letter type" style={css("display:flex;gap:8px")}>
           {kinds.map((k, i) => {
             const on = k === activeKind;
-            return <button key={k} onClick={() => { setLetterType(k); setLetterEdit(null); }} aria-pressed={on} style={css('flex:1;padding:12px 10px;border-radius:12px;border:2px solid #14181F;background:' + (on ? '#2B3AA8' : '#fff') + ';color:' + (on ? '#fff' : '#14181F') + ";font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{(i === 0 ? '1. ' : '2. ') + LETTER_LABELS[k]}</button>;
+            {/* was a 2-item-only ternary ((i===0 ? '1. ' : '2. ')) — kinds can now run to
+                3 (see letterKindsFor's accommodation-request addition), which collapsed
+                every item past the first into a duplicate "2." */}
+            return <button key={k} onClick={() => { setLetterType(k); setLetterEdit(null); }} aria-pressed={on} style={css('flex:1;padding:12px 10px;border-radius:12px;border:2px solid #14181F;background:' + (on ? '#2B3AA8' : '#fff') + ';color:' + (on ? '#fff' : '#14181F') + ";font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{(i + 1) + '. ' + LETTER_LABELS[k]}</button>;
           })}
         </div>
       }
