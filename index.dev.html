@@ -433,23 +433,41 @@ const CLAUSES = [
 // parsing is out of scope here) — only text actually pasted into the textarea.
 const CLAUSE_PATTERNS = [
   { title:'Release of claims', level:'READ CLOSELY', tone:'#FFE7EC', badge:'#C81E1B',
-    re:/\brelease[sd]?\b[^.]{0,100}\b(claims?|causes? of action|liability)\b/i,
+    re:/\b(releas(?:es?|ed|ing)|waiv(?:es?|ed|ing)|discharg(?:es?|ed|ing)|forever discharge)\b[^.]{0,100}\b(claims?|causes? of action|liability|demands?)\b/i,
     plain:'Looks like a release of legal claims — you may be giving up the right to sue for things that already happened. In many states, wages you already earned generally cannot be waived by signing this.' },
   { title:'Non-disparagement', level:'NEGOTIABLE', tone:'#FFF4D6', badge:'#8A5A00',
-    re:/non-?disparage|shall not (make any statement|disparage)/i,
+    re:/non-?disparage\w*|(?:shall not|agrees? not to|will not|must not)[^.]{0,40}(disparage\w*|make any (?:statement|comment)s?|speak (?:negatively|ill)|reflects? negatively)/i,
     plain:'Looks like a non-disparagement clause. As commonly written these are broad; many states protect your ability to describe unlawful conduct you experienced, and that carve-out is sometimes missing.' },
   { title:'Non-compete / restrictive covenant', level:'READ CLOSELY', tone:'#FFE7EC', badge:'#C81E1B',
-    re:/non-?compet\w*|restrictive covenant|shall not (work for|be employed by|compete with)/i,
+    re:/non-?compet\w*|restrictive covenant|(?:shall not|agrees? not to|will not|must not)[^.]{0,40}(compete with|work for|be employed by|provide services to)/i,
     plain:'Looks like a non-compete or restrictive-covenant clause. Several states ban or sharply limit these for most workers — check the Rights tab for your state before assuming it is enforceable.' },
+  { title:'Non-solicitation', level:'NEGOTIABLE', tone:'#FFF4D6', badge:'#8A5A00',
+    re:/non-?solicit\w*|(?:shall not|agrees? not to|will not|must not)[^.]{0,40}solicit\w*/i,
+    plain:'Looks like a non-solicitation clause restricting you from pursuing former coworkers, customers or clients. These are usually narrower than a non-compete but can still be negotiated — check how long it lasts and who it covers.' },
   { title:'Arbitration / class-action waiver', level:'READ CLOSELY', tone:'#FFE7EC', badge:'#C81E1B',
-    re:/\barbitrat|class action waiver|waive[sd]?[^.]{0,30}(class|collective) action/i,
-    plain:'Looks like an arbitration clause or a waiver of your right to join a class or collective action. This can limit how and where you can bring a future claim.' },
+    re:/\barbitrat\w*|class(?:-|\s)action waiver|waiv(?:es?|ed|ing)[^.]{0,40}(class|collective) action|jury trial/i,
+    plain:'Looks like an arbitration clause, a waiver of your right to a jury trial, or a waiver of your right to join a class or collective action. This can limit how and where you can bring a future claim.' },
   { title:'Confidentiality / non-disclosure', level:'NEGOTIABLE', tone:'#FFF4D6', badge:'#8A5A00',
-    re:/confidential(ity)?|non-disclosure|\bnda\b/i,
+    re:/confidential(?:ity)?|non-disclosure|\bnda\b|(?:shall not|agrees? not to|will not|must not)[^.]{0,40}(disclose|reveal|divulge)\w*/i,
     plain:'Looks like a confidentiality or non-disclosure clause. Check the scope — federal and some state law protect your ability to discuss your own wages and working conditions regardless of what this says.' },
-  { title:'Revocation / consideration period', level:'STANDARD', tone:'#E8F6EE', badge:'#136B3C',
-    re:/revocation period|revoke this agreement|(21|twenty-one) days? to consider|(7|seven) days? to revoke/i,
-    plain:'Mentions a period to consider and/or revoke the agreement — common in release agreements covered by the Older Workers Benefit Protection Act. Confirm the exact number of days in your copy.' },
+  { title:'Revocation / consideration period (ADEA/OWBPA)', level:'STANDARD', tone:'#E8F6EE', badge:'#136B3C',
+    re:/revocation period|revoke this agreement|(21|twenty-one|45|forty-five) days? to consider|(7|seven) days? to revoke/i,
+    plain:'Mentions a period to consider and/or revoke the agreement — required for age-discrimination releases under the Older Workers Benefit Protection Act (21 days to consider, or 45 days for a group layoff, plus 7 days to revoke after signing). Confirm the exact number of days in your copy.' },
+  { title:'At-will employment', level:'STANDARD', tone:'#E8F6EE', badge:'#136B3C',
+    re:/at-?will employ\w*|employment (?:is|shall be|remains) at-?will|terminate[^.]{0,60}(with or without cause|for any reason or no reason)/i,
+    plain:'States or confirms your employment is "at-will" — either side can end it at any time, for almost any reason. This is standard in most US states, but it does not override laws against firing you for a discriminatory or retaliatory reason.' },
+  { title:'IP / invention assignment', level:'STANDARD', tone:'#E8F6EE', badge:'#136B3C',
+    re:/invention assignment|work[-\s]made[-\s]for[-\s]hire|assigns?[^.]{0,60}(right, title and interest|inventions?)|intellectual property (?:assignment|rights)/i,
+    plain:'Looks like an intellectual-property or invention-assignment clause — work you create on the job (and sometimes related work outside it) becomes the company\'s property. Standard in many offer letters; check whether it reaches beyond your actual job duties.' },
+  { title:'Governing law / venue', level:'STANDARD', tone:'#E8F6EE', badge:'#136B3C',
+    re:/governing law|govern(?:ed)? by the laws of|exclusive jurisdiction|venue (?:shall|will|is) (?:be|lie)/i,
+    plain:'Sets which state\'s law applies and/or where a dispute must be filed. This can matter a lot if it points to a state other than where you live or work — it can make it harder and costlier to bring a claim.' },
+  { title:'Liquidated damages / penalty', level:'READ CLOSELY', tone:'#FFE7EC', badge:'#C81E1B',
+    re:/liquidated damages|penalty (?:of|equal to|in the amount)/i,
+    plain:'Looks like a pre-set dollar amount you would owe for breaching the agreement (for example, breaking a non-compete or confidentiality clause). These clauses can create real financial exposure — read the trigger and the amount closely.' },
+  { title:'Performance plan / termination timeline', level:'READ CLOSELY', tone:'#FFE7EC', badge:'#C81E1B',
+    re:/performance improvement plan|\bPIP\b|(?:30|60|90|thirty|sixty|ninety)[-\s]day (?:improvement|action) plan|failure to (?:meet|achieve)[^.]{0,60}(?:may|will|could) result in[^.]{0,30}termination/i,
+    plain:'Looks like a performance-improvement plan or a stated timeline tied to termination. Note the deadline and the specific goals — missing an unclear or unreachable goal is often used to justify a later firing.' },
 ];
 function scanClauseText(text){
   const t = String(text || '');
@@ -2492,7 +2510,7 @@ function App(){
       <button onClick={nav('home')} style={css("align-self:flex-start;display:flex;align-items:center;gap:4px;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}><Icon name="back" size={18} /> Dashboard</button>
       <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Review a document</h1>
       <div style={css("padding:14px 16px;border-radius:12px;background:#FFF4D6;border:2px solid #14181F")}>
-        <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}><strong>Uploaded files are not read</strong> — the picker below only notes the file name. <strong>Pasted text IS scanned</strong>, entirely on your device, for a short list of common clause keywords (release, non-disparagement, non-compete, arbitration, confidentiality, revocation period). This is a basic keyword match, not a legal opinion — it can miss real issues and flag benign text. Bring your actual document to an attorney before signing.</p>
+        <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}><strong>Uploaded files are not read</strong> — the picker below only notes the file name. <strong>Pasted text IS scanned</strong>, entirely on your device, for common clause types across offer letters, NDAs, employment contracts, severance, PIPs and non-competes (release of claims, non-disparagement, non-compete, non-solicitation, arbitration/class-action waiver, confidentiality, consideration/revocation period, at-will status, IP assignment, governing law, liquidated damages, performance-plan timelines). This is a basic keyword match, not a legal opinion — it can miss real issues and flag benign text. Bring your actual document to an attorney before signing.</p>
       </div>
       <p style={css("margin:0;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>This is legal information, not legal advice, and it is not a review of your standing to bring a claim — only an attorney can tell you that.</p>
       <label className="fileInputCard" style={css("display:flex;flex-direction:column;gap:8px;padding:16px;border-radius:16px;border:2px solid #14181F;background:#fff;cursor:pointer;text-align:center")}>

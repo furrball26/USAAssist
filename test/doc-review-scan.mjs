@@ -104,6 +104,66 @@ async function freshPage() {
   await pg.close();
 }
 
+// Case 3: broader real-world phrasings must be caught — "agrees not to disparage"
+// (not just "shall not disparage") and "shall not disclose the terms" (not just
+// the words confidential/non-disclosure/nda).
+{
+  const pg = await freshPage();
+  const errs = [];
+  pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
+  pg.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
+
+  const pasted = 'Employee agrees not to disparage the Company. Employee further agrees that Employee shall not disclose the terms of this Agreement to any third party.';
+  await pg.evaluate(() => { const ta = document.querySelector('#doc-text'); ta && ta.focus(); });
+  await pg.keyboard.type(pasted, { delay:0 });
+  await new Promise(r => setTimeout(r, 200));
+
+  const pageText = await pg.evaluate(() => document.body.textContent);
+  const cardTitles = await pg.evaluate(() => [...document.querySelectorAll('h1,span')].map(e => e.textContent));
+
+  const problems = [];
+  if (!cardTitles.some(t => /Non-disparagement/.test(t))) problems.push('"agrees not to disparage" was not flagged as non-disparagement');
+  if (!cardTitles.some(t => /Confidentiality/.test(t))) problems.push('"shall not disclose the terms" was not flagged as confidentiality/non-disclosure');
+  errs.forEach(e => problems.push(e));
+
+  const ok = problems.length === 0;
+  if (!ok) fails++;
+  console.log((ok ? '✅' : '❌') + ' broader real-world phrasings ("agrees not to disparage", "shall not disclose the terms") are flagged' + (ok ? '' : '\n   ' + problems.join('\n   ')));
+  await pg.close();
+}
+
+// Case 4: newly added clause types (non-solicitation, at-will, IP assignment,
+// governing law, liquidated damages, performance-plan timeline) must each fire
+// on a real-world phrasing.
+{
+  const pg = await freshPage();
+  const errs = [];
+  pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
+  pg.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
+
+  const pasted = 'Employee agrees not to solicit any customers or employees of the Company for 12 months. ' +
+    'Employee\'s employment with the Company is at-will and may be terminated at any time, with or without cause. ' +
+    'Employee hereby assigns to the Company all right, title and interest in any inventions made during employment. ' +
+    'This Agreement shall be governed by the laws of the State of Delaware, and the exclusive jurisdiction for any dispute shall be the courts of that state. ' +
+    'In the event of a breach of the non-compete provision, Employee shall pay liquidated damages of $10,000. ' +
+    'Employee will be placed on a 30-day performance improvement plan; failure to meet these goals may result in termination.';
+  await pg.evaluate(() => { const ta = document.querySelector('#doc-text'); ta && ta.focus(); });
+  await pg.keyboard.type(pasted, { delay:0 });
+  await new Promise(r => setTimeout(r, 200));
+
+  const cardTitles = await pg.evaluate(() => [...document.querySelectorAll('h1,span')].map(e => e.textContent));
+
+  const problems = [];
+  const expect = ['Non-solicitation', 'At-will employment', 'IP / invention assignment', 'Governing law', 'Liquidated damages', 'Performance plan'];
+  expect.forEach(label => { if (!cardTitles.some(t => t.includes(label))) problems.push(`"${label}" clause type was not flagged`); });
+  errs.forEach(e => problems.push(e));
+
+  const ok = problems.length === 0;
+  if (!ok) fails++;
+  console.log((ok ? '✅' : '❌') + ' new clause types (non-solicit, at-will, IP assignment, governing law, liquidated damages, PIP timeline) are flagged' + (ok ? '' : '\n   ' + problems.join('\n   ')));
+  await pg.close();
+}
+
 // Case 2: with nothing pasted, the screen must NOT claim uploaded files are read.
 {
   const pg = await freshPage();

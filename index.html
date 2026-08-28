@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-g4pkA40b8/icwrB1jl+7SI4LDtBoSntL4rzfybzMlDQ='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-qPxFPMQliN98twDZYrRdhrhdxVMPAgZWc9yJFvQul4s='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14181F">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232B3AA8'/%3E%3Ctext x='32' y='47' font-size='42' text-anchor='middle' fill='white' font-family='Georgia,serif'%3E%C2%A7%3C/text%3E%3C/svg%3E">
@@ -784,7 +784,7 @@ const CLAUSE_PATTERNS = [
     level: "READ CLOSELY",
     tone: "#FFE7EC",
     badge: "#C81E1B",
-    re: /\brelease[sd]?\b[^.]{0,100}\b(claims?|causes? of action|liability)\b/i,
+    re: /\b(releas(?:es?|ed|ing)|waiv(?:es?|ed|ing)|discharg(?:es?|ed|ing)|forever discharge)\b[^.]{0,100}\b(claims?|causes? of action|liability|demands?)\b/i,
     plain: "Looks like a release of legal claims \u2014 you may be giving up the right to sue for things that already happened. In many states, wages you already earned generally cannot be waived by signing this."
   },
   {
@@ -792,7 +792,7 @@ const CLAUSE_PATTERNS = [
     level: "NEGOTIABLE",
     tone: "#FFF4D6",
     badge: "#8A5A00",
-    re: /non-?disparage|shall not (make any statement|disparage)/i,
+    re: /non-?disparage\w*|(?:shall not|agrees? not to|will not|must not)[^.]{0,40}(disparage\w*|make any (?:statement|comment)s?|speak (?:negatively|ill)|reflects? negatively)/i,
     plain: "Looks like a non-disparagement clause. As commonly written these are broad; many states protect your ability to describe unlawful conduct you experienced, and that carve-out is sometimes missing."
   },
   {
@@ -800,32 +800,80 @@ const CLAUSE_PATTERNS = [
     level: "READ CLOSELY",
     tone: "#FFE7EC",
     badge: "#C81E1B",
-    re: /non-?compet\w*|restrictive covenant|shall not (work for|be employed by|compete with)/i,
+    re: /non-?compet\w*|restrictive covenant|(?:shall not|agrees? not to|will not|must not)[^.]{0,40}(compete with|work for|be employed by|provide services to)/i,
     plain: "Looks like a non-compete or restrictive-covenant clause. Several states ban or sharply limit these for most workers \u2014 check the Rights tab for your state before assuming it is enforceable."
+  },
+  {
+    title: "Non-solicitation",
+    level: "NEGOTIABLE",
+    tone: "#FFF4D6",
+    badge: "#8A5A00",
+    re: /non-?solicit\w*|(?:shall not|agrees? not to|will not|must not)[^.]{0,40}solicit\w*/i,
+    plain: "Looks like a non-solicitation clause restricting you from pursuing former coworkers, customers or clients. These are usually narrower than a non-compete but can still be negotiated \u2014 check how long it lasts and who it covers."
   },
   {
     title: "Arbitration / class-action waiver",
     level: "READ CLOSELY",
     tone: "#FFE7EC",
     badge: "#C81E1B",
-    re: /\barbitrat|class action waiver|waive[sd]?[^.]{0,30}(class|collective) action/i,
-    plain: "Looks like an arbitration clause or a waiver of your right to join a class or collective action. This can limit how and where you can bring a future claim."
+    re: /\barbitrat\w*|class(?:-|\s)action waiver|waiv(?:es?|ed|ing)[^.]{0,40}(class|collective) action|jury trial/i,
+    plain: "Looks like an arbitration clause, a waiver of your right to a jury trial, or a waiver of your right to join a class or collective action. This can limit how and where you can bring a future claim."
   },
   {
     title: "Confidentiality / non-disclosure",
     level: "NEGOTIABLE",
     tone: "#FFF4D6",
     badge: "#8A5A00",
-    re: /confidential(ity)?|non-disclosure|\bnda\b/i,
+    re: /confidential(?:ity)?|non-disclosure|\bnda\b|(?:shall not|agrees? not to|will not|must not)[^.]{0,40}(disclose|reveal|divulge)\w*/i,
     plain: "Looks like a confidentiality or non-disclosure clause. Check the scope \u2014 federal and some state law protect your ability to discuss your own wages and working conditions regardless of what this says."
   },
   {
-    title: "Revocation / consideration period",
+    title: "Revocation / consideration period (ADEA/OWBPA)",
     level: "STANDARD",
     tone: "#E8F6EE",
     badge: "#136B3C",
-    re: /revocation period|revoke this agreement|(21|twenty-one) days? to consider|(7|seven) days? to revoke/i,
-    plain: "Mentions a period to consider and/or revoke the agreement \u2014 common in release agreements covered by the Older Workers Benefit Protection Act. Confirm the exact number of days in your copy."
+    re: /revocation period|revoke this agreement|(21|twenty-one|45|forty-five) days? to consider|(7|seven) days? to revoke/i,
+    plain: "Mentions a period to consider and/or revoke the agreement \u2014 required for age-discrimination releases under the Older Workers Benefit Protection Act (21 days to consider, or 45 days for a group layoff, plus 7 days to revoke after signing). Confirm the exact number of days in your copy."
+  },
+  {
+    title: "At-will employment",
+    level: "STANDARD",
+    tone: "#E8F6EE",
+    badge: "#136B3C",
+    re: /at-?will employ\w*|employment (?:is|shall be|remains) at-?will|terminate[^.]{0,60}(with or without cause|for any reason or no reason)/i,
+    plain: 'States or confirms your employment is "at-will" \u2014 either side can end it at any time, for almost any reason. This is standard in most US states, but it does not override laws against firing you for a discriminatory or retaliatory reason.'
+  },
+  {
+    title: "IP / invention assignment",
+    level: "STANDARD",
+    tone: "#E8F6EE",
+    badge: "#136B3C",
+    re: /invention assignment|work[-\s]made[-\s]for[-\s]hire|assigns?[^.]{0,60}(right, title and interest|inventions?)|intellectual property (?:assignment|rights)/i,
+    plain: "Looks like an intellectual-property or invention-assignment clause \u2014 work you create on the job (and sometimes related work outside it) becomes the company's property. Standard in many offer letters; check whether it reaches beyond your actual job duties."
+  },
+  {
+    title: "Governing law / venue",
+    level: "STANDARD",
+    tone: "#E8F6EE",
+    badge: "#136B3C",
+    re: /governing law|govern(?:ed)? by the laws of|exclusive jurisdiction|venue (?:shall|will|is) (?:be|lie)/i,
+    plain: "Sets which state's law applies and/or where a dispute must be filed. This can matter a lot if it points to a state other than where you live or work \u2014 it can make it harder and costlier to bring a claim."
+  },
+  {
+    title: "Liquidated damages / penalty",
+    level: "READ CLOSELY",
+    tone: "#FFE7EC",
+    badge: "#C81E1B",
+    re: /liquidated damages|penalty (?:of|equal to|in the amount)/i,
+    plain: "Looks like a pre-set dollar amount you would owe for breaching the agreement (for example, breaking a non-compete or confidentiality clause). These clauses can create real financial exposure \u2014 read the trigger and the amount closely."
+  },
+  {
+    title: "Performance plan / termination timeline",
+    level: "READ CLOSELY",
+    tone: "#FFE7EC",
+    badge: "#C81E1B",
+    re: /performance improvement plan|\bPIP\b|(?:30|60|90|thirty|sixty|ninety)[-\s]day (?:improvement|action) plan|failure to (?:meet|achieve)[^.]{0,60}(?:may|will|could) result in[^.]{0,30}termination/i,
+    plain: "Looks like a performance-improvement plan or a stated timeline tied to termination. Note the deadline and the specific goals \u2014 missing an unclear or unreachable goal is often used to justify a later firing."
   }
 ];
 function scanClauseText(text) {
@@ -2025,7 +2073,7 @@ function App() {
     const scanned = scanClauseText(docText);
     const hasPasted = docText.trim().length > 0;
     const shownClauses = hasPasted ? scanned : CLAUSES;
-    return /* @__PURE__ */ React.createElement("div", { style: css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px") }, /* @__PURE__ */ React.createElement("button", { onClick: nav("home"), style: css("align-self:flex-start;display:flex;align-items:center;gap:4px;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer") }, /* @__PURE__ */ React.createElement(Icon, { name: "back", size: 18 }), " Dashboard"), /* @__PURE__ */ React.createElement("h1", { style: css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Review a document"), /* @__PURE__ */ React.createElement("div", { style: css("padding:14px 16px;border-radius:12px;background:#FFF4D6;border:2px solid #14181F") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, /* @__PURE__ */ React.createElement("strong", null, "Uploaded files are not read"), " \u2014 the picker below only notes the file name. ", /* @__PURE__ */ React.createElement("strong", null, "Pasted text IS scanned"), ", entirely on your device, for a short list of common clause keywords (release, non-disparagement, non-compete, arbitration, confidentiality, revocation period). This is a basic keyword match, not a legal opinion \u2014 it can miss real issues and flag benign text. Bring your actual document to an attorney before signing.")), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "This is legal information, not legal advice, and it is not a review of your standing to bring a claim \u2014 only an attorney can tell you that."), /* @__PURE__ */ React.createElement("label", { className: "fileInputCard", style: css("display:flex;flex-direction:column;gap:8px;padding:16px;border-radius:16px;border:2px solid #14181F;background:#fff;cursor:pointer;text-align:center") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, docName ? "Noted: " + docName + " (file contents not read)" : "Note a file name (optional)"), /* @__PURE__ */ React.createElement("span", { style: css("font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "Offer, contract, NDA, severance or PIP \xB7 your file stays on your device"), /* @__PURE__ */ React.createElement("input", { type: "file", accept: ".pdf,.doc,.docx,.txt,.rtf", onChange: (e) => setDocName(e.target.files && e.target.files[0] ? e.target.files[0].name : ""), className: "fileInputHidden" })), docName && /* @__PURE__ */ React.createElement("button", { onClick: () => setDocName(""), style: css("align-self:flex-start;min-height:44px;padding:10px 14px;border-radius:10px;border:2px solid #B3264F;background:#fff;color:#B3264F;font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, "Remove file name"), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:8px") }, /* @__PURE__ */ React.createElement("label", { htmlFor: "doc-text", style: css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Paste the document text here for a real scan"), /* @__PURE__ */ React.createElement("textarea", { id: "doc-text", value: docText, onChange: (e) => setDocText(e.target.value), rows: 7, placeholder: "Paste the text of your offer, severance, NDA or PIP here\u2026", style: css("width:100%;box-sizing:border-box;padding:14px;border-radius:12px;border:2px solid #14181F;font:400 15px/1.5 'IBM Plex Mono',monospace;color:#14181F;resize:vertical") }), hasPasted && /* @__PURE__ */ React.createElement("button", { onClick: () => setDocText(""), style: css("align-self:flex-start;min-height:44px;padding:10px 14px;border-radius:10px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, "Clear pasted text")), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:600 14px 'IBM Plex Mono',monospace;color:#4A5162") }, hasPasted ? scanned.length ? scanned.length + " clause" + (scanned.length === 1 ? "" : "s") + " flagged in your pasted text" : "No matching clause keywords found in your pasted text \u2014 that does not mean the document is safe to sign" : "EXAMPLE \xB7 severance agreement \xB7 3 clauses flagged"), hasPasted && scanned.length === 0 ? null : /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:12px") }, shownClauses.map(
+    return /* @__PURE__ */ React.createElement("div", { style: css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px") }, /* @__PURE__ */ React.createElement("button", { onClick: nav("home"), style: css("align-self:flex-start;display:flex;align-items:center;gap:4px;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer") }, /* @__PURE__ */ React.createElement(Icon, { name: "back", size: 18 }), " Dashboard"), /* @__PURE__ */ React.createElement("h1", { style: css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Review a document"), /* @__PURE__ */ React.createElement("div", { style: css("padding:14px 16px;border-radius:12px;background:#FFF4D6;border:2px solid #14181F") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, /* @__PURE__ */ React.createElement("strong", null, "Uploaded files are not read"), " \u2014 the picker below only notes the file name. ", /* @__PURE__ */ React.createElement("strong", null, "Pasted text IS scanned"), ", entirely on your device, for common clause types across offer letters, NDAs, employment contracts, severance, PIPs and non-competes (release of claims, non-disparagement, non-compete, non-solicitation, arbitration/class-action waiver, confidentiality, consideration/revocation period, at-will status, IP assignment, governing law, liquidated damages, performance-plan timelines). This is a basic keyword match, not a legal opinion \u2014 it can miss real issues and flag benign text. Bring your actual document to an attorney before signing.")), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "This is legal information, not legal advice, and it is not a review of your standing to bring a claim \u2014 only an attorney can tell you that."), /* @__PURE__ */ React.createElement("label", { className: "fileInputCard", style: css("display:flex;flex-direction:column;gap:8px;padding:16px;border-radius:16px;border:2px solid #14181F;background:#fff;cursor:pointer;text-align:center") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, docName ? "Noted: " + docName + " (file contents not read)" : "Note a file name (optional)"), /* @__PURE__ */ React.createElement("span", { style: css("font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "Offer, contract, NDA, severance or PIP \xB7 your file stays on your device"), /* @__PURE__ */ React.createElement("input", { type: "file", accept: ".pdf,.doc,.docx,.txt,.rtf", onChange: (e) => setDocName(e.target.files && e.target.files[0] ? e.target.files[0].name : ""), className: "fileInputHidden" })), docName && /* @__PURE__ */ React.createElement("button", { onClick: () => setDocName(""), style: css("align-self:flex-start;min-height:44px;padding:10px 14px;border-radius:10px;border:2px solid #B3264F;background:#fff;color:#B3264F;font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, "Remove file name"), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:8px") }, /* @__PURE__ */ React.createElement("label", { htmlFor: "doc-text", style: css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Paste the document text here for a real scan"), /* @__PURE__ */ React.createElement("textarea", { id: "doc-text", value: docText, onChange: (e) => setDocText(e.target.value), rows: 7, placeholder: "Paste the text of your offer, severance, NDA or PIP here\u2026", style: css("width:100%;box-sizing:border-box;padding:14px;border-radius:12px;border:2px solid #14181F;font:400 15px/1.5 'IBM Plex Mono',monospace;color:#14181F;resize:vertical") }), hasPasted && /* @__PURE__ */ React.createElement("button", { onClick: () => setDocText(""), style: css("align-self:flex-start;min-height:44px;padding:10px 14px;border-radius:10px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, "Clear pasted text")), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:600 14px 'IBM Plex Mono',monospace;color:#4A5162") }, hasPasted ? scanned.length ? scanned.length + " clause" + (scanned.length === 1 ? "" : "s") + " flagged in your pasted text" : "No matching clause keywords found in your pasted text \u2014 that does not mean the document is safe to sign" : "EXAMPLE \xB7 severance agreement \xB7 3 clauses flagged"), hasPasted && scanned.length === 0 ? null : /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:12px") }, shownClauses.map(
       (cl, i) => /* @__PURE__ */ React.createElement("div", { key: i, style: css("padding:18px;border-radius:16px;border:2px solid #14181F;background:" + cl.tone) }, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, cl.title), /* @__PURE__ */ React.createElement("span", { style: css("flex:none;padding:6px 10px;border-radius:8px;background:#fff;border:2px solid " + cl.badge + ";font:700 12px 'IBM Plex Mono',monospace;color:" + cl.badge) }, cl.level)), /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 10px;padding-left:12px;border-left:4px solid rgba(20,24,31,.25);font:italic 400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "\u201C", cl.quote, "\u201D"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, cl.plain))
     )), /* @__PURE__ */ React.createElement("div", { style: css("padding:16px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "If your document mentions a consideration/revocation period, you typically have ", /* @__PURE__ */ React.createElement("strong", null, "21 days"), " to consider it and ", /* @__PURE__ */ React.createElement("strong", null, "7 days"), " to revoke after signing. Do not sign to hit an artificial deadline.")));
   };
