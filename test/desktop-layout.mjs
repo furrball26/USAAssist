@@ -235,7 +235,10 @@ for (const [width, mode] of [[1280, 'standard'], [1280, 'action'], [1280, 'plain
     { label:'Log', open: () => click('Log') },
     { label:'Rights', open: () => click('Rights') },
     { label:'Agencies', open: () => click('Agencies') },
-    { label:'Draft a letter', open: async () => { await click('Home'); await click('Draft a letter'); } },
+    // "Draft a letter" is only shown for non-wage issues now (redundant for
+    // wage — both letters are reachable via the step list); use the
+    // classification step, which lands on the same Letter screen.
+    { label:'Letter (via classification step)', open: async () => { await click('Home'); await click('Ask HR, in writing, for your overtime'); } },
     { label:'Am I exempt (wizard)', open: async () => { await click('Home'); await click('Am I exempt'); } },
     { label:'Review a document (doc)', open: async () => { await click('Home'); await click('Review a document'); } },
     { label:'Case Strength', open: async () => { await click('Home'); await click('CASE STRENGTH'); } },

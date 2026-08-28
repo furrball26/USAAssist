@@ -40,7 +40,7 @@ Discrimination claims in many states go through a separate Fair Employment Pract
 | IN | Indiana | Dept of Labor | https://www.in.gov/dol |
 | IA | Iowa | Iowa Workforce Development / Div. of Labor | https://www.iowaworkforcedevelopment.gov |
 | KS | Kansas | Dept of Labor | https://www.dol.ks.gov |
-| KY | Kentucky | Labor Cabinet | https://www.labor.ky.gov |
+| KY | Kentucky | Education and Labor Cabinet | https://elc.ky.gov |
 | LA | Louisiana | Workforce Commission | https://www.laworks.net |
 | ME | Maine | Dept of Labor | https://www.maine.gov/labor |
 | MD | Maryland | Dept of Labor | https://www.labor.maryland.gov |

@@ -105,10 +105,17 @@ try {
   if (!pillText || !/16 HRS LOGGED/.test(pillText) || !/2 WORKWEEKS/.test(pillText)) problems.push('expected "16 HRS LOGGED · 2 WORKWEEKS", got: ' + JSON.stringify(pillText));
 
   // The owed estimate downstream (Letter screen) reflects the date-driven
-  // workweek split: 10*20*1.5 + 6*20*0.5 = 360, across "2 separate workweeks".
+  // workweek split. Neither week reaches the 40-hr/week overtime threshold, so
+  // the 10 unpaid hours are owed at 1x ($200) and the 6 already-straight-paid
+  // hours owe nothing further (correctly paid) — total $200, across "2 separate
+  // workweeks". (Pre-fix, this used to be miscalculated as 10*20*1.5 + 6*20*0.5 =
+  // $360, wrongly treating both under-40-hr weeks as if they were overtime.)
   await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Home'); if (btn) btn.click(); });
   await new Promise(r => setTimeout(r, 300));
-  await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('Draft a letter')); if (btn) btn.click(); });
+  // "Draft a letter" is only shown for non-wage issues now (it's redundant for
+  // wage — both letters are reachable via the step list); reach the
+  // classification-request letter through its step row instead.
+  await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('Ask HR, in writing, for your overtime')); if (btn) btn.click(); });
   await new Promise(r => setTimeout(r, 300));
   await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => /Wage demand/.test(b.textContent)); if (btn) btn.click(); });
   await new Promise(r => setTimeout(r, 300));
@@ -118,8 +125,9 @@ try {
   });
   if (!letterText) problems.push('wage-demand letter body not found');
   else {
-    if (!letterText.includes('$360.00')) problems.push('expected owed estimate $360.00 from the date-driven workweek split, got: ' + JSON.stringify(letterText));
+    if (!letterText.includes('$200.00')) problems.push('expected owed estimate $200.00 from the date-driven workweek split, got: ' + JSON.stringify(letterText));
     if (!letterText.includes('2 separate workweeks')) problems.push('expected "2 separate workweeks" grouping text, got: ' + JSON.stringify(letterText));
+    if (letterText.includes('$360.00')) problems.push('letter shows the OLD overstated figure ($360.00), ignoring that neither week crossed the 40-hr overtime threshold');
   }
   errs.forEach(e => problems.push(e));
 

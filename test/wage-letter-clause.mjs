@@ -68,9 +68,12 @@ for (const c of CASES) {
   await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`);
   await new Promise(r => setTimeout(r, 700));
 
-  // Home → Tools → "Draft a letter", then switch to the "Wage demand" kind.
+  // Home → "Ask HR, in writing, for your overtime..." step (Tools' "Draft a
+  // letter" card is only shown for non-wage issues now — it's redundant for
+  // wage, since both letters are reachable via the step list), then switch to
+  // the "Wage demand" kind.
   await pg.evaluate(() => {
-    const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('Draft a letter'));
+    const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('Ask HR, in writing, for your overtime'));
     if (btn) btn.click();
   });
   await new Promise(r => setTimeout(r, 300));

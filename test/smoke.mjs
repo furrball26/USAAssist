@@ -78,9 +78,13 @@ try {
   // visit every tab + tool screen
   const stops = ['Ask AI', 'Log', 'Rights', 'Agencies', 'Home'];
   for (const s of stops) { const ok = await clickText(s); assert(ok, `tab "${s}" not found`); }
-  // tools from home
+  // tools from home. "Am I exempt from overtime?" is wage-issue-only (see
+  // per-issue flow fix) — "Skip to dashboard" leaves no issue selected (the
+  // generic issue), so it correctly does NOT appear here; covered separately
+  // below for a wage case, and asserted absent for a harassment case further
+  // down in the full onboarding walk.
   await clickText('Home');
-  for (const s of ['Am I exempt', 'Log an incident', 'Review a document', 'Draft a letter']) {
+  for (const s of ['Log an incident', 'Review a document', 'Draft a letter']) {
     await clickText('Home');
     const ok = await clickText(s);
     assert(ok, `tool "${s}" not found`);
@@ -118,6 +122,9 @@ try {
   assert(/case details/i.test(await bodyText()), 'step 4 (case details) not reached');
   await clickText('Open my dashboard');        // step 4 → home
   assert(/CASE #|evidence|Tools/i.test(await bodyText()), 'full onboarding walk did not reach dashboard');
+  // per-issue flow fix — the overtime-exemption self-check tool is wage-specific
+  // and must not be offered on a harassment case's Tools grid.
+  assert(!/Am I exempt from overtime/i.test(await bodyText()), 'exemption self-check tool shown on a harassment case (wage-only tool)');
 
   console.log(errors.length ? '❌ SMOKE FAILED' : '✅ SMOKE PASSED');
   if (errors.length) { errors.slice(0, 20).forEach(e => console.log('  ' + e)); }

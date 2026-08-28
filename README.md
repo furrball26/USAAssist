@@ -65,7 +65,7 @@ via esbuild) and splices the app block into `index.html` — the React/font inli
 untouched. A headless smoke test and a multi-state persona test guard against regressions.
 
 ```sh
-npm install        # esbuild + puppeteer-core (dev-only; see package.json)
+npm ci             # esbuild + puppeteer-core (dev-only; see package.json), from the committed lockfile
 npm run build      # index.dev.html → index.html + assets/app.js
 npm test           # headless smoke test (all screens, home modes, persistence)
 node test/persona.mjs   # multi-state / multi-issue consistency + no-leakage check
@@ -108,6 +108,18 @@ of a hand-maintained artifact living only in the Vercel dashboard.
 5. Optionally confirm the deploy landed: `npm run check-live-drift` fetches worklaw.app,
    extracts the SHA it's actually pinned to, and diffs it against `origin/main` (read-only;
    requires network access to the live site).
+
+### Maintenance
+
+- **`CONTENT_FALLBACK_BASE`** (in `index.dev.html`) is a SHA-pinned
+  `raw.githubusercontent.com` URL that `fetchContentJson()` falls back to once if the
+  primary `CONTENT_BASE` fetch fails — it's the degraded-network path. Because it's
+  pinned to a fixed commit, it goes stale over time (a user on that path could be served
+  outdated law data). `npm run check-fallback-freshness` (part of `npm run verify`, always
+  exits 0 — a warning, not a build-breaker) checks it against `origin/main` and warns if
+  it's more than 30 days or 20 commits behind. **Only `wl-builder` may bump the SHA** (it's
+  an edit inside `index.dev.html`'s app code) — routinely update it to a recent known-good
+  commit as part of normal maintenance, then rebuild and commit.
 
 ### Rollback
 

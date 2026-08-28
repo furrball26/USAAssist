@@ -65,7 +65,11 @@ console.log((ok ? '✅' : '❌') + ' letterEdit/letterType/wizNode/wizPath/docNa
 
 // Also verify the letter screen actually SHOWS the persisted hand-edited text
 // after reload, not just that localStorage kept it.
-await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('Draft a letter')); if (btn) btn.click(); });
+// "Draft a letter" is only shown for non-wage issues now (redundant for wage —
+// both letters are reachable via the step list); use the classification step.
+// The letter screen shows the raw persisted letterEdit text regardless of which
+// letter kind is active, so this doesn't affect the assertion below.
+await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('Ask HR, in writing, for your overtime')); if (btn) btn.click(); });
 await new Promise(r => setTimeout(r, 300));
 const shownText = await pg.evaluate(() => { const ta = document.querySelector('textarea'); return ta ? ta.value : null; });
 const rendered = shownText === seed.letterEdit;

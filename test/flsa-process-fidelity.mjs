@@ -63,7 +63,11 @@ try {
 
   const all = await bodyText(pg);
   const problems = [];
-  if (!/You may be owed about \$300\.00/.test(all)) problems.push('expected owed-estimate headline ($300.00 = 10 * $20 * 1.5), got: ' + JSON.stringify(all.slice(0, 400)));
+  // 10 unpaid hours in a single sub-40-hr workweek: owed at the straight 1x rate
+  // ($200.00), not the 1.5x overtime rate — the week never crosses the 40-hr/
+  // week FLSA overtime threshold.
+  if (!/You may be owed about \$200\.00/.test(all)) problems.push('expected owed-estimate headline ($200.00 = 10 * $20 * 1.0 — under the 40-hr/week overtime threshold), got: ' + JSON.stringify(all.slice(0, 400)));
+  if (/\$300\.00/.test(all)) problems.push('shows the OLD overstated figure ($300.00 = 10*20*1.5), wrongly applying the overtime multiplier to a sub-40-hr workweek');
   if (!/back wages only/i.test(all)) problems.push('missing the "back wages only" label on the owed estimate');
   if (!/double/i.test(all)) problems.push('missing the "up to double" liquidated-damages framing near the estimate');
   errs.forEach(e => problems.push(e));
@@ -92,7 +96,10 @@ try {
 
   const problems = [];
 
-  await click(pg, 'Draft a letter');
+  // Home's "Draft a letter" Tools card was removed (redundant with the step list
+  // and the wizard's non-exempt result) — reach the classification-request letter
+  // via its "Your next steps" row instead.
+  await click(pg, 'Ask HR, in writing, for your overtime');
   await new Promise(r => setTimeout(r, 300));
   const classText = await bodyText(pg);
   if (!/215\(a\)\(3\)/.test(classText) || !/retaliation/i.test(classText)) problems.push('classification-request letter missing retaliation protection statement, got: ' + JSON.stringify(classText.slice(0, 600)));
