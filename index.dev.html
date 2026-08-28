@@ -2417,10 +2417,17 @@ function App(){
       <div>
         <h2 style={css("margin:0 0 12px;font:700 20px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Tools</h2>
         <div style={css("display:grid;grid-template-columns:1fr 1fr;gap:10px")}>
-          <button onClick={nav('wizard')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#FFF4D6;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
-            <span aria-hidden="true"><Icon name="rights" size={24} /></span>
-            <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Am I exempt from overtime?</span>
-          </button>
+          {/* The overtime-exemption self-check is wage-specific (it feeds the FLSA
+              classification wizard) — Action-first and Plain mode already gate their
+              equivalent CTA on cfg.key === 'wage'; this tile matches them so a
+              harassment/discrimination/termination/document/general case is never
+              offered a tool that answers a question it didn't ask. */}
+          {cfg.key === 'wage' &&
+            <button onClick={nav('wizard')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#FFF4D6;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
+              <span aria-hidden="true"><Icon name="rights" size={24} /></span>
+              <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Am I exempt from overtime?</span>
+            </button>
+          }
           <button onClick={nav('log')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#F1EAFB;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
             <span aria-hidden="true"><Icon name="log" size={24} /></span>
             <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Log an incident or hours</span>
