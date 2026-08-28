@@ -1188,7 +1188,10 @@ const ISSUES = {
       'Note the consideration and revocation deadlines',
       'Ask about anything you are giving up before signing',
     ],
-    stepScreens:['doc','doc','doc','doc'],
+    // Step 4 promises a Q&A ("ask about anything you are giving up"), not
+    // another pass over the static clause list — route it to the chat, which
+    // already has a chatSeed built for this issue, instead of the 'doc' screen.
+    stepScreens:['doc','doc','doc','chat'],
     stepIds:['document-upload','document-review-clauses','document-note-deadlines','document-ask-questions'],
     chatSeed:'You have a document to review — an offer, NDA, severance or PIP. Tell me which, and what you are worried about, and I will walk through it in plain language.',
   },
