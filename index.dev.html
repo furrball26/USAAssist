@@ -704,16 +704,26 @@ const GENERIC_ISSUE = {
   // Screen each step actually leads to (index-matched to `steps`), so "Do this step" / the
   // Plain-mode primary CTA lands where the step text says, not on a single issue-wide tool.
   stepScreens:['log','log','log','chat'],
+  // Stable per-step ids (index-matched to `steps`) — `done` is keyed by these, not by
+  // raw array index, so reordering an issue's steps later can't silently relabel an
+  // already-checked step as a different one for an in-progress saved case. See the
+  // wage reorder below for why this matters.
+  stepIds:['general-log-what-happened','general-save-documents','general-note-witness','general-ask-question'],
   chatSeed:'Tell me what is going on at work and I will explain the rules where you are. This preview gives general information, not legal advice.',
 };
 const ISSUES = {
   'Unpaid overtime or wages': {
-    key:'wage', caseTitle:'Unpaid overtime & wages', primaryTool:'letter', letterKind:'classification-request',
-    action:'Ask HR for your overtime classification in writing.',
-    actionWhy:'Confirming whether you are exempt or non-exempt is the first step — it decides whether you are owed overtime before you demand anything. We drafted the request for you.',
+    key:'wage', caseTitle:'Unpaid overtime & wages', primaryTool:'wizard', letterKind:'classification-request',
+    action:'Run the overtime-exemption self-check.',
+    actionWhy:'Whether you are exempt from overtime decides everything else — it comes before asking HR to confirm anything in writing or demanding money. The self-check takes about two minutes.',
+    // Order: (1) check exemption status yourself first, so you know what to ask for and
+    // whether a claim exists at all; (2) THEN ask HR to confirm that classification in
+    // writing, since their answer is only useful once you know what "right" looks like;
+    // (3) log hours as evidence throughout; (4) an optional demand letter, or skip
+    // straight to a free WHD complaint or a private lawsuit — no demand letter required.
     steps:[
+      'Run the overtime-exemption self-check to see whether you should be getting overtime pay',
       'Ask HR, in writing, for your overtime (FLSA) classification and its basis',
-      'Run the overtime-exemption self-check to see if that classification looks right',
       'Log every unpaid or off-the-clock hour you can remember — it is evidence',
       // G5 (docs/flsa-process-gap.md) — a demand letter is an OPTIONAL tactical move, not
       // something FLSA requires before a complaint or lawsuit; the old copy ("send a
@@ -721,8 +731,15 @@ const ISSUES = {
       // mentioned the two paths that actually recover the money (WHD complaint / lawsuit).
       'Optional: send a wage-demand letter — or skip straight to a free WHD complaint or a private lawsuit; no demand letter is required by law',
     ],
-    stepScreens:['letter','wizard','log','letter'],
-    stepLetterTypes:['classification-request', null, null, 'wage-demand'],
+    stepScreens:['wizard','letter','log','letter'],
+    stepLetterTypes:[null, 'classification-request', null, 'wage-demand'],
+    // Stable ids (not raw index) — see GENERIC_ISSUE.stepIds. This issue's step ORDER
+    // changed (exemption self-check moved from position 2 to position 1); keying `done`
+    // by these ids instead of by array index means an in-progress saved case that had,
+    // say, index 0 checked (previously "ask HR") does not silently reappear as index 0
+    // now meaning "run the self-check" — a legacy index-keyed done map simply matches no
+    // id and the step reads as not-done again, which is the safe direction to be wrong in.
+    stepIds:['wage-exempt-check','wage-classification-letter','wage-log-hours','wage-demand-letter'],
     chatSeed:'You mentioned unpaid hours or overtime. Tell me your job title and how you are paid — salary or hourly — and I will explain which overtime rules apply where you work.',
   },
   'Harassment or a hostile workplace': {
@@ -736,6 +753,7 @@ const ISSUES = {
       'Identify coworkers who witnessed the conduct',
     ],
     stepScreens:['log','log','log','log'],
+    stepIds:['harassment-log-incident','harassment-save-evidence','harassment-note-report','harassment-witnesses'],
     chatSeed:'You mentioned harassment or a hostile workplace. Tell me what has been happening and whether it is tied to a protected characteristic, and I will explain what the law covers where you work.',
   },
   'Discrimination': {
@@ -749,6 +767,7 @@ const ISSUES = {
       'Record any complaint you made and the response',
     ],
     stepScreens:['log','log','log','log'],
+    stepIds:['discrimination-log-actions','discrimination-note-comments','discrimination-save-records','discrimination-log-complaint'],
     chatSeed:'You mentioned discrimination. Tell me the protected characteristic involved and what happened, and I will explain the federal and state protections where you work.',
   },
   'Fired or pushed out': {
@@ -762,6 +781,7 @@ const ISSUES = {
       'Note anything said about why you were let go, and by whom',
     ],
     stepScreens:['log','letter','log','log'],
+    stepIds:['termination-log-timeline','termination-request-file','termination-save-protected-activity','termination-note-reason'],
     chatSeed:'You mentioned being fired or pushed out. Tell me the reason you were given and what happened in the weeks before, and I will explain wrongful-termination and retaliation rules where you work.',
   },
   'A document to review': {
@@ -775,6 +795,7 @@ const ISSUES = {
       'Ask about anything you are giving up before signing',
     ],
     stepScreens:['doc','doc','doc','doc'],
+    stepIds:['document-upload','document-review-clauses','document-note-deadlines','document-ask-questions'],
     chatSeed:'You have a document to review — an offer, NDA, severance or PIP. Tell me which, and what you are worried about, and I will walk through it in plain language.',
   },
 };
@@ -827,6 +848,19 @@ function stepTarget(cfg, idx){
   const screen = (cfg.stepScreens && cfg.stepScreens[idx]) || cfg.primaryTool;
   const letterType = (cfg.stepLetterTypes && cfg.stepLetterTypes[idx]) || null;
   return { screen, letterType };
+}
+
+// `done` is keyed by a stable per-step id (cfg.stepIds), not the raw array index —
+// so reordering an issue's `steps` (see the wage issue) can't relabel an
+// already-checked step as a different one for an in-progress saved case. Falls back
+// to the numeric index only if an issue config is missing stepIds.
+function stepKey(cfg, idx){
+  return (cfg.stepIds && cfg.stepIds[idx]) || idx;
+}
+
+function isStepDone(cfg, idx, done, ctx){
+  const id = stepKey(cfg, idx);
+  return !!done[id];
 }
 
 // Generate a self-send letter from the user's real inputs (no fabricated persona).
@@ -1419,7 +1453,8 @@ function App(){
   // pct 12, so score is ~12 even with no evidence — Math.round(12/20) would light
   // one bar under the "Not started" label. Only fill bars once there's real evidence.
   const strengthFill = evidenceCount > 0 ? Math.max(1, Math.round(strength.score / 20)) : 0;
-  const doneCount = cfg.steps.filter((_, i) => done[i]).length;
+  const doneCtx = { entries, wizNode };
+  const doneCount = cfg.steps.filter((_, i) => isStepDone(cfg, i, done, doneCtx)).length;
   // F4 — surface the much shorter OSHA §11(c) whistleblower deadline (30 days)
   // alongside the regular termination deadline for the subset of termination
   // cases the user's own words identify as safety-retaliation. See
@@ -1821,11 +1856,12 @@ function App(){
         <p style={css("margin:0 0 12px;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Tap a step to do it now; use the checkbox to mark it done on your own.</p>
         <div style={css("display:flex;flex-direction:column;gap:10px")}>
           {cfg.steps.map((text, i) => {
-            const on = !!done[i];
+            const id = stepKey(cfg, i);
+            const on = isStepDone(cfg, i, done, doneCtx);
             const target = stepTarget(cfg, i);
             return (
               <div key={i} style={css("display:flex;align-items:stretch;gap:8px")}>
-                <button onClick={() => setDone(p => Object.assign({}, p, { [i]: !p[i] }))}
+                <button onClick={() => setDone(p => Object.assign({}, p, { [id]: !p[id] }))}
                   role="checkbox" aria-checked={on} aria-label={(on ? 'Mark not done: ' : 'Mark done: ') + text}
                   className="surfacefx"
                   style={css('flex:none;width:54px;border-radius:14px;border:2px solid #14181F;background:' + (on ? '#E8F6EE' : '#fff') + ';cursor:pointer;display:flex;align-items:center;justify-content:center')}>
@@ -1834,7 +1870,7 @@ function App(){
                   </span>
                 </button>
                 <button onClick={() => {
-                  setDone(p => Object.assign({}, p, { [i]: true }));
+                  setDone(p => Object.assign({}, p, { [id]: true }));
                   if (target.letterType) setLetterType(target.letterType);
                   setScreen(target.screen);
                 }} className="surfacefx" style={css('flex:1;text-align:left;padding:16px;border-radius:14px;border:2px solid #14181F;background:' + (on ? '#E8F6EE' : '#fff') + ';cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px')}>
@@ -1909,11 +1945,11 @@ function App(){
         <button onClick={() => {
           const stepIdx = Math.min(doneCount, cfg.steps.length - 1);
           const target = stepTarget(cfg, stepIdx);
-          setDone(p => Object.assign({}, p, { [stepIdx]: true }));
+          setDone(p => Object.assign({}, p, { [stepKey(cfg, stepIdx)]: true }));
           if (target.letterType) setLetterType(target.letterType);
           setScreen(target.screen);
         }} className="surfacefx" style={css("padding:20px;border-radius:16px;border:none;background:#FFF4D6;color:#14181F;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Do this step</button>
-        <button onClick={() => setDone(p => Object.assign({}, p, { [Math.min(doneCount, cfg.steps.length - 1)]: true }))} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid #fff;background:transparent;color:#fff;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Mark it done</button>
+        <button onClick={() => setDone(p => Object.assign({}, p, { [stepKey(cfg, Math.min(doneCount, cfg.steps.length - 1))]: true }))} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid #fff;background:transparent;color:#fff;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Mark it done</button>
         <button onClick={nav('rights')} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.6);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Why this matters</button>
       </div>
       {/* WebKit fix: a flex-grow spacer pins the footer to the bottom without the
@@ -2006,14 +2042,17 @@ function App(){
               }
             </div>
             <button onClick={() => {
-              setDone(p => Object.assign({}, p, { [stepIdx]: true }));
+              setDone(p => Object.assign({}, p, { [stepKey(cfg, stepIdx)]: true }));
               if (target.letterType) setLetterType(target.letterType);
               setScreen(target.screen);
             }} className="surfacefx" style={css("padding:22px;border-radius:16px;border:none;background:#14181F;color:#fff;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{primary[0]}</button>
             {/* usertest — Plain mode's single primary CTA routes by step index, and for a
                 wage case that CTA can be "Confirm my classification" / "Ask for the money"
-                depending which step is next, burying the self-check the moment step 0 (ask
-                HR in writing) is marked done. Wage users need a direct, plainly-labeled way
+                depending which step is next. Now that the exemption self-check is step 1,
+                the button already opens the wizard first for a fresh case — but once that
+                step is marked done, the CTA can settle on "Confirm my classification" /
+                "Ask for the money" for the rest of the case. Wage users still need a direct,
+                plainly-labeled way
                 to check exemption status no matter which step is current. */}
             {K === 'wage' &&
               <button onClick={nav('wizard')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Am I exempt from overtime?</button>

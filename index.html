@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-N2Brx8ez2tdFTzGomADi/lmLIPbkryWBvqvvdauBXwA='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-1Whez+3c+pszxno3Sx5bsNcCij1dZzSYjlUNSRNqhh8='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14181F">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232B3AA8'/%3E%3Ctext x='32' y='47' font-size='42' text-anchor='middle' fill='white' font-family='Georgia,serif'%3E%C2%A7%3C/text%3E%3C/svg%3E">
@@ -1035,19 +1035,29 @@ const GENERIC_ISSUE = {
   // Screen each step actually leads to (index-matched to `steps`), so "Do this step" / the
   // Plain-mode primary CTA lands where the step text says, not on a single issue-wide tool.
   stepScreens: ["log", "log", "log", "chat"],
+  // Stable per-step ids (index-matched to `steps`) — `done` is keyed by these, not by
+  // raw array index, so reordering an issue's steps later can't silently relabel an
+  // already-checked step as a different one for an in-progress saved case. See the
+  // wage reorder below for why this matters.
+  stepIds: ["general-log-what-happened", "general-save-documents", "general-note-witness", "general-ask-question"],
   chatSeed: "Tell me what is going on at work and I will explain the rules where you are. This preview gives general information, not legal advice."
 };
 const ISSUES = {
   "Unpaid overtime or wages": {
     key: "wage",
     caseTitle: "Unpaid overtime & wages",
-    primaryTool: "letter",
+    primaryTool: "wizard",
     letterKind: "classification-request",
-    action: "Ask HR for your overtime classification in writing.",
-    actionWhy: "Confirming whether you are exempt or non-exempt is the first step \u2014 it decides whether you are owed overtime before you demand anything. We drafted the request for you.",
+    action: "Run the overtime-exemption self-check.",
+    actionWhy: "Whether you are exempt from overtime decides everything else \u2014 it comes before asking HR to confirm anything in writing or demanding money. The self-check takes about two minutes.",
+    // Order: (1) check exemption status yourself first, so you know what to ask for and
+    // whether a claim exists at all; (2) THEN ask HR to confirm that classification in
+    // writing, since their answer is only useful once you know what "right" looks like;
+    // (3) log hours as evidence throughout; (4) an optional demand letter, or skip
+    // straight to a free WHD complaint or a private lawsuit — no demand letter required.
     steps: [
+      "Run the overtime-exemption self-check to see whether you should be getting overtime pay",
       "Ask HR, in writing, for your overtime (FLSA) classification and its basis",
-      "Run the overtime-exemption self-check to see if that classification looks right",
       "Log every unpaid or off-the-clock hour you can remember \u2014 it is evidence",
       // G5 (docs/flsa-process-gap.md) — a demand letter is an OPTIONAL tactical move, not
       // something FLSA requires before a complaint or lawsuit; the old copy ("send a
@@ -1055,8 +1065,15 @@ const ISSUES = {
       // mentioned the two paths that actually recover the money (WHD complaint / lawsuit).
       "Optional: send a wage-demand letter \u2014 or skip straight to a free WHD complaint or a private lawsuit; no demand letter is required by law"
     ],
-    stepScreens: ["letter", "wizard", "log", "letter"],
-    stepLetterTypes: ["classification-request", null, null, "wage-demand"],
+    stepScreens: ["wizard", "letter", "log", "letter"],
+    stepLetterTypes: [null, "classification-request", null, "wage-demand"],
+    // Stable ids (not raw index) — see GENERIC_ISSUE.stepIds. This issue's step ORDER
+    // changed (exemption self-check moved from position 2 to position 1); keying `done`
+    // by these ids instead of by array index means an in-progress saved case that had,
+    // say, index 0 checked (previously "ask HR") does not silently reappear as index 0
+    // now meaning "run the self-check" — a legacy index-keyed done map simply matches no
+    // id and the step reads as not-done again, which is the safe direction to be wrong in.
+    stepIds: ["wage-exempt-check", "wage-classification-letter", "wage-log-hours", "wage-demand-letter"],
     chatSeed: "You mentioned unpaid hours or overtime. Tell me your job title and how you are paid \u2014 salary or hourly \u2014 and I will explain which overtime rules apply where you work."
   },
   "Harassment or a hostile workplace": {
@@ -1073,6 +1090,7 @@ const ISSUES = {
       "Identify coworkers who witnessed the conduct"
     ],
     stepScreens: ["log", "log", "log", "log"],
+    stepIds: ["harassment-log-incident", "harassment-save-evidence", "harassment-note-report", "harassment-witnesses"],
     chatSeed: "You mentioned harassment or a hostile workplace. Tell me what has been happening and whether it is tied to a protected characteristic, and I will explain what the law covers where you work."
   },
   "Discrimination": {
@@ -1089,6 +1107,7 @@ const ISSUES = {
       "Record any complaint you made and the response"
     ],
     stepScreens: ["log", "log", "log", "log"],
+    stepIds: ["discrimination-log-actions", "discrimination-note-comments", "discrimination-save-records", "discrimination-log-complaint"],
     chatSeed: "You mentioned discrimination. Tell me the protected characteristic involved and what happened, and I will explain the federal and state protections where you work."
   },
   "Fired or pushed out": {
@@ -1105,6 +1124,7 @@ const ISSUES = {
       "Note anything said about why you were let go, and by whom"
     ],
     stepScreens: ["log", "letter", "log", "log"],
+    stepIds: ["termination-log-timeline", "termination-request-file", "termination-save-protected-activity", "termination-note-reason"],
     chatSeed: "You mentioned being fired or pushed out. Tell me the reason you were given and what happened in the weeks before, and I will explain wrongful-termination and retaliation rules where you work."
   },
   "A document to review": {
@@ -1121,6 +1141,7 @@ const ISSUES = {
       "Ask about anything you are giving up before signing"
     ],
     stepScreens: ["doc", "doc", "doc", "doc"],
+    stepIds: ["document-upload", "document-review-clauses", "document-note-deadlines", "document-ask-questions"],
     chatSeed: "You have a document to review \u2014 an offer, NDA, severance or PIP. Tell me which, and what you are worried about, and I will walk through it in plain language."
   }
 };
@@ -1168,6 +1189,13 @@ function stepTarget(cfg, idx) {
   const screen = cfg.stepScreens && cfg.stepScreens[idx] || cfg.primaryTool;
   const letterType = cfg.stepLetterTypes && cfg.stepLetterTypes[idx] || null;
   return { screen, letterType };
+}
+function stepKey(cfg, idx) {
+  return cfg.stepIds && cfg.stepIds[idx] || idx;
+}
+function isStepDone(cfg, idx, done, ctx) {
+  const id = stepKey(cfg, idx);
+  return !!done[id];
 }
 function buildLetter(ctx) {
   const name = (ctx.youName || "").trim() || "[Your name]";
@@ -1616,7 +1644,8 @@ function App() {
   const owedEstimate = owedBreakdown.owedEstimate;
   const strength = caseStrength(entries);
   const strengthFill = evidenceCount > 0 ? Math.max(1, Math.round(strength.score / 20)) : 0;
-  const doneCount = cfg.steps.filter((_, i) => done[i]).length;
+  const doneCtx = { entries, wizNode };
+  const doneCount = cfg.steps.filter((_, i) => isStepDone(cfg, i, done, doneCtx)).length;
   const safetyRetaliation = isSafetyRetaliationCase(cfg.key, entries, messages);
   const oshaFact = safetyRetaliation ? factByTopic(federal && federal.facts || [], "deadlines.oshaWhistleblower") : null;
   const youName = (profile.name || "").trim();
@@ -1770,12 +1799,13 @@ function App() {
     const dl = pickDeadlineFactAcross(stF, fedF, cfg.key);
     return dl ? /* @__PURE__ */ React.createElement("button", { onClick: nav("strength"), className: "surfacefx", style: css("text-align:left;padding:16px 18px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;flex-direction:column;gap:4px") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 13px 'IBM Plex Mono',monospace;color:#14181F;letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px") }, /* @__PURE__ */ React.createElement(Icon, { name: "deadline-clock", size: 14 }), " DEADLINE WATCH"), /* @__PURE__ */ React.createElement("span", { style: css("font:700 18px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, dl.value || dl.summary), /* @__PURE__ */ React.createElement("span", { style: css("font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, dl.summary), cfg.key === "wage" && /* @__PURE__ */ React.createElement(FlsaSolNote, { dark: false })) : null;
   })(), /* @__PURE__ */ React.createElement(DocDeadlineWatch, { dark: false }), /* @__PURE__ */ React.createElement(OshaWatch, { dark: false }), /* @__PURE__ */ React.createElement(WageRecoverPanel, null)), /* @__PURE__ */ React.createElement("button", { onClick: nav("strength"), className: "surfacefx", style: css("text-align:left;padding:20px;border-radius:18px;border:2px solid #14181F;background:#E8F6EE;cursor:pointer;display:flex;flex-direction:column;gap:14px") }, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;align-items:baseline;justify-content:space-between") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 15px 'IBM Plex Mono',monospace;color:#14181F;letter-spacing:.04em") }, "CASE STRENGTH"), /* @__PURE__ */ React.createElement("span", { style: css("font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#136B3C") }, "View \u2192")), /* @__PURE__ */ React.createElement("div", { style: css("font:700 26px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, strength.label), /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", style: css("display:flex;gap:5px;height:14px") }, [0, 1, 2, 3, 4].map((i) => /* @__PURE__ */ React.createElement("div", { key: i, style: css("flex:1;border-radius:7px;background:" + (i < strengthFill ? "#1F8A4C" : "rgba(20,24,31,.14)")) }))), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#25302B") }, evidenceCount === 0 ? "No evidence logged yet. Start with the incident log \u2014 the earlier you begin, the stronger your record." : evidenceCount + " evidence " + (evidenceCount === 1 ? "item" : "items") + " logged. " + (strength.factors.find((f) => f.pct < 40) ? strength.factors.find((f) => f.pct < 40).name + " would help most next." : "Keep adding detail as it happens."))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { style: css("margin:0 0 12px;font:700 20px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Your next steps"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 12px;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Tap a step to do it now; use the checkbox to mark it done on your own."), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:10px") }, cfg.steps.map((text, i) => {
-    const on = !!done[i];
+    const id = stepKey(cfg, i);
+    const on = isStepDone(cfg, i, done, doneCtx);
     const target = stepTarget(cfg, i);
     return /* @__PURE__ */ React.createElement("div", { key: i, style: css("display:flex;align-items:stretch;gap:8px") }, /* @__PURE__ */ React.createElement(
       "button",
       {
-        onClick: () => setDone((p) => Object.assign({}, p, { [i]: !p[i] })),
+        onClick: () => setDone((p) => Object.assign({}, p, { [id]: !p[id] })),
         role: "checkbox",
         "aria-checked": on,
         "aria-label": (on ? "Mark not done: " : "Mark done: ") + text,
@@ -1784,7 +1814,7 @@ function App() {
       },
       /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: css("width:30px;height:30px;border-radius:8px;border:2px solid #14181F;background:" + (on ? "#1F8A4C" : "#fff") + ";color:#fff;display:flex;align-items:center;justify-content:center") }, on && /* @__PURE__ */ React.createElement(Icon, { name: "check", size: 18 }))
     ), /* @__PURE__ */ React.createElement("button", { onClick: () => {
-      setDone((p) => Object.assign({}, p, { [i]: true }));
+      setDone((p) => Object.assign({}, p, { [id]: true }));
       if (target.letterType) setLetterType(target.letterType);
       setScreen(target.screen);
     }, className: "surfacefx", style: css("flex:1;text-align:left;padding:16px;border-radius:14px;border:2px solid #14181F;background:" + (on ? "#E8F6EE" : "#fff") + ";cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 17px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-decoration:" + (on ? "line-through" : "none")) }, text), /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: css("flex:none;font:700 20px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8") }, "\u2192")));
@@ -1797,10 +1827,10 @@ function App() {
   })(), /* @__PURE__ */ React.createElement(DocDeadlineWatch, { dark: true }), /* @__PURE__ */ React.createElement(OshaWatch, { dark: true }), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:12px") }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
     const stepIdx = Math.min(doneCount, cfg.steps.length - 1);
     const target = stepTarget(cfg, stepIdx);
-    setDone((p) => Object.assign({}, p, { [stepIdx]: true }));
+    setDone((p) => Object.assign({}, p, { [stepKey(cfg, stepIdx)]: true }));
     if (target.letterType) setLetterType(target.letterType);
     setScreen(target.screen);
-  }, className: "surfacefx", style: css("padding:20px;border-radius:16px;border:none;background:#FFF4D6;color:#14181F;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, "Do this step"), /* @__PURE__ */ React.createElement("button", { onClick: () => setDone((p) => Object.assign({}, p, { [Math.min(doneCount, cfg.steps.length - 1)]: true })), className: "surfacefx", style: css("padding:20px;border-radius:16px;border:2px solid #fff;background:transparent;color:#fff;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, "Mark it done"), /* @__PURE__ */ React.createElement("button", { onClick: nav("rights"), className: "surfacefx", style: css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.6);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, "Why this matters")), /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", style: css("flex:1 1 auto;min-height:0") }), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:12px") }, /* @__PURE__ */ React.createElement("div", { style: css("padding:16px;border-radius:14px;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.35)") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 4px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#fff") }, "Done so far"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#DDE2FF") }, ["Set your location: " + locationLabel, evidenceCount + " " + (evidenceCount === 1 ? "entry" : "entries") + " logged", doneCount + " of " + cfg.steps.length + " steps done"].join(" \xB7 "))), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#C9D0FF") }, "Legal information, not legal advice.")));
+  }, className: "surfacefx", style: css("padding:20px;border-radius:16px;border:none;background:#FFF4D6;color:#14181F;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, "Do this step"), /* @__PURE__ */ React.createElement("button", { onClick: () => setDone((p) => Object.assign({}, p, { [stepKey(cfg, Math.min(doneCount, cfg.steps.length - 1))]: true })), className: "surfacefx", style: css("padding:20px;border-radius:16px;border:2px solid #fff;background:transparent;color:#fff;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, "Mark it done"), /* @__PURE__ */ React.createElement("button", { onClick: nav("rights"), className: "surfacefx", style: css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.6);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, "Why this matters")), /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", style: css("flex:1 1 auto;min-height:0") }), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:12px") }, /* @__PURE__ */ React.createElement("div", { style: css("padding:16px;border-radius:14px;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.35)") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 4px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#fff") }, "Done so far"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#DDE2FF") }, ["Set your location: " + locationLabel, evidenceCount + " " + (evidenceCount === 1 ? "entry" : "entries") + " logged", doneCount + " of " + cfg.steps.length + " steps done"].join(" \xB7 "))), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#C9D0FF") }, "Legal information, not legal advice.")));
   const HomePlain = () => /* @__PURE__ */ React.createElement("div", { style: css("padding:14px 22px 28px;display:flex;flex-direction:column;gap:16px;min-height:0") }, /* @__PURE__ */ React.createElement(ModeSwitch, { theme: "light" }), /* @__PURE__ */ React.createElement(StorageWarningBanner, null), /* @__PURE__ */ React.createElement(LocationPill, { dark: false }), (() => {
     const fedF = federal && federal.facts || [];
     const stF = stateData && stateData.facts || [];
@@ -1838,7 +1868,7 @@ function App() {
     if (K === "wage" && target.screen === "letter") primaryLabel = target.letterType === "wage-demand" ? "Ask for the money" : "Confirm my classification";
     const primary = [primaryLabel, target.screen];
     return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("h1", { style: css("margin:0;font:700 30px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, heads[K] || heads.general), /* @__PURE__ */ React.createElement("div", { style: css("padding:20px;border-radius:16px;background:#FFF4D6;border:2px solid #14181F") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 10px;font:700 24px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, bigLine), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 20px/1.5 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, sub), K === "wage" && owedEstimate > 0 && /* @__PURE__ */ React.createElement("p", { style: css("margin:8px 0 0;font:700 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#6B4B00") }, "Back wages only \u2014 actual recovery may be up to double, plus attorney's fees, if you sue.")), /* @__PURE__ */ React.createElement("button", { onClick: () => {
-      setDone((p) => Object.assign({}, p, { [stepIdx]: true }));
+      setDone((p) => Object.assign({}, p, { [stepKey(cfg, stepIdx)]: true }));
       if (target.letterType) setLetterType(target.letterType);
       setScreen(target.screen);
     }, className: "surfacefx", style: css("padding:22px;border-radius:16px;border:none;background:#14181F;color:#fff;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, primary[0]), K === "wage" && /* @__PURE__ */ React.createElement("button", { onClick: nav("wizard"), className: "hoverfx", style: css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, "Am I exempt from overtime?"), /* @__PURE__ */ React.createElement("button", { onClick: nav("log"), className: "hoverfx", style: css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, K === "wage" ? "Add hours I worked" : "Add to my log"), /* @__PURE__ */ React.createElement("button", { onClick: nav("agencies"), className: "hoverfx", style: css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, "Where to file a complaint"));
