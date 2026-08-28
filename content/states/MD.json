@@ -19,7 +19,7 @@
     {
       "topic": "minimumWage.hourly",
       "value": 15.00,
-      "summary": "Maryland's statewide minimum wage is $15.00 per hour for all employers under the Fair Wage Act.",
+      "summary": "Maryland's statewide minimum wage is $15.00 per hour for all employers under the Fair Wage Act; some counties (e.g., Montgomery County) set a higher local minimum wage that applies instead.",
       "citation": "Md. Code, Labor & Employment Art., § 3-413",
       "sourceUrl": "https://www.labor.maryland.gov/labor/wages/wagehrfacts.shtml",
       "sourceAgency": "Maryland Department of Labor, Division of Labor and Industry (Employment Standards Service)",
