@@ -87,6 +87,39 @@
       "reviewed": false, "reviewedBy": null, "notes": ""
     },
     {
+      "topic": "harassment.hostileEnvironmentStandard",
+      "value": "Unwelcome + based on a protected characteristic + severe OR pervasive",
+      "summary": "Federal law treats workplace harassment as illegal discrimination when the conduct is unwelcome, based on a protected characteristic (race, color, religion, sex, national origin, age 40+, disability, or genetic information), AND either severe enough on its own or pervasive/repeated enough that a reasonable person would consider the environment intimidating, hostile, or abusive. Courts generally treat a single incident as enough only if it is severe (for example, a sexual assault or a serious threat); otherwise they generally look at a pattern of conduct over time. Petty slights, annoyances, and isolated non-severe incidents generally do not meet this standard.",
+      "citation": "Meritor Savings Bank v. Vinson, 477 U.S. 57 (1986); Harris v. Forklift Systems, Inc., 510 U.S. 17 (1993); 42 U.S.C. § 2000e-2(a)(1)",
+      "sourceUrl": "https://www.eeoc.gov/harassment",
+      "sourceAgency": "U.S. Equal Employment Opportunity Commission",
+      "lastChecked": "2026-08-27",
+      "reviewed": false, "reviewedBy": null,
+      "notes": "EEOC's detailed 'Enforcement Guidance on Harassment in the Workplace' (issued 2024-04-29) was rescinded by a 2-1 Commission vote on 2026-01-22 (https://www.eeoc.gov/newsroom/eeoc-commission-votes-rescind-2024-harassment-guidance); per EEOC Chair Lucas's statement this does not change the underlying Supreme Court standard (Meritor/Harris), which remains governing law. Sourced to the current, live eeoc.gov/harassment overview page rather than the rescinded guidance document. Added for the harassment self-check identifier."
+    },
+    {
+      "topic": "harassment.employerLiability",
+      "value": "Supervisor: tangible action = automatic employer liability; hostile-environment-only = employer may raise the Faragher/Ellerth affirmative defense. Coworker/third party: employer liable only if it knew or should have known and failed to take prompt corrective action.",
+      "summary": "Who is liable, and on what showing, generally depends on who did the harassing. If a SUPERVISOR's harassment results in a tangible employment action (for example, firing, demotion, an undesirable reassignment, or a pay/benefits cut), the employer is automatically liable. If a supervisor's harassment creates a hostile environment without a tangible action, the employer can avoid or limit liability only by proving BOTH that it exercised reasonable care to prevent and promptly correct harassment (for example, an effective policy and complaint procedure) AND that the employee unreasonably failed to use that procedure or otherwise avoid the harm -- known as the Faragher/Ellerth affirmative defense. If a COWORKER or a non-employee (for example, a customer or vendor) does the harassing, the employer is liable if it knew or should have known about the harassment and failed to take prompt, appropriate corrective action.",
+      "citation": "Faragher v. City of Boca Raton, 524 U.S. 775 (1998); Burlington Industries, Inc. v. Ellerth, 524 U.S. 742 (1998); 42 U.S.C. § 2000e-2(a)(1)",
+      "sourceUrl": "https://www.eeoc.gov/harassment",
+      "sourceAgency": "U.S. Equal Employment Opportunity Commission",
+      "lastChecked": "2026-08-27",
+      "reviewed": false, "reviewedBy": null,
+      "notes": "The Faragher/Ellerth affirmative-defense framework is also described in EEOC's 1999 'Enforcement Guidance: Vicarious Liability for Unlawful Harassment by Supervisors' (https://www.eeoc.gov/laws/guidance/enforcement-guidance-vicarious-liability-unlawful-harassment-supervisors), which that page itself states was superseded by the 2024 harassment guidance -- which was in turn rescinded 2026-01-22 (see harassment.hostileEnvironmentStandard notes). The two-Supreme-Court-case standard itself is unaffected by either guidance document's status. Sourced here to the current, live eeoc.gov/harassment overview page. Added for the harassment self-check identifier."
+    },
+    {
+      "topic": "harassment.reporting",
+      "value": true,
+      "summary": "Reporting harassment internally -- through an employer's complaint procedure, to a supervisor, HR, or another designated person -- is one way to put an employer on notice so it can investigate and take corrective action; this matters both for stopping the conduct and, in a supervisor-hostile-environment case, for whether the employer can later show the employee unreasonably failed to use available complaint channels (see harassment.employerLiability). Separately, federal law makes it illegal to retaliate against someone for reporting harassment or discrimination, opposing it, or participating in an investigation or complaint, even if the underlying harassment claim is not ultimately proven, as long as the complaint was made in good faith.",
+      "citation": "42 U.S.C. § 2000e-3(a) (Title VII § 704(a))",
+      "sourceUrl": "https://www.eeoc.gov/harassment",
+      "sourceAgency": "U.S. Equal Employment Opportunity Commission",
+      "lastChecked": "2026-08-27",
+      "reviewed": false, "reviewedBy": null,
+      "notes": "The retaliation-protection point overlaps with the existing retaliation.protected fact (sourced to https://www.eeoc.gov/retaliation); this fact adds the harassment-specific internal-reporting/complaint-procedure framing so a harassment self-check need not duplicate the discrimination-focused retaliation fact. See also harassment.employerLiability for why using an internal complaint procedure matters to the Faragher/Ellerth defense. Added for the harassment self-check identifier."
+    },
+    {
       "topic": "retaliation.protected",
       "value": true,
       "summary": "It is illegal to retaliate against someone for reporting discrimination/harassment or otherwise engaging in protected activity, even if the underlying claim is not proven, if made in good faith.",
