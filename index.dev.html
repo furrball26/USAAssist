@@ -503,7 +503,7 @@ function Icon({ name, size = 22, strokeWidth = 2, style }) {
 
 /* ── Static content (ported verbatim from the design) ─────────────── */
 
-const RESULTS = {
+const RESULTS_WAGE = {
   r_salary_low: { v:'non', title:'Likely non-exempt — overtime is owed', body:'A salary under $684 per week ($35,568/year) fails the federal salary-level test automatically. No duties test can make you exempt below that line, whatever your title says.', cites:['29 C.F.R. §541.600','29 U.S.C. §207'] },
   r_hourly: { v:'non', title:'Likely non-exempt — overtime is owed', body:'Hourly pay fails the salary-basis test for the executive, administrative and professional exemptions. Outside of a few narrow carve-outs, hourly workers must be paid overtime.', cites:['29 C.F.R. §541.602','29 U.S.C. §207'] },
   r_duties_none: { v:'non', title:'Likely non-exempt — overtime is owed', body:'Your salary clears the federal threshold, but exemption also requires exempt duties. Following set procedures and tasks is not executive, administrative or professional work under the regulations.', cites:['29 C.F.R. §541'] },
@@ -523,7 +523,33 @@ const RESULTS = {
   r_hce: { v:'ex', title:'Possibly exempt — highly compensated employee', body:'At $107,432 or more a year with at least one exempt-type duty, the highly-compensated-employee test uses a relaxed duties standard — you do not need to meet the full duties test that ordinary executive, administrative or professional exemptions require. If your total-pay figure or duty description overstated things, revisit this.', cites:['29 C.F.R. §541.601','29 U.S.C. §213(a)(1)'] }
 };
 
-const TREE = {
+// wl-builder — HARASSMENT self-check (issue key 'harassment'). Same branching
+// Q&A pattern as the FLSA exemption wizard above (TREE_WAGE/RESULTS_WAGE),
+// parameterized per-issue via WIZARD_CONFIG/wizardConfigFor so the single
+// Wizard component below can render any of the three trees. Every result is
+// informational and non-conclusory ("may", "generally", "this looks like it
+// could") — never a definitive legal opinion — and the Wizard always appends
+// a cited federal/state law panel, an EEOC-deadline block and the
+// not-legal-advice framing after a result, same as the wage wizard.
+const RESULTS_HARASSMENT = {
+  r_h_no_link: { v:'non', title:'This may not be legally protected harassment', body:'Harassment law generally requires that the conduct be tied to a protected characteristic — race, sex, religion, national origin, age 40+, disability, or similar. General rudeness or a personality conflict, on its own, usually is not enough, even if it feels the same day to day. If you notice a pattern tied to who you are, run this check again — and a workplace policy can still prohibit conduct that is not illegal.', cites:['42 U.S.C. §2000e-2(a)(1)'] },
+  r_h_not_unwelcome: { v:'maybe', title:'An element may be missing — “unwelcome” conduct', body:'Harassment law also generally requires that the conduct be unwelcome to you. If it was not, this specific legal theory may not apply. If this answer does not reflect what actually happened, or the situation has changed, run the check again.', cites:['Meritor Savings Bank v. Vinson, 477 U.S. 57 (1986)'] },
+  r_h_isolated: { v:'maybe', title:'This may not meet the “severe or pervasive” bar yet', body:'Courts generally look for conduct that is either one severe incident or a pattern repeated over time. A few isolated, minor comments — on their own — may not clear that bar, even when tied to a protected characteristic. That does not mean nothing is wrong: keep documenting dates, words and witnesses. A pattern that continues can change this answer.', cites:['Harris v. Forklift Systems, Inc., 510 U.S. 17 (1993)'] },
+  r_h_hostile: { v:'ex', title:'This may rise to a hostile work environment', body:'Your answers have the shape courts generally look for: conduct unwelcome to you, tied to a protected characteristic, and either severe on its own or repeated over time. This is general information about the legal standard, not a legal opinion about your situation — an attorney would still need to review the specifics.', cites:['Meritor Savings Bank v. Vinson, 477 U.S. 57 (1986)','Harris v. Forklift Systems, Inc., 510 U.S. 17 (1993)'] },
+};
+const TREE_HARASSMENT = {
+  start: { q:'Is the conduct tied to a protected characteristic — race, sex (including pregnancy, sexual orientation or gender identity), religion, national origin, age 40+, disability, or genetic information?', help:'Harassment law only covers conduct connected to who you are in one of these ways — not rudeness in general.', opts:[['Yes, it is tied to one of those','unwelcome','PROTECTED: YES'],['No, it feels like general rudeness or a personality conflict','r_h_no_link','PROTECTED: NO'],['Not sure','unwelcome','PROTECTED: NOT SURE']] },
+  unwelcome: { q:'Was the conduct unwelcome to you — you did not invite or welcome it?', help:'This is usually straightforward, but it is a required element of the legal standard.', opts:[['Yes, it was unwelcome','severity','UNWELCOME: YES'],['No, or it was mutual','r_h_not_unwelcome','UNWELCOME: NO']] },
+  severity: { q:'How often did it happen, and how severe was it?', help:'Courts generally treat a single incident as enough only if it is severe (for example an assault or a serious threat) — otherwise they look for a pattern over time.', opts:[['One severe incident (assault, a slur, a serious threat)','who','SEVERITY: ONE SEVERE'],['Repeated over time','who','SEVERITY: REPEATED'],['A few isolated, minor comments','r_h_isolated','SEVERITY: ISOLATED/MINOR']] },
+  who: { q:'Who did this?', help:'Who was involved can change how an employer is held responsible — not whether the conduct counts as harassment in the first place.', opts:[['My supervisor or manager','reported','WHO: SUPERVISOR'],['A coworker','reported','WHO: COWORKER'],['A customer or other third party','reported','WHO: THIRD PARTY']] },
+  reported: { q:'Did you report it internally, and what happened?', help:'Reporting is not required to have a claim, but it can matter for what an employer can be held liable for.', opts:[['I reported it and nothing changed','r_h_hostile','REPORTED: NO ACTION'],['I reported it and it was addressed','r_h_hostile','REPORTED: FIXED'],['I have not reported it','r_h_hostile','NOT REPORTED']] },
+};
+
+// Per-issue federal fact topics the wizard result screen cites for harassment —
+// pulled live via factByTopic, never hardcoded legal text.
+const HARASSMENT_FACT_TOPICS = ['harassment.hostileEnvironmentStandard', 'harassment.employerLiability', 'harassment.reporting'];
+
+const TREE_WAGE = {
   start: { q:'How are you paid?', help:'Most exemptions require a fixed salary — this is the salary-basis test.', opts:[['A fixed salary every period','salaryLevel','SALARY'],['Hourly','hourlyType','HOURLY'],['Commission or piece rate','r_commission','COMMISSION'],['I am an outside salesperson','outsideSales','OUTSIDE SALES']] },
   salaryLevel: { q:'Is your salary at least $684 per week?', help:'That is $35,568/year — the federal salary-level test. Some states set a higher salary floor; your state’s figure alongside the federal one will be shown on your result.', opts:[['Yes, $684/week or more','hceCheck','≥ $684/WK'],['No, less than that','r_salary_low','< $684/WK'],['Not sure','duties','SALARY ?']] },
   // G7 — asked only after the salary floor is cleared, before the ordinary duties
@@ -536,6 +562,25 @@ const TREE = {
   hourlyType: { q:'Is your main job computer systems work — like software development or IT systems analysis — paid at $27.63/hour or more?', help:'Hourly workers are almost always owed overtime — the one big exception is computer employees at or above $27.63/hour.', opts:[['Yes, both of those','r_comp','COMPUTER $27.63+'],['No','r_hourly','HOURLY, OTHER']] },
   outsideSales: { q:'Do you regularly make sales away from your employer’s place of business?', help:'Customer sites, door-to-door, the field. Selling by phone or email from home or an office does not count.', opts:[['Yes, mostly in the field','r_outside','FIELD SALES'],['No, mostly from a desk','r_outside_no','INSIDE SALES']] }
 };
+
+// Selects which TREE/RESULTS pair (and header copy) the Wizard component
+// renders, keyed by cfg.key — lets one Wizard component serve all three
+// self-checks instead of forking the component. Falls back to the wage
+// wizard for any issue without its own identifier (termination/document/
+// general never route to the 'wizard' screen today).
+const WIZARD_CONFIG = {
+  wage: {
+    tree: TREE_WAGE, results: RESULTS_WAGE, tag: 'OVERTIME EXEMPTION CHECK', doneTitle: 'Your overtime status',
+    qDisclaimer: 'This is a plain-language reading of published rules, not legal advice about your specific job.',
+    doneDisclaimer: 'This is a plain-language reading of published rules, not a legal opinion about your job.',
+  },
+  harassment: {
+    tree: TREE_HARASSMENT, results: RESULTS_HARASSMENT, tag: 'HARASSMENT IDENTIFIER', doneTitle: 'What this may mean',
+    qDisclaimer: 'This is general information about how harassment law generally works, not a legal opinion about your situation — talk to an attorney.',
+    doneDisclaimer: 'This is general information, not a legal opinion about your situation — talk to an attorney.',
+  },
+};
+function wizardConfigFor(issueKey){ return WIZARD_CONFIG[issueKey] || WIZARD_CONFIG.wage; }
 
 // Illustrative-only — shown labeled "EXAMPLE" until the user pastes real text.
 const CLAUSES = [
@@ -1107,7 +1152,7 @@ function stepAutoDone(id, ctx){
     return (ctx.entries || []).some(e => Number(e.hours) > 0 || e.tag === 'Wage & hour');
   }
   if (id === 'wage-exempt-check') {
-    return !!RESULTS[ctx.wizNode];
+    return !!RESULTS_WAGE[ctx.wizNode];
   }
   return false;
 }
@@ -1378,7 +1423,7 @@ function buildCaseFile(ctx){
   lines.push('== CLAIM SNAPSHOT ==');
   lines.push('Case strength: ' + s.label + ' (' + s.score + '/100)');
   if (ctx.cfgKey === 'wage') {
-    const wizResult = RESULTS[ctx.wizNode];
+    const wizResult = RESULTS_WAGE[ctx.wizNode];
     lines.push('Overtime classification: ' + (wizResult ? wizResult.title : 'Not yet checked — run the overtime exemption check.'));
     if (ctx.owedEstimate > 0) lines.push('Estimated overtime owed: ' + money(ctx.owedEstimate));
     else if (ctx.unpaidHours > 0) lines.push('Unpaid hours logged: ' + ctx.unpaidHours + ' (add an hourly rate or salary to estimate the amount owed)');
@@ -1392,6 +1437,11 @@ function buildCaseFile(ctx){
     }
   } else {
     lines.push('Claim type: ' + (ctx.caseTitle || ctx.issue || 'Employment issue'));
+    if (ctx.cfgKey === 'harassment') {
+      const wcfg = wizardConfigFor(ctx.cfgKey);
+      const wizResult = wcfg.results[ctx.wizNode];
+      lines.push('Harassment self-check: ' + (wizResult ? wizResult.title + ' — informational only, not a legal opinion' : 'Not yet run.'));
+    }
   }
 
   // 4. WITNESSES — skip any Witness entry with no name (nothing an attorney
@@ -2460,6 +2510,14 @@ function App(){
               <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Am I exempt from overtime?</span>
             </button>
           }
+          {/* Harassment identifier — same tile, gated to its own issue the same
+              way the overtime self-check is gated to cfg.key === 'wage'. */}
+          {cfg.key === 'harassment' &&
+            <button onClick={nav('wizard')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#FFF4D6;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
+              <span aria-hidden="true"><Icon name="rights" size={24} /></span>
+              <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Is this harassment?</span>
+            </button>
+          }
           <button onClick={nav('log')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#F1EAFB;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
             <span aria-hidden="true"><Icon name="log" size={24} /></span>
             <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Log an incident or hours</span>
@@ -2531,6 +2589,13 @@ function App(){
       })()}
       <DocDeadlineWatch dark={true} />
       <OshaWatch dark={true} />
+      {/* Harassment identifier tool — same visibility rule as the wage wizard's
+          Standard/Plain tiles (cfg.key guard), surfaced here as its own
+          affordance since Action-first's step routing doesn't reach 'wizard'
+          for this issue. */}
+      {cfg.key === 'harassment' &&
+        <button onClick={nav('wizard')} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.6);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Is this harassment?</button>
+      }
       <div style={css("display:flex;flex-direction:column;gap:12px")}>
         <button onClick={() => {
           const stepIdx = Math.min(doneCount, cfg.steps.length - 1);
@@ -2663,6 +2728,11 @@ function App(){
             {K === 'wage' &&
               <button onClick={nav('wizard')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Am I exempt from overtime?</button>
             }
+            {/* Harassment identifier — same always-visible, direct way in as the
+                wage self-check above (cfg.key guard). */}
+            {K === 'harassment' &&
+              <button onClick={nav('wizard')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Is this harassment?</button>
+            }
             <button onClick={nav('log')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{K === 'wage' ? 'Add hours I worked' : 'Add to my log'}</button>
             {/* usertest — same reachability gap as HomeAction above: the primary CTA's
                 step routing never lands on 'letter' for harassment/discrimination/
@@ -2736,16 +2806,26 @@ function App(){
   );
 
   const Wizard = () => {
-    const result = RESULTS[wizNode];
+    // wl-builder — one Wizard component serves the wage/harassment/discrimination
+    // self-checks: wcfg picks the right TREE/RESULTS/header copy for the CURRENT
+    // issue (cfg.key). Node ids only need to be unique WITHIN a tree — wizNode/
+    // wizPath are shared case state, but only one tree is ever active at a time
+    // per case (a case has exactly one issue), so a 'start' node in TREE_WAGE and
+    // TREE_HARASSMENT never collide in practice.
+    const wcfg = wizardConfigFor(cfg.key);
+    const result = wcfg.results[wizNode];
     const wizDone = !!result;
-    const cur = TREE[wizNode] || TREE.start;
+    const cur = wcfg.tree[wizNode] || wcfg.tree.start;
     const depth = wizPath.length + 1;
+    const isIdentifier = cfg.key === 'harassment';
+    const goLog = (kind) => { setLogKind(kind); setScreen('log'); };
+    const goLetter = (type) => { setLetterType(type); setLetterEdit(null); setScreen('letter'); };
     return (
       <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:20px")}>
         <button onClick={nav('home')} style={css("align-self:flex-start;display:flex;align-items:center;gap:4px;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}><Icon name="back" size={18} /> Dashboard</button>
         <div>
-          <span style={css("font:700 13px 'IBM Plex Mono',monospace;color:#4A5162;letter-spacing:.05em")}>OVERTIME EXEMPTION CHECK · {wizDone ? 'COMPLETE' : 'QUESTION ' + depth}</span>
-          <h1 style={css("margin:8px 0 0;font:700 26px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{wizDone ? 'Your overtime status' : cur.q}</h1>
+          <span style={css("font:700 13px 'IBM Plex Mono',monospace;color:#4A5162;letter-spacing:.05em")}>{wcfg.tag} · {wizDone ? 'COMPLETE' : 'QUESTION ' + depth}</span>
+          <h1 style={css("margin:8px 0 0;font:700 26px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{wizDone ? wcfg.doneTitle : cur.q}</h1>
         </div>
         {!wizDone &&
           <div style={css("display:flex;flex-direction:column;gap:12px")}>
@@ -2753,7 +2833,7 @@ function App(){
             {cur.opts.map(([label, next, tag]) =>
               <button key={label} className="hoverfx" onClick={() => { setWizNode(next); setWizPath(p => p.concat([tag])); }} style={css("text-align:left;padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff;font:700 18px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer")}>{label}</button>
             )}
-            <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>This is a plain-language reading of published rules, not legal advice about your specific job.</p>
+            <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{wcfg.qDisclaimer}</p>
           </div>
         }
         {wizDone &&
@@ -2768,7 +2848,7 @@ function App(){
               <p style={css("margin:0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#25302B")}>{result.body}</p>
             </div>
           </div>
-            {(() => {
+            {cfg.key === 'wage' && (() => {
               const fedF = (federal && federal.facts) || [];
               const stF = (stateData && stateData.facts) || [];
               const stRev = !!(stateData && stateData.reviewed === true);
@@ -2792,6 +2872,73 @@ function App(){
                 </div>
               );
             })()}
+            {/* Harassment equivalent of the wage "What applies in {state}" panel
+                above — cites live content facts (never hardcoded legal text) via
+                factByTopic/HARASSMENT_FACT_TOPICS. No state file carries a
+                dedicated "harassment.*" topic (only "discrimination.*"), and a
+                state's own anti-discrimination statute generally also covers
+                harassment claims, so this section reuses the state's
+                discrimination.* facts with a note explaining why. */}
+            {isIdentifier && (() => {
+              const fedF = (federal && federal.facts) || [];
+              const stF = (stateData && stateData.facts) || [];
+              const stRev = !!(stateData && stateData.reviewed === true);
+              const fedFacts = HARASSMENT_FACT_TOPICS.map(t => factByTopic(fedF, t)).filter(Boolean);
+              const stFacts = factsByPrefix(stF, 'discrimination');
+              const line = f => { const u = safeUrl(f.sourceUrl); return <p key={f.topic} style={css("margin:0 0 8px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{f.summary} {u ? <a href={u} target="_blank" rel="noopener noreferrer" className="hoverfx" style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null}</p>; };
+              return (
+                <div style={css("padding:18px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF")}>
+                  <p style={css("margin:0 0 10px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>What applies in {stateLabel}</p>
+                  <p style={css("margin:0 0 4px;font:700 13px 'IBM Plex Mono',monospace;color:#1B2778;letter-spacing:.04em")}>FEDERAL</p>
+                  {fedFacts.length ? fedFacts.map(line) : contentErr ?
+                    <p style={css("margin:0 0 8px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load federal rules. Check your connection and reopen.</p> :
+                    <p style={css("margin:0 0 8px;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>Loading…</p>}
+                  <p style={css("margin:10px 0 4px;font:700 13px 'IBM Plex Mono',monospace;color:#1B2778;letter-spacing:.04em")}>{stateSel ? stateSel.toUpperCase() : stateLabel.toUpperCase()}{stRev ? '' : ' (DRAFT)'}</p>
+                  {stateData && !stRev && <div style={css("margin:0 0 8px")}><DraftStateNotice stName={stateLabel} /></div>}
+                  {cfg.key === 'harassment' && stFacts.length > 0 &&
+                    <p style={css("margin:0 0 8px;font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>No state file here has a separate “harassment” entry — shown below is {stateLabel}’s own anti-discrimination law, which generally also covers harassment claims.</p>
+                  }
+                  {stFacts.length ? stFacts.map(line) : stateErr ?
+                    <p style={css("margin:0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load {stateLabel} rules. Check your connection and reopen — this is not a confirmation that no extra state rule applies.</p> :
+                    stateData === undefined ?
+                    <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>Loading…</p> :
+                    <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{stateLabel} generally follows the federal standard here.</p>}
+                </div>
+              );
+            })()}
+            {/* EEOC/state discrimination-charge deadline block — same source
+                (pickDeadlineFactAcross) and computed-date sub-block as the Home
+                Deadline Watch card, so the number here can never disagree with
+                the one shown elsewhere in the app. */}
+            {isIdentifier && (() => {
+              const fedF = (federal && federal.facts) || [];
+              const stF = (stateData && stateData.facts) || [];
+              const dl = pickDeadlineFactAcross(stF, fedF, cfg.key);
+              if (!dl) return null;
+              return (
+                <button onClick={nav('strength')} className="surfacefx" style={css("text-align:left;padding:16px 18px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;flex-direction:column;gap:4px")}>
+                  <span style={css("font:700 13px 'IBM Plex Mono',monospace;color:#14181F;letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px")}><Icon name="deadline-clock" size={14} /> DEADLINE WATCH</span>
+                  <span style={css("font:700 18px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{dl.value || dl.summary}</span>
+                  <span style={css("font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{dl.summary}</span>
+                  <DeadlineComputedBlock dark={false} dl={dl} />
+                </button>
+              );
+            })()}
+            {/* Report-and-anti-retaliation note, sourced from harassment.reporting
+                (harassment) or retaliation.protected (discrimination) — never
+                hardcoded. */}
+            {isIdentifier && (() => {
+              const fedF = (federal && federal.facts) || [];
+              const f = factByTopic(fedF, cfg.key === 'harassment' ? 'harassment.reporting' : 'retaliation.protected');
+              if (!f) return null;
+              const u = safeUrl(f.sourceUrl);
+              return (
+                <div style={css("padding:14px 16px;border-radius:12px;border:2px solid #2B3AA8;background:#EEF1FF;display:flex;flex-direction:column;gap:4px")}>
+                  <p style={css("margin:0;font:700 13px 'IBM Plex Mono',monospace;color:#1B2778;letter-spacing:.04em")}>REPORTING &amp; RETALIATION</p>
+                  <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{f.summary} {u ? <a href={u} target="_blank" rel="noopener noreferrer" className="hoverfx" style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null}</p>
+                </div>
+              );
+            })()}
           <div style={css("display:flex;flex-direction:column;gap:16px")}>
             <div style={css("display:flex;flex-wrap:wrap;gap:8px")}>
               {result.cites.map((c, ci) => <span key={ci} style={css("padding:8px 12px;border-radius:8px;background:#fff;border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace")}>{c}</span>)}
@@ -2806,7 +2953,7 @@ function App(){
                 would silently fall back to a complaint letter, so route to chat instead
                 of promising a wage-demand letter the user can't actually get here. */}
             {result.v === 'non' && cfg.key === 'wage' &&
-              <button onClick={() => { setLetterType('wage-demand'); setLetterEdit(null); setScreen('letter'); }} style={css("padding:18px;border-radius:16px;border:none;background:#2B3AA8;color:#fff;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Draft a wage demand letter</button>
+              <button onClick={() => goLetter('wage-demand')} style={css("padding:18px;border-radius:16px;border:none;background:#2B3AA8;color:#fff;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Draft a wage demand letter</button>
             }
             {/* usertest — a non-exempt result told the user they're owed overtime and
                 offered to draft a demand letter, but the letter's dollar figure comes
@@ -2815,14 +2962,27 @@ function App(){
             {result.v === 'non' && cfg.key === 'wage' &&
               <button onClick={nav('log')} className="hoverfx" style={css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Log my hours</button>
             }
-            {result.v === 'non' && cfg.key !== 'wage' &&
+            {/* Harassment result CTAs — route onward to the Log (Witness/Statement
+                kinds, mirroring the wage wizard's "Log my hours") or a complaint
+                letter (letterKindsFor already offers 'complaint' for this issue),
+                rather than the wage-only "Draft a wage demand letter"/"Ask the AI
+                about unpaid overtime" wording above. */}
+            {cfg.key === 'harassment' && <>
+              <button onClick={() => goLog('Witness')} className="hoverfx" style={css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Log a witness</button>
+              <button onClick={() => goLog('Statement')} className="hoverfx" style={css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Log what happened</button>
+              <button onClick={() => goLetter('complaint')} style={css("padding:18px;border-radius:16px;border:none;background:#2B3AA8;color:#fff;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Draft a complaint letter</button>
+            </>}
+            {result.v === 'non' && !isIdentifier && cfg.key !== 'wage' &&
               <button onClick={nav('chat')} style={css("padding:18px;border-radius:16px;border:none;background:#2B3AA8;color:#fff;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Ask the AI about unpaid overtime</button>
             }
-            {result.v !== 'non' &&
+            {result.v !== 'non' && !isIdentifier &&
               <button onClick={nav('chat')} style={css("padding:18px;border-radius:16px;border:none;background:#2B3AA8;color:#fff;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Ask the AI about your classification</button>
             }
+            {isIdentifier &&
+              <button onClick={nav('chat')} className="hoverfx" style={css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Ask the AI about your situation</button>
+            }
             <button onClick={() => { setWizNode('start'); setWizPath([]); }} style={css("padding:16px;border-radius:16px;border:2px solid #14181F;background:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer")}>Run the check again</button>
-            <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>This is a plain-language reading of published rules, not a legal opinion about your job.</p>
+            <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{wcfg.doneDisclaimer}</p>
           </div>
           </div>
         }
