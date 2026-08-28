@@ -2758,11 +2758,30 @@ function App(){
         const fedDL = pickDeadlineFact(fedF, cfg.key);
         const stDL = pickDeadlineFact(stF, cfg.key);
         const src = f => { const u = f && safeUrl(f.sourceUrl); return u ? <a href={u} target="_blank" rel="noopener noreferrer" className="hoverfx" style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null; };
+        // qa HIGH #6 — deadlineKeywordsFor(cfg.key) returns [] for 'document' and the
+        // generic issue by design (R10: there is no jurisdiction "deadlines" fact for
+        // either), so fedDL/stDL are null FOREVER for those two issues, not just while
+        // federal/stateData are still in flight — but the old copy below only had one
+        // fallback string ("Loading the deadline...") for both "still fetching" and
+        // "loaded, no such concept for this issue" cases, so it read as stuck loading
+        // indefinitely. `federal` starts null and only becomes an object once the
+        // fetch resolves (see setFederal), so federal === null (with contentErr already
+        // false here) is the genuine still-loading state; federal truthy + fedDL null
+        // means the fetch succeeded and this issue simply has no federal deadline
+        // concept in this app.
+        const fedStillLoading = federal === null;
+        const fedFallback = fedStillLoading ? 'Loading the deadline that applies to your claim…'
+          : cfg.key === 'document'
+          // Same OWBPA general-federal-rule content as the Home screen's
+          // DocDeadlineWatch, so a document-review user gets a real answer here too
+          // instead of "no deadline" reading as "nothing applies to you."
+          ? '21 days to consider, 7 days to revoke, if your document is a release covered by the Older Workers Benefit Protection Act (29 U.S.C. §626(f)) — a general federal rule, not sourced from your state’s own facts. Confirm the exact days stated in your copy.'
+          : 'This app does not track a federal filing deadline for this issue type — see Rights or ask an attorney about deadlines that may apply to your situation.';
         return (
           <div style={css("padding:18px;border-radius:16px;background:#F0EDE5;border:2px solid #14181F")}>
             <p style={css("margin:0 0 8px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Deadline watch — {stateLabel}</p>
             {contentErr ? <p style={css("margin:0 0 8px;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load the federal deadline. Check your connection and reopen — do not assume you have time to spare.</p> : null}
-            {!contentErr && <p style={css("margin:0 0 6px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}><strong>Federal:</strong> {fedDL ? fedDL.summary : 'Loading the deadline that applies to your claim…'} {src(fedDL)}</p>}
+            {!contentErr && <p style={css("margin:0 0 6px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}><strong>Federal:</strong> {fedDL ? fedDL.summary : fedFallback} {src(fedDL)}</p>}
             {stateErr ? <p style={css("margin:0 0 8px;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load the {stateSel} deadline. Check your connection and reopen — this is not a confirmation that no shorter state deadline applies.</p> :
               <p style={css("margin:0 0 8px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}><strong>{stateLabel}:</strong> {stDL ? stDL.summary : (stateData === undefined ? 'Loading…' : 'See the federal deadline above; a state limit may also apply.')} {src(stDL)}</p>}
             {oshaFact &&
