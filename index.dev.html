@@ -2387,6 +2387,7 @@ function App(){
     <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
       <h1 style={css("margin:0;font:700 26px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Where to file a complaint</h1>
       <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Official agencies that enforce employment law in {stateLabel}, near {countyShort} — free to contact directly.</p>
+      {stateErr ? <p style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load {stateLabel} agency links. Check your connection and reopen — the federal option below is not the only one that may apply.</p> : null}
       {(() => {
         const ag = (stateData && stateData.agencies) || {};
         const fedF = (federal && federal.facts) || [];
