@@ -1527,7 +1527,25 @@ function buildCaseFile(ctx){
     lines.push('(no employer/manager statements logged yet)');
   }
 
-  // 7. FULL TIMELINE — the complete chronological record, unchanged from the
+  // 7. TIMELINE / POSSIBLE RETALIATION — pairs each entry the worker marked
+  // 'adverse' with the nearest earlier 'protected' entry and the day-gap
+  // between them (see causationPairs). Never asserts retaliation occurred —
+  // only surfaces the pattern, hedged, for the attorney to evaluate. Omitted
+  // entirely when there isn't at least one dated entry of each kind.
+  const causation = causationPairs(entries);
+  if (causation.length) {
+    lines.push('');
+    lines.push('== TIMELINE / POSSIBLE RETALIATION ==');
+    lines.push('Courts often look at how close in time an employer\'s action was to a worker\'s protected activity — close timing can be evidence of retaliation, but timing alone is not proof. Not legal advice.');
+    causation.forEach((p, i) => {
+      const gapPhrase = p.gapDays === 0 ? 'the same day' : (p.gapDays + ' day' + (p.gapDays === 1 ? '' : 's') + ' later');
+      lines.push((i + 1) + '. Protected activity (' + fmtDate(p.protectedDate) + '): ' + causalEntryLabel(p.protectedEntry));
+      lines.push('   Adverse action (' + fmtDate(p.adverseDate) + ', ' + gapPhrase + '): ' + causalEntryLabel(p.adverseEntry));
+      if (p.gapDays <= CAUSATION_CLOSE_GAP_DAYS) lines.push('   — Close timing: ' + p.gapDays + (p.gapDays === 1 ? ' day' : ' days') + ' apart.');
+    });
+  }
+
+  // 8. FULL TIMELINE — the complete chronological record, unchanged from the
   // original flat dump, so nothing in the log — including pre-structured-
   // fields entries with only a title/body — ever goes missing from the export.
   lines.push('');
@@ -1554,7 +1572,7 @@ function buildCaseFile(ctx){
   });
   if (!entries.length) lines.push('• (no entries logged yet)');
 
-  // 8. DISCLAIMER
+  // 9. DISCLAIMER
   lines.push('');
   lines.push('This case file is legal information the worker compiled themselves. It is not legal advice.');
   return lines.join('\n');
@@ -1649,6 +1667,82 @@ const LOG_KINDS = [
   { label:'+ A document',    title:'Document saved',     body:'', color:'#7A3AA8', tag:'Records' },
   { label:'+ A witness',     title:'Witness noted',      body:'', color:'#1F8A4C', tag:'Witness' },
 ];
+
+// Optional causal-role classification for a log entry — "I did X protected thing,
+// then the employer did Y adverse thing" is the core fact pattern a retaliation
+// claim turns on, but entries were otherwise tag-flat with no way to mark cause
+// vs. effect. Stored as entry.causalRole ('protected' | 'adverse' | undefined —
+// old entries simply lack the field). Shown only for issues where retaliation
+// timing is actually relevant (see CAUSAL_ROLE_ISSUE_KEYS below) — hidden for
+// wage/document, where it would just be clutter.
+const CAUSAL_ROLE_OPTIONS = [['protected', 'Protected activity'], ['adverse', 'Adverse action']];
+const CAUSAL_ROLE_ISSUE_KEYS = ['harassment', 'discrimination', 'termination', 'general'];
+// Human labels/colors reused by the entry-list pill and the case-strength
+// causation summary below, so the two never describe the same value differently.
+const CAUSAL_ROLE_META = {
+  protected: { label: 'Protected activity', color: '#136B3C', bg: '#E8F6EE' },
+  adverse: { label: 'Adverse action', color: '#B3264F', bg: '#FFE7EC' },
+};
+// The date a log entry is actually "about", for causation-gap purposes — prefers
+// a kind-specific date the user entered for what the entry describes (Statement's
+// "when said", Records' document date) over the entry's own iso (when it was
+// LOGGED, which for Witness/freetext entries is the only date on file, but for
+// Statement/Records is usually just "today" and would understate real gaps).
+// Returns a Date or null (never a fabricated one) so callers can skip entries
+// with missing/unparseable dates rather than mis-order the timeline.
+function causalEntryDate(e){
+  const raw = (e.tag === 'Statement' && e.saidWhen) ? e.saidWhen : (e.tag === 'Records' && e.docDate) ? e.docDate : null;
+  if (raw) {
+    const parts = String(raw).split('-').map(Number);
+    if (parts.length === 3 && parts.every(n => isFinite(n))) {
+      const d = new Date(parts[0], parts[1] - 1, parts[2]);
+      if (!isNaN(d.getTime())) return d;
+    }
+  }
+  if (e.iso) { const d = new Date(e.iso); if (!isNaN(d.getTime())) return d; }
+  return null;
+}
+// Short human description of a log entry for the causation summary/export —
+// prefers the worker's own note text over the generic kind title, so "You
+// complained to HR about my hours" reads better than "Statement recorded".
+function causalEntryLabel(e){
+  const body = (e.body && e.body !== ENTRY_PLACEHOLDER_BODY) ? String(e.body).trim() : '';
+  const text = body || e.title || e.tag || 'entry';
+  return text.length > 100 ? text.slice(0, 97) + '…' : text;
+}
+// Pairs each classified 'adverse' entry with the nearest classified 'protected'
+// entry that happened on or before it, computing the day-gap between them —
+// the core "protected activity, then adverse action how soon after" pattern a
+// retaliation claim turns on. Only pairs protected-before-adverse (an adverse
+// action that came BEFORE any protected activity isn't evidence of retaliation
+// for that activity); an adverse entry with no earlier protected entry is left
+// unpaired rather than paired with a later one. Returns [] whenever there isn't
+// at least one dated 'protected' and one dated 'adverse' entry — callers use
+// that to decide whether to render the summary at all. Sorted by the protected
+// activity's date, oldest first.
+function causationPairs(entries){
+  entries = entries || [];
+  const dated = entries.map(e => ({ e, d: causalEntryDate(e) })).filter(x => x.d);
+  const protectedEvents = dated.filter(x => x.e.causalRole === 'protected');
+  const adverseEvents = dated.filter(x => x.e.causalRole === 'adverse');
+  if (!protectedEvents.length || !adverseEvents.length) return [];
+  const pairs = [];
+  adverseEvents.forEach(adv => {
+    let best = null;
+    protectedEvents.forEach(prot => {
+      if (prot.d <= adv.d && (!best || prot.d > best.d)) best = prot;
+    });
+    if (best) {
+      const gapDays = Math.round((adv.d.getTime() - best.d.getTime()) / 86400000);
+      pairs.push({ protectedEntry: best.e, protectedDate: best.d, adverseEntry: adv.e, adverseDate: adv.d, gapDays });
+    }
+  });
+  pairs.sort((a, b) => a.protectedDate - b.protectedDate);
+  return pairs;
+}
+// A gap this short or shorter gets visually highlighted — informational only,
+// not a legal threshold; courts weigh close timing as one factor among many.
+const CAUSATION_CLOSE_GAP_DAYS = 30;
 // The Log's default quick-add kind on first open, by issue — before this every
 // issue defaulted to 'Wage & hour' regardless of what actually made sense (a
 // harassment or discrimination user's first tap of "Add to my log" opened an
@@ -1714,6 +1808,7 @@ function App(){
   const [logStartTime, setLogStartTime] = useState('');
   const [logEndTime, setLogEndTime] = useState('');
   const [logPayStatus, setLogPayStatus] = useState('unpaid'); // 'unpaid' (paid $0) | 'straight' (paid straight-time only)
+  const [logCausalRole, setLogCausalRole] = useState(''); // '' (unset) | 'protected' | 'adverse' — optional, any kind, see CAUSAL_ROLE_OPTIONS
   // Structured fields for the three previously-freetext log kinds (Witness,
   // Statement, Document) — mirrors the Hours-worked kind's label-above-input
   // fields, gated the same way (kind.tag === '…') rather than one freetext box.
@@ -3067,7 +3162,7 @@ function App(){
     // the manual "Hours" fallback field so the two can never silently disagree.
     const computedHours = kind.asksHours ? computeHoursFromTimes(logStartTime, logEndTime) : null;
     const finalHours = computedHours != null ? computedHours.hours : (Number(logHours) || 0);
-    const resetForm = () => { setLogNote(''); setLogHours(''); setLogDate(dateInputValue()); setLogStartTime(''); setLogEndTime(''); editOriginalRef.current = null; setLogPayStatus('unpaid'); setLogAttachment(null); setLogAttachmentError(''); setEditingEntryIdx(null);
+    const resetForm = () => { setLogNote(''); setLogHours(''); setLogDate(dateInputValue()); setLogStartTime(''); setLogEndTime(''); editOriginalRef.current = null; setLogPayStatus('unpaid'); setLogCausalRole(''); setLogAttachment(null); setLogAttachmentError(''); setEditingEntryIdx(null);
       setLogWitnessName(''); setLogWitnessContact(''); setLogWitnessRelationship(''); setLogWitnessStillEmployed(''); setLogWitnessWilling('');
       setLogSpeakerName(''); setLogSpeakerRole(''); setLogSaidWhen(dateInputValue()); setLogSaidWhere(''); setLogWhoElseHeard('');
       setLogDocType(''); setLogDocDate(dateInputValue()); setLogDocParties(''); };
@@ -3107,6 +3202,10 @@ function App(){
         payStatus: kind.asksHours ? logPayStatus : undefined,
         startTime: kind.asksHours ? (logStartTime || undefined) : undefined,
         endTime: kind.asksHours ? (logEndTime || undefined) : undefined,
+        // Causal-role classification is offered for any kind (not gated on
+        // kind.tag) — a protected activity or adverse action can just as easily
+        // be a Witness or Records entry as a freeform Statement.
+        causalRole: logCausalRole || undefined,
         attachment: logAttachment || undefined };
       if (kind.tag === 'Witness') {
         Object.assign(fields, {
@@ -3173,6 +3272,7 @@ function App(){
       setLogEndTime(prefillEnd);
       editOriginalRef.current = { date: prefillDate, startTime: prefillStart, endTime: prefillEnd };
       setLogPayStatus(e.payStatus || 'unpaid');
+      setLogCausalRole(e.causalRole || '');
       setLogAttachment(e.attachment || null);
       setLogAttachmentError('');
       setLogWitnessName(e.witnessName || '');
@@ -3220,6 +3320,23 @@ function App(){
             <button key={k.tag} onClick={() => setLogKind(k.tag)} aria-pressed={logKind === k.tag} className="surfacefx" style={css('min-height:44px;padding:10px 13px;border-radius:999px;border:2px solid ' + (logKind === k.tag ? '#2B3AA8' : '#14181F') + ';background:' + (logKind === k.tag ? '#2B3AA8' : '#fff') + ';color:' + (logKind === k.tag ? '#fff' : '#14181F') + ";font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{k.label.replace('+ ','')}</button>
           )}
         </div>
+        {/* Timeline/causation — optional classification of this entry as protected
+            activity or an adverse action, so retaliation timing can be surfaced
+            later (see causationPairs and the Case Strength screen). Offered
+            regardless of which kind is selected above; hidden for wage/document
+            issues where it isn't relevant (CAUSAL_ROLE_ISSUE_KEYS). Tapping an
+            already-pressed option clears it back to unset. */}
+        {CAUSAL_ROLE_ISSUE_KEYS.includes(cfg.key) &&
+          <div role="group" aria-label="Protected activity or adverse action? (optional)" style={css("display:flex;flex-direction:column;gap:6px")}>
+            <span style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Is this a protected activity or an adverse action? <span style={css("font-weight:400;color:#4A5162")}>(optional)</span></span>
+            <div style={css("display:flex;gap:8px;flex-wrap:wrap")}>
+              {CAUSAL_ROLE_OPTIONS.map(([v, label]) =>
+                <button key={v} type="button" onClick={() => setLogCausalRole(logCausalRole === v ? '' : v)} aria-pressed={logCausalRole === v} className="surfacefx" style={css('min-height:44px;padding:10px 13px;border-radius:999px;border:2px solid ' + (logCausalRole === v ? CAUSAL_ROLE_META[v].color : '#14181F') + ';background:' + (logCausalRole === v ? CAUSAL_ROLE_META[v].color : '#fff') + ';color:' + (logCausalRole === v ? '#fff' : '#14181F') + ";font:700 13px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{label}</button>
+              )}
+            </div>
+            <p style={css("margin:0;font:400 12px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Protected activity: e.g. you complained to HR, reported a hazard, requested an accommodation or leave, filed a claim, or discussed pay. Adverse action: e.g. you were fired, demoted, had pay/hours cut, written up, or passed over. Mark both as you go and we can show how close together they happened.</p>
+          </div>
+        }
         {kind.asksHours &&
           <div style={css("display:flex;flex-direction:column;gap:10px")}>
             {/* Field layout: label ABOVE input (matching the rest of the form), with
@@ -3466,6 +3583,9 @@ function App(){
                 }
                 <div style={css("display:flex;align-items:center;gap:8px;flex-wrap:wrap")}>
                   <span style={css("display:inline-block;padding:6px 10px;border-radius:8px;background:#F0EDE5;border:2px solid #14181F;font:600 12px 'IBM Plex Mono',monospace;color:#14181F")}>{e.tag}</span>
+                  {e.causalRole && CAUSAL_ROLE_META[e.causalRole] &&
+                    <span style={css('display:inline-block;padding:6px 10px;border-radius:8px;background:' + CAUSAL_ROLE_META[e.causalRole].bg + ';border:2px solid ' + CAUSAL_ROLE_META[e.causalRole].color + ";font:700 12px 'IBM Plex Mono',monospace;color:" + CAUSAL_ROLE_META[e.causalRole].color)}>{CAUSAL_ROLE_META[e.causalRole].label.toUpperCase()}</span>
+                  }
                   <button onClick={() => startEdit(i)} aria-label={'Edit entry from ' + e.date} style={css("min-height:44px;padding:6px 12px;border-radius:8px;border:2px solid #2B3AA8;background:#fff;color:#2B3AA8;font:700 13px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Edit</button>
                   <button onClick={() => deleteEntry(i)} aria-label={'Delete entry from ' + e.date} style={css("min-height:44px;padding:6px 12px;border-radius:8px;border:2px solid #B3264F;background:#fff;color:#B3264F;font:700 13px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Delete</button>
                 </div>
@@ -3714,6 +3834,36 @@ function App(){
           </div>
         )}
       </div>
+      {(() => {
+        // Timeline / causation — only renders once the case has at least one
+        // entry marked 'protected' AND one marked 'adverse' with a usable date
+        // (causationPairs returns [] otherwise). Never asserts retaliation
+        // occurred — only surfaces the timing pattern, hedged.
+        const pairs = causationPairs(entries);
+        if (!pairs.length) return null;
+        return (
+          <div style={css("padding:18px;border-radius:16px;background:#FFF4D6;border:2px solid #14181F;display:flex;flex-direction:column;gap:12px")}>
+            <p style={css("margin:0;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Timeline: protected activity → employer action</p>
+            <div style={css("display:flex;flex-direction:column;gap:10px")}>
+              {pairs.map((p, i) => {
+                const close = p.gapDays <= CAUSATION_CLOSE_GAP_DAYS;
+                const gapPhrase = p.gapDays === 0 ? 'the same day' : (p.gapDays + ' day' + (p.gapDays === 1 ? '' : 's') + ' later');
+                return (
+                  <div key={i} style={css('padding:12px 14px;border-radius:12px;background:#fff;border:2px solid ' + (close ? '#B3264F' : '#14181F'))}>
+                    <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>
+                      You {causalEntryLabel(p.protectedEntry)} on <strong>{fmtDate(p.protectedDate)}</strong> → {causalEntryLabel(p.adverseEntry)} <strong>{gapPhrase}</strong> ({fmtDate(p.adverseDate)}).
+                    </p>
+                    {close &&
+                      <p style={css("margin:6px 0 0;font:700 13px 'IBM Plex Mono',monospace;color:#B3264F")}>CLOSE TIMING — {p.gapDays} {p.gapDays === 1 ? 'day' : 'days'} apart</p>
+                    }
+                  </div>
+                );
+              })}
+            </div>
+            <p style={css("margin:0;font:400 13px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Courts often look at how close in time the employer's action was to your protected activity — close timing can be evidence of retaliation, but timing alone is not proof. This is legal information, not legal advice.</p>
+          </div>
+        );
+      })()}
       {(() => {
         const fedF = (federal && federal.facts) || [];
         const stF = (stateData && stateData.facts) || [];
