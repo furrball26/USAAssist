@@ -96,7 +96,10 @@ try {
 
   const problems = [];
 
-  await click(pg, 'Draft a letter');
+  // Home's "Draft a letter" Tools card was removed (redundant with the step list
+  // and the wizard's non-exempt result) — reach the classification-request letter
+  // via its "Your next steps" row instead.
+  await click(pg, 'Ask HR, in writing, for your overtime');
   await new Promise(r => setTimeout(r, 300));
   const classText = await bodyText(pg);
   if (!/215\(a\)\(3\)/.test(classText) || !/retaliation/i.test(classText)) problems.push('classification-request letter missing retaliation protection statement, got: ' + JSON.stringify(classText.slice(0, 600)));

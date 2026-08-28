@@ -52,7 +52,9 @@ try {
   await pg.evaluateOnNewDocument((s) => { localStorage.clear(); localStorage.setItem('worklaw.case.v2', JSON.stringify(s)); }, seed);
   await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`);
   await new Promise(r => setTimeout(r, 700));
-  await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('Draft a letter')); if (btn) btn.click(); });
+  // "Draft a letter" is only shown for non-wage issues now (redundant for wage —
+  // both letters are reachable via the step list); use the classification step.
+  await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('Ask HR, in writing, for your overtime')); if (btn) btn.click(); });
   await new Promise(r => setTimeout(r, 300));
   await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => /Wage demand/.test(b.textContent)); if (btn) btn.click(); });
   await new Promise(r => setTimeout(r, 300));
@@ -94,7 +96,9 @@ try {
   await pg.evaluateOnNewDocument((s) => { localStorage.clear(); localStorage.setItem('worklaw.case.v2', JSON.stringify(s)); }, seed);
   await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`);
   await new Promise(r => setTimeout(r, 700));
-  await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('Draft a letter')); if (btn) btn.click(); });
+  // "Draft a letter" is only shown for non-wage issues now (redundant for wage —
+  // both letters are reachable via the step list); use the classification step.
+  await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('Ask HR, in writing, for your overtime')); if (btn) btn.click(); });
   await new Promise(r => setTimeout(r, 300));
   await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => /Wage demand/.test(b.textContent)); if (btn) btn.click(); });
   await new Promise(r => setTimeout(r, 300));

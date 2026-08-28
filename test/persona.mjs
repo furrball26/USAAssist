@@ -60,7 +60,12 @@ for (const c of CASES) {
 
   let all = '';
   for (const stop of ['Home', 'Ask AI', 'Rights', 'Agencies']) { await click(stop); all += '\n' + await collect(); }
-  await click('Home'); await click('Draft a letter'); const letterTxt = await collect(); all += '\n' + letterTxt;
+  // "Draft a letter" is only shown for non-wage issues now (redundant for wage
+  // — both letters are reachable via the step list); for a wage case, reach
+  // the classification-request letter via its step row instead. Only one of
+  // these two clicks is ever a no-op for a given issue.
+  await click('Home'); await click('Draft a letter'); await click('Ask HR, in writing, for your overtime');
+  const letterTxt = await collect(); all += '\n' + letterTxt;
   await click('Home'); await click('Am I exempt'); all += '\n' + await collect();
 
   const problems = [];

@@ -112,7 +112,10 @@ try {
   // $360, wrongly treating both under-40-hr weeks as if they were overtime.)
   await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Home'); if (btn) btn.click(); });
   await new Promise(r => setTimeout(r, 300));
-  await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('Draft a letter')); if (btn) btn.click(); });
+  // "Draft a letter" is only shown for non-wage issues now (it's redundant for
+  // wage — both letters are reachable via the step list); reach the
+  // classification-request letter through its step row instead.
+  await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('Ask HR, in writing, for your overtime')); if (btn) btn.click(); });
   await new Promise(r => setTimeout(r, 300));
   await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => /Wage demand/.test(b.textContent)); if (btn) btn.click(); });
   await new Promise(r => setTimeout(r, 300));

@@ -1898,10 +1898,21 @@ function App(){
             <span aria-hidden="true"><Icon name="document" size={24} /></span>
             <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Review a document</span>
           </button>
-          <button onClick={nav('letter')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#E8F6EE;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
-            <span aria-hidden="true"><Icon name="pencil" size={24} /></span>
-            <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Draft a letter</span>
-          </button>
+          {/* Wage is the only issue where this card is redundant: BOTH its letters
+              (classification-request, wage-demand) are already reachable through the
+              step list above and the wizard's non-exempt result ("Draft a wage demand
+              letter"). For every other issue (harassment/discrimination/termination/
+              document) this Tools grid is the only Home-reachable path to that issue's
+              letter — none of their step lists route to 'letter' for every step, e.g.
+              harassment's and discrimination's steps are all 'log' — so removing it
+              there would make that issue's letter unreachable from Home. Keep it,
+              scoped to non-wage issues only. */}
+          {cfg.key !== 'wage' &&
+            <button onClick={nav('letter')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#E8F6EE;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
+              <span aria-hidden="true"><Icon name="pencil" size={24} /></span>
+              <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Draft a letter</span>
+            </button>
+          }
         </div>
       </div>
 

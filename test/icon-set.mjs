@@ -133,17 +133,20 @@ for (const mode of ['action', 'plain']) {
   await pg.close();
 }
 
-// Case 3b: any tool screen reached from Home (e.g. Draft a letter) shows the
-// iconized "Dashboard" back link — the 12th glyph flagged for consistency in
-// spec Part 1 ("← Dashboard" plain-arrow links, out of the original 11 but
-// swapped to <Icon name="back"> anyway).
+// Case 3b: any tool screen reached from Home (e.g. the classification-request
+// letter step) shows the iconized "Dashboard" back link — the 12th glyph
+// flagged for consistency in spec Part 1 ("← Dashboard" plain-arrow links, out
+// of the original 11 but swapped to <Icon name="back"> anyway).
 {
   const pg = await b.newPage();
   const errs = [];
   pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
   pg.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
   await seedAndOpen(pg);
-  await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => /Draft a letter/.test(b.textContent)); if (btn) btn.click(); });
+  // "Draft a letter" is only shown for non-wage issues now (redundant for
+  // wage — both letters are reachable via the step list); use the
+  // classification step, which lands on the same Letter screen.
+  await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => /Ask HR, in writing, for your overtime/.test(b.textContent)); if (btn) btn.click(); });
   await new Promise(r => setTimeout(r, 300));
 
   const text = await rootText(pg);
