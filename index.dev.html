@@ -858,9 +858,24 @@ function stepKey(cfg, idx){
   return (cfg.stepIds && cfg.stepIds[idx]) || idx;
 }
 
+// A step can be checked off two ways: the user taps its checkbox (self-report,
+// stored in `done`), OR the app can tell from real case data that the step is
+// already satisfied — e.g. hours are logged, or the exemption self-check was run
+// — so a user who jumps straight to a tool without following the step list isn't
+// stuck showing 0 progress on work they actually did. Only applied where the
+// signal is unambiguous; every other step still relies on self-report.
+function stepAutoDone(id, ctx){
+  if (id === 'wage-log-hours') {
+    return (ctx.entries || []).some(e => Number(e.hours) > 0 || e.tag === 'Wage & hour');
+  }
+  if (id === 'wage-exempt-check') {
+    return !!RESULTS[ctx.wizNode];
+  }
+  return false;
+}
 function isStepDone(cfg, idx, done, ctx){
   const id = stepKey(cfg, idx);
-  return !!done[id];
+  return !!done[id] || stepAutoDone(id, ctx);
 }
 
 // Generate a self-send letter from the user's real inputs (no fabricated persona).
