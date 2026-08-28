@@ -1131,19 +1131,24 @@ const ISSUES = {
     chatSeed:'You mentioned harassment or a hostile workplace. Tell me what has been happening and whether it is tied to a protected characteristic, and I will explain what the law covers where you work.',
   },
   'Discrimination': {
-    key:'discrimination', caseTitle:'Workplace discrimination', primaryTool:'rights', letterKind:'complaint',
-    action:'Document the pattern and who decided.',
-    actionWhy:'Discrimination cases turn on comparisons and timing. A dated log of decisions and comments matters.',
+    key:'discrimination', caseTitle:'Workplace discrimination', primaryTool:'wizard', letterKind:'complaint',
+    action:'Check whether this may legally be discrimination.',
+    actionWhy:'Discrimination cases turn on comparisons, timing, and a protected characteristic — the self-check helps you see whether that link exists before you spend time documenting. It takes about two minutes.',
+    // Mirrors the wage issue's order: the self-check runs FIRST (step 1), same
+    // as wage's exemption self-check and harassment's legal-identifier.
     steps:[
+      'Check whether this may legally be discrimination (2 minutes)',
       'Log the adverse actions: what changed, when, and who decided',
       'Note comments or treatment tied to a protected characteristic',
       'Save reviews, pay records and comparably-situated coworkers',
       'Record any complaint you made and the response',
+      'Send a complaint letter, or file with the EEOC/your state agency',
     ],
-    stepScreens:['log','log','log','log'],
+    stepScreens:['wizard','log','log','log','log','letter'],
+    stepLetterTypes:[null,null,null,null,null,'complaint'],
     // See harassment's stepLogKind above — same reasoning, per this issue's steps.
-    stepLogKind:['Statement','Statement','Records','Statement'],
-    stepIds:['discrimination-log-actions','discrimination-note-comments','discrimination-save-records','discrimination-log-complaint'],
+    stepLogKind:[null,'Statement','Statement','Records','Statement',null],
+    stepIds:['discrimination-legal-check','discrimination-log-actions','discrimination-note-comments','discrimination-save-records','discrimination-log-complaint','discrimination-complaint-letter'],
     chatSeed:'You mentioned discrimination. Tell me the protected characteristic involved and what happened, and I will explain the federal and state protections where you work.',
   },
   'Fired or pushed out': {
@@ -1276,6 +1281,9 @@ function stepAutoDone(id, ctx){
   }
   if (id === 'harassment-legal-check') {
     return !!RESULTS_HARASSMENT[ctx.wizNode];
+  }
+  if (id === 'discrimination-legal-check') {
+    return !!RESULTS_DISCRIMINATION[ctx.wizNode];
   }
   return false;
 }
@@ -2858,11 +2866,17 @@ function App(){
             </button>
           }
           {/* ADA interactive-process tracker — gated to discrimination, same
-              cfg.key-guard pattern as the tiles above. See AdaProcessTracker. */}
+              cfg.key-guard pattern as the tiles above. See AdaProcessTracker.
+              flow audit: this used to imply every discrimination case (even
+              race/age/sex, no accommodation involved) is mid-ADA-process. The
+              label now reads as self-selecting instead of assumed-relevant;
+              kept reachable for every discrimination case (not gated on
+              profile.adaLog/letterType) since that would make it unreachable
+              the first time a user actually needs it. */}
           {cfg.key === 'discrimination' &&
             <button onClick={nav('adaProcess')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#F1EAFB;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
               <span aria-hidden="true"><Icon name="log" size={24} /></span>
-              <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Track the ADA process</span>
+              <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Track the ADA process — if you're requesting an accommodation</span>
             </button>
           }
           {/* Wage is the only issue where this card is redundant: BOTH its letters
@@ -2954,9 +2968,10 @@ function App(){
         <button onClick={nav('recordsRequest')} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.6);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Track my records request</button>
       }
       {/* ADA interactive-process tracker — Action-first equivalent of the
-          Standard Tools-grid tile, gated to discrimination the same way. */}
+          Standard Tools-grid tile, gated to discrimination the same way. See
+          the self-selecting-label note on the Standard tile above. */}
       {cfg.key === 'discrimination' &&
-        <button onClick={nav('adaProcess')} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.6);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Track the ADA process</button>
+        <button onClick={nav('adaProcess')} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.6);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Track the ADA process — if you're requesting an accommodation</button>
       }
       <div style={css("display:flex;flex-direction:column;gap:12px")}>
         <button onClick={() => {
@@ -3115,9 +3130,10 @@ function App(){
               <button onClick={nav('recordsRequest')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Track my records request</button>
             }
             {/* ADA interactive-process tracker — Plain-mode equivalent, gated
-                to discrimination the same way as the Standard/Action tiles. */}
+                to discrimination the same way as the Standard/Action tiles.
+                See the self-selecting-label note on the Standard tile above. */}
             {K === 'discrimination' &&
-              <button onClick={nav('adaProcess')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Track the ADA process</button>
+              <button onClick={nav('adaProcess')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Track the ADA process — if you're requesting an accommodation</button>
             }
             <button onClick={() => { setLogKind(defaultLogKindForIssueKey(K)); setScreen('log'); }} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{K === 'wage' ? 'Add hours I worked' : 'Add to my log'}</button>
             {/* usertest — same reachability gap as HomeAction above: the primary CTA's
