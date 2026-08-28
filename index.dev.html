@@ -178,7 +178,7 @@ function topicKicker(topic){
   const m = { overtime:'OVERTIME', minimumWage:'MINIMUM WAGE', discrimination:'DISCRIMINATION',
     disability:'DISABILITY · ADA', retaliation:'RETALIATION', payDiscussion:'PAY TRANSPARENCY',
     payTransparency:'PAY TRANSPARENCY', deadlines:'DEADLINES', leave:'LEAVE', severance:'SEVERANCE',
-    wages:'WAGES', termination:'TERMINATION', compensation:'COMPENSATION' };
+    wages:'WAGES', termination:'TERMINATION', compensation:'COMPENSATION', nonCompete:'NON-COMPETE' };
   return m[p] || p.replace(/([A-Z])/g, ' $1').replace(/^./, c => c.toUpperCase()).toUpperCase();
 }
 // Only ever render an https:// URL as an href — guards against a malformed/malicious
@@ -2552,6 +2552,15 @@ function App(){
             <span aria-hidden="true"><Icon name="document" size={24} /></span>
             <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Review a document</span>
           </button>
+          {/* Non-compete enforceability checker — document-issue-specific tool,
+              gated the same way the overtime/harassment/discrimination self-checks
+              above are gated to their own issue. */}
+          {cfg.key === 'document' &&
+            <button onClick={nav('noncompete')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#FFE7EC;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
+              <span aria-hidden="true"><Icon name="rights" size={24} /></span>
+              <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Is my non-compete enforceable?</span>
+            </button>
+          }
           {/* Wage is the only issue where this card is redundant: BOTH its letters
               (classification-request, wage-demand) are already reachable through the
               step list above and the wizard's non-exempt result ("Draft a wage demand
@@ -2624,6 +2633,11 @@ function App(){
       }
       {cfg.key === 'discrimination' &&
         <button onClick={nav('wizard')} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.6);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Is this discrimination?</button>
+      }
+      {/* Non-compete checker — Action-first equivalent of the Standard Tools-grid
+          tile above, gated to the document issue the same way. */}
+      {cfg.key === 'document' &&
+        <button onClick={nav('noncompete')} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.6);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Is my non-compete enforceable?</button>
       }
       <div style={css("display:flex;flex-direction:column;gap:12px")}>
         <button onClick={() => {
@@ -2764,6 +2778,12 @@ function App(){
             }
             {K === 'discrimination' &&
               <button onClick={nav('wizard')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Is this discrimination?</button>
+            }
+            {/* Non-compete checker — Plain-mode equivalent, gated to the document
+                issue the same way the wage/harassment/discrimination self-checks
+                above are gated to theirs. */}
+            {K === 'document' &&
+              <button onClick={nav('noncompete')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Is my non-compete enforceable?</button>
             }
             <button onClick={nav('log')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{K === 'wage' ? 'Add hours I worked' : 'Add to my log'}</button>
             {/* usertest — same reachability gap as HomeAction above: the primary CTA's
@@ -3503,6 +3523,12 @@ function App(){
             </div>
             <p style={css("margin:0 0 10px;padding-left:12px;border-left:4px solid rgba(20,24,31,.25);font:italic 400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>“{cl.quote}”</p>
             <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{cl.plain}</p>
+            {/* CTA straight from a flagged non-compete clause into the dedicated
+                enforceability checker, which pulls the actual sourced state fact
+                (this card's copy is only a generic keyword-match flag). */}
+            {cl.title === 'Non-compete / restrictive covenant' &&
+              <button onClick={nav('noncompete')} className="hoverfx" style={css("align-self:flex-start;margin-top:10px;min-height:44px;padding:10px 14px;border-radius:10px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Is my non-compete enforceable? →</button>
+            }
           </div>
         )}
       </div>
@@ -3510,6 +3536,66 @@ function App(){
       <div style={css("padding:16px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F")}>
         <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>If your document mentions a consideration/revocation period, you typically have <strong>21 days</strong> to consider it and <strong>7 days</strong> to revoke after signing. Do not sign to hit an artificial deadline.</p>
       </div>
+    </div>
+    );
+  };
+
+  // Non-compete enforceability checker — resolves the user's selected state's
+  // nonCompete.enforceability fact (present for a subset of states; see
+  // content/states/*.json) via factByTopic, exactly the way Rights/the wage
+  // exemption panel resolve every other state-law fact: no hardcoded per-state
+  // legal conclusions, and an honest "we don't have a sourced answer" path for
+  // every state that has no nonCompete.enforceability fact yet — never inferred
+  // or guessed from a neighboring state. Always also surfaces the federal
+  // nonCompete.ftcRuleStatus fact (there is currently no FTC rule in effect —
+  // this only ever confirms enforceability is a state-law question).
+  const NonCompeteChecker = () => {
+    const stName = stateSel || 'your state';
+    const fedF = (federal && federal.facts) || [];
+    const stF = (stateData && stateData.facts) || [];
+    const stReviewed = !!(stateData && stateData.reviewed === true);
+    const ncFact = factByTopic(stF, 'nonCompete.enforceability');
+    const ftcFact = factByTopic(fedF, 'nonCompete.ftcRuleStatus');
+    const src = f => { const u = f && safeUrl(f.sourceUrl); return u ? <a href={u} target="_blank" rel="noopener noreferrer" className="hoverfx" style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null; };
+    return (
+    <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
+      <button onClick={nav('doc')} style={css("align-self:flex-start;display:flex;align-items:center;gap:4px;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}><Icon name="back" size={18} /> Document review</button>
+      <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Is my non-compete enforceable?</h1>
+      <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Non-compete law varies a lot by state, and several states have changed their rules recently. This is general information for {stName}, not an opinion on your specific agreement — only an attorney can tell you that.</p>
+
+      {contentErr ? <p style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load the rights dataset. Check your connection and reopen.</p> : null}
+
+      {ncFact ? (
+        <>
+          {!stReviewed && <DraftStateNotice stName={stName} />}
+          {factCard(ncFact, 0, stateAbbr || stName.toUpperCase(), '#EEF1FF')}
+        </>
+      ) : stateErr ? (
+        <p style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load {stName} rules. Check your connection and reopen — this is not a confirmation that {stName} has no non-compete rule.</p>
+      ) : stateData === undefined ? (
+        <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Loading {stName} rules…</p>
+      ) : (
+        <div style={css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#F0EDE5")}>
+          <p style={css("margin:0;font:400 16px/1.5 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>We don’t have a sourced answer for {stName} yet. Non-compete law varies a lot by state and is changing — talk to an employment attorney before assuming your non-compete is (un)enforceable.</p>
+        </div>
+      )}
+
+      {ftcFact &&
+        <div style={css("padding:16px 18px;border-radius:14px;border:2px solid #2B3AA8;background:#EEF1FF;display:flex;flex-direction:column;gap:4px")}>
+          <p style={css("margin:0;font:700 13px 'IBM Plex Mono',monospace;color:#1B2778;letter-spacing:.04em")}>FEDERAL — FTC RULE STATUS</p>
+          <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{ftcFact.summary} {src(ftcFact)}</p>
+        </div>
+      }
+
+      <div style={css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff")}>
+        <p style={css("margin:0 0 8px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>What courts generally weigh (general information, not applied to your facts)</p>
+        <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>In states that test non-competes for “reasonableness” rather than banning them outright, courts commonly look at: how narrow the <strong>geographic scope</strong> is, how long the <strong>duration</strong> runs, whether the employer has a genuine <strong>legitimate business interest</strong> to protect (like real trade secrets, not just avoiding competition), and whether you received real <strong>consideration</strong> (something of value, like a new job offer or a raise) in exchange for signing. This is a general description of common factors, not a scoring of your specific agreement.</p>
+      </div>
+
+      <div style={css("padding:16px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F")}>
+        <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>This is legal information, not legal advice, and it is not an opinion on whether your specific non-compete is enforceable. An employment attorney licensed in {stName} can review your actual agreement.</p>
+      </div>
+      <button onClick={nav('agencies')} className="hoverfx" style={css("align-self:flex-start;min-height:44px;padding:12px 16px;border-radius:12px;border:2px solid #2B3AA8;background:#fff;color:#2B3AA8;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Find a lawyer →</button>
     </div>
     );
   };
@@ -3840,7 +3926,7 @@ function App(){
 
   const SCREENS = {
     onboarding: Onboarding, home: HomeScreen, chat: Chat, wizard: Wizard, log: Log,
-    doc: Doc, letter: Letter, strength: Strength, rights: RightsLib, agencies: Agencies
+    doc: Doc, noncompete: NonCompeteChecker, letter: Letter, strength: Strength, rights: RightsLib, agencies: Agencies
   };
   const Current = SCREENS[screen] || HomeScreen;
 
