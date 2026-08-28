@@ -3448,27 +3448,47 @@ function App(){
           docParties: logDocParties.trim() || undefined,
         });
       }
+      // An entry's `date`/`iso` must reflect the semantic date the user actually
+      // entered for what happened — not just when it was logged — because that's
+      // what drives the entry list, weekStartKey/workweek grouping, the Case
+      // Strength causation timeline (causalEntryDate mirrors this per-kind
+      // preference so the two never disagree), the case-file export, and any
+      // letter that lists entry dates. Each kind has its own driving date field:
+      //   Hours    — the picked "date worked" (+ start time, for weekStartKey)
+      //   Statement — "when said" (saidWhen)
+      //   Records   — the document's date (docDate)
+      //   Witness   — no dedicated date field; creation date/iso is left as-is
+      // On EDIT, only recompute when the driving field(s) actually changed from
+      // what the edit form was pre-filled with (editOriginalRef) — an untouched
+      // note-only edit keeps the entry's exact original date/iso verbatim,
+      // rather than round-tripping through new Date(...)/toISOString(), which
+      // is a no-op in UTC but can print a different local clock time in other
+      // timezones.
+      const orig = editOriginalRef.current;
       if (kind.asksHours) {
-        // The user picks the DATE the hours were worked (default today, no future
-        // dates) — that, not "now", is what must feed weekStartKey so the workweek
-        // grouping behind computeOwedBreakdown is correct. When EDITING, only
-        // recompute date/iso if the date/start/end fields actually changed from
-        // what the edit form was pre-filled with (editOriginalRef) — an untouched
-        // note-only edit keeps the entry's exact original date/iso verbatim,
-        // rather than round-tripping through new Date(...)/toISOString(), which
-        // is a no-op in UTC but can print a different local clock time in other
-        // timezones.
-        const orig = editOriginalRef.current;
         const dateTouched = !editing || !orig || logDate !== orig.date || logStartTime !== orig.startTime || logEndTime !== orig.endTime;
         if (dateTouched) {
           fields.iso = isoFromDateAndTime(logDate, logStartTime);
           fields.date = stamp(new Date(fields.iso));
         }
+      } else if (kind.tag === 'Statement' && logSaidWhen) {
+        const dateTouched = !editing || !orig || logSaidWhen !== orig.saidWhen;
+        if (dateTouched) {
+          fields.iso = isoFromDateAndTime(logSaidWhen, '');
+          fields.date = stamp(new Date(fields.iso));
+        }
+      } else if (kind.tag === 'Records' && logDocDate) {
+        const dateTouched = !editing || !orig || logDocDate !== orig.docDate;
+        if (dateTouched) {
+          fields.iso = isoFromDateAndTime(logDocDate, '');
+          fields.date = stamp(new Date(fields.iso));
+        }
       }
       if (editing) {
-        // Non-hours kinds: preserve the original date/iso timestamp — only the
-        // editable fields change. Hours entries: date/iso above reflect the
-        // (possibly re-picked) date/start time.
+        // Witness (and Statement/Records with a blank driving date field):
+        // preserve the original date/iso timestamp — only the editable fields
+        // change. Hours/Statement/Records with a set driving date: date/iso
+        // above reflect the (possibly re-picked) date.
         setEntries(p => p.map((e, idx) => idx === editingEntryIdx ? Object.assign({}, e, fields) : e));
       } else {
         addEntry(fields);
@@ -3486,7 +3506,9 @@ function App(){
       setLogDate(prefillDate);
       setLogStartTime(prefillStart);
       setLogEndTime(prefillEnd);
-      editOriginalRef.current = { date: prefillDate, startTime: prefillStart, endTime: prefillEnd };
+      const prefillSaidWhen = e.saidWhen || dateInputValue();
+      const prefillDocDate = e.docDate || dateInputValue();
+      editOriginalRef.current = { date: prefillDate, startTime: prefillStart, endTime: prefillEnd, saidWhen: prefillSaidWhen, docDate: prefillDocDate };
       setLogPayStatus(e.payStatus || 'unpaid');
       setLogCausalRole(e.causalRole || '');
       setLogAttachment(e.attachment || null);
@@ -3498,11 +3520,11 @@ function App(){
       setLogWitnessWilling(e.witnessWilling || '');
       setLogSpeakerName(e.speakerName || '');
       setLogSpeakerRole(e.speakerRole || '');
-      setLogSaidWhen(e.saidWhen || dateInputValue());
+      setLogSaidWhen(prefillSaidWhen);
       setLogSaidWhere(e.saidWhere || '');
       setLogWhoElseHeard(e.whoElseHeard || '');
       setLogDocType(e.docType || '');
-      setLogDocDate(e.docDate || dateInputValue());
+      setLogDocDate(prefillDocDate);
       setLogDocParties(e.docParties || '');
       setEditingEntryIdx(i);
     };
