@@ -910,7 +910,7 @@ function printLetter(subject, text){
     const w = window.open('', '_blank');
     if (!w) throw new Error('popup blocked');
     w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>' + esc(subject) +
-      '</title><style>body{font:15px/1.7 Georgia,serif;color:#111;max-width:640px;margin:48px auto;padding:0 24px;white-space:pre-wrap}@media print{body{margin:0}}</style></head><body>' +
+      '</title><style>body{font:15px/1.7 Georgia,serif;color:#111;max-width:640px;margin:48px auto;padding:0 24px;white-space:pre-wrap;overflow-wrap:anywhere}@media print{body{margin:0}}</style></head><body>' +
       esc(text) + '</body></html>');
     w.document.close(); w.focus();
     setTimeout(() => { try { w.print(); } catch(e){} }, 300);
@@ -2261,7 +2261,7 @@ function App(){
       {editing ?
         <textarea value={letterEdit} onChange={e => setLetterEdit(e.target.value)} rows={16} style={css("width:100%;box-sizing:border-box;padding:18px;border-radius:12px;border:2px solid #2B3AA8;background:#fff;font:400 15px/1.65 'IBM Plex Mono',monospace;color:#14181F;resize:vertical")} />
         :
-        <div style={css("padding:22px;border-radius:12px;background:#fff;border:2px solid #14181F;font:400 15px/1.65 'Atkinson Hyperlegible',sans-serif;color:#14181F;white-space:pre-wrap")}>{text}</div>
+        <div style={css("padding:22px;border-radius:12px;background:#fff;border:2px solid #14181F;font:400 15px/1.65 'Atkinson Hyperlegible',sans-serif;color:#14181F;white-space:pre-wrap;overflow-wrap:anywhere")}>{text}</div>
       }
       <div style={css("display:flex;gap:10px;flex-wrap:wrap")}>
         <button onClick={() => printLetter(gen.subject, text)} style={css("flex:1;min-width:130px;padding:17px;border-radius:14px;border:none;background:#2B3AA8;color:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Export / print PDF</button>
