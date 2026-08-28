@@ -1564,6 +1564,11 @@ function App(){
 
       {onbStep === 2 && (() => {
         const countyLabelWord = US_COUNTY_LABEL[dStateSel] === 'PARISH' ? 'parish' : US_COUNTY_LABEL[dStateSel] === 'BOROUGH' ? 'borough' : 'county';
+        // F20 fix — 'county'+'s' worked, but 'parish'+'s' → "parishs" and the
+        // irregular 'county' → "countys" is also wrong. Small explicit map
+        // instead of a naive suffix rule since all three plurals are irregular
+        // enough (countIES, parishES, boroughS) to not share one rule.
+        const countyLabelPlural = countyLabelWord === 'parish' ? 'parishes' : countyLabelWord === 'county' ? 'counties' : countyLabelWord + 's';
         const allCounties = US_COUNTIES[dStateSel] || [];
         // F20 — a native <select> with 100+ options is hard to scan; add a
         // simple text filter above it for states with a lot of counties (TX
@@ -1579,7 +1584,7 @@ function App(){
           <label htmlFor="onb-county" style={css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em")}>{(US_COUNTY_LABEL[dStateSel] || 'COUNTY') + ' · ' + dStateSel.toUpperCase()}</label>
           {allCounties.length > 20 &&
             <input id="onb-county-filter" type="text" value={countyQuery} onChange={e => setCountyQuery(e.target.value)}
-              placeholder={'Type to filter ' + allCounties.length + ' ' + countyLabelWord + 's…'} aria-label={'Filter the ' + countyLabelWord + ' list'}
+              placeholder={'Type to filter ' + allCounties.length + ' ' + countyLabelPlural + '…'} aria-label={'Filter the ' + countyLabelWord + ' list'}
               style={css("padding:14px;border-radius:12px;border:2px solid #14181F;font:400 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
           }
           <select id="onb-county" value={dCounty || ''} onChange={e => setDCounty(e.target.value || null)} style={css("width:100%;padding:15px;border-radius:12px;border:2px solid #14181F;background:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer;appearance:menulist;-webkit-appearance:menulist")}>
