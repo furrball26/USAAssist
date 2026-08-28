@@ -273,7 +273,12 @@
     .screen.no-tabbar{ grid-template-columns:1fr; grid-template-areas:"status" "main"; }
     .statusbar{ grid-area:status; visibility:hidden; height:0; padding:0; }
     .scrollarea{ grid-area:main; display:flex; flex-direction:column; align-items:center; padding:48px 40px 64px; }
-    .scrollarea > *{ width:100%; max-width:680px; background:var(--mode-bg); }
+    /* flex:0 0 auto — at the desktop tier .scrollarea is a fixed-height flex
+       column; without this, children default to flex-shrink:1 and get compressed
+       below their content height, so a tall screen (e.g. Action-first/Plain home)
+       overflows onto the sibling privacy/footer cards. Keep natural height and let
+       .scrollarea scroll instead. */
+    .scrollarea > *{ width:100%; max-width:680px; background:var(--mode-bg); flex:0 0 auto; }
     /* design HIGH #8 — a 14%-opacity hairline was the only thing separating the
        rail from the beige desk gutter, unlike every other card/surface boundary
        in the app (buttons, the wide-tier .screen border, etc.), which use a
