@@ -1955,7 +1955,12 @@ function App(){
   // onboarding gate.
   const [screen, setScreen] = useState(() => {
     const histScreen = typeof window !== 'undefined' && window.history.state && window.history.state.screen;
-    if (typeof histScreen === 'string' && (saved.onboarded || histScreen === 'onboarding')) return histScreen;
+    // An already-onboarded case always wins over a stale 'onboarding' history
+    // entry (e.g. a second tab left open on the wizard before this case was
+    // created) — otherwise the onboarding selects would write straight over
+    // the live case with no confirmation. Only honor a stale history screen
+    // for an onboarded case when it names a real in-app screen.
+    if (typeof histScreen === 'string' && saved.onboarded && histScreen !== 'onboarding') return histScreen;
     return saved.onboarded ? 'home' : 'onboarding';
   });
   const [onbStep, setOnbStep] = useState(1);
