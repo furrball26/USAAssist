@@ -419,6 +419,31 @@ const DAMAGE_CATEGORIES = [
   { title:'Out-of-pocket costs', body:'Costs you paid because of what happened — job search expenses, therapy or counseling, medical care, and similar. You can optionally tally yours below.' },
 ];
 
+// Process trackers (Aug 2026) — the app already generates one-shot letters for
+// a records request (buildLetter's records-request kind) and an ADA
+// accommodation request (accommodation-request kind), but never tracked the
+// multi-step PROCESS that follows either letter. Two small trackers below
+// (RecordsRequestTracker, AdaProcessTracker) persist that follow-through to
+// the case — profile.recordsRequest (a single object) and profile.adaLog (a
+// chronological array) — the same way rate/eventDate/weeksOut already persist
+// on profile, so both survive reload and flow into buildCaseFile's export.
+const RECORDS_REQUEST_METHODS = ['Certified mail', 'Email', 'Employer portal', 'In person'];
+const ADA_LOG_WHAT_OPTIONS = [
+  ['requested', 'Requested accommodation'],
+  ['employer-responded', 'Employer responded'],
+  ['meeting', 'Meeting held'],
+  ['medical-docs-requested', 'Medical documentation requested'],
+  ['granted', 'Accommodation granted'],
+  ['denied', 'Accommodation denied'],
+  ['modified', 'Accommodation modified'],
+];
+const ADA_LOG_WHAT_LABELS = ADA_LOG_WHAT_OPTIONS.reduce((m, [k, l]) => (m[k] = l, m), {});
+// The ADA generally requires BOTH sides — not just the worker — to engage in
+// an ongoing, good-faith interactive process once an accommodation is
+// requested. Shared between the tracker screen and the exported case file so
+// this hedge never drifts between the two.
+const ADA_PROCESS_GOOD_FAITH_NOTE = 'The ADA generally requires both you and your employer to engage in this interactive process in good faith, on an ongoing basis — not a one-time letter. This log is a record of that back-and-forth, not a legal conclusion about whether either side met that duty.';
+
 // F4 — a worker fired/pushed out for reporting a safety hazard has a SEPARATE,
 // much shorter federal deadline (OSHA Section 11(c) whistleblower complaint,
 // 30 days — deadlines.oshaWhistleblower) than the EEOC discrimination-charge
@@ -775,6 +800,10 @@ function sanitizeCase(raw){
   if (!Array.isArray(c.messages)) c.messages = [];
   if (!Array.isArray(c.wizPath)) c.wizPath = [];
   if (!c.profile || typeof c.profile !== 'object' || Array.isArray(c.profile)) c.profile = {};
+  // Process trackers (records-request/ADA interactive process) — same defensive
+  // coercion as the top-level fields above, since both live inside profile.
+  if (c.profile.recordsRequest && (typeof c.profile.recordsRequest !== 'object' || Array.isArray(c.profile.recordsRequest))) delete c.profile.recordsRequest;
+  if (c.profile.adaLog && !Array.isArray(c.profile.adaLog)) delete c.profile.adaLog;
   return c;
 }
 function loadCase(){
@@ -1425,6 +1454,20 @@ function formatLocalDateStr(s){
   const d = new Date(parts[0], parts[1] - 1, parts[2]);
   return isNaN(d.getTime()) ? s : fmtDate(d);
 }
+// Days between two "YYYY-MM-DD" (LOCAL calendar day — same dateInputValue
+// convention as everywhere else above) date-input strings. Used by the
+// records-request tracker's status line ("no response after N days" /
+// "response received N days later") — never a guess: returns null (never a
+// fabricated number) if either string doesn't parse cleanly.
+function daysBetweenDateStrs(aStr, bStr){
+  const pa = String(aStr || '').split('-').map(Number);
+  const pb = String(bStr || '').split('-').map(Number);
+  if (pa.length !== 3 || pb.length !== 3 || pa.some(n => !isFinite(n)) || pb.some(n => !isFinite(n))) return null;
+  const da = new Date(pa[0], pa[1] - 1, pa[2]);
+  const db = new Date(pb[0], pb[1] - 1, pb[2]);
+  if (isNaN(da.getTime()) || isNaN(db.getTime())) return null;
+  return Math.round((db.getTime() - da.getTime()) / 86400000);
+}
 
 // Build a portable, attorney/agency-ready case-file packet from the user's real
 // inputs — plain text so it stays copy/paste- and print-friendly through
@@ -1579,6 +1622,44 @@ function buildCaseFile(ctx){
     });
   } else {
     lines.push('(no employer/manager statements logged yet)');
+  }
+
+  // RECORDS REQUEST — records-request follow-through tracker (see
+  // RecordsRequestTracker). Only rendered once the user has actually started
+  // tracking a request (a sent date on file) — never shown just because the
+  // issue happens to be gated to the tool.
+  const rr = profile.recordsRequest;
+  if (rr && rr.dateSent) {
+    lines.push('');
+    lines.push('== RECORDS REQUEST ==');
+    lines.push('Sent ' + formatLocalDateStr(rr.dateSent) + (rr.method ? ' via ' + rr.method : '') + '.');
+    if (rr.noResponseYet === true) {
+      const daysSince = daysBetweenDateStrs(rr.dateSent, dateInputValue());
+      lines.push('Status: no response yet' + (daysSince != null && daysSince >= 0 ? ' (' + daysSince + (daysSince === 1 ? ' day' : ' days') + ' so far)' : '') + ' — non-response can itself be relevant.');
+    } else if (rr.dateReceived) {
+      const gap = daysBetweenDateStrs(rr.dateSent, rr.dateReceived);
+      lines.push('Response received ' + formatLocalDateStr(rr.dateReceived) + (gap != null ? ' (' + gap + (gap === 1 ? ' day' : ' days') + ' after the request)' : '') + '.');
+    } else {
+      lines.push('Status: awaiting confirmation of whether a response has come in.');
+    }
+    if (rr.produced) lines.push('Produced: ' + rr.produced);
+    if (rr.missing) lines.push('Still missing: ' + rr.missing);
+  }
+
+  // ADA INTERACTIVE PROCESS — profile.adaLog (see AdaProcessTracker), a plain
+  // chronological list of interactions in the order the user logged them.
+  // Only rendered once at least one interaction has been logged.
+  const adaLog = Array.isArray(profile.adaLog) ? profile.adaLog : [];
+  if (adaLog.length) {
+    lines.push('');
+    lines.push('== ADA INTERACTIVE PROCESS ==');
+    lines.push(ADA_PROCESS_GOOD_FAITH_NOTE);
+    adaLog.forEach((e, i) => {
+      const label = ADA_LOG_WHAT_LABELS[e.what] || e.what || 'Update';
+      let line = (i + 1) + '. ' + (e.date ? formatLocalDateStr(e.date) + ' — ' : '') + label;
+      if (e.notes) line += ': ' + e.notes;
+      lines.push(line);
+    });
   }
 
   // 7. TIMELINE / POSSIBLE RETALIATION — pairs each entry the worker marked
@@ -1887,6 +1968,12 @@ function App(){
   const [logAttachment, setLogAttachment] = useState(null); // { name, type, size, dataUrl } | null — staged file/photo for the entry form (F15)
   const [logAttachmentError, setLogAttachmentError] = useState('');
   const [editingEntryIdx, setEditingEntryIdx] = useState(null); // non-null while editing an existing log entry in place
+  // ADA interactive-process tracker's "add an interaction" form — transient,
+  // same pattern as the log* fields above (reset after each add, not persisted
+  // on its own; the committed entries live in profile.adaLog). See AdaProcessTracker.
+  const [adaLogDate, setAdaLogDate] = useState(() => dateInputValue());
+  const [adaLogWhat, setAdaLogWhat] = useState(ADA_LOG_WHAT_OPTIONS[0][0]);
+  const [adaLogNotes, setAdaLogNotes] = useState('');
   const [letterEdit, setLetterEdit] = useState(() => (saved.letterEdit != null ? saved.letterEdit : null)); // null = generated view; string = editing
   const [letterType, setLetterType] = useState(() => saved.letterType || null); // chosen letter kind (wage issue offers two)
   const [docName, setDocName] = useState(() => saved.docName || '');
@@ -2725,6 +2812,22 @@ function App(){
               <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Estimate possible damages</span>
             </button>
           }
+          {/* Records-request follow-through tracker — gated to termination, same
+              cfg.key-guard pattern as the tiles above. See RecordsRequestTracker. */}
+          {cfg.key === 'termination' &&
+            <button onClick={nav('recordsRequest')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#FFE7EC;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
+              <span aria-hidden="true"><Icon name="document" size={24} /></span>
+              <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Track my records request</span>
+            </button>
+          }
+          {/* ADA interactive-process tracker — gated to discrimination, same
+              cfg.key-guard pattern as the tiles above. See AdaProcessTracker. */}
+          {cfg.key === 'discrimination' &&
+            <button onClick={nav('adaProcess')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#F1EAFB;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
+              <span aria-hidden="true"><Icon name="log" size={24} /></span>
+              <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Track the ADA process</span>
+            </button>
+          }
           {/* Wage is the only issue where this card is redundant: BOTH its letters
               (classification-request, wage-demand) are already reachable through the
               step list above and the wizard's non-exempt result ("Draft a wage demand
@@ -2807,6 +2910,16 @@ function App(){
           Tools-grid tile, gated to the same three non-wage issues. */}
       {(cfg.key === 'termination' || cfg.key === 'harassment' || cfg.key === 'discrimination') &&
         <button onClick={nav('damages')} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.6);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Estimate possible damages</button>
+      }
+      {/* Records-request tracker — Action-first equivalent of the Standard
+          Tools-grid tile, gated to termination the same way. */}
+      {cfg.key === 'termination' &&
+        <button onClick={nav('recordsRequest')} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.6);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Track my records request</button>
+      }
+      {/* ADA interactive-process tracker — Action-first equivalent of the
+          Standard Tools-grid tile, gated to discrimination the same way. */}
+      {cfg.key === 'discrimination' &&
+        <button onClick={nav('adaProcess')} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.6);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Track the ADA process</button>
       }
       <div style={css("display:flex;flex-direction:column;gap:12px")}>
         <button onClick={() => {
@@ -2958,6 +3071,16 @@ function App(){
                 same three non-wage issues as the Standard/Action tiles. */}
             {(K === 'termination' || K === 'harassment' || K === 'discrimination') &&
               <button onClick={nav('damages')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Estimate possible damages</button>
+            }
+            {/* Records-request tracker — Plain-mode equivalent, gated to
+                termination the same way as the Standard/Action tiles. */}
+            {K === 'termination' &&
+              <button onClick={nav('recordsRequest')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Track my records request</button>
+            }
+            {/* ADA interactive-process tracker — Plain-mode equivalent, gated
+                to discrimination the same way as the Standard/Action tiles. */}
+            {K === 'discrimination' &&
+              <button onClick={nav('adaProcess')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Track the ADA process</button>
             }
             <button onClick={nav('log')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{K === 'wage' ? 'Add hours I worked' : 'Add to my log'}</button>
             {/* usertest — same reachability gap as HomeAction above: the primary CTA's
@@ -3909,6 +4032,184 @@ function App(){
     );
   };
 
+  // Records-request / personnel-file follow-through tracker — gated to the
+  // termination issue (see the Standard/Action/Plain Tools tiles below), same
+  // cfg.key-guard pattern as NonCompeteChecker/DamagesEstimator above. The app's
+  // buildLetter('records-request') already asks the employer, in writing, for a
+  // copy of the personnel/pay file — this tracks what actually happened next:
+  // when/how it was sent, whether a response came in (non-response can itself
+  // be relevant — an employer that never responds is a fact worth keeping),
+  // and what was/wasn't produced. Persisted as profile.recordsRequest, a plain
+  // object alongside the rest of profile's real case data, and surfaced in the
+  // exported case file's RECORDS REQUEST section (see buildCaseFile) once a
+  // request is actually on file. The one date figure this screen computes —
+  // the employer's response-by deadline — reuses the SAME real, sourced
+  // final-pay fact buildLetter already cites for this exact letter (never an
+  // invented deadline): when no such fact exists for the user's state, this
+  // honestly says so instead of guessing a number of days.
+  const RecordsRequestTracker = () => {
+    const rr = Object.assign({ dateSent:'', method:'', dateReceived:'', noResponseYet:'', produced:'', missing:'' }, profile.recordsRequest);
+    const setRR = patch => setProfile(p => Object.assign({}, p, { recordsRequest: Object.assign({}, rr, patch) }));
+    const stF = (stateData && stateData.facts) || [];
+    const stReviewed = !!(stateData && stateData.reviewed === true);
+    const finalPayFact = factByTopic(stF, 'final-pay') || factsByPrefix(stF, 'final-pay')[0];
+    const computed = (rr.dateSent && finalPayFact) ? computeDeadlineFromEvent(rr.dateSent, finalPayFact.value || finalPayFact.summary) : null;
+    const daysSince = rr.dateSent ? daysBetweenDateStrs(rr.dateSent, dateInputValue()) : null;
+    const daysToRespond = (rr.dateSent && rr.dateReceived) ? daysBetweenDateStrs(rr.dateSent, rr.dateReceived) : null;
+    const statusLine = !rr.dateSent ? null
+      : rr.noResponseYet === true
+      ? 'Request sent ' + formatLocalDateStr(rr.dateSent) + ' — no response yet' + (daysSince != null && daysSince >= 0 ? ' after ' + daysSince + (daysSince === 1 ? ' day' : ' days') : '') + '.'
+      : rr.dateReceived
+      ? 'Request sent ' + formatLocalDateStr(rr.dateSent) + ' — response received ' + formatLocalDateStr(rr.dateReceived) + (daysToRespond != null ? ' (' + daysToRespond + (daysToRespond === 1 ? ' day' : ' days') + ' later)' : '') + '.'
+      : 'Request sent ' + formatLocalDateStr(rr.dateSent) + ' — mark below whether a response has come in yet.';
+    const src = f => { const u = f && safeUrl(f.sourceUrl); return u ? <a href={u} target="_blank" rel="noopener noreferrer" className="hoverfx" style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null; };
+    const fieldLabel = css("font:700 13px 'IBM Plex Mono',monospace;color:#14181F;letter-spacing:.04em");
+    const dateInputStyle = css("width:100%;max-width:260px;box-sizing:border-box;min-height:44px;padding:10px 12px;border-radius:12px;border:2px solid #14181F;font:400 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F");
+    const textareaStyle = css("width:100%;box-sizing:border-box;padding:14px;border-radius:12px;border:2px solid #14181F;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#14181F;resize:vertical");
+    return (
+    <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
+      <button onClick={nav('home')} style={css("align-self:flex-start;display:flex;align-items:center;gap:4px;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}><Icon name="back" size={18} /> Dashboard</button>
+      <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Track your records request</h1>
+      <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>A records request is a process, not a one-time letter. Keep track of when you sent it and what came back — this stays on this device and is not legal advice.</p>
+
+      {statusLine &&
+        <div role="status" style={css("padding:14px 16px;border-radius:14px;background:#EEF1FF;border:2px solid #2B3AA8")}>
+          <p style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{statusLine}</p>
+        </div>
+      }
+
+      <div style={css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff;display:flex;flex-direction:column;gap:14px")}>
+        <div style={css("display:flex;flex-direction:column;gap:6px")}>
+          <label htmlFor="rr-date-sent" style={fieldLabel}>DATE REQUEST SENT</label>
+          <input id="rr-date-sent" type="date" value={rr.dateSent} max={dateInputValue()} onChange={e => setRR({ dateSent:e.target.value })} style={dateInputStyle} />
+        </div>
+        <div style={css("display:flex;flex-direction:column;gap:6px")}>
+          <label id="rr-method-label" style={fieldLabel}>METHOD</label>
+          <div role="group" aria-labelledby="rr-method-label" style={css("display:flex;gap:8px;flex-wrap:wrap")}>
+            {RECORDS_REQUEST_METHODS.map(m =>
+              <button key={m} onClick={() => setRR({ method:m })} aria-pressed={rr.method === m} style={css('min-height:44px;padding:10px 14px;border-radius:12px;border:2px solid #14181F;background:' + (rr.method === m ? '#2B3AA8' : '#fff') + ';color:' + (rr.method === m ? '#fff' : '#14181F') + ";font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{m}</button>
+            )}
+          </div>
+        </div>
+
+        {rr.dateSent && (computed ? (
+          <div style={css("padding:14px 16px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;display:flex;flex-direction:column;gap:4px")}>
+            <span style={fieldLabel}>EMPLOYER'S RESPONSE-BY DEADLINE (ESTIMATED)</span>
+            <span style={css("font:700 17px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{computed.isPast ? 'That deadline may have already passed' : formatDeadlineDate(computed.targetDate) + ' — about ' + computed.daysLeft + (Math.abs(computed.daysLeft) === 1 ? ' day' : ' days') + ' left'}</span>
+            <span style={css("font:400 14px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>Based on {stateLabel}'s final-pay rule: {finalPayFact.summary} {finalPayFact.citation} {src(finalPayFact)}</span>
+            <span style={css("font:400 13px/1.5 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{DEADLINE_ESTIMATE_CAVEAT} Not every state ties this rule to a personnel-file request specifically — confirm it applies to your situation.</span>
+            {!stReviewed && <DraftStateNotice stName={stateLabel} />}
+          </div>
+        ) : (
+          <div style={css("padding:14px 16px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5")}>
+            <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Many states set a deadline for an employer to respond to a records request, but WorkLaw doesn't have a sourced deadline for {stateLabel} yet — this is not a confirmation there isn't one. Confirm with an attorney or the enforcing agency.</p>
+          </div>
+        ))}
+
+        <div style={css("display:flex;flex-direction:column;gap:6px")}>
+          <label id="rr-response-label" style={fieldLabel}>HAVE YOU RECEIVED A RESPONSE?</label>
+          <div role="group" aria-labelledby="rr-response-label" style={css("display:flex;gap:8px")}>
+            <button onClick={() => setRR({ noResponseYet:false })} aria-pressed={rr.noResponseYet === false} style={css('flex:1;padding:13px;border-radius:12px;border:2px solid #14181F;background:' + (rr.noResponseYet === false ? '#2B3AA8' : '#fff') + ';color:' + (rr.noResponseYet === false ? '#fff' : '#14181F') + ";font:700 16px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Yes, I got a response</button>
+            <button onClick={() => setRR({ noResponseYet:true, dateReceived:'' })} aria-pressed={rr.noResponseYet === true} style={css('flex:1;padding:13px;border-radius:12px;border:2px solid #14181F;background:' + (rr.noResponseYet === true ? '#2B3AA8' : '#fff') + ';color:' + (rr.noResponseYet === true ? '#fff' : '#14181F') + ";font:700 16px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>No response yet</button>
+          </div>
+        </div>
+
+        {rr.noResponseYet === false &&
+          <div style={css("display:flex;flex-direction:column;gap:6px")}>
+            <label htmlFor="rr-date-received" style={fieldLabel}>DATE RESPONSE RECEIVED</label>
+            <input id="rr-date-received" type="date" value={rr.dateReceived} max={dateInputValue()} onChange={e => setRR({ dateReceived:e.target.value })} style={dateInputStyle} />
+          </div>
+        }
+
+        <div style={css("display:flex;flex-direction:column;gap:6px")}>
+          <label htmlFor="rr-produced" style={fieldLabel}>WHAT WAS PRODUCED</label>
+          <textarea id="rr-produced" value={rr.produced} onChange={e => setRR({ produced:e.target.value })} rows={3} placeholder="e.g. final pay stub, disciplinary write-ups" style={textareaStyle} />
+        </div>
+        <div style={css("display:flex;flex-direction:column;gap:6px")}>
+          <label htmlFor="rr-missing" style={fieldLabel}>WHAT'S STILL MISSING</label>
+          <textarea id="rr-missing" value={rr.missing} onChange={e => setRR({ missing:e.target.value })} rows={3} placeholder="e.g. time records, performance reviews" style={textareaStyle} />
+        </div>
+      </div>
+
+      <div style={css("padding:16px 18px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F")}>
+        <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>An employer who never responds — or produces less than you asked for — can itself be a relevant fact, not just a dead end. Keep this tracker updated; it exports with the rest of your case file.</p>
+      </div>
+      <p style={css("margin:0;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>This is legal information, not legal advice.</p>
+    </div>
+    );
+  };
+
+  // ADA interactive-process tracker — gated to the discrimination issue (see the
+  // Standard/Action/Plain Tools tiles below), same cfg.key-guard pattern as
+  // RecordsRequestTracker above. buildLetter('accommodation-request') already
+  // sends one letter opening the process; the ADA itself describes an ONGOING,
+  // back-and-forth "interactive process" between worker and employer, not a
+  // single letter — this tracks that sequence of interactions. Persisted as
+  // profile.adaLog, a simple chronological array (newest interaction pushed to
+  // the end, same "keep adding" mental model as the incident Log), surfaced in
+  // the exported case file's ADA INTERACTIVE PROCESS section (see buildCaseFile).
+  const AdaProcessTracker = () => {
+    const log = Array.isArray(profile.adaLog) ? profile.adaLog : [];
+    const addEntry = () => {
+      const entry = { date: adaLogDate || dateInputValue(), what: adaLogWhat, notes: adaLogNotes.trim() };
+      setProfile(p => Object.assign({}, p, { adaLog: [...(Array.isArray(p.adaLog) ? p.adaLog : []), entry] }));
+      setAdaLogDate(dateInputValue()); setAdaLogWhat(ADA_LOG_WHAT_OPTIONS[0][0]); setAdaLogNotes('');
+    };
+    const deleteEntry = (i) => setProfile(p => Object.assign({}, p, { adaLog: (Array.isArray(p.adaLog) ? p.adaLog : []).filter((_, idx) => idx !== i) }));
+    const fieldLabel = css("font:700 13px 'IBM Plex Mono',monospace;color:#14181F;letter-spacing:.04em");
+    return (
+    <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
+      <button onClick={nav('home')} style={css("align-self:flex-start;display:flex;align-items:center;gap:4px;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}><Icon name="back" size={18} /> Dashboard</button>
+      <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Track the interactive process</h1>
+      <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{ADA_PROCESS_GOOD_FAITH_NOTE}</p>
+
+      <div style={css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff;display:flex;flex-direction:column;gap:14px")}>
+        <div style={css("display:flex;flex-direction:column;gap:6px")}>
+          <label htmlFor="ada-date" style={fieldLabel}>DATE</label>
+          <input id="ada-date" type="date" value={adaLogDate} max={dateInputValue()} onChange={e => setAdaLogDate(e.target.value)} style={css("width:100%;max-width:260px;box-sizing:border-box;min-height:44px;padding:10px 12px;border-radius:12px;border:2px solid #14181F;font:400 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
+        </div>
+        <div style={css("display:flex;flex-direction:column;gap:6px")}>
+          <label id="ada-what-label" style={fieldLabel}>WHAT HAPPENED</label>
+          <div role="group" aria-labelledby="ada-what-label" style={css("display:flex;gap:8px;flex-wrap:wrap")}>
+            {ADA_LOG_WHAT_OPTIONS.map(([k, lbl]) =>
+              <button key={k} onClick={() => setAdaLogWhat(k)} aria-pressed={adaLogWhat === k} style={css('min-height:44px;padding:10px 14px;border-radius:12px;border:2px solid #14181F;background:' + (adaLogWhat === k ? '#2B3AA8' : '#fff') + ';color:' + (adaLogWhat === k ? '#fff' : '#14181F') + ";font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{lbl}</button>
+            )}
+          </div>
+        </div>
+        <div style={css("display:flex;flex-direction:column;gap:6px")}>
+          <label htmlFor="ada-notes" style={fieldLabel}>NOTES (OPTIONAL)</label>
+          <textarea id="ada-notes" value={adaLogNotes} onChange={e => setAdaLogNotes(e.target.value)} rows={3} placeholder="e.g. who you spoke with, what was said" style={css("width:100%;box-sizing:border-box;padding:14px;border-radius:12px;border:2px solid #14181F;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#14181F;resize:vertical")} />
+        </div>
+        <button onClick={addEntry} className="hoverfx" style={css("align-self:flex-start;min-height:44px;padding:14px 18px;border-radius:12px;border:none;background:#2B3AA8;color:#fff;font:700 16px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Add to the process log</button>
+      </div>
+
+      {log.length === 0 ?
+        <div style={css("padding:22px;border-radius:16px;border:2px dashed rgba(20,24,31,.35);background:#fff;text-align:center")}>
+          <p style={css("margin:0 0 4px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>No interactions logged yet</p>
+          <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Add the accommodation request itself as your first entry, then keep adding as the process continues.</p>
+        </div>
+        :
+        <div style={css("display:flex;flex-direction:column;gap:10px")}>
+          {log.map((e, i) =>
+            <div key={i} style={css("padding:14px 16px;border-radius:14px;border:2px solid #14181F;background:#fff;display:flex;flex-direction:column;gap:4px")}>
+              <div style={css("display:flex;align-items:center;justify-content:space-between;gap:10px")}>
+                <span style={css("font:600 13px 'IBM Plex Mono',monospace;color:#4A5162")}>{formatLocalDateStr(e.date) || e.date}</span>
+                <button onClick={() => deleteEntry(i)} aria-label={'Delete entry from ' + e.date} style={css("min-height:44px;padding:6px 12px;border-radius:8px;border:2px solid #B3264F;background:#fff;color:#B3264F;font:700 13px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Delete</button>
+              </div>
+              <p style={css("margin:0;font:700 16px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{ADA_LOG_WHAT_LABELS[e.what] || e.what}</p>
+              {e.notes && <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{e.notes}</p>}
+            </div>
+          )}
+        </div>
+      }
+
+      <div style={css("padding:16px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F")}>
+        <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>This is legal information, not legal advice.</p>
+      </div>
+    </div>
+    );
+  };
+
   const Letter = () => {
     const kinds = letterKindsFor(cfg.key, cfg.letterKind);
     // accommodation-request is allowed to render here even when it is not one of
@@ -4265,7 +4566,8 @@ function App(){
 
   const SCREENS = {
     onboarding: Onboarding, home: HomeScreen, chat: Chat, wizard: Wizard, log: Log,
-    doc: Doc, noncompete: NonCompeteChecker, damages: DamagesEstimator, letter: Letter, strength: Strength, rights: RightsLib, agencies: Agencies
+    doc: Doc, noncompete: NonCompeteChecker, damages: DamagesEstimator, letter: Letter, strength: Strength, rights: RightsLib, agencies: Agencies,
+    recordsRequest: RecordsRequestTracker, adaProcess: AdaProcessTracker
   };
   const Current = SCREENS[screen] || HomeScreen;
 
