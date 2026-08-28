@@ -1102,25 +1102,32 @@ const ISSUES = {
     chatSeed:'You mentioned unpaid hours or overtime. Tell me your job title and how you are paid — salary or hourly — and I will explain which overtime rules apply where you work.',
   },
   'Harassment or a hostile workplace': {
-    key:'harassment', caseTitle:'Harassment / hostile workplace', primaryTool:'log', letterKind:'complaint',
-    action:'Write down what happened, while it is fresh.',
-    actionWhy:'Contemporaneous notes — dates, words, who was present — are the backbone of a harassment claim.',
+    key:'harassment', caseTitle:'Harassment / hostile workplace', primaryTool:'wizard', letterKind:'complaint',
+    action:'Check whether what happened may legally be harassment.',
+    actionWhy:'Knowing whether this fits the legal definition — tied to a protected characteristic, unwelcome, severe or pervasive — shapes what you log and who you send it to. The self-check takes about two minutes.',
+    // Mirrors the wage issue's order: the self-check runs FIRST (step 1), same
+    // as wage's exemption self-check, so harassment follows the same
+    // "diagnose, then document, then act" model instead of jumping straight to
+    // logging with no idea whether what happened fits the legal definition.
     steps:[
+      'Check whether what happened may legally be harassment (2 minutes)',
       'Log each incident: date, what was said or done, who saw it',
       'Save any messages, emails or images involved',
       'Note whether you reported it, to whom, and what happened',
       'Identify coworkers who witnessed the conduct',
+      'Send a complaint letter to HR, or file directly with the EEOC/your state agency',
     ],
-    stepScreens:['log','log','log','log'],
+    stepScreens:['wizard','log','log','log','log','letter'],
+    stepLetterTypes:[null,null,null,null,null,'complaint'],
     // Index-matched to `steps` — which LOG_KINDS tag each log-step should
-    // pre-select (see stepTarget). Every step here targets 'log', but they are
-    // not all the same KIND of entry: an incident is a Statement, saved
+    // pre-select (see stepTarget). Every log step here targets 'log', but they
+    // are not all the same KIND of entry: an incident is a Statement, saved
     // messages/emails are Records, whether-it-was-reported is a Statement, and
     // witnesses are their own Witness kind — without this every step opened the
     // Log with whatever kind was last picked (defaulting to 'Wage & hour', which
     // makes no sense for a harassment case).
-    stepLogKind:['Statement','Records','Statement','Witness'],
-    stepIds:['harassment-log-incident','harassment-save-evidence','harassment-note-report','harassment-witnesses'],
+    stepLogKind:[null,'Statement','Records','Statement','Witness',null],
+    stepIds:['harassment-legal-check','harassment-log-incident','harassment-save-evidence','harassment-note-report','harassment-witnesses','harassment-complaint-letter'],
     chatSeed:'You mentioned harassment or a hostile workplace. Tell me what has been happening and whether it is tied to a protected characteristic, and I will explain what the law covers where you work.',
   },
   'Discrimination': {
@@ -1266,6 +1273,9 @@ function stepAutoDone(id, ctx){
   }
   if (id === 'wage-exempt-check') {
     return !!RESULTS_WAGE[ctx.wizNode];
+  }
+  if (id === 'harassment-legal-check') {
+    return !!RESULTS_HARASSMENT[ctx.wizNode];
   }
   return false;
 }

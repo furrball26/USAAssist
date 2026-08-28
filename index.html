@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-w5XQaN5LW9GRqFa89GCZOKSAI16AlKnWrCPeVQSkSRw='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-jCJzI/tgDKm+uD1frdUc5v+IBwf4RMSvhazQWcLmY/A='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14181F">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232B3AA8'/%3E%3Ctext x='32' y='47' font-size='42' text-anchor='middle' fill='white' font-family='Georgia,serif'%3E%C2%A7%3C/text%3E%3C/svg%3E">
@@ -1354,26 +1354,33 @@ const ISSUES = {
   "Harassment or a hostile workplace": {
     key: "harassment",
     caseTitle: "Harassment / hostile workplace",
-    primaryTool: "log",
+    primaryTool: "wizard",
     letterKind: "complaint",
-    action: "Write down what happened, while it is fresh.",
-    actionWhy: "Contemporaneous notes \u2014 dates, words, who was present \u2014 are the backbone of a harassment claim.",
+    action: "Check whether what happened may legally be harassment.",
+    actionWhy: "Knowing whether this fits the legal definition \u2014 tied to a protected characteristic, unwelcome, severe or pervasive \u2014 shapes what you log and who you send it to. The self-check takes about two minutes.",
+    // Mirrors the wage issue's order: the self-check runs FIRST (step 1), same
+    // as wage's exemption self-check, so harassment follows the same
+    // "diagnose, then document, then act" model instead of jumping straight to
+    // logging with no idea whether what happened fits the legal definition.
     steps: [
+      "Check whether what happened may legally be harassment (2 minutes)",
       "Log each incident: date, what was said or done, who saw it",
       "Save any messages, emails or images involved",
       "Note whether you reported it, to whom, and what happened",
-      "Identify coworkers who witnessed the conduct"
+      "Identify coworkers who witnessed the conduct",
+      "Send a complaint letter to HR, or file directly with the EEOC/your state agency"
     ],
-    stepScreens: ["log", "log", "log", "log"],
+    stepScreens: ["wizard", "log", "log", "log", "log", "letter"],
+    stepLetterTypes: [null, null, null, null, null, "complaint"],
     // Index-matched to `steps` — which LOG_KINDS tag each log-step should
-    // pre-select (see stepTarget). Every step here targets 'log', but they are
-    // not all the same KIND of entry: an incident is a Statement, saved
+    // pre-select (see stepTarget). Every log step here targets 'log', but they
+    // are not all the same KIND of entry: an incident is a Statement, saved
     // messages/emails are Records, whether-it-was-reported is a Statement, and
     // witnesses are their own Witness kind — without this every step opened the
     // Log with whatever kind was last picked (defaulting to 'Wage & hour', which
     // makes no sense for a harassment case).
-    stepLogKind: ["Statement", "Records", "Statement", "Witness"],
-    stepIds: ["harassment-log-incident", "harassment-save-evidence", "harassment-note-report", "harassment-witnesses"],
+    stepLogKind: [null, "Statement", "Records", "Statement", "Witness", null],
+    stepIds: ["harassment-legal-check", "harassment-log-incident", "harassment-save-evidence", "harassment-note-report", "harassment-witnesses", "harassment-complaint-letter"],
     chatSeed: "You mentioned harassment or a hostile workplace. Tell me what has been happening and whether it is tied to a protected characteristic, and I will explain what the law covers where you work."
   },
   "Discrimination": {
@@ -1493,6 +1500,9 @@ function stepAutoDone(id, ctx) {
   }
   if (id === "wage-exempt-check") {
     return !!RESULTS_WAGE[ctx.wizNode];
+  }
+  if (id === "harassment-legal-check") {
+    return !!RESULTS_HARASSMENT[ctx.wizNode];
   }
   return false;
 }
