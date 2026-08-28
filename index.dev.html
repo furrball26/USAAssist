@@ -139,7 +139,12 @@
        overflows onto the sibling privacy/footer cards. Keep natural height and let
        .scrollarea scroll instead. */
     .scrollarea > *{ width:100%; max-width:680px; background:var(--mode-bg); flex:0 0 auto; }
-    .tabbar{ grid-area:rail; display:flex; flex-direction:column; border-top:none; border-right:2px solid rgba(20,24,31,.14); padding:28px 8px; gap:10px; background:#FFFDF8; }
+    /* design HIGH #8 — a 14%-opacity hairline was the only thing separating the
+       rail from the beige desk gutter, unlike every other card/surface boundary
+       in the app (buttons, the wide-tier .screen border, etc.), which use a
+       solid 2px ink border. That made the desktop tier read as unstyled/
+       unfinished rather than an intentional frame. */
+    .tabbar{ grid-area:rail; display:flex; flex-direction:column; border-top:none; border-right:2px solid #14181F; padding:28px 8px; gap:10px; background:#FFFDF8; }
     .tabbar-btn{ min-height:64px; padding:10px 4px; }
   }
 </style>
@@ -161,7 +166,7 @@ const CONTENT_BASE = (typeof window !== 'undefined' && window.CONTENT_BASE)
 // SHA-pinned fallback source for the same content/ path, tried once if the primary
 // CONTENT_BASE fetch fails (network error or non-2xx) before surfacing the error state.
 // Bump this SHA as part of routine maintenance so it stays a recent known-good commit.
-const CONTENT_FALLBACK_BASE = 'https://raw.githubusercontent.com/furrball26/USAAssist/030ecd3e6d3db0a906655d3ce9f757a11dcf2bce/';
+const CONTENT_FALLBACK_BASE = 'https://raw.githubusercontent.com/furrball26/USAAssist/a0da2fca9c18a11d64511b22d8f2c72e712eba1f/';
 function fetchContentJson(path){
   return fetch(CONTENT_BASE + path)
     .then(r => { if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
@@ -910,13 +915,24 @@ function fmtDate(d){ d = d || new Date(); return MONTHS_FULL[d.getMonth()] + ' '
 // confirm your classification first, then demand unpaid wages.
 const LETTER_LABELS = { 'classification-request':'Classification request', 'wage-demand':'Wage demand', 'complaint':'Complaint letter', 'records-request':'Records request', 'review-time-request':'Request more time', 'accommodation-request':'Accommodation request' };
 function letterKindsFor(issueKey, cfgLetterKind){
-  if (issueKey === 'wage') return ['classification-request', 'wage-demand'];
+  let kinds;
+  if (issueKey === 'wage') kinds = ['classification-request', 'wage-demand'];
   // The chat's ADA reply promises "I can draft that request from a template" for
   // any accommodation question — make that real for discrimination cases (the
   // issue bucket ADA/disability falls under; see ISSUE_LIST), not just a generic
   // Title VII complaint letter.
-  if (issueKey === 'discrimination') return ['complaint', 'accommodation-request'];
-  return [cfgLetterKind || 'records-request'];
+  else if (issueKey === 'discrimination') kinds = ['complaint', 'accommodation-request'];
+  else kinds = [cfgLetterKind || 'records-request'];
+  // usertest (review #1, Critical finding #2) — the "How do I ask for an ADA
+  // accommodation?" quick-prompt (PROMPT_TEXTS) and ADA_REPLY's "I can draft that
+  // request... and add it to your case file" promise are shown in EVERY chat
+  // session, regardless of the user's onboarding issue — not just discrimination.
+  // Without this, a harassment/wage/termination/document/general-issue user got
+  // the identical promise and then found no such letter anywhere. Make the
+  // accommodation-request template reachable from every issue so the promise is
+  // true for whoever the chat actually made it to.
+  if (!kinds.includes('accommodation-request')) kinds = kinds.concat('accommodation-request');
+  return kinds;
 }
 
 // Where a given step actually leads, per-step — not a single issue-level letterKind
@@ -978,7 +994,7 @@ function buildLetter(ctx){
       '3. A copy of the written job description and the job duties the company relies on for that classification.\n\n' +
       'My classification determines whether I am owed overtime for hours worked over 40 in a workweek. Under the FLSA, exempt status turns on my actual salary and job duties, not my job title (29 C.F.R. § 541.2). Please respond in writing within 14 days.\n\n' +
       'Federal law (' + retalCite + ') prohibits retaliation against me for making this request.\n\nSincerely,\n' + name;
-    return { title: 'Overtime classification request', subject, body };
+    return { title: 'Overtime classification request', subject, body, usesStateLaw: false };
   }
 
   if (kind === 'review-time-request') {
@@ -990,7 +1006,7 @@ function buildLetter(ctx){
       '2. Confirmation of any period I have to revoke my signature after signing, if applicable.\n' +
       '3. A copy of any attachments referenced in the document (benefit summaries, release scope, etc.) that were not included.\n\n' +
       'I want to fully understand what I am giving up before I sign anything, and I am not agreeing to any deadline shorter than what the document itself provides. Please confirm these dates in writing.\n\nSincerely,\n' + name;
-    return { title: 'Request for time to review', subject, body };
+    return { title: 'Request for time to review', subject, body, usesStateLaw: false };
   }
 
   if (kind === 'wage-demand') {
@@ -1066,7 +1082,7 @@ function buildLetter(ctx){
       'I am writing to request payment of wages I earned and was not paid correctly. ' + claimLine + '\n\n' +
       legalBasisLine + '\n\n' +
       amountLine + ' I request payment within 14 days of the date of this letter.' + liqLine + retalLine + ' Please contact me to arrange payment.\n\nSincerely,\n' + name;
-    return { title: 'Wage demand letter', subject, body };
+    return { title: 'Wage demand letter', subject, body, usesStateLaw: hasRealStateOT };
   }
 
   if (kind === 'complaint') {
@@ -1079,7 +1095,7 @@ function buildLetter(ctx){
     const body = date + '\n\n' + emp + '\nAttn: Human Resources\n\nRe: ' + subject + '\n\nTo whom it may concern:\n\n' +
       'I am formally reporting conduct at work that I believe violates Title VII of the Civil Rights Act of 1964' + stClause + '. I am asking that the conduct stop and that the company promptly and impartially investigate.' + list + '\n\n' +
       'The law prohibits retaliation against me for making this good-faith complaint. I ask that this letter be placed in my personnel file.\n\nSincerely,\n' + name;
-    return { title: 'Complaint letter', subject, body };
+    return { title: 'Complaint letter', subject, body, usesStateLaw: !!stCite };
   }
 
   if (kind === 'accommodation-request') {
@@ -1095,15 +1111,34 @@ function buildLetter(ctx){
       'My limitation is: [describe your limitation in plain terms — no legal or medical terms required].\n' +
       'The change that would help is: [describe the accommodation you are requesting].\n\n' +
       'I understand this begins an interactive process between us to identify an effective accommodation, and I am glad to discuss options. Please confirm receipt in writing and let me know a good time to talk this week.\n\nSincerely,\n' + name;
-    return { title: 'Accommodation request letter', subject, body };
+    return { title: 'Accommodation request letter', subject, body, usesStateLaw: !!(stFact && stFact.citation) };
   }
 
   // records-request (termination, document review, or generic)
+  // qa MEDIUM #11 — this was fully generic ("within the time required by [state]
+  // law") with no cite() call, unlike every other letter kind above, even though
+  // the state's own final-pay fact (e.g. TX: 6 calendar days, Tex. Labor Code
+  // § 61.014) is already fetched into stateData and just went unused here. Topic
+  // name isn't consistent across states (bare "final-pay" in 46 files, dotted
+  // variants like "final-pay.timing"/"final-pay.wageClaim" in a few that have no
+  // bare "final-pay" fact) — EXCEPT Texas, which has both: a bare "final-pay"
+  // (the 6-day final-paycheck timing rule this letter is actually about) and a
+  // separate "final-pay.wageRecoveryLimitations" (an unrelated 2-year civil-suit
+  // SOL). Prefer the exact bare topic first so TX doesn't pick the wrong one;
+  // only prefix-match for the states whose only final-pay fact is dotted.
+  const finalPayFact = factByTopic(st, 'final-pay') || factsByPrefix(st, 'final-pay')[0];
+  const finalPayUsed = !!(finalPayFact && finalPayFact.citation);
+  // A short duration phrase reads naturally after "within..."; a full fact
+  // summary does not, so when we have the actual state rule, replace the
+  // generic clause with its own sentence instead of splicing the two together.
+  const finalPayLine = finalPayUsed
+    ? 'Please provide the final pay records promptly. ' + finalPayFact.summary + ' (' + finalPayFact.citation + ')'
+    : 'Please provide the records in writing within the time required by ' + ctx.stateSel + ' law';
   const subject = 'Request for personnel file and pay records';
   const body = date + '\n\n' + emp + '\nAttn: Human Resources\n\nRe: ' + subject + '\n\nTo whom it may concern:\n\n' +
     'I request a complete copy of my personnel file, including performance records, disciplinary records, time records, and all final pay records. Many states require an employer to provide these within a set period after a written request.\n\n' +
-    'Please provide the records in writing within the time required by ' + ctx.stateSel + ' law. I am making this request to keep an accurate record of my employment.\n\nSincerely,\n' + name;
-  return { title: 'Records request letter', subject, body };
+    finalPayLine + '. I am making this request to keep an accurate record of my employment.\n\nSincerely,\n' + name;
+  return { title: 'Records request letter', subject, body, usesStateLaw: finalPayUsed };
 }
 
 // Build a portable case-file summary from the user's real inputs.
@@ -2090,6 +2125,16 @@ function App(){
           setScreen(target.screen);
         }} className="surfacefx" style={css("padding:20px;border-radius:16px;border:none;background:#FFF4D6;color:#14181F;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Do this step</button>
         <button onClick={() => setDone(p => Object.assign({}, p, { [stepKey(cfg, Math.min(doneCount, cfg.steps.length - 1))]: true }))} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid #fff;background:transparent;color:#fff;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Mark it done</button>
+        {/* usertest — the step CTA above only reaches the Letter screen on the one
+            step index (if any) whose stepScreens entry is 'letter'; harassment,
+            discrimination, document and the generic issue never have one, so without
+            this, Action-first mode has no path to that issue's letter at all (matches
+            the always-visible "Draft a letter" card HomeStandard's Tools grid keeps
+            for the same reason, scoped the same way: wage already reaches both its
+            letters through the step list and the wizard). */}
+        {cfg.key !== 'wage' &&
+          <button onClick={nav('letter')} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.6);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Draft a letter</button>
+        }
         <button onClick={nav('rights')} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.6);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Why this matters</button>
       </div>
       {/* WebKit fix: a flex-grow spacer pins the footer to the bottom without the
@@ -2198,6 +2243,12 @@ function App(){
               <button onClick={nav('wizard')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Am I exempt from overtime?</button>
             }
             <button onClick={nav('log')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{K === 'wage' ? 'Add hours I worked' : 'Add to my log'}</button>
+            {/* usertest — same reachability gap as HomeAction above: the primary CTA's
+                step routing never lands on 'letter' for harassment/discrimination/
+                document/general, so Plain mode needs its own always-visible way in. */}
+            {K !== 'wage' &&
+              <button onClick={nav('letter')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Draft a letter</button>
+            }
             <button onClick={nav('agencies')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Where to file a complaint</button>
           </>
         );
@@ -2856,6 +2907,15 @@ function App(){
     // implausible number of hours before the user sends this to their employer.
     const hasAbsurdRate = activeKind === 'wage-demand' && rateNum > RATE_WARN_MAX;
     const absurdEntry = activeKind === 'wage-demand' && (entries || []).find(e => Number(e.hours) > ENTRY_HOURS_WARN_MAX);
+    // usertest HIGH #9 — this letter can cite a state-law fact as settled (a real
+    // citation like "N.Y. Executive Law § 292(5)") while the Rights tab, using that
+    // SAME underlying fact, explicitly flags it "(DRAFT)" / "pending attorney
+    // review" (see RightsLib's stReviewed / DraftStateNotice). A user could send
+    // real correspondence citing law the app elsewhere admits isn't verified, with
+    // no warning at the point of use. gen.usesStateLaw is set per-kind above,
+    // true only when this specific generated letter actually embedded a state
+    // citation (not every letter does).
+    const stateLawUnreviewed = gen.usesStateLaw && stateData && stateData.reviewed !== true;
     return (
     <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
       <button onClick={nav('home')} style={css("align-self:flex-start;display:flex;align-items:center;gap:4px;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}><Icon name="back" size={18} /> Dashboard</button>
@@ -2863,12 +2923,20 @@ function App(){
         <div role="group" aria-label="Letter type" style={css("display:flex;gap:8px")}>
           {kinds.map((k, i) => {
             const on = k === activeKind;
-            return <button key={k} onClick={() => { setLetterType(k); setLetterEdit(null); }} aria-pressed={on} style={css('flex:1;padding:12px 10px;border-radius:12px;border:2px solid #14181F;background:' + (on ? '#2B3AA8' : '#fff') + ';color:' + (on ? '#fff' : '#14181F') + ";font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{(i === 0 ? '1. ' : '2. ') + LETTER_LABELS[k]}</button>;
+            {/* was a 2-item-only ternary ((i===0 ? '1. ' : '2. ')) — kinds can now run to
+                3 (see letterKindsFor's accommodation-request addition), which collapsed
+                every item past the first into a duplicate "2." */}
+            return <button key={k} onClick={() => { setLetterType(k); setLetterEdit(null); }} aria-pressed={on} style={css('flex:1;padding:12px 10px;border-radius:12px;border:2px solid #14181F;background:' + (on ? '#2B3AA8' : '#fff') + ';color:' + (on ? '#fff' : '#14181F') + ";font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{(i + 1) + '. ' + LETTER_LABELS[k]}</button>;
           })}
         </div>
       }
       <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{gen.title}</h1>
       <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{built}</p>
+      {stateLawUnreviewed &&
+        <div style={css("padding:12px 15px;border-radius:12px;background:#FFF4D6;border:2px solid #14181F")}>
+          <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>This letter cites a {stateLabel} law that, like the rest of this app's {stateLabel} content, is marked <strong>(DRAFT)</strong> on the Rights tab — not yet verified by counsel. The citation is sourced from an official government site, but confirm it before sending.</p>
+        </div>
+      }
       {(!youName || !employerName) &&
         <div style={css("padding:12px 15px;border-radius:12px;background:#FFF4D6;border:2px solid #14181F")}>
           <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Fill in {[!youName ? 'your name' : null, !employerName ? 'your employer' : null].filter(Boolean).join(' and ')} on the dashboard location screen (or edit the text below) to complete the bracketed fields.</p>
@@ -2932,11 +3000,30 @@ function App(){
         const fedDL = pickDeadlineFact(fedF, cfg.key);
         const stDL = pickDeadlineFact(stF, cfg.key);
         const src = f => { const u = f && safeUrl(f.sourceUrl); return u ? <a href={u} target="_blank" rel="noopener noreferrer" className="hoverfx" style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null; };
+        // qa HIGH #6 — deadlineKeywordsFor(cfg.key) returns [] for 'document' and the
+        // generic issue by design (R10: there is no jurisdiction "deadlines" fact for
+        // either), so fedDL/stDL are null FOREVER for those two issues, not just while
+        // federal/stateData are still in flight — but the old copy below only had one
+        // fallback string ("Loading the deadline...") for both "still fetching" and
+        // "loaded, no such concept for this issue" cases, so it read as stuck loading
+        // indefinitely. `federal` starts null and only becomes an object once the
+        // fetch resolves (see setFederal), so federal === null (with contentErr already
+        // false here) is the genuine still-loading state; federal truthy + fedDL null
+        // means the fetch succeeded and this issue simply has no federal deadline
+        // concept in this app.
+        const fedStillLoading = federal === null;
+        const fedFallback = fedStillLoading ? 'Loading the deadline that applies to your claim…'
+          : cfg.key === 'document'
+          // Same OWBPA general-federal-rule content as the Home screen's
+          // DocDeadlineWatch, so a document-review user gets a real answer here too
+          // instead of "no deadline" reading as "nothing applies to you."
+          ? '21 days to consider, 7 days to revoke, if your document is a release covered by the Older Workers Benefit Protection Act (29 U.S.C. §626(f)) — a general federal rule, not sourced from your state’s own facts. Confirm the exact days stated in your copy.'
+          : 'This app does not track a federal filing deadline for this issue type — see Rights or ask an attorney about deadlines that may apply to your situation.';
         return (
           <div style={css("padding:18px;border-radius:16px;background:#F0EDE5;border:2px solid #14181F")}>
             <p style={css("margin:0 0 8px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Deadline watch — {stateLabel}</p>
             {contentErr ? <p style={css("margin:0 0 8px;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load the federal deadline. Check your connection and reopen — do not assume you have time to spare.</p> : null}
-            {!contentErr && <p style={css("margin:0 0 6px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}><strong>Federal:</strong> {fedDL ? fedDL.summary : 'Loading the deadline that applies to your claim…'} {src(fedDL)}</p>}
+            {!contentErr && <p style={css("margin:0 0 6px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}><strong>Federal:</strong> {fedDL ? fedDL.summary : fedFallback} {src(fedDL)}</p>}
             {stateErr ? <p style={css("margin:0 0 8px;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load the {stateSel} deadline. Check your connection and reopen — this is not a confirmation that no shorter state deadline applies.</p> :
               <p style={css("margin:0 0 8px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}><strong>{stateLabel}:</strong> {stDL ? stDL.summary : (stateData === undefined ? 'Loading…' : 'See the federal deadline above; a state limit may also apply.')} {src(stDL)}</p>}
             {oshaFact &&
