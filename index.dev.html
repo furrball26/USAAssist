@@ -877,6 +877,12 @@ function caseStrength(entries){
   entries = entries || [];
   const n = entries.length;
   const by = {}; entries.forEach(e => { by[e.tag] = (by[e.tag] || 0) + 1; });
+  // A 'Witness' entry only counts toward the strength score if it names a
+  // reachable person (entry.witnessName) — an empty tap of the Witness kind
+  // otherwise inflated the score with nothing an attorney could actually use.
+  // Guarded with `&&` (not a bare property read) so old saved entries from
+  // before this field existed just don't count, rather than throwing.
+  const witnessCount = entries.filter(e => e.tag === 'Witness' && e.witnessName && e.witnessName.trim()).length;
   const clamp = v => Math.max(0, Math.min(100, Math.round(v)));
   const dim = (name, count, base, per, has, none) => {
     const pct = count ? clamp(base + count * per) : 12;
@@ -885,7 +891,7 @@ function caseStrength(entries){
   const factors = [
     dim('Written records', n, 22, 16, c => c + ' timestamped ' + (c === 1 ? 'entry' : 'entries') + ' in your log.', 'No entries yet — start logging what happened, with dates.'),
     dim('Documents & pay records', by['Records'] || 0, 40, 20, c => c + ' document ' + (c === 1 ? 'record' : 'records') + ' saved.', 'No pay stubs, contracts or records saved yet.'),
-    dim('Witnesses', by['Witness'] || 0, 35, 25, c => c + ' witness ' + (c === 1 ? 'identified' : 'identified') + '.', 'No witnesses identified yet.'),
+    dim('Witnesses', witnessCount, 35, 25, c => c + ' named witness ' + (c === 1 ? 'identified' : 'identified') + '.', 'No named witnesses identified yet.'),
     dim('Employer statements', by['Statement'] || 0, 45, 20, c => c + ' statement ' + (c === 1 ? 'recorded' : 'recorded') + '.', 'No manager or employer statements logged yet.'),
   ];
   factors.forEach(f => {
@@ -1119,6 +1125,21 @@ function buildCaseFile(ctx){
   lines.push('EVIDENCE LOG (' + (ctx.entries || []).length + ' entries)');
   (ctx.entries || []).forEach(e => {
     lines.push('• [' + e.tag + '] ' + e.date + ' — ' + e.title + (e.hours ? ' (' + e.hours + ' hrs)' : ''));
+    if (e.tag === 'Witness' && e.witnessName) {
+      const bits = [e.witnessRelationship, e.witnessStillEmployed ? 'still employed: ' + e.witnessStillEmployed : null,
+        e.witnessWilling ? 'willing to be contacted: ' + e.witnessWilling : null, e.witnessContact ? 'contact ' + e.witnessContact : null]
+        .filter(Boolean).join(', ');
+      lines.push('    Witness: ' + e.witnessName + (bits ? ' (' + bits + ')' : ''));
+    }
+    if (e.tag === 'Statement' && e.speakerName) {
+      const bits = [e.speakerRole, e.saidWhere, e.saidWhen ? 'on ' + e.saidWhen : null, e.whoElseHeard ? 'also heard by ' + e.whoElseHeard : null]
+        .filter(Boolean).join(', ');
+      lines.push('    Said by: ' + e.speakerName + (bits ? ' (' + bits + ')' : ''));
+    }
+    if (e.tag === 'Records' && e.docType) {
+      const bits = [e.docDate, e.docParties].filter(Boolean).join(', ');
+      lines.push('    Document: ' + e.docType + (bits ? ' (' + bits + ')' : ''));
+    }
     if (e.body) lines.push('    ' + e.body);
     if (e.attachment && e.attachment.name) lines.push('    [attachment: ' + e.attachment.name + ']');
   });
@@ -1198,6 +1219,12 @@ function isAllowedAttachmentType(file){
   return /\.(pdf|docx?|txt|rtf)$/i.test(file.name || '');
 }
 
+// Option lists shared by the structured Witness/Statement fields below.
+const RELATIONSHIP_OPTIONS = ['Coworker', 'Supervisor or manager', 'Former employee', 'Customer or client', 'Other'];
+const YES_NO_UNSURE = ['Yes', 'No', 'Unsure'];
+const SAID_WHERE_OPTIONS = ['In person', 'Phone', 'Email', 'Chat/Slack', 'Meeting', 'Other'];
+const DOC_TYPE_OPTIONS = ['Pay stub', 'Offer letter or contract', 'Write-up or discipline', 'Performance review', 'Policy or handbook', 'Email or message', 'Termination or severance', 'Other'];
+
 // Quick-add kinds for the incident log (shared; optional hours capture for wage claims).
 const LOG_KINDS = [
   { label:'+ Hours worked', title:'Unpaid or extra hours', body:'', color:'#EF7B22', tag:'Wage & hour', asksHours:true },
@@ -1260,6 +1287,22 @@ function App(){
   const [logStartTime, setLogStartTime] = useState('');
   const [logEndTime, setLogEndTime] = useState('');
   const [logPayStatus, setLogPayStatus] = useState('unpaid'); // 'unpaid' (paid $0) | 'straight' (paid straight-time only)
+  // Structured fields for the three previously-freetext log kinds (Witness,
+  // Statement, Document) — mirrors the Hours-worked kind's label-above-input
+  // fields, gated the same way (kind.tag === '…') rather than one freetext box.
+  const [logWitnessName, setLogWitnessName] = useState('');
+  const [logWitnessContact, setLogWitnessContact] = useState('');
+  const [logWitnessRelationship, setLogWitnessRelationship] = useState('');
+  const [logWitnessStillEmployed, setLogWitnessStillEmployed] = useState('');
+  const [logWitnessWilling, setLogWitnessWilling] = useState('');
+  const [logSpeakerName, setLogSpeakerName] = useState('');
+  const [logSpeakerRole, setLogSpeakerRole] = useState('');
+  const [logSaidWhen, setLogSaidWhen] = useState(() => dateInputValue());
+  const [logSaidWhere, setLogSaidWhere] = useState('');
+  const [logWhoElseHeard, setLogWhoElseHeard] = useState('');
+  const [logDocType, setLogDocType] = useState('');
+  const [logDocDate, setLogDocDate] = useState(() => dateInputValue());
+  const [logDocParties, setLogDocParties] = useState('');
   const [logAttachment, setLogAttachment] = useState(null); // { name, type, size, dataUrl } | null — staged file/photo for the entry form (F15)
   const [logAttachmentError, setLogAttachmentError] = useState('');
   const [editingEntryIdx, setEditingEntryIdx] = useState(null); // non-null while editing an existing log entry in place
@@ -2326,7 +2369,10 @@ function App(){
     // the manual "Hours" fallback field so the two can never silently disagree.
     const computedHours = kind.asksHours ? computeHoursFromTimes(logStartTime, logEndTime) : null;
     const finalHours = computedHours != null ? computedHours.hours : (Number(logHours) || 0);
-    const resetForm = () => { setLogNote(''); setLogHours(''); setLogDate(dateInputValue()); setLogStartTime(''); setLogEndTime(''); editOriginalRef.current = null; setLogPayStatus('unpaid'); setLogAttachment(null); setLogAttachmentError(''); setEditingEntryIdx(null); };
+    const resetForm = () => { setLogNote(''); setLogHours(''); setLogDate(dateInputValue()); setLogStartTime(''); setLogEndTime(''); editOriginalRef.current = null; setLogPayStatus('unpaid'); setLogAttachment(null); setLogAttachmentError(''); setEditingEntryIdx(null);
+      setLogWitnessName(''); setLogWitnessContact(''); setLogWitnessRelationship(''); setLogWitnessStillEmployed(''); setLogWitnessWilling('');
+      setLogSpeakerName(''); setLogSpeakerRole(''); setLogSaidWhen(dateInputValue()); setLogSaidWhere(''); setLogWhoElseHeard('');
+      setLogDocType(''); setLogDocDate(dateInputValue()); setLogDocParties(''); };
     // F15 — read the picked file into a data URL (kept on-device, same model as
     // everything else in the case) with a hard size cap so one attachment
     // can't eat the shared localStorage quota the whole case relies on.
@@ -2364,6 +2410,31 @@ function App(){
         startTime: kind.asksHours ? (logStartTime || undefined) : undefined,
         endTime: kind.asksHours ? (logEndTime || undefined) : undefined,
         attachment: logAttachment || undefined };
+      if (kind.tag === 'Witness') {
+        Object.assign(fields, {
+          witnessName: logWitnessName.trim() || undefined,
+          witnessContact: logWitnessContact.trim() || undefined,
+          witnessRelationship: logWitnessRelationship || undefined,
+          witnessStillEmployed: logWitnessStillEmployed || undefined,
+          witnessWilling: logWitnessWilling || undefined,
+        });
+      }
+      if (kind.tag === 'Statement') {
+        Object.assign(fields, {
+          speakerName: logSpeakerName.trim() || undefined,
+          speakerRole: logSpeakerRole.trim() || undefined,
+          saidWhen: logSaidWhen || undefined,
+          saidWhere: logSaidWhere || undefined,
+          whoElseHeard: logWhoElseHeard.trim() || undefined,
+        });
+      }
+      if (kind.tag === 'Records') {
+        Object.assign(fields, {
+          docType: logDocType || undefined,
+          docDate: logDocDate || undefined,
+          docParties: logDocParties.trim() || undefined,
+        });
+      }
       if (kind.asksHours) {
         // The user picks the DATE the hours were worked (default today, no future
         // dates) — that, not "now", is what must feed weekStartKey so the workweek
@@ -2406,6 +2477,19 @@ function App(){
       setLogPayStatus(e.payStatus || 'unpaid');
       setLogAttachment(e.attachment || null);
       setLogAttachmentError('');
+      setLogWitnessName(e.witnessName || '');
+      setLogWitnessContact(e.witnessContact || '');
+      setLogWitnessRelationship(e.witnessRelationship || '');
+      setLogWitnessStillEmployed(e.witnessStillEmployed || '');
+      setLogWitnessWilling(e.witnessWilling || '');
+      setLogSpeakerName(e.speakerName || '');
+      setLogSpeakerRole(e.speakerRole || '');
+      setLogSaidWhen(e.saidWhen || dateInputValue());
+      setLogSaidWhere(e.saidWhere || '');
+      setLogWhoElseHeard(e.whoElseHeard || '');
+      setLogDocType(e.docType || '');
+      setLogDocDate(e.docDate || dateInputValue());
+      setLogDocParties(e.docParties || '');
       setEditingEntryIdx(i);
     };
     const deleteEntry = (i) => {
@@ -2475,7 +2559,97 @@ function App(){
             <p style={css("margin:0;font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{logPayStatus === 'straight' ? 'Owed at the 0.5× overtime differential (you already got straight time for these hours).' : 'Owed at the full 1.5× overtime rate.'}</p>
           </div>
         }
-        <textarea aria-label="What happened" value={logNote} onChange={e => setLogNote(e.target.value)} rows={2} placeholder="What happened? Date, who was there, what was said…" style={css("width:100%;box-sizing:border-box;padding:12px;border-radius:10px;border:2px solid #14181F;font:400 16px/1.4 'Atkinson Hyperlegible',sans-serif;resize:vertical")} />
+        {kind.tag === 'Witness' &&
+          <div style={css("display:flex;flex-direction:column;gap:10px")}>
+            <div style={css("display:flex;flex-direction:column;gap:6px")}>
+              <label htmlFor="log-witness-name" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Witness name</label>
+              <input id="log-witness-name" type="text" value={logWitnessName} onChange={e => setLogWitnessName(e.target.value)} placeholder="e.g. Jordan Lee" style={css("width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif")} />
+            </div>
+            <div style={css("display:flex;flex-direction:column;gap:6px")}>
+              <label htmlFor="log-witness-contact" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Contact <span style={css("font-weight:400;color:#4A5162")}>(optional)</span></label>
+              <input id="log-witness-contact" type="text" value={logWitnessContact} onChange={e => setLogWitnessContact(e.target.value)} placeholder="Phone or email" style={css("width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif")} />
+            </div>
+            <div style={css("display:flex;flex-direction:column;gap:6px")}>
+              <label htmlFor="log-witness-rel" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Relationship</label>
+              <select id="log-witness-rel" value={logWitnessRelationship} onChange={e => setLogWitnessRelationship(e.target.value)} style={css("width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;border-radius:10px;border:2px solid #14181F;background:#fff;font:400 16px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;appearance:menulist;-webkit-appearance:menulist")}>
+                <option value="">Select…</option>
+                {RELATIONSHIP_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+              </select>
+            </div>
+            <div role="group" aria-label="Still employed there?" style={css("display:flex;flex-direction:column;gap:6px")}>
+              <span style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Still employed there?</span>
+              <div style={css("display:flex;gap:8px;flex-wrap:wrap")}>
+                {YES_NO_UNSURE.map(v =>
+                  <button key={v} type="button" onClick={() => setLogWitnessStillEmployed(v)} aria-pressed={logWitnessStillEmployed === v} className="surfacefx" style={css('min-height:44px;padding:10px 13px;border-radius:999px;border:2px solid ' + (logWitnessStillEmployed === v ? '#2B3AA8' : '#14181F') + ';background:' + (logWitnessStillEmployed === v ? '#2B3AA8' : '#fff') + ';color:' + (logWitnessStillEmployed === v ? '#fff' : '#14181F') + ";font:700 13px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{v}</button>
+                )}
+              </div>
+            </div>
+            <div role="group" aria-label="Willing to be contacted?" style={css("display:flex;flex-direction:column;gap:6px")}>
+              <span style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Willing to be contacted?</span>
+              <div style={css("display:flex;gap:8px;flex-wrap:wrap")}>
+                {YES_NO_UNSURE.map(v =>
+                  <button key={v} type="button" onClick={() => setLogWitnessWilling(v)} aria-pressed={logWitnessWilling === v} className="surfacefx" style={css('min-height:44px;padding:10px 13px;border-radius:999px;border:2px solid ' + (logWitnessWilling === v ? '#2B3AA8' : '#14181F') + ';background:' + (logWitnessWilling === v ? '#2B3AA8' : '#fff') + ';color:' + (logWitnessWilling === v ? '#fff' : '#14181F') + ";font:700 13px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{v}</button>
+                )}
+              </div>
+            </div>
+          </div>
+        }
+        {kind.tag === 'Statement' &&
+          <div style={css("display:flex;flex-direction:column;gap:10px")}>
+            <div style={css("display:flex;flex-direction:column;gap:6px")}>
+              <label htmlFor="log-speaker-name" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Who said it</label>
+              <input id="log-speaker-name" type="text" value={logSpeakerName} onChange={e => setLogSpeakerName(e.target.value)} placeholder="e.g. Jordan Lee" style={css("width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif")} />
+            </div>
+            <div style={css("display:flex;flex-direction:column;gap:6px")}>
+              <label htmlFor="log-speaker-role" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Their role</label>
+              <input id="log-speaker-role" type="text" value={logSpeakerRole} onChange={e => setLogSpeakerRole(e.target.value)} placeholder="e.g. My supervisor" style={css("width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif")} />
+            </div>
+            <div style={css("display:flex;flex-direction:column;gap:6px")}>
+              <label htmlFor="log-said-when" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>When</label>
+              <input id="log-said-when" type="date" value={logSaidWhen} max={dateInputValue()} onChange={e => setLogSaidWhen(e.target.value)} style={css("width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif")} />
+            </div>
+            <div style={css("display:flex;flex-direction:column;gap:6px")}>
+              <label htmlFor="log-said-where" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Where / how</label>
+              <select id="log-said-where" value={logSaidWhere} onChange={e => setLogSaidWhere(e.target.value)} style={css("width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;border-radius:10px;border:2px solid #14181F;background:#fff;font:400 16px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;appearance:menulist;-webkit-appearance:menulist")}>
+                <option value="">Select…</option>
+                {SAID_WHERE_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+              </select>
+            </div>
+            <div style={css("display:flex;flex-direction:column;gap:6px")}>
+              <label htmlFor="log-who-else-heard" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Who else heard it <span style={css("font-weight:400;color:#4A5162")}>(optional)</span></label>
+              <input id="log-who-else-heard" type="text" value={logWhoElseHeard} onChange={e => setLogWhoElseHeard(e.target.value)} placeholder="Anyone else present" style={css("width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif")} />
+            </div>
+          </div>
+        }
+        {kind.tag === 'Records' &&
+          <div style={css("display:flex;flex-direction:column;gap:10px")}>
+            <div style={css("display:flex;flex-direction:column;gap:6px")}>
+              <label htmlFor="log-doc-type" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Document type</label>
+              <select id="log-doc-type" value={logDocType} onChange={e => setLogDocType(e.target.value)} style={css("width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;border-radius:10px;border:2px solid #14181F;background:#fff;font:400 16px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;appearance:menulist;-webkit-appearance:menulist")}>
+                <option value="">Select…</option>
+                {DOC_TYPE_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+              </select>
+            </div>
+            <div style={css("display:flex;flex-direction:column;gap:6px")}>
+              <label htmlFor="log-doc-date" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Document date</label>
+              <input id="log-doc-date" type="date" value={logDocDate} max={dateInputValue()} onChange={e => setLogDocDate(e.target.value)} style={css("width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif")} />
+            </div>
+            <div style={css("display:flex;flex-direction:column;gap:6px")}>
+              <label htmlFor="log-doc-parties" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Author / parties</label>
+              <input id="log-doc-parties" type="text" value={logDocParties} onChange={e => setLogDocParties(e.target.value)} placeholder="Who wrote or sent it" style={css("width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif")} />
+            </div>
+          </div>
+        }
+        {(() => {
+          const noteLabel = kind.tag === 'Witness' ? 'What they saw or heard' : kind.tag === 'Statement' ? 'What was said (exact quote if known)' : kind.tag === 'Records' ? 'Why it matters' : 'What happened';
+          const notePlaceholder = kind.tag === 'Witness' ? 'Describe what this witness saw or heard…' : kind.tag === 'Statement' ? 'The exact words, if you remember them…' : kind.tag === 'Records' ? 'Why this document matters to your case…' : 'What happened? Date, who was there, what was said…';
+          return (
+            <div style={css("display:flex;flex-direction:column;gap:6px")}>
+              <label htmlFor="log-note" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{noteLabel}</label>
+              <textarea id="log-note" aria-label={noteLabel} value={logNote} onChange={e => setLogNote(e.target.value)} rows={2} placeholder={notePlaceholder} style={css("width:100%;box-sizing:border-box;padding:12px;border-radius:10px;border:2px solid #14181F;font:400 16px/1.4 'Atkinson Hyperlegible',sans-serif;resize:vertical")} />
+            </div>
+          );
+        })()}
         <div style={css("display:flex;flex-direction:column;gap:8px")}>
           <label htmlFor="log-attachment" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Attach a photo or file (optional)</label>
           {!logAttachment &&
@@ -2557,6 +2731,31 @@ function App(){
               <div style={css('padding-bottom:18px;flex:1;border-radius:12px;' + (editingEntryIdx === i ? 'outline:2px solid #6B4B00;outline-offset:6px;' : ''))}>
                 <p style={css("margin:0 0 3px;font:600 13px 'IBM Plex Mono',monospace;color:#4A5162")}>{e.date}{e.startTime && e.endTime ? ' · ' + formatTime12(e.startTime) + '–' + formatTime12(e.endTime) : ''}</p>
                 <p style={css("margin:0 0 5px;font:700 18px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{e.title}{e.hours ? ' — ' + e.hours + ' hrs' : ''}</p>
+                {e.tag === 'Witness' && e.witnessName &&
+                  <p style={css("margin:0 0 4px;font:600 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>
+                    {e.witnessName}
+                    {e.witnessRelationship ? ' · ' + e.witnessRelationship : ''}
+                    {e.witnessStillEmployed ? ' · Still employed: ' + e.witnessStillEmployed : ''}
+                    {e.witnessWilling ? ' · Willing to be contacted: ' + e.witnessWilling : ''}
+                    {e.witnessContact ? ' · ' + e.witnessContact : ''}
+                  </p>
+                }
+                {e.tag === 'Statement' && e.speakerName &&
+                  <p style={css("margin:0 0 4px;font:600 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>
+                    {e.speakerName}
+                    {e.speakerRole ? ' · ' + e.speakerRole : ''}
+                    {e.saidWhere ? ' · ' + e.saidWhere : ''}
+                    {e.saidWhen ? ' · ' + e.saidWhen : ''}
+                    {e.whoElseHeard ? ' · Also heard by: ' + e.whoElseHeard : ''}
+                  </p>
+                }
+                {e.tag === 'Records' && e.docType &&
+                  <p style={css("margin:0 0 4px;font:600 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>
+                    {e.docType}
+                    {e.docDate ? ' · ' + e.docDate : ''}
+                    {e.docParties ? ' · ' + e.docParties : ''}
+                  </p>
+                }
                 <p style={css("margin:0 0 8px;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{e.body}</p>
                 {e.attachment &&
                   <a href={e.attachment.dataUrl} download={e.attachment.name} style={css("display:inline-flex;align-items:center;gap:8px;margin:0 0 8px;padding:6px;border-radius:10px;border:2px solid #14181F;background:#F0EDE5;text-decoration:none;max-width:220px")}>
