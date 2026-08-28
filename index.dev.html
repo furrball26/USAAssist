@@ -1155,18 +1155,27 @@ const ISSUES = {
     key:'termination', caseTitle:'Termination / pushed out', primaryTool:'strength', letterKind:'records-request',
     action:'Request your personnel file in writing.',
     actionWhy:'Many states require your employer to hand over your file. It often shows the real reason for a firing.',
+    // Wires up the records tracker (previously an orphaned Tools-grid tile)
+    // right after the records-request letter, so following through on that
+    // request is part of the guided flow, not a side tool you have to find on
+    // your own — and the damages estimator as a final optional step, matching
+    // how the flow audit treats every non-wage issue's own tools.
     steps:[
       'Log the timeline: the reason given, and what led up to it',
       'Request your personnel file and final pay records in writing',
+      'Track whether your employer responds, and by when',
       'Save any protected activity that preceded it (complaints, leave, injury)',
       'Note anything said about why you were let go, and by whom',
+      'Optional: see what back pay might look like while you search for work',
     ],
-    stepScreens:['log','letter','log','log'],
-    // See harassment's stepLogKind above. Index 1 routes to 'letter', not 'log',
-    // so it has no log kind (null/omitted — stepTarget only reads this for the
-    // three log-screen steps).
-    stepLogKind:['Statement', null, 'Statement','Statement'],
-    stepIds:['termination-log-timeline','termination-request-file','termination-save-protected-activity','termination-note-reason'],
+    stepScreens:['log','letter','recordsRequest','log','log','damages'],
+    stepLetterTypes:[null,'records-request',null,null,null,null],
+    // See harassment's stepLogKind above. Index 1 routes to 'letter' and index 2
+    // to 'recordsRequest' and index 5 to 'damages' — none of those are 'log', so
+    // they have no log kind (null/omitted — stepTarget only reads this for
+    // steps that actually route to 'log').
+    stepLogKind:['Statement', null, null, 'Statement','Statement', null],
+    stepIds:['termination-log-timeline','termination-request-file','termination-track-request','termination-save-protected-activity','termination-note-reason','termination-damages-estimate'],
     chatSeed:'You mentioned being fired or pushed out. Tell me the reason you were given and what happened in the weeks before, and I will explain wrongful-termination and retaliation rules where you work.',
   },
   'A document to review': {
@@ -1284,6 +1293,9 @@ function stepAutoDone(id, ctx){
   }
   if (id === 'discrimination-legal-check') {
     return !!RESULTS_DISCRIMINATION[ctx.wizNode];
+  }
+  if (id === 'termination-track-request') {
+    return !!(ctx.profile && ctx.profile.recordsRequest && ctx.profile.recordsRequest.dateSent);
   }
   return false;
 }
@@ -2285,7 +2297,7 @@ function App(){
   // pct 12, so score is ~12 even with no evidence — Math.round(12/20) would light
   // one bar under the "Not started" label. Only fill bars once there's real evidence.
   const strengthFill = evidenceCount > 0 ? Math.max(1, Math.round(strength.score / 20)) : 0;
-  const doneCtx = { entries, wizNode };
+  const doneCtx = { entries, wizNode, profile };
   const doneCount = cfg.steps.filter((_, i) => isStepDone(cfg, i, done, doneCtx)).length;
   // The hero's "current step" must be the FIRST NOT-done step, not doneCount —
   // doneCount assumes completed steps are a contiguous prefix, but stepAutoDone
