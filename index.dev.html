@@ -265,6 +265,110 @@ function pickDeadlineFactAcross(stateFacts, fedFacts, issueKey){
   return null;
 }
 
+// Per-issue label for the optional trigger-date field the Deadline Calculator anchors
+// on — worded to the concrete event that actually starts each issue's limitations
+// clock (a payday, a firing, an incident, receiving a document), not a generic
+// "date this happened" for every issue, so the field reads as answerable at a glance.
+function eventDateLabelFor(issueKey){
+  switch (issueKey) {
+    case 'wage': return 'Most recent payday you were underpaid';
+    case 'termination': return 'Date you were let go';
+    case 'harassment': return 'Date of the most recent incident';
+    case 'discrimination': return 'Date of the most recent incident';
+    case 'document': return 'Date you received the document';
+    default: return 'Date this happened';
+  }
+}
+
+// Days-per-unit for the deadline-window parser below. Deliberately coarse (a month is
+// always treated as 30 days, a year as 365) — good enough for a conservative estimate,
+// and erring slightly short (not long) on a 30/31-day month is the safe direction.
+function unitToDays(unit){
+  const u = String(unit || '').toLowerCase();
+  if (u.indexOf('year') === 0) return 365;
+  if (u.indexOf('month') === 0) return 30;
+  return 1; // day / days
+}
+
+// Parses a deadline fact's `value` text (e.g. "180 days", "2 years (3 if willful)",
+// "21 days to consider, 7 days to revoke") into the SHORTEST clearly-stated period, in
+// days, that a worker should treat as the operative clock — never the longest or most
+// optimistic reading of an ambiguous string. Returns null (never a guess) when the text
+// has no clean "<number> <day|month|year>(s)" pattern to anchor on; callers must fall
+// back to showing the duration text alone rather than compute a date they can't support.
+//
+// One exception to "always take the shortest number": an OWBPA-style dual window
+// ("X days to consider" / "Y days to revoke") is TWO DIFFERENT clocks for two different
+// actions — deciding whether to sign, vs. taking back a signature already given — not
+// competing readings of the same deadline. Blindly taking the smaller number there
+// (the revocation period, which only starts running AFTER signing) would understate the
+// time a worker actually has to decide whether to sign in the first place. When a
+// "to consider"/"to review" period is named, that one wins.
+function parseDeadlineWindow(factValue){
+  const text = String(factValue == null ? '' : factValue).trim();
+  if (!text) return null;
+  const considerM = text.match(/(\d+(?:\.\d+)?)\s*(day|days|month|months|year|years)\s*(?:to\s+consider|to\s+review|for\s+consideration)\b/i);
+  if (considerM) {
+    const n = parseFloat(considerM[1]);
+    if (isFinite(n) && n > 0) return { days: Math.round(n * unitToDays(considerM[2])) };
+  }
+  const candidates = [];
+  // A chain of numbers sharing ONE trailing unit ("180 or 300 days" — the federal EEOC
+  // fact's actual wording) — every number in the chain is a candidate at that unit, not
+  // just the one immediately adjacent to the unit word, or the shorter "180" would never
+  // be seen at all.
+  const consumed = [];
+  const chainRe = /(\d+(?:\.\d+)?(?:\s*(?:,|or|and)\s*\d+(?:\.\d+)?)+)\s*(day|days|month|months|year|years)\b/gi;
+  let cm;
+  while ((cm = chainRe.exec(text))) {
+    consumed.push([cm.index, cm.index + cm[0].length]);
+    const unitDays = unitToDays(cm[2]);
+    cm[1].split(/,|or|and/i).forEach(part => {
+      const n = parseFloat(part);
+      if (isFinite(n) && n > 0) candidates.push(Math.round(n * unitDays));
+    });
+  }
+  // Standalone "<number> <unit>" pairs not already covered by a chain match above.
+  const re = /(\d+(?:\.\d+)?)\s*(day|days|month|months|year|years)\b/gi;
+  let m;
+  while ((m = re.exec(text))) {
+    if (consumed.some(([s, e]) => m.index >= s && m.index < e)) continue;
+    const n = parseFloat(m[1]);
+    if (!isFinite(n) || n <= 0) continue;
+    candidates.push(Math.round(n * unitToDays(m[2])));
+  }
+  if (!candidates.length) return null;
+  return { days: Math.min(...candidates) };
+}
+
+// Computes a conservative, date-anchored deadline from an eventDate ("YYYY-MM-DD",
+// LOCAL calendar day — same convention as dateInputValue/the Log date fields, so a
+// worker west of UTC never sees their trigger date silently shift) and a deadline
+// fact's value text. Returns null (never a fabricated date) whenever either input is
+// missing, the date string is malformed, or parseDeadlineWindow can't cleanly parse the
+// fact text — a screen that can't compute a real date must fall back to the duration
+// text alone rather than show a number it can't stand behind.
+function computeDeadlineFromEvent(eventDateStr, factValue){
+  if (!eventDateStr) return null;
+  const win = parseDeadlineWindow(factValue);
+  if (!win) return null;
+  const parts = String(eventDateStr).split('-').map(Number);
+  if (parts.length !== 3 || parts.some(n => !isFinite(n))) return null;
+  const [y, mo, d] = parts;
+  const target = new Date(y, mo - 1, d + win.days);
+  if (isNaN(target.getTime())) return null;
+  const now = new Date();
+  const todayLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const msPerDay = 24 * 60 * 60 * 1000;
+  const daysLeft = Math.round((target.getTime() - todayLocal.getTime()) / msPerDay);
+  return { targetDate: target, daysLeft, isPast: daysLeft < 0 };
+}
+// Human-friendly "File by Mon, Mar 4, 2027" formatting for computeDeadlineFromEvent's targetDate.
+function formatDeadlineDate(d){
+  try { return d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric' }); }
+  catch (e) { return dateInputValue(d); }
+}
+
 // G1 (docs/flsa-process-gap.md) — the FLSA's 2/3-year deadline (deadlines.flsaWageClaim)
 // keeps running from each unpaid payday and is NOT paused by filing a Wage and Hour
 // Division complaint; a worker who demands/waits/investigates before deciding whether to
@@ -1305,7 +1409,7 @@ function App(){
   const [county, setCounty] = useState(() => saved.county || '');
   const [countyQuery, setCountyQuery] = useState('');
   const [issue, setIssue] = useState(() => saved.issue || null);
-  const [profile, setProfile] = useState(() => Object.assign({ name:'', employer:'', payType:'', rate:'', salary:'' }, saved.profile));
+  const [profile, setProfile] = useState(() => Object.assign({ name:'', employer:'', payType:'', rate:'', salary:'', eventDate:'' }, saved.profile));
   const [caseOpened, setCaseOpened] = useState(() => saved.caseOpened || new Date().toISOString());
   const [federal, setFederal] = useState(null);
   const [stateData, setStateData] = useState(undefined); // undefined = loading, null = none, object = loaded
@@ -1683,6 +1787,50 @@ function App(){
     </div>
   );
 
+  // Date-anchored Deadline Calculator (non-interactive content only — this renders
+  // INSIDE the existing Deadline Watch card, which is itself a <button>; nesting a
+  // second interactive control in there would be invalid HTML and steal/duplicate
+  // clicks, so the "add a date" prompt below is a separate sibling component instead).
+  // Shows a computed target date + countdown ONLY when the user has entered a trigger
+  // date AND parseDeadlineWindow can cleanly read a period from the fact text — never a
+  // guessed date. Urgency styling (amber under 30 days, red once past) mirrors the
+  // existing OshaWatch/FlsaSolNote sub-block pattern so it reads as the same design
+  // language, not a new one-off.
+  const DeadlineComputedBlock = ({ dark, dl }) => {
+    if (!dl || !profile.eventDate) return null;
+    const computed = computeDeadlineFromEvent(profile.eventDate, dl.value || dl.summary);
+    if (!computed) return null; // fact text didn't cleanly parse — never fabricate a date
+    const { targetDate, daysLeft, isPast } = computed;
+    const urgent = !isPast && daysLeft < 30;
+    const tone = isPast ? 'past' : urgent ? 'urgent' : 'ok';
+    const border = { past: dark ? 'rgba(255,180,196,.9)' : '#B3264F', urgent: dark ? 'rgba(255,227,166,.7)' : '#14181F', ok: dark ? 'rgba(255,255,255,.4)' : '#14181F' }[tone];
+    const bg = { past: dark ? 'rgba(179,38,79,.35)' : '#FFE7EC', urgent: dark ? 'rgba(255,255,255,.14)' : '#FFF4D6', ok: dark ? 'rgba(255,255,255,.1)' : '#F0EDE5' }[tone];
+    const labelColor = { past: dark ? '#FFE3EA' : '#8A1438', urgent: dark ? '#FFE3A6' : '#8A5A00', ok: dark ? '#DDE2FF' : '#14181F' }[tone];
+    const bodyColor = { past: dark ? '#FFE3EA' : '#5A1330', urgent: dark ? '#FFE3A6' : '#6B4B00', ok: dark ? '#DDE2FF' : '#3A4150' }[tone];
+    const daysWord = Math.abs(daysLeft) === 1 ? 'day' : 'days';
+    const headline = isPast
+      ? 'This deadline may have passed — talk to an attorney immediately, some exceptions exist.'
+      : 'File by ' + formatDeadlineDate(targetDate) + ' — about ' + daysLeft + ' ' + daysWord + ' left.';
+    return (
+      <div style={css('padding:10px 12px;border-radius:0 8px 8px 0;border:none;border-left:4px solid ' + border + ';background:' + bg + ";display:flex;flex-direction:column;gap:3px")}>
+        <span style={css("font:700 12px 'IBM Plex Mono',monospace;color:" + labelColor + ";letter-spacing:.04em")}>{isPast ? 'DEADLINE MAY HAVE PASSED' : 'YOUR ESTIMATED DEADLINE'}</span>
+        <span style={css("font:700 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:" + bodyColor)}>{headline}</span>
+        <span style={css("font:400 12px/1.4 'Atkinson Hyperlegible',sans-serif;color:" + bodyColor)}>Estimated from the date you entered and the general limitations period — confirm the exact deadline with the agency or an attorney; some events can change it.</span>
+      </div>
+    );
+  };
+  // The sibling "add a date" prompt — rendered OUTSIDE the Deadline Watch card button
+  // (see DeadlineComputedBlock) whenever a deadline fact exists but no trigger date has
+  // been entered yet, so a user only ever sees the static duration text until they add
+  // one. Jumps straight to onboarding step 4 (see openEditFlowAtDate) instead of the
+  // full state/county/issue flow.
+  const AddDeadlineDatePrompt = ({ dark, dl }) => {
+    if (!dl || profile.eventDate) return null;
+    return (
+      <button onClick={openEditFlowAtDate} className="hoverfx" style={css("align-self:flex-start;min-height:44px;display:inline-flex;align-items:center;padding:8px 4px;margin:-6px 0 0;background:none;border:none;cursor:pointer;text-align:left;font:700 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:" + (dark ? '#FFE3A6' : '#2B3AA8') + ";text-decoration:underline")}>Add the date this happened to see your actual deadline</button>
+    );
+  };
+
   // G2/G3 (docs/flsa-process-gap.md) — the app routed wage users to WHD as free/first
   // without ever describing the OTHER path (a private §216(b) lawsuit), that it can
   // recover roughly DOUBLE the back wages plus attorney's fees, or that accepting a
@@ -1858,6 +2006,15 @@ function App(){
               }
             </div>
           }
+          {/* Optional trigger/event date the Deadline Calculator anchors its computed
+              target date + countdown on (see computeDeadlineFromEvent). Labeled to the
+              concrete event that starts THIS issue's clock, not a generic date, and
+              never required — onboarding must stay completable without it. */}
+          <div style={css("display:flex;flex-direction:column;gap:6px")}>
+            <label htmlFor="onb-event-date" style={css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{eventDateLabelFor(dIssue ? issueCfg(dIssue).key : 'general').toUpperCase() + ' (OPTIONAL)'}</label>
+            <input id="onb-event-date" type="date" value={dProfile.eventDate || ''} max={dateInputValue()} onChange={e => setDProfile(p => Object.assign({}, p, { eventDate:e.target.value }))} style={css("width:100%;max-width:260px;box-sizing:border-box;min-height:44px;padding:10px 12px;border-radius:12px;border:2px solid #14181F;font:400 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
+            <span style={css("font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Lets us show your actual filing deadline — a specific date, not just a duration — on your dashboard. Nothing is filed automatically; you can leave this blank and add it later.</span>
+          </div>
         </div>
       }
 
@@ -1932,6 +2089,10 @@ function App(){
   // Opens the ◉ edit-location/profile flow, staging the current case into
   // editDraft (F10's model) so nothing changes until Save is tapped.
   const openEditFlow = () => { setEditDraft({ stateSel, county, issue, profile: Object.assign({}, profile) }); setScreen('onboarding'); setOnbStep(1); };
+  // Same staged-edit model as openEditFlow, but jumps straight to onboarding step 4 (the
+  // profile step, which now also holds the optional trigger-date field) instead of
+  // restarting at state — used by AddDeadlineDatePrompt so adding the date is one tap.
+  const openEditFlowAtDate = () => { setEditDraft({ stateSel, county, issue, profile: Object.assign({}, profile) }); setScreen('onboarding'); setOnbStep(4); };
 
   // F17 — the ◉ edit-location/profile pill used to only render in HomeStandard;
   // Action-first and Plain modes had NO way at all to fix a wrong state/county
@@ -1989,13 +2150,17 @@ function App(){
           const stF = (stateData && stateData.facts) || [];
           const dl = pickDeadlineFactAcross(stF, fedF, cfg.key);
           return dl ? (
-            <button onClick={nav('strength')} className="surfacefx" style={css("text-align:left;padding:16px 18px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;flex-direction:column;gap:4px")}>
-              <span style={css("font:700 13px 'IBM Plex Mono',monospace;color:#14181F;letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px")}><Icon name="deadline-clock" size={14} /> DEADLINE WATCH</span>
-              <span style={css("font:700 18px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{dl.value || dl.summary}</span>
-              <span style={css("font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{dl.summary}</span>
-              {/* G1 (docs/flsa-process-gap.md) — the clock is not paused by a WHD complaint. */}
-              {cfg.key === 'wage' && <FlsaSolNote dark={false} />}
-            </button>
+            <>
+              <button onClick={nav('strength')} className="surfacefx" style={css("text-align:left;padding:16px 18px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;flex-direction:column;gap:4px")}>
+                <span style={css("font:700 13px 'IBM Plex Mono',monospace;color:#14181F;letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px")}><Icon name="deadline-clock" size={14} /> DEADLINE WATCH</span>
+                <span style={css("font:700 18px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{dl.value || dl.summary}</span>
+                <span style={css("font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{dl.summary}</span>
+                <DeadlineComputedBlock dark={false} dl={dl} />
+                {/* G1 (docs/flsa-process-gap.md) — the clock is not paused by a WHD complaint. */}
+                {cfg.key === 'wage' && <FlsaSolNote dark={false} />}
+              </button>
+              <AddDeadlineDatePrompt dark={false} dl={dl} />
+            </>
           ) : null;
         })()}
         <DocDeadlineWatch dark={false} />
@@ -2106,12 +2271,16 @@ function App(){
         const stF = (stateData && stateData.facts) || [];
         const dl = pickDeadlineFactAcross(stF, fedF, cfg.key);
         return dl ? (
-          <button onClick={nav('strength')} className="surfacefx" style={css("text-align:left;padding:14px 16px;border-radius:12px;border:2px solid rgba(255,255,255,.4);background:rgba(255,255,255,.14);cursor:pointer;display:flex;flex-direction:column;gap:4px")}>
-            <span style={css("font:700 12px 'IBM Plex Mono',monospace;color:#DDE2FF;letter-spacing:.05em;display:inline-flex;align-items:center;gap:6px")}><Icon name="deadline-clock" size={13} /> DEADLINE WATCH</span>
-            <span style={css("font:700 16px/1.3 'Atkinson Hyperlegible',sans-serif;color:#fff")}>{dl.value || dl.summary}</span>
-            {/* G1 (docs/flsa-process-gap.md) — the clock is not paused by a WHD complaint. */}
-            {cfg.key === 'wage' && <FlsaSolNote dark={true} />}
-          </button>
+          <>
+            <button onClick={nav('strength')} className="surfacefx" style={css("text-align:left;padding:14px 16px;border-radius:12px;border:2px solid rgba(255,255,255,.4);background:rgba(255,255,255,.14);cursor:pointer;display:flex;flex-direction:column;gap:4px")}>
+              <span style={css("font:700 12px 'IBM Plex Mono',monospace;color:#DDE2FF;letter-spacing:.05em;display:inline-flex;align-items:center;gap:6px")}><Icon name="deadline-clock" size={13} /> DEADLINE WATCH</span>
+              <span style={css("font:700 16px/1.3 'Atkinson Hyperlegible',sans-serif;color:#fff")}>{dl.value || dl.summary}</span>
+              <DeadlineComputedBlock dark={true} dl={dl} />
+              {/* G1 (docs/flsa-process-gap.md) — the clock is not paused by a WHD complaint. */}
+              {cfg.key === 'wage' && <FlsaSolNote dark={true} />}
+            </button>
+            <AddDeadlineDatePrompt dark={true} dl={dl} />
+          </>
         ) : null;
       })()}
       <DocDeadlineWatch dark={true} />
@@ -2164,13 +2333,17 @@ function App(){
         const stF = (stateData && stateData.facts) || [];
         const dl = pickDeadlineFactAcross(stF, fedF, cfg.key);
         return dl ? (
-          <button onClick={nav('strength')} className="surfacefx" style={css("text-align:left;padding:18px 20px;border-radius:16px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;flex-direction:column;gap:6px")}>
-            <span style={css("font:700 15px 'IBM Plex Mono',monospace;color:#14181F;letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px")}><Icon name="deadline-clock" size={16} /> DEADLINE WATCH</span>
-            <span style={css("font:700 22px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{dl.value || dl.summary}</span>
-            <span style={css("font:400 17px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{dl.summary}</span>
-            {/* G1 (docs/flsa-process-gap.md) — the clock is not paused by a WHD complaint. */}
-            {cfg.key === 'wage' && <FlsaSolNote dark={false} />}
-          </button>
+          <>
+            <button onClick={nav('strength')} className="surfacefx" style={css("text-align:left;padding:18px 20px;border-radius:16px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;flex-direction:column;gap:6px")}>
+              <span style={css("font:700 15px 'IBM Plex Mono',monospace;color:#14181F;letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px")}><Icon name="deadline-clock" size={16} /> DEADLINE WATCH</span>
+              <span style={css("font:700 22px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{dl.value || dl.summary}</span>
+              <span style={css("font:400 17px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{dl.summary}</span>
+              <DeadlineComputedBlock dark={false} dl={dl} />
+              {/* G1 (docs/flsa-process-gap.md) — the clock is not paused by a WHD complaint. */}
+              {cfg.key === 'wage' && <FlsaSolNote dark={false} />}
+            </button>
+            <AddDeadlineDatePrompt dark={false} dl={dl} />
+          </>
         ) : null;
       })()}
       <DocDeadlineWatch dark={false} />
@@ -2999,6 +3172,9 @@ function App(){
         const stF = (stateData && stateData.facts) || [];
         const fedDL = pickDeadlineFact(fedF, cfg.key);
         const stDL = pickDeadlineFact(stF, cfg.key);
+        // Same single most-relevant fact Home's Deadline Watch card anchors its computed
+        // date/countdown to — so this screen's estimate never disagrees with Home's.
+        const dl = pickDeadlineFactAcross(stF, fedF, cfg.key);
         const src = f => { const u = f && safeUrl(f.sourceUrl); return u ? <a href={u} target="_blank" rel="noopener noreferrer" className="hoverfx" style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null; };
         // qa HIGH #6 — deadlineKeywordsFor(cfg.key) returns [] for 'document' and the
         // generic issue by design (R10: there is no jurisdiction "deadlines" fact for
@@ -3026,6 +3202,8 @@ function App(){
             {!contentErr && <p style={css("margin:0 0 6px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}><strong>Federal:</strong> {fedDL ? fedDL.summary : fedFallback} {src(fedDL)}</p>}
             {stateErr ? <p style={css("margin:0 0 8px;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load the {stateSel} deadline. Check your connection and reopen — this is not a confirmation that no shorter state deadline applies.</p> :
               <p style={css("margin:0 0 8px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}><strong>{stateLabel}:</strong> {stDL ? stDL.summary : (stateData === undefined ? 'Loading…' : 'See the federal deadline above; a state limit may also apply.')} {src(stDL)}</p>}
+            {dl && <div style={css("margin:0 0 8px")}><DeadlineComputedBlock dark={false} dl={dl} /></div>}
+            {dl && <div style={css("margin:0 0 8px")}><AddDeadlineDatePrompt dark={false} dl={dl} /></div>}
             {oshaFact &&
               <p style={css("margin:0 0 8px;padding:10px 12px;border-radius:0 8px 8px 0;background:#FFE7EC;border:none;border-left:4px solid #B3264F;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#5A1330;display:flex;align-items:flex-start;gap:8px")}><Icon name="alert" size={16} style={{ flex: 'none', marginTop: '3px' }} /><span><strong>OSHA whistleblower (safety retaliation):</strong> {oshaFact.summary} {src(oshaFact)}</span></p>
             }
