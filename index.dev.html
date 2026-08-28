@@ -158,6 +158,16 @@
 <script type="text/babel" data-presets="react">
 const { useState, useRef, useEffect, useCallback } = React;
 
+// Clickjacking defense-in-depth: the GitHub Pages mirror of this app cannot serve
+// X-Frame-Options / CSP frame-ancestors HTTP headers (Pages only serves static files),
+// so enforce framebusting here in JS before React mounts. This app never legitimately
+// frames itself, so any window.top !== window.self means we're embedded by someone
+// else's page — break out of the frame. Harmless on worklaw.app, which already blocks
+// framing at the header level (belt and suspenders).
+if (typeof window !== 'undefined' && window.top !== window.self) {
+  window.top.location.href = window.self.location.href;
+}
+
 // Base for fetching the content/ dataset. Empty = same-origin (GitHub Pages / local).
 // On worklaw.app the Vercel shell sets window.CONTENT_BASE to a jsDelivr URL pinned to the commit.
 const CONTENT_BASE = (typeof window !== 'undefined' && window.CONTENT_BASE)
@@ -1723,7 +1733,7 @@ function printLetter(subject, text){
     const w = window.open('', '_blank');
     if (!w) throw new Error('popup blocked');
     w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>' + esc(subject) +
-      '</title><style>body{font:15px/1.7 Georgia,serif;color:#111;max-width:640px;margin:48px auto;padding:0 24px;white-space:pre-wrap}@media print{body{margin:0}}</style></head><body>' +
+      '</title><style>body{font:15px/1.7 Georgia,serif;color:#111;max-width:640px;margin:48px auto;padding:0 24px;white-space:pre-wrap;overflow-wrap:anywhere}@media print{body{margin:0}}</style></head><body>' +
       esc(text) + '</body></html>');
     w.document.close(); w.focus();
     setTimeout(() => { try { w.print(); } catch(e){} }, 300);
@@ -2332,7 +2342,10 @@ function App(){
       ? "padding:10px 12px;border-radius:0 8px 8px 0;border:none;border-left:4px solid rgba(255,227,166,.7);background:rgba(255,255,255,.14)"
       : "padding:10px 12px;border-radius:0 8px 8px 0;border:none;border-left:4px solid #14181F;background:#FFF4D6") + ";display:flex;flex-direction:column;gap:3px")}>
       <span style={css("font:700 12px 'IBM Plex Mono',monospace;color:" + (dark ? '#FFE3A6' : '#8A5A00') + ";letter-spacing:.04em")}>SEPARATE CLOCK · FEDERAL LAWSUIT DEADLINE</span>
-      <span style={css("font:700 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:" + (dark ? '#FFE3A6' : '#6B4B00'))}>{FLSA_SOL_TIMING_NOTE}</span>
+      {/* wl-ux contrast fix — #FFF4D6 (not #FFE3A6) against this card's composited
+          dark background (~rgb(73,86,180)) gives ~5.88:1, a wider AA margin than the
+          old color's ~5.15:1, while keeping the amber "caution" tone consistent app-wide. */}
+      <span style={css("font:700 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:" + (dark ? '#FFF4D6' : '#6B4B00'))}>{FLSA_SOL_TIMING_NOTE}</span>
     </div>
   );
 
@@ -2394,7 +2407,7 @@ function App(){
     const enf = factByTopic(fedF, 'enforcement.paths');
     const liq = factByTopic(fedF, 'remedies.liquidatedDamages');
     const fees = factByTopic(fedF, 'remedies.attorneysFees');
-    const src = f => { const u = f && safeUrl(f.sourceUrl); return u ? <a href={u} target="_blank" rel="noopener noreferrer" className="hoverfx" style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null; };
+    const src = f => { const u = f && safeUrl(f.sourceUrl); return u ? <a href={u} target="_blank" rel="noopener noreferrer" className="hoverfx" aria-label={'Official source for ' + (f.citation || f.topic)} style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null; };
     return (
       <div style={css("padding:18px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF;display:flex;flex-direction:column;gap:10px")}>
         <p style={css("margin:0;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>How to actually recover this</p>
@@ -3217,7 +3230,7 @@ function App(){
               const stRev = !!(stateData && stateData.reviewed === true);
               const fedOT = [factByTopic(fedF,'overtime.basicRule'), factByTopic(fedF,'overtime.salaryLevelWeekly')].filter(Boolean);
               const stOT = factsByPrefix(stF,'overtime').concat([factByTopic(stF,'minimumWage.hourly')].filter(Boolean));
-              const line = f => { const u = safeUrl(f.sourceUrl); return <p key={f.topic} style={css("margin:0 0 8px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{f.summary} {u ? <a href={u} target="_blank" rel="noopener noreferrer" className="hoverfx" style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null}</p>; };
+              const line = f => { const u = safeUrl(f.sourceUrl); return <p key={f.topic} style={css("margin:0 0 8px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{f.summary} {u ? <a href={u} target="_blank" rel="noopener noreferrer" className="hoverfx" aria-label={'Official source for ' + (f.citation || f.topic)} style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null}</p>; };
               return (
                 <div style={css("padding:18px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF")}>
                   <p style={css("margin:0 0 10px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>What applies in {stateLabel}</p>
@@ -4316,7 +4329,7 @@ function App(){
       {editing ?
         <textarea value={letterEdit} onChange={e => setLetterEdit(e.target.value)} rows={16} style={css("width:100%;box-sizing:border-box;padding:18px;border-radius:12px;border:2px solid #2B3AA8;background:#fff;font:400 15px/1.65 'IBM Plex Mono',monospace;color:#14181F;resize:vertical")} />
         :
-        <div style={css("padding:22px;border-radius:12px;background:#fff;border:2px solid #14181F;font:400 15px/1.65 'Atkinson Hyperlegible',sans-serif;color:#14181F;white-space:pre-wrap")}>{text}</div>
+        <div style={css("padding:22px;border-radius:12px;background:#fff;border:2px solid #14181F;font:400 15px/1.65 'Atkinson Hyperlegible',sans-serif;color:#14181F;white-space:pre-wrap;overflow-wrap:anywhere")}>{text}</div>
       }
       <div style={css("display:flex;gap:10px;flex-wrap:wrap")}>
         <button onClick={() => printLetter(gen.subject, text)} style={css("flex:1;min-width:130px;padding:17px;border-radius:14px;border:none;background:#2B3AA8;color:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Export / print PDF</button>
@@ -4398,7 +4411,7 @@ function App(){
         // Same single most-relevant fact Home's Deadline Watch card anchors its computed
         // date/countdown to — so this screen's estimate never disagrees with Home's.
         const dl = pickDeadlineFactAcross(stF, fedF, cfg.key);
-        const src = f => { const u = f && safeUrl(f.sourceUrl); return u ? <a href={u} target="_blank" rel="noopener noreferrer" className="hoverfx" style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null; };
+        const src = f => { const u = f && safeUrl(f.sourceUrl); return u ? <a href={u} target="_blank" rel="noopener noreferrer" className="hoverfx" aria-label={'Official source for ' + (f.citation || f.topic)} style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null; };
         // qa HIGH #6 — deadlineKeywordsFor(cfg.key) returns [] for 'document' and the
         // generic issue by design (R10: there is no jurisdiction "deadlines" fact for
         // either), so fedDL/stDL are null FOREVER for those two issues, not just while
@@ -4451,7 +4464,7 @@ function App(){
       <div style={css("display:flex;gap:8px;flex-wrap:wrap;align-items:center")}>
         <span style={css('padding:7px 11px;border-radius:8px;background:' + scopeTone + ";border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace;color:#14181F")}>{scopeLabel}</span>
         {f.citation ? <span style={css("padding:7px 11px;border-radius:8px;background:#EEF1FF;font:600 13px 'IBM Plex Mono',monospace;color:#1B2778")}>{f.citation}</span> : null}
-        {safeUrl(f.sourceUrl) ? <a href={safeUrl(f.sourceUrl)} target="_blank" rel="noopener noreferrer" className="hoverfx" style={css("display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:7px 11px;border-radius:8px;background:#fff;border:2px solid #2B3AA8;font:600 13px 'IBM Plex Mono',monospace;color:#2B3AA8;text-decoration:none")}>Source ↗</a> : null}
+        {safeUrl(f.sourceUrl) ? <a href={safeUrl(f.sourceUrl)} target="_blank" rel="noopener noreferrer" className="hoverfx" aria-label={'Official source for ' + (f.citation || f.topic)} style={css("display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:7px 11px;border-radius:8px;background:#fff;border:2px solid #2B3AA8;font:600 13px 'IBM Plex Mono',monospace;color:#2B3AA8;text-decoration:none")}>Source ↗</a> : null}
       </div>
     </div>
   );
@@ -4499,6 +4512,7 @@ function App(){
     <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
       <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Where to file a complaint</h1>
       <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Official agencies that enforce employment law in {stateLabel}, near {countyShort} — free to contact directly.</p>
+      {stateErr ? <p style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load {stateLabel} agency links. Check your connection and reopen — the federal option below is not the only one that may apply.</p> : null}
       {(() => {
         const ag = (stateData && stateData.agencies) || {};
         const fedF = (federal && federal.facts) || [];
@@ -4551,7 +4565,7 @@ function App(){
         return (
           <div style={css("padding:16px 18px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F;display:flex;flex-direction:column;gap:6px")}>
             <p style={css("margin:0;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>You are protected from retaliation for speaking up</p>
-            <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>It is illegal for your employer to retaliate against you — fire, demote, cut your hours, or otherwise punish you — for asking about, complaining about, or filing a wage claim, even an internal or verbal complaint. {retal ? retal.citation : '29 U.S.C. § 215(a)(3)'}{u ? <> · <a href={u} target="_blank" rel="noopener noreferrer" className="hoverfx" style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 13px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a></> : null}</p>
+            <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>It is illegal for your employer to retaliate against you — fire, demote, cut your hours, or otherwise punish you — for asking about, complaining about, or filing a wage claim, even an internal or verbal complaint. {retal ? retal.citation : '29 U.S.C. § 215(a)(3)'}{u ? <> · <a href={u} target="_blank" rel="noopener noreferrer" className="hoverfx" aria-label={'Official source for ' + (retal.citation || retal.topic)} style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 13px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a></> : null}</p>
           </div>
         );
       })()}

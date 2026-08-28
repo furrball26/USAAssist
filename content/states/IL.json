@@ -19,7 +19,7 @@
     {
       "topic": "minimumWage.hourly",
       "value": 15.00,
-      "summary": "Illinois's minimum wage is $15.00 per hour for workers 18 and older, well above the federal $7.25.",
+      "summary": "Illinois's minimum wage is $15.00 per hour for workers 18 and older, well above the federal $7.25; some localities (e.g., Chicago) set higher rates that apply instead.",
       "citation": "820 ILCS 105/4",
       "sourceUrl": "https://labor.illinois.gov/laws-rules/fls/minimum-wage-law.html",
       "sourceAgency": "Illinois Department of Labor",
