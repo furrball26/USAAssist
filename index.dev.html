@@ -1477,8 +1477,8 @@ function App(){
   // FLSA_SOL_TIMING_NOTE is shown for a wage case.
   const FlsaSolNote = ({ dark }) => (
     <div style={css((dark
-      ? "padding:10px 12px;border-radius:10px;border:2px solid rgba(255,227,166,.7);background:rgba(255,255,255,.14)"
-      : "padding:10px 12px;border-radius:10px;border:2px solid #14181F;background:#FFF4D6") + ";display:flex;flex-direction:column;gap:3px")}>
+      ? "padding:10px 12px;border-radius:0 8px 8px 0;border:none;border-left:4px solid rgba(255,227,166,.7);background:rgba(255,255,255,.14)"
+      : "padding:10px 12px;border-radius:0 8px 8px 0;border:none;border-left:4px solid #14181F;background:#FFF4D6") + ";display:flex;flex-direction:column;gap:3px")}>
       <span style={css("font:700 12px 'IBM Plex Mono',monospace;color:" + (dark ? '#FFE3A6' : '#8A5A00') + ";letter-spacing:.04em")}>SEPARATE CLOCK · FEDERAL LAWSUIT DEADLINE</span>
       <span style={css("font:700 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:" + (dark ? '#FFE3A6' : '#6B4B00'))}>{FLSA_SOL_TIMING_NOTE}</span>
     </div>
@@ -1504,7 +1504,7 @@ function App(){
         <p style={css("margin:0;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>How to actually recover this</p>
         <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}><strong>File a free WHD complaint</strong> with the Department of Labor's Wage and Hour Division — confidential, no cost, but as of 2025 it recovers back wages only (no liquidated damages administratively). {src(enf)}</p>
         <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}><strong>Or file a private lawsuit</strong> — it can recover back wages plus an equal amount in liquidated damages (about double), plus your attorney's fees and costs, which is why many wage lawyers take these cases on contingency. {src(liq) || src(fees)}</p>
-        <p style={css("margin:0;padding:10px 12px;border-radius:10px;background:#FFE7EC;border:2px solid #B3264F;font:700 14px/1.5 'Atkinson Hyperlegible',sans-serif;color:#5A1330;display:flex;align-items:flex-start;gap:8px")}><Icon name="alert" size={18} style={{ flex: 'none', marginTop: '2px' }} /><span>Accepting back pay under WHD supervision — or a case the Secretary of Labor already sued over — can waive your right to sue privately for those same wages.</span></p>
+        <p style={css("margin:0;padding:10px 12px;border-radius:0 8px 8px 0;background:#FFE7EC;border:none;border-left:4px solid #B3264F;font:700 14px/1.5 'Atkinson Hyperlegible',sans-serif;color:#5A1330;display:flex;align-items:flex-start;gap:8px")}><Icon name="alert" size={18} style={{ flex: 'none', marginTop: '2px' }} /><span>Accepting back pay under WHD supervision — or a case the Secretary of Labor already sued over — can waive your right to sue privately for those same wages.</span></p>
         <p style={css("margin:0;font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>29 U.S.C. § 216(b), (c) · this is general information, not a recommendation of which path to take — talk to an employment attorney before choosing.</p>
       </div>
     );
@@ -1764,36 +1764,40 @@ function App(){
   );
 
   const HomeStandard = () => (
-    <div style={css("padding:8px 22px 34px;display:flex;flex-direction:column;gap:18px")}>
-      <ModeSwitch theme="light" />
-      <StorageWarningBanner />
-      <div style={css("display:flex;align-items:center;justify-content:space-between;gap:10px")}>
-        <LocationPill dark={false} />
-        <span style={css("font:700 13px 'IBM Plex Mono',monospace;color:#4A5162")}>CASE #{caseNo(caseOpened)}</span>
+    <div style={css("padding:8px 22px 34px;display:flex;flex-direction:column;gap:24px")}>
+      <div style={css("display:flex;flex-direction:column;gap:16px")}>
+        <ModeSwitch theme="light" />
+        <StorageWarningBanner />
+        <div style={css("display:flex;align-items:center;justify-content:space-between;gap:10px")}>
+          <LocationPill dark={false} />
+          <span style={css("font:700 13px 'IBM Plex Mono',monospace;color:#4A5162")}>CASE #{caseNo(caseOpened)}</span>
+        </div>
+
+        <div>
+          <h1 style={css("margin:0 0 6px;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{youName ? youName + ' — ' + cfg.caseTitle.toLowerCase() : cfg.caseTitle}</h1>
+          <p style={css("margin:0;font:400 17px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{employerName ? employerName + ' · ' : ''}Opened {openedLabel} · {evidenceCount} evidence {evidenceCount === 1 ? 'item' : 'items'}</p>
+        </div>
       </div>
 
-      <div>
-        <h1 style={css("margin:0 0 6px;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{youName ? youName + ' — ' + cfg.caseTitle.toLowerCase() : cfg.caseTitle}</h1>
-        <p style={css("margin:0;font:400 17px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{employerName ? employerName + ' · ' : ''}Opened {openedLabel} · {evidenceCount} evidence {evidenceCount === 1 ? 'item' : 'items'}</p>
+      <div style={css("display:flex;flex-direction:column;gap:16px")}>
+        {(() => {
+          const fedF = (federal && federal.facts) || [];
+          const stF = (stateData && stateData.facts) || [];
+          const dl = pickDeadlineFactAcross(stF, fedF, cfg.key);
+          return dl ? (
+            <button onClick={nav('strength')} className="surfacefx" style={css("text-align:left;padding:16px 18px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;flex-direction:column;gap:4px")}>
+              <span style={css("font:700 13px 'IBM Plex Mono',monospace;color:#14181F;letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px")}><Icon name="deadline-clock" size={14} /> DEADLINE WATCH</span>
+              <span style={css("font:700 18px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{dl.value || dl.summary}</span>
+              <span style={css("font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{dl.summary}</span>
+              {/* G1 (docs/flsa-process-gap.md) — the clock is not paused by a WHD complaint. */}
+              {cfg.key === 'wage' && <FlsaSolNote dark={false} />}
+            </button>
+          ) : null;
+        })()}
+        <DocDeadlineWatch dark={false} />
+        <OshaWatch dark={false} />
+        <WageRecoverPanel />
       </div>
-
-      {(() => {
-        const fedF = (federal && federal.facts) || [];
-        const stF = (stateData && stateData.facts) || [];
-        const dl = pickDeadlineFactAcross(stF, fedF, cfg.key);
-        return dl ? (
-          <button onClick={nav('strength')} className="surfacefx" style={css("text-align:left;padding:16px 18px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;flex-direction:column;gap:4px")}>
-            <span style={css("font:700 13px 'IBM Plex Mono',monospace;color:#14181F;letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px")}><Icon name="deadline-clock" size={14} /> DEADLINE WATCH</span>
-            <span style={css("font:700 18px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{dl.value || dl.summary}</span>
-            <span style={css("font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{dl.summary}</span>
-            {/* G1 (docs/flsa-process-gap.md) — the clock is not paused by a WHD complaint. */}
-            {cfg.key === 'wage' && <FlsaSolNote dark={false} />}
-          </button>
-        ) : null;
-      })()}
-      <DocDeadlineWatch dark={false} />
-      <OshaWatch dark={false} />
-      <WageRecoverPanel />
 
       <button onClick={nav('strength')} className="surfacefx" style={css("text-align:left;padding:20px;border-radius:18px;border:2px solid #14181F;background:#E8F6EE;cursor:pointer;display:flex;flex-direction:column;gap:14px")}>
         <div style={css("display:flex;align-items:baseline;justify-content:space-between")}>
@@ -1860,7 +1864,7 @@ function App(){
         </div>
       </div>
 
-      <button onClick={nav('agencies')} className="hoverfx" style={css("text-align:left;padding:18px 20px;border-radius:16px;border:2px solid #2B3AA8;background:#fff;cursor:pointer;display:flex;flex-direction:column;gap:6px")}>
+      <button onClick={nav('agencies')} className="hoverfx" style={css("text-align:left;padding:18px 20px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF;cursor:pointer;display:flex;flex-direction:column;gap:6px")}>
         <span style={css("font:700 18px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Ready to file a complaint?</span>
         <span style={css("font:400 16px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>See the free government agencies that handle this near {countyShort}. Your case file exports in one tap.</span>
       </button>
@@ -2090,7 +2094,8 @@ function App(){
           </div>
         }
         {wizDone &&
-          <div style={css("display:flex;flex-direction:column;gap:16px")}>
+          <div style={css("display:flex;flex-direction:column;gap:24px")}>
+          <div style={css("display:flex;flex-direction:column;gap:12px")}>
             <div style={css("display:flex;flex-wrap:wrap;gap:8px")}>
               {wizPath.map((a, ai) => <span key={ai} style={css("padding:8px 12px;border-radius:999px;background:#F0EDE5;border:2px solid rgba(20,24,31,.25);font:600 13px 'IBM Plex Mono',monospace;color:#14181F")}>{a}</span>)}
             </div>
@@ -2099,6 +2104,7 @@ function App(){
               <p style={css("margin:0 0 12px;font:700 26px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{result.title}</p>
               <p style={css("margin:0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#25302B")}>{result.body}</p>
             </div>
+          </div>
             {(() => {
               const fedF = (federal && federal.facts) || [];
               const stF = (stateData && stateData.facts) || [];
@@ -2123,6 +2129,7 @@ function App(){
                 </div>
               );
             })()}
+          <div style={css("display:flex;flex-direction:column;gap:16px")}>
             <div style={css("display:flex;flex-wrap:wrap;gap:8px")}>
               {result.cites.map((c, ci) => <span key={ci} style={css("padding:8px 12px;border-radius:8px;background:#fff;border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace")}>{c}</span>)}
             </div>
@@ -2153,6 +2160,7 @@ function App(){
             }
             <button onClick={() => { setWizNode('start'); setWizPath([]); }} style={css("padding:16px;border-radius:16px;border:2px solid #14181F;background:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer")}>Run the check again</button>
             <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>This is a plain-language reading of published rules, not a legal opinion about your job.</p>
+          </div>
           </div>
         }
       </div>
@@ -2526,15 +2534,17 @@ function App(){
   };
 
   const Strength = () => (
-    <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:18px")}>
-      <button onClick={nav('home')} style={css("align-self:flex-start;display:flex;align-items:center;gap:4px;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}><Icon name="back" size={18} /> Dashboard</button>
-      <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>What makes your case</h1>
-      <div style={css("padding:16px 18px;border-radius:14px;background:#E8F6EE;border:2px solid #14181F")}>
-        <p style={css("margin:0 0 4px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Overall: {strength.label}</p>
-        <p style={css("margin:0 0 8px;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{evidenceCount === 0 ? 'This updates as you add entries to your incident log.' : 'Based on ' + evidenceCount + ' logged ' + (evidenceCount === 1 ? 'item' : 'items') + '. Add more to strengthen the thin areas below.'}</p>
-        <p style={css("margin:0;font:400 13px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>This measures how well-documented your case is — not the merits or your odds of winning. Only an attorney can assess that.</p>
+    <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:24px")}>
+      <div style={css("display:flex;flex-direction:column;gap:12px")}>
+        <button onClick={nav('home')} style={css("align-self:flex-start;display:flex;align-items:center;gap:4px;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}><Icon name="back" size={18} /> Dashboard</button>
+        <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>What makes your case</h1>
+        <div style={css("padding:16px 18px;border-radius:14px;background:#E8F6EE;border:2px solid #14181F")}>
+          <p style={css("margin:0 0 4px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Overall: {strength.label}</p>
+          <p style={css("margin:0 0 8px;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{evidenceCount === 0 ? 'This updates as you add entries to your incident log.' : 'Based on ' + evidenceCount + ' logged ' + (evidenceCount === 1 ? 'item' : 'items') + '. Add more to strengthen the thin areas below.'}</p>
+          <p style={css("margin:0;font:400 13px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>This measures how well-documented your case is — not the merits or your odds of winning. Only an attorney can assess that.</p>
+        </div>
+        <p style={css("margin:0;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>This is legal information, not legal advice.</p>
       </div>
-      <p style={css("margin:0;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>This is legal information, not legal advice.</p>
       <div style={css("display:flex;flex-direction:column;gap:12px")}>
         {strength.factors.map((f, i) =>
           <div key={i} style={css("padding:16px;border-radius:14px;border:2px solid #14181F;background:#fff")}>
@@ -2563,7 +2573,7 @@ function App(){
             {stateErr ? <p style={css("margin:0 0 8px;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load the {stateSel} deadline. Check your connection and reopen — this is not a confirmation that no shorter state deadline applies.</p> :
               <p style={css("margin:0 0 8px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}><strong>{stateLabel}:</strong> {stDL ? stDL.summary : (stateData === undefined ? 'Loading…' : 'See the federal deadline above; a state limit may also apply.')} {src(stDL)}</p>}
             {oshaFact &&
-              <p style={css("margin:0 0 8px;padding:10px 12px;border-radius:10px;background:#FFE7EC;border:2px solid #B3264F;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#5A1330;display:flex;align-items:flex-start;gap:8px")}><Icon name="alert" size={16} style={{ flex: 'none', marginTop: '3px' }} /><span><strong>OSHA whistleblower (safety retaliation):</strong> {oshaFact.summary} {src(oshaFact)}</span></p>
+              <p style={css("margin:0 0 8px;padding:10px 12px;border-radius:0 8px 8px 0;background:#FFE7EC;border:none;border-left:4px solid #B3264F;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#5A1330;display:flex;align-items:flex-start;gap:8px")}><Icon name="alert" size={16} style={{ flex: 'none', marginTop: '3px' }} /><span><strong>OSHA whistleblower (safety retaliation):</strong> {oshaFact.summary} {src(oshaFact)}</span></p>
             }
             {/* G1 (docs/flsa-process-gap.md) — fedDL.summary already carries the extended
                 SOL-tolling language, but a short, plain-language line is worth repeating
