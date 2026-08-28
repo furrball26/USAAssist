@@ -616,7 +616,24 @@ const ISSUE_LIST = [
   ['A document to review','Offer, contract, NDA, severance, PIP, non-compete']
 ];
 
-const PROMPT_TEXTS =['Can my boss refuse to pay overtime?','How do I ask for an ADA accommodation?','What counts as retaliation?','Should I sign this severance?'];
+// Ask-AI quick-prompt chips, by issue — the chat itself stays open-ended (the
+// router in send() answers on-topic questions regardless of which chip, if
+// any, the user tapped), but the four VISIBLE suggestions used to be the same
+// fixed set for every issue, so a wage case was offered an ADA-accommodation
+// chip and a document-review case was offered an overtime chip. Retaliation
+// is kept as the one universal chip for the issues where it is broadly
+// relevant; document review swaps it for a second severance-specific prompt
+// since "retaliation" is not the live question for a document someone hasn't
+// signed yet.
+const PROMPT_TEXTS_BY_ISSUE = {
+  wage: ['Can my boss refuse to pay overtime?', 'What counts as retaliation?'],
+  harassment: ['What counts as harassment?', 'What counts as retaliation?', 'How do I ask for an ADA accommodation?'],
+  discrimination: ['What counts as discrimination?', 'What counts as retaliation?', 'How do I ask for an ADA accommodation?'],
+  termination: ['Is this a wrongful termination?', 'What counts as retaliation?'],
+  document: ['Should I sign this severance?', 'What am I signing?'],
+};
+const PROMPT_TEXTS_GENERAL = ['Can my boss refuse to pay overtime?', 'How do I ask for an ADA accommodation?', 'What counts as retaliation?', 'Should I sign this severance?'];
+function promptTextsFor(issueKey){ return PROMPT_TEXTS_BY_ISSUE[issueKey] || PROMPT_TEXTS_GENERAL; }
 
 const TAB_DEFS = [['home','home','Home'],['chat','sparkle','Ask AI'],['log','log','Log'],['rights','rights','Rights'],['agencies','building','Agencies']];
 
@@ -2469,9 +2486,14 @@ function App(){
         </div>
       </div>
 
+      {/* Flow audit finding #6 — the document-review issue's Agencies screen shows
+          no government agencies at all (a document to sign isn't something you
+          file a complaint about; it just links to a lawyer-referral directory —
+          see Agencies' cfg.key === 'document' branch), so promising "free
+          government agencies" here was untrue for that one issue. */}
       <button onClick={nav('agencies')} className="hoverfx" style={css("text-align:left;padding:18px 20px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF;cursor:pointer;display:flex;flex-direction:column;gap:6px")}>
-        <span style={css("font:700 18px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Ready to file a complaint?</span>
-        <span style={css("font:400 16px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>See the free government agencies that handle this near {countyShort}. Your case file exports in one tap.</span>
+        <span style={css("font:700 18px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{cfg.key === 'document' ? 'Ready for next steps?' : 'Ready to file a complaint?'}</span>
+        <span style={css("font:400 16px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{cfg.key === 'document' ? 'See where to get help near ' + countyShort + '. Your case file exports in one tap.' : 'See the free government agencies that handle this near ' + countyShort + '. Your case file exports in one tap.'}</span>
       </button>
 
       <div style={css("padding:18px;border-radius:16px;background:#FFF4D6;border:2px solid #14181F")}>
@@ -2702,7 +2724,7 @@ function App(){
       </div>
       <div style={css("position:sticky;bottom:0;background:#FFFDF8;border-top:2px solid rgba(20,24,31,.1);padding:14px 20px 18px;display:flex;flex-direction:column;gap:12px")}>
         <div style={css("display:flex;gap:8px;overflow-x:auto;-webkit-mask-image:linear-gradient(to right,#000 92%,transparent 100%);mask-image:linear-gradient(to right,#000 92%,transparent 100%)")}>
-          {PROMPT_TEXTS.map(t => <button key={t} onClick={() => send(t)} style={css("flex:none;padding:11px 14px;border-radius:999px;border:2px solid #14181F;background:#FFF;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer")}>{t}</button>)}
+          {promptTextsFor(cfg.key).map(t => <button key={t} onClick={() => send(t)} style={css("flex:none;padding:11px 14px;border-radius:999px;border:2px solid #14181F;background:#FFF;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer")}>{t}</button>)}
         </div>
         <div style={css("display:flex;gap:10px;align-items:center")}>
           <input aria-label="Your question" value={draft} onChange={e => setDraft(e.target.value)} onKeyDown={e => { if(e.key === 'Enter' && draft.trim()) send(draft); }} placeholder="Type your question" style={css("flex:1;padding:16px;border-radius:14px;border:2px solid #14181F;background:#fff;font:400 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
