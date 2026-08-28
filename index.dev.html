@@ -654,6 +654,54 @@ function computeOwedBreakdown(entries, rateNum){
     owedEstimate, weekCount: byWeek.size || (totalHours > 0 ? 1 : 0)
   };
 }
+// The Sun–Sat calendar-range label for a weekStartKey ("YYYY-MM-DD" Sunday, or
+// the '__undated__' bucket) — e.g. "Jan 4 – Jan 10". Local-calendar based (see
+// weekStartKey), purely for display.
+function weekRangeLabel(weekKey){
+  if (!weekKey || weekKey === '__undated__') return 'Undated entries';
+  const start = new Date(weekKey + 'T00:00:00');
+  if (isNaN(start.getTime())) return weekKey;
+  const end = new Date(start); end.setDate(start.getDate() + 6);
+  const fmt = d => d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+  return fmt(start) + ' – ' + fmt(end);
+}
+// Regular/overtime PAY breakdown for logged hours, grouped by workweek — distinct
+// from computeOwedBreakdown's "owed" (shortfall vs. what was already paid): this
+// shows what the LOGGED hours are worth at the user's rate. Uses the exact same
+// per-workweek grouping (weekStartKey) and the exact same FLSA 40-hour/week split
+// (29 U.S.C. § 207) as computeOwedBreakdown — hours are never called "overtime"
+// just because they were logged; only hours actually over 40 in THAT workweek
+// are. Keeping the split identical (rather than re-deriving it a different way)
+// is what keeps this figure and the letter's owed-amount estimate consistent.
+// When rateNum is 0 (no rate on file), pay fields are 0 — the caller must gate
+// on rateNum > 0 before displaying a dollar figure, so a missing rate never
+// silently renders as "$0 owed" instead of "no rate set".
+function computeWeeklyPayBreakdown(entries, rateNum){
+  const withHours = (entries || []).filter(e => Number(e.hours) > 0);
+  const byWeek = new Map(); // weekKey -> total hours logged that workweek
+  withHours.forEach(e => {
+    const wk = weekStartKey(e.iso) || '__undated__';
+    byWeek.set(wk, (byWeek.get(wk) || 0) + (Number(e.hours) || 0));
+  });
+  const round2 = n => Math.round((n + Number.EPSILON) * 100) / 100;
+  const weeks = [...byWeek.entries()]
+    .sort((a, b) => a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0)
+    .map(([key, hoursRaw]) => {
+      const hours = round2(hoursRaw);
+      const otHours = round2(Math.max(0, hours - 40));
+      const regHours = round2(hours - otHours);
+      const regPay = rateNum > 0 ? round2(regHours * rateNum) : 0;
+      const otPay = rateNum > 0 ? round2(otHours * rateNum * 1.5) : 0;
+      return { key, label: weekRangeLabel(key), hours, regHours, otHours, regPay, otPay, totalPay: round2(regPay + otPay) };
+    });
+  const sum = f => round2(weeks.reduce((s, w) => s + f(w), 0));
+  return {
+    weeks,
+    totalHours: sum(w => w.hours), totalRegHours: sum(w => w.regHours), totalOtHours: sum(w => w.otHours),
+    totalRegPay: sum(w => w.regPay), totalOtPay: sum(w => w.otPay), totalPay: sum(w => w.totalPay),
+    weekCount: weeks.length,
+  };
+}
 // The date-input (<input type="date">) value for a JS Date, in the browser's LOCAL
 // calendar day — not toISOString().slice(0,10), which is UTC and can land on the
 // wrong day for users west of UTC. Used both for the "Date worked" field's default
@@ -2258,6 +2306,7 @@ function App(){
   const Log = () => {
     const kind = LOG_KINDS.find(k => k.tag === logKind) || LOG_KINDS[0];
     const logBreakdown = computeOwedBreakdown(entries, rateNum);
+    const payBreakdown = computeWeeklyPayBreakdown(entries, rateNum);
     const editing = editingEntryIdx != null && entries[editingEntryIdx];
     const PLACEHOLDER_BODY = 'No detail added yet — tap to edit while it is fresh.';
     // editOriginalRef (App-level logEditOriginalRef — see there for why it can't
@@ -2458,6 +2507,32 @@ function App(){
         <div style={css("display:flex;gap:10px;flex-wrap:wrap")}>
           <span style={css("padding:8px 12px;border-radius:8px;background:#EEF1FF;border:2px solid #2B3AA8;font:600 13px 'IBM Plex Mono',monospace;color:#1B2778")}>{entries.length} {entries.length === 1 ? 'ENTRY' : 'ENTRIES'}</span>
           {logBreakdown.totalHours > 0 && <span style={css("padding:8px 12px;border-radius:8px;background:#FFF4D6;border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace;color:#14181F")}>{logBreakdown.totalHours} HRS LOGGED · {logBreakdown.weekCount} {logBreakdown.weekCount === 1 ? 'WORKWEEK' : 'WORKWEEKS'}</span>}
+        </div>
+      }
+
+      {payBreakdown.totalHours > 0 &&
+        <div style={css("padding:16px;border-radius:16px;border:2px solid #14181F;background:#fff;display:flex;flex-direction:column;gap:10px")}>
+          <p style={css("margin:0;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Regular &amp; overtime pay, by workweek</p>
+          <div style={css("display:flex;flex-direction:column;gap:8px")}>
+            {payBreakdown.weeks.map(w =>
+              <div key={w.key} style={css("padding:10px 12px;border-radius:10px;background:#F0EDE5;border:2px solid rgba(20,24,31,.2);display:flex;flex-direction:column;gap:3px")}>
+                <div style={css("display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap")}>
+                  <span style={css("font:700 14px 'IBM Plex Mono',monospace;color:#14181F")}>{w.label}</span>
+                  <span style={css("font:600 13px 'IBM Plex Mono',monospace;color:#4A5162")}>{w.hours} hrs total{w.otHours > 0 ? ' · over 40' : ''}</span>
+                </div>
+                <p style={css("margin:0;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>
+                  Regular: {w.regHours} hrs{rateNum > 0 ? ' = ' + money(w.regPay) : ''}
+                  {w.otHours > 0 ? <> · Overtime (1.5×): {w.otHours} hrs{rateNum > 0 ? ' = ' + money(w.otPay) : ''}</> : null}
+                </p>
+              </div>
+            )}
+          </div>
+          {rateNum > 0 ?
+            <p style={css("margin:0;font:700 16px/1.4 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Total: {money(payBreakdown.totalRegPay)} regular + {money(payBreakdown.totalOtPay)} overtime = {money(payBreakdown.totalPay)}</p>
+            :
+            <p style={css("margin:0;font:600 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#6B4B00")}>Add your hourly rate in your profile to see dollar amounts — showing hours only for now.</p>
+          }
+          <p style={css("margin:0;font:400 12px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Overtime only counts hours actually worked beyond 40 in that Sun–Sat workweek (29 U.S.C. § 207), based on the hours you've logged for it. If you didn't log every hour you worked that week, this can understate — log all your hours for the most accurate picture.</p>
         </div>
       }
 
