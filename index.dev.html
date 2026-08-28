@@ -368,6 +368,10 @@ function formatDeadlineDate(d){
   try { return d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric' }); }
   catch (e) { return dateInputValue(d); }
 }
+// Shared between DeadlineComputedBlock (Home's Deadline Watch card) and
+// buildCaseFile's KEY DEADLINE section, so the exported packet's computed-date
+// caveat never drifts from the in-app wording.
+const DEADLINE_ESTIMATE_CAVEAT = 'Estimated from the date you entered and the general limitations period — confirm the exact deadline with the agency or an attorney; some events can change it.';
 
 // G1 (docs/flsa-process-gap.md) — the FLSA's 2/3-year deadline (deadlines.flsaWageClaim)
 // keeps running from each unpaid payday and is NOT paused by filing a Wage and Hour
@@ -1245,24 +1249,183 @@ function buildLetter(ctx){
   return { title: 'Records request letter', subject, body, usesStateLaw: finalPayUsed };
 }
 
-// Build a portable case-file summary from the user's real inputs.
+// Converts a 0-based index into an exhibit letter — A, B, C, … Z, AA, AB, … —
+// for the EVIDENCE / DOCUMENTS section below. Plain-text export has no bold or
+// numbering widget, so "Exhibit A/B/C" is the only stable, attorney-familiar
+// way to let the FULL TIMELINE and a demand letter both reference the same
+// document without re-describing it.
+function exhibitLetter(n){
+  let s = '', i = n + 1;
+  while (i > 0) { i--; s = String.fromCharCode(65 + (i % 26)) + s; i = Math.floor(i / 26); }
+  return s;
+}
+// "YYYY-MM-DD" (LOCAL calendar day — see dateInputValue/computeDeadlineFromEvent)
+// -> "March 1, 2026" for the packet header. Never uses `new Date(str)` directly
+// (UTC parsing) since that can print the wrong day for users west of UTC.
+function formatLocalDateStr(s){
+  if (!s) return null;
+  const parts = String(s).split('-').map(Number);
+  if (parts.length !== 3 || parts.some(n => !isFinite(n))) return s;
+  const d = new Date(parts[0], parts[1] - 1, parts[2]);
+  return isNaN(d.getTime()) ? s : fmtDate(d);
+}
+
+// Build a portable, attorney/agency-ready case-file packet from the user's real
+// inputs — plain text so it stays copy/paste- and print-friendly through
+// printLetter() (see below). Organized as clearly labeled sections rather than
+// one flat header + chronological dump, so a reader can jump straight to
+// "who are the witnesses" or "what is the claimed deadline" instead of reading
+// the whole timeline to find it. Every section is still gracefully OMITTED
+// (or shown with a plain "none logged yet" line) when its underlying data is
+// missing — this must never throw on an old entry, or a profile, saved before
+// the structured witness/statement/document fields (or the deadline
+// calculator, or per-workweek pay breakdown) existed. FULL TIMELINE at the end
+// keeps every entry, structured or not, as the complete chronological record.
 function buildCaseFile(ctx){
   const s = ctx.strength || { label: 'Not started', factors: [] };
+  const profile = ctx.profile || {};
+  const entries = ctx.entries || [];
   const lines = [];
-  lines.push('WORKLAW CASE FILE');
-  lines.push('Generated ' + fmtDate(new Date()));
+
+  lines.push('WORKLAW CASE FILE — ATTORNEY / AGENCY PACKET');
+  lines.push('Prepared ' + fmtDate(new Date()));
+
+  // 1. HEADER
   lines.push('');
-  lines.push('Name: ' + (ctx.youName || '[not provided]'));
+  lines.push('== HEADER ==');
+  lines.push('Worker: ' + (ctx.youName || '[not provided]'));
+  // profile has no phone/email/address fields today — these stay defensive
+  // (never rendered while absent) so a future contact-capture field surfaces
+  // here automatically instead of needing another buildCaseFile change.
+  const workerContact = [profile.phone, profile.email].filter(Boolean).join(' · ');
+  if (workerContact) lines.push('Worker contact: ' + workerContact);
   lines.push('Employer: ' + (ctx.employerName || '[not provided]'));
-  lines.push('Location: ' + ctx.locationLabel);
-  lines.push('Issue: ' + (ctx.issue || '[not selected]'));
+  if (profile.employerAddress) lines.push('Employer address: ' + profile.employerAddress);
+  lines.push('Location: ' + (ctx.locationLabel || '[not provided]'));
+  lines.push('Issue type: ' + (ctx.issue || '[not selected]'));
+  const eventDateFmt = formatLocalDateStr(profile.eventDate);
+  if (eventDateFmt) lines.push(eventDateLabelFor(ctx.cfgKey) + ': ' + eventDateFmt);
   lines.push('Case opened: ' + fmtDate(new Date(ctx.caseOpened)));
-  lines.push('Case strength: ' + s.label + ' (' + s.score + '/100)');
-  if (ctx.unpaidHours > 0) lines.push('Unpaid hours logged: ' + ctx.unpaidHours);
-  if (ctx.owedEstimate > 0) lines.push('Estimated overtime owed: ' + money(ctx.owedEstimate));
+
+  // 2. KEY DEADLINE
   lines.push('');
-  lines.push('EVIDENCE LOG (' + (ctx.entries || []).length + ' entries)');
-  (ctx.entries || []).forEach(e => {
+  lines.push('== KEY DEADLINE ==');
+  const dl = ctx.dl;
+  if (dl) {
+    const computed = profile.eventDate ? computeDeadlineFromEvent(profile.eventDate, dl.value || dl.summary) : null;
+    if (computed) {
+      const { targetDate, daysLeft, isPast } = computed;
+      lines.push(isPast
+        ? 'This deadline may have passed — talk to an attorney immediately, some exceptions exist.'
+        : 'File by ' + formatDeadlineDate(targetDate) + ' — about ' + daysLeft + (Math.abs(daysLeft) === 1 ? ' day' : ' days') + ' left.');
+      lines.push('Limitations period: ' + (dl.value || dl.summary));
+      lines.push(DEADLINE_ESTIMATE_CAVEAT);
+    } else {
+      // No event date on file yet, or the fact text didn't cleanly parse to a
+      // number of days — never fabricate a date (see computeDeadlineFromEvent).
+      lines.push(dl.summary || dl.value);
+      lines.push(profile.eventDate
+        ? 'Could not compute an exact date from the date on file — confirm the exact deadline with the agency or an attorney.'
+        : 'Add the date this happened on Home to compute an exact "file by" date.');
+    }
+  } else if (ctx.cfgKey === 'document') {
+    // R10 — no jurisdiction "deadlines" fact exists for document/severance
+    // review; same OWBPA general-federal-rule fallback shown on Home/Agencies.
+    lines.push('21 days to consider, 7 days to revoke, if this document is a release covered by the Older Workers Benefit Protection Act (29 U.S.C. §626(f)) — a general federal rule, not sourced from state-specific facts. Confirm the exact days stated in your copy.');
+  } else {
+    lines.push('No jurisdiction-specific filing deadline is tracked for this issue type in this app. Confirm the applicable deadline with the enforcing agency or an attorney before you wait.');
+  }
+
+  // 3. CLAIM SNAPSHOT
+  lines.push('');
+  lines.push('== CLAIM SNAPSHOT ==');
+  lines.push('Case strength: ' + s.label + ' (' + s.score + '/100)');
+  if (ctx.cfgKey === 'wage') {
+    const wizResult = RESULTS[ctx.wizNode];
+    lines.push('Overtime classification: ' + (wizResult ? wizResult.title : 'Not yet checked — run the overtime exemption check.'));
+    if (ctx.owedEstimate > 0) lines.push('Estimated overtime owed: ' + money(ctx.owedEstimate));
+    else if (ctx.unpaidHours > 0) lines.push('Unpaid hours logged: ' + ctx.unpaidHours + ' (add an hourly rate or salary to estimate the amount owed)');
+    const weeks = (ctx.payBreakdown && ctx.payBreakdown.weeks) || [];
+    if (weeks.length) {
+      lines.push('Per-workweek hours (Sun–Sat):');
+      weeks.forEach(w => {
+        lines.push('  Week of ' + w.label + ': ' + w.hours + ' hrs total — ' + w.regHours + ' reg + ' + w.otHours + ' OT' +
+          (ctx.rateNum > 0 ? ' — ' + money(w.totalPay) : ''));
+      });
+    }
+  } else {
+    lines.push('Claim type: ' + (ctx.caseTitle || ctx.issue || 'Employment issue'));
+  }
+
+  // 4. WITNESSES — skip any Witness entry with no name (nothing an attorney
+  // could actually contact), including every pre-structured-fields entry.
+  lines.push('');
+  lines.push('== WITNESSES ==');
+  const witnesses = entries.filter(e => e.tag === 'Witness' && e.witnessName && String(e.witnessName).trim());
+  if (witnesses.length) {
+    witnesses.forEach((e, i) => {
+      const employedNote = e.witnessStillEmployed === 'Yes' ? 'still employed'
+        : e.witnessStillEmployed === 'No' ? 'no longer employed'
+        : e.witnessStillEmployed ? 'employment status: ' + e.witnessStillEmployed : null;
+      const willingNote = e.witnessWilling === 'Yes' ? 'willing to be contacted'
+        : e.witnessWilling === 'No' ? 'not willing to be contacted'
+        : e.witnessWilling ? 'contact willingness: ' + e.witnessWilling : null;
+      const bits = [e.witnessRelationship, employedNote, willingNote].filter(Boolean).join(', ');
+      const account = e.body && e.body !== ENTRY_PLACEHOLDER_BODY ? e.body : '';
+      let line = (i + 1) + '. ' + e.witnessName;
+      if (bits) line += ' — ' + bits;
+      if (e.witnessContact) line += ' — ' + e.witnessContact;
+      if (account) line += ' — saw: ' + account;
+      lines.push(line);
+    });
+  } else {
+    lines.push('(no named witnesses logged yet)');
+  }
+
+  // 5. EVIDENCE / DOCUMENTS — skip any Records entry with no document type,
+  // same backward-compat rule as witnesses above.
+  lines.push('');
+  lines.push('== EVIDENCE / DOCUMENTS ==');
+  const docs = entries.filter(e => e.tag === 'Records' && e.docType);
+  if (docs.length) {
+    docs.forEach((e, i) => {
+      let line = 'Exhibit ' + exhibitLetter(i) + ': ' + e.docType;
+      if (e.docDate) line += ' (dated ' + e.docDate + ')';
+      if (e.docParties) line += ' — parties: ' + e.docParties;
+      const why = e.body && e.body !== ENTRY_PLACEHOLDER_BODY ? e.body : '';
+      if (why) line += ' — ' + why;
+      if (e.attachment && e.attachment.name) line += ' [attachment on file: ' + e.attachment.name + ']';
+      lines.push(line);
+    });
+  } else {
+    lines.push('(no documents logged yet)');
+  }
+
+  // 6. STATEMENTS — skip any Statement entry with no speaker name.
+  lines.push('');
+  lines.push('== STATEMENTS ==');
+  const statements = entries.filter(e => e.tag === 'Statement' && e.speakerName && String(e.speakerName).trim());
+  if (statements.length) {
+    statements.forEach((e, i) => {
+      const quote = e.body && e.body !== ENTRY_PLACEHOLDER_BODY ? e.body : '(no quote recorded)';
+      let line = (i + 1) + '. ' + e.speakerName;
+      if (e.speakerRole) line += ' (' + e.speakerRole + ')';
+      if (e.saidWhere) line += ', ' + e.saidWhere;
+      if (e.saidWhen) line += ', ' + e.saidWhen;
+      line += ': "' + quote + '"';
+      if (e.whoElseHeard) line += ' (also heard by ' + e.whoElseHeard + ')';
+      lines.push(line);
+    });
+  } else {
+    lines.push('(no employer/manager statements logged yet)');
+  }
+
+  // 7. FULL TIMELINE — the complete chronological record, unchanged from the
+  // original flat dump, so nothing in the log — including pre-structured-
+  // fields entries with only a title/body — ever goes missing from the export.
+  lines.push('');
+  lines.push('== FULL TIMELINE (' + entries.length + ' entries) ==');
+  entries.forEach(e => {
     lines.push('• [' + e.tag + '] ' + e.date + ' — ' + e.title + (e.hours ? ' (' + e.hours + ' hrs)' : ''));
     if (e.tag === 'Witness' && e.witnessName) {
       const bits = [e.witnessRelationship, e.witnessStillEmployed ? 'still employed: ' + e.witnessStillEmployed : null,
@@ -1282,7 +1445,9 @@ function buildCaseFile(ctx){
     if (e.body) lines.push('    ' + e.body);
     if (e.attachment && e.attachment.name) lines.push('    [attachment: ' + e.attachment.name + ']');
   });
-  if (!(ctx.entries || []).length) lines.push('• (no entries logged yet)');
+  if (!entries.length) lines.push('• (no entries logged yet)');
+
+  // 8. DISCLAIMER
   lines.push('');
   lines.push('This case file is legal information the worker compiled themselves. It is not legal advice.');
   return lines.join('\n');
@@ -1363,6 +1528,12 @@ const RELATIONSHIP_OPTIONS = ['Coworker', 'Supervisor or manager', 'Former emplo
 const YES_NO_UNSURE = ['Yes', 'No', 'Unsure'];
 const SAID_WHERE_OPTIONS = ['In person', 'Phone', 'Email', 'Chat/Slack', 'Meeting', 'Other'];
 const DOC_TYPE_OPTIONS = ['Pay stub', 'Offer letter or contract', 'Write-up or discipline', 'Performance review', 'Policy or handbook', 'Email or message', 'Termination or severance', 'Other'];
+// Shared with Log()'s local PLACEHOLDER_BODY (kept as a top-level constant so
+// buildCaseFile's structured WITNESSES/EVIDENCE/STATEMENTS sections can also
+// recognize "no real note was ever typed" and omit the placeholder text from
+// an attorney-facing packet, instead of quoting boilerplate as if it were the
+// worker's own account).
+const ENTRY_PLACEHOLDER_BODY = 'No detail added yet — tap to edit while it is fresh.';
 
 // Quick-add kinds for the incident log (shared; optional hours capture for wage claims).
 const LOG_KINDS = [
@@ -1815,7 +1986,7 @@ function App(){
       <div style={css('padding:10px 12px;border-radius:0 8px 8px 0;border:none;border-left:4px solid ' + border + ';background:' + bg + ";display:flex;flex-direction:column;gap:3px")}>
         <span style={css("font:700 12px 'IBM Plex Mono',monospace;color:" + labelColor + ";letter-spacing:.04em")}>{isPast ? 'DEADLINE MAY HAVE PASSED' : 'YOUR ESTIMATED DEADLINE'}</span>
         <span style={css("font:700 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:" + bodyColor)}>{headline}</span>
-        <span style={css("font:400 12px/1.4 'Atkinson Hyperlegible',sans-serif;color:" + bodyColor)}>Estimated from the date you entered and the general limitations period — confirm the exact deadline with the agency or an attorney; some events can change it.</span>
+        <span style={css("font:400 12px/1.4 'Atkinson Hyperlegible',sans-serif;color:" + bodyColor)}>{DEADLINE_ESTIMATE_CAVEAT}</span>
       </div>
     );
   };
@@ -2580,7 +2751,7 @@ function App(){
     const logBreakdown = computeOwedBreakdown(entries, rateNum);
     const payBreakdown = computeWeeklyPayBreakdown(entries, rateNum);
     const editing = editingEntryIdx != null && entries[editingEntryIdx];
-    const PLACEHOLDER_BODY = 'No detail added yet — tap to edit while it is fresh.';
+    const PLACEHOLDER_BODY = ENTRY_PLACEHOLDER_BODY;
     // editOriginalRef (App-level logEditOriginalRef — see there for why it can't
     // be a local hook here) snapshots the date/start/end an Hours edit was
     // pre-filled with, so submit() can tell "the user actually changed the
@@ -3335,7 +3506,18 @@ function App(){
       <div style={css("padding:16px;border-radius:14px;background:#E8F6EE;border:2px solid #14181F;display:flex;flex-direction:column;gap:10px")}>
         <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#25302B")}>Your case file — timeline, documents, and the exemption analysis — exports as one PDF you control, to bring to whichever agency (or attorney) you contact.</p>
         <button onClick={() => {
-          const path = printLetter('WorkLaw case file', buildCaseFile({ youName, employerName, locationLabel, issue, caseOpened, strength, unpaidHours, owedEstimate, entries }));
+          // Same state-wins-ties deadline fact the Home/Agencies Deadline Watch
+          // cards anchor their computed date to (see pickDeadlineFactAcross), so
+          // the exported KEY DEADLINE section never disagrees with what the user
+          // already saw in the app.
+          const fedF = (federal && federal.facts) || [];
+          const stF = (stateData && stateData.facts) || [];
+          const dl = pickDeadlineFactAcross(stF, fedF, cfg.key);
+          const payBreakdown = computeWeeklyPayBreakdown(entries, rateNum);
+          const path = printLetter('WorkLaw case file', buildCaseFile({
+            youName, employerName, locationLabel, issue, caseOpened, strength, unpaidHours, owedEstimate, entries,
+            profile, dl, rateNum, payBreakdown, wizNode, cfgKey: cfg.key, caseTitle: cfg.caseTitle,
+          }));
           setExportPath(path); setCaseFileDownloaded(true);
         }} style={css("padding:15px;border-radius:12px;border:none;background:#2B3AA8;color:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Download your case file</button>
         {caseFileDownloaded &&

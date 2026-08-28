@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-O1441VCsM1fyha5aintSCkXcQTfDa5Miulg2wFtFLTk='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-1fuG0tbIot0yRzudz6JH8kvnH8lOayu3gR8+je4bPFI='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14181F">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232B3AA8'/%3E%3Ctext x='32' y='47' font-size='42' text-anchor='middle' fill='white' font-family='Georgia,serif'%3E%C2%A7%3C/text%3E%3C/svg%3E">
@@ -760,6 +760,7 @@ function formatDeadlineDate(d) {
     return dateInputValue(d);
   }
 }
+const DEADLINE_ESTIMATE_CAVEAT = "Estimated from the date you entered and the general limitations period \u2014 confirm the exact deadline with the agency or an attorney; some events can change it.";
 const FLSA_SOL_TIMING_NOTE = "Separately, the federal FLSA lawsuit deadline is 2\u20133 years, and it keeps running while you wait \u2014 filing with the Labor Department does not pause it. Talk to an attorney before the oldest weeks age out.";
 const SAFETY_RETALIATION_RE = /\b(osha|whistleblow\w*|workplace\s+safety|safety\s+(complaint|violation|hazard|concern|issue)|unsafe\s+(condition|working)|reported?\s+(a\s+|an\s+|the\s+)?(safety|hazard)|hazardous\s+condition)\b/i;
 function caseTextForSafetyCheck(entries, messages) {
@@ -1462,23 +1463,132 @@ function buildLetter(ctx) {
   const body = date + "\n\n" + emp + "\nAttn: Human Resources\n\nRe: " + subject + "\n\nTo whom it may concern:\n\nI request a complete copy of my personnel file, including performance records, disciplinary records, time records, and all final pay records. Many states require an employer to provide these within a set period after a written request.\n\n" + finalPayLine + ". I am making this request to keep an accurate record of my employment.\n\nSincerely,\n" + name;
   return { title: "Records request letter", subject, body, usesStateLaw: finalPayUsed };
 }
+function exhibitLetter(n) {
+  let s = "", i = n + 1;
+  while (i > 0) {
+    i--;
+    s = String.fromCharCode(65 + i % 26) + s;
+    i = Math.floor(i / 26);
+  }
+  return s;
+}
+function formatLocalDateStr(s) {
+  if (!s) return null;
+  const parts = String(s).split("-").map(Number);
+  if (parts.length !== 3 || parts.some((n) => !isFinite(n))) return s;
+  const d = new Date(parts[0], parts[1] - 1, parts[2]);
+  return isNaN(d.getTime()) ? s : fmtDate(d);
+}
 function buildCaseFile(ctx) {
   const s = ctx.strength || { label: "Not started", factors: [] };
+  const profile = ctx.profile || {};
+  const entries = ctx.entries || [];
   const lines = [];
-  lines.push("WORKLAW CASE FILE");
-  lines.push("Generated " + fmtDate(/* @__PURE__ */ new Date()));
+  lines.push("WORKLAW CASE FILE \u2014 ATTORNEY / AGENCY PACKET");
+  lines.push("Prepared " + fmtDate(/* @__PURE__ */ new Date()));
   lines.push("");
-  lines.push("Name: " + (ctx.youName || "[not provided]"));
+  lines.push("== HEADER ==");
+  lines.push("Worker: " + (ctx.youName || "[not provided]"));
+  const workerContact = [profile.phone, profile.email].filter(Boolean).join(" \xB7 ");
+  if (workerContact) lines.push("Worker contact: " + workerContact);
   lines.push("Employer: " + (ctx.employerName || "[not provided]"));
-  lines.push("Location: " + ctx.locationLabel);
-  lines.push("Issue: " + (ctx.issue || "[not selected]"));
+  if (profile.employerAddress) lines.push("Employer address: " + profile.employerAddress);
+  lines.push("Location: " + (ctx.locationLabel || "[not provided]"));
+  lines.push("Issue type: " + (ctx.issue || "[not selected]"));
+  const eventDateFmt = formatLocalDateStr(profile.eventDate);
+  if (eventDateFmt) lines.push(eventDateLabelFor(ctx.cfgKey) + ": " + eventDateFmt);
   lines.push("Case opened: " + fmtDate(new Date(ctx.caseOpened)));
-  lines.push("Case strength: " + s.label + " (" + s.score + "/100)");
-  if (ctx.unpaidHours > 0) lines.push("Unpaid hours logged: " + ctx.unpaidHours);
-  if (ctx.owedEstimate > 0) lines.push("Estimated overtime owed: " + money(ctx.owedEstimate));
   lines.push("");
-  lines.push("EVIDENCE LOG (" + (ctx.entries || []).length + " entries)");
-  (ctx.entries || []).forEach((e) => {
+  lines.push("== KEY DEADLINE ==");
+  const dl = ctx.dl;
+  if (dl) {
+    const computed = profile.eventDate ? computeDeadlineFromEvent(profile.eventDate, dl.value || dl.summary) : null;
+    if (computed) {
+      const { targetDate, daysLeft, isPast } = computed;
+      lines.push(isPast ? "This deadline may have passed \u2014 talk to an attorney immediately, some exceptions exist." : "File by " + formatDeadlineDate(targetDate) + " \u2014 about " + daysLeft + (Math.abs(daysLeft) === 1 ? " day" : " days") + " left.");
+      lines.push("Limitations period: " + (dl.value || dl.summary));
+      lines.push(DEADLINE_ESTIMATE_CAVEAT);
+    } else {
+      lines.push(dl.summary || dl.value);
+      lines.push(profile.eventDate ? "Could not compute an exact date from the date on file \u2014 confirm the exact deadline with the agency or an attorney." : 'Add the date this happened on Home to compute an exact "file by" date.');
+    }
+  } else if (ctx.cfgKey === "document") {
+    lines.push("21 days to consider, 7 days to revoke, if this document is a release covered by the Older Workers Benefit Protection Act (29 U.S.C. \xA7626(f)) \u2014 a general federal rule, not sourced from state-specific facts. Confirm the exact days stated in your copy.");
+  } else {
+    lines.push("No jurisdiction-specific filing deadline is tracked for this issue type in this app. Confirm the applicable deadline with the enforcing agency or an attorney before you wait.");
+  }
+  lines.push("");
+  lines.push("== CLAIM SNAPSHOT ==");
+  lines.push("Case strength: " + s.label + " (" + s.score + "/100)");
+  if (ctx.cfgKey === "wage") {
+    const wizResult = RESULTS[ctx.wizNode];
+    lines.push("Overtime classification: " + (wizResult ? wizResult.title : "Not yet checked \u2014 run the overtime exemption check."));
+    if (ctx.owedEstimate > 0) lines.push("Estimated overtime owed: " + money(ctx.owedEstimate));
+    else if (ctx.unpaidHours > 0) lines.push("Unpaid hours logged: " + ctx.unpaidHours + " (add an hourly rate or salary to estimate the amount owed)");
+    const weeks = ctx.payBreakdown && ctx.payBreakdown.weeks || [];
+    if (weeks.length) {
+      lines.push("Per-workweek hours (Sun\u2013Sat):");
+      weeks.forEach((w) => {
+        lines.push("  Week of " + w.label + ": " + w.hours + " hrs total \u2014 " + w.regHours + " reg + " + w.otHours + " OT" + (ctx.rateNum > 0 ? " \u2014 " + money(w.totalPay) : ""));
+      });
+    }
+  } else {
+    lines.push("Claim type: " + (ctx.caseTitle || ctx.issue || "Employment issue"));
+  }
+  lines.push("");
+  lines.push("== WITNESSES ==");
+  const witnesses = entries.filter((e) => e.tag === "Witness" && e.witnessName && String(e.witnessName).trim());
+  if (witnesses.length) {
+    witnesses.forEach((e, i) => {
+      const employedNote = e.witnessStillEmployed === "Yes" ? "still employed" : e.witnessStillEmployed === "No" ? "no longer employed" : e.witnessStillEmployed ? "employment status: " + e.witnessStillEmployed : null;
+      const willingNote = e.witnessWilling === "Yes" ? "willing to be contacted" : e.witnessWilling === "No" ? "not willing to be contacted" : e.witnessWilling ? "contact willingness: " + e.witnessWilling : null;
+      const bits = [e.witnessRelationship, employedNote, willingNote].filter(Boolean).join(", ");
+      const account = e.body && e.body !== ENTRY_PLACEHOLDER_BODY ? e.body : "";
+      let line = i + 1 + ". " + e.witnessName;
+      if (bits) line += " \u2014 " + bits;
+      if (e.witnessContact) line += " \u2014 " + e.witnessContact;
+      if (account) line += " \u2014 saw: " + account;
+      lines.push(line);
+    });
+  } else {
+    lines.push("(no named witnesses logged yet)");
+  }
+  lines.push("");
+  lines.push("== EVIDENCE / DOCUMENTS ==");
+  const docs = entries.filter((e) => e.tag === "Records" && e.docType);
+  if (docs.length) {
+    docs.forEach((e, i) => {
+      let line = "Exhibit " + exhibitLetter(i) + ": " + e.docType;
+      if (e.docDate) line += " (dated " + e.docDate + ")";
+      if (e.docParties) line += " \u2014 parties: " + e.docParties;
+      const why = e.body && e.body !== ENTRY_PLACEHOLDER_BODY ? e.body : "";
+      if (why) line += " \u2014 " + why;
+      if (e.attachment && e.attachment.name) line += " [attachment on file: " + e.attachment.name + "]";
+      lines.push(line);
+    });
+  } else {
+    lines.push("(no documents logged yet)");
+  }
+  lines.push("");
+  lines.push("== STATEMENTS ==");
+  const statements = entries.filter((e) => e.tag === "Statement" && e.speakerName && String(e.speakerName).trim());
+  if (statements.length) {
+    statements.forEach((e, i) => {
+      const quote = e.body && e.body !== ENTRY_PLACEHOLDER_BODY ? e.body : "(no quote recorded)";
+      let line = i + 1 + ". " + e.speakerName;
+      if (e.speakerRole) line += " (" + e.speakerRole + ")";
+      if (e.saidWhere) line += ", " + e.saidWhere;
+      if (e.saidWhen) line += ", " + e.saidWhen;
+      line += ': "' + quote + '"';
+      if (e.whoElseHeard) line += " (also heard by " + e.whoElseHeard + ")";
+      lines.push(line);
+    });
+  } else {
+    lines.push("(no employer/manager statements logged yet)");
+  }
+  lines.push("");
+  lines.push("== FULL TIMELINE (" + entries.length + " entries) ==");
+  entries.forEach((e) => {
     lines.push("\u2022 [" + e.tag + "] " + e.date + " \u2014 " + e.title + (e.hours ? " (" + e.hours + " hrs)" : ""));
     if (e.tag === "Witness" && e.witnessName) {
       const bits = [
@@ -1500,7 +1610,7 @@ function buildCaseFile(ctx) {
     if (e.body) lines.push("    " + e.body);
     if (e.attachment && e.attachment.name) lines.push("    [attachment: " + e.attachment.name + "]");
   });
-  if (!(ctx.entries || []).length) lines.push("\u2022 (no entries logged yet)");
+  if (!entries.length) lines.push("\u2022 (no entries logged yet)");
   lines.push("");
   lines.push("This case file is legal information the worker compiled themselves. It is not legal advice.");
   return lines.join("\n");
@@ -1561,6 +1671,7 @@ const RELATIONSHIP_OPTIONS = ["Coworker", "Supervisor or manager", "Former emplo
 const YES_NO_UNSURE = ["Yes", "No", "Unsure"];
 const SAID_WHERE_OPTIONS = ["In person", "Phone", "Email", "Chat/Slack", "Meeting", "Other"];
 const DOC_TYPE_OPTIONS = ["Pay stub", "Offer letter or contract", "Write-up or discipline", "Performance review", "Policy or handbook", "Email or message", "Termination or severance", "Other"];
+const ENTRY_PLACEHOLDER_BODY = "No detail added yet \u2014 tap to edit while it is fresh.";
 const LOG_KINDS = [
   { label: "+ Hours worked", title: "Unpaid or extra hours", body: "", color: "#EF7B22", tag: "Wage & hour", asksHours: true },
   { label: "+ Something said", title: "Statement recorded", body: "", color: "#2B3AA8", tag: "Statement" },
@@ -1892,7 +2003,7 @@ function App() {
     const bodyColor = { past: dark ? "#FFE3EA" : "#5A1330", urgent: dark ? "#FFE3A6" : "#6B4B00", ok: dark ? "#DDE2FF" : "#3A4150" }[tone];
     const daysWord = Math.abs(daysLeft) === 1 ? "day" : "days";
     const headline = isPast ? "This deadline may have passed \u2014 talk to an attorney immediately, some exceptions exist." : "File by " + formatDeadlineDate(targetDate) + " \u2014 about " + daysLeft + " " + daysWord + " left.";
-    return /* @__PURE__ */ React.createElement("div", { style: css("padding:10px 12px;border-radius:0 8px 8px 0;border:none;border-left:4px solid " + border + ";background:" + bg + ";display:flex;flex-direction:column;gap:3px") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 12px 'IBM Plex Mono',monospace;color:" + labelColor + ";letter-spacing:.04em") }, isPast ? "DEADLINE MAY HAVE PASSED" : "YOUR ESTIMATED DEADLINE"), /* @__PURE__ */ React.createElement("span", { style: css("font:700 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:" + bodyColor) }, headline), /* @__PURE__ */ React.createElement("span", { style: css("font:400 12px/1.4 'Atkinson Hyperlegible',sans-serif;color:" + bodyColor) }, "Estimated from the date you entered and the general limitations period \u2014 confirm the exact deadline with the agency or an attorney; some events can change it."));
+    return /* @__PURE__ */ React.createElement("div", { style: css("padding:10px 12px;border-radius:0 8px 8px 0;border:none;border-left:4px solid " + border + ";background:" + bg + ";display:flex;flex-direction:column;gap:3px") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 12px 'IBM Plex Mono',monospace;color:" + labelColor + ";letter-spacing:.04em") }, isPast ? "DEADLINE MAY HAVE PASSED" : "YOUR ESTIMATED DEADLINE"), /* @__PURE__ */ React.createElement("span", { style: css("font:700 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:" + bodyColor) }, headline), /* @__PURE__ */ React.createElement("span", { style: css("font:400 12px/1.4 'Atkinson Hyperlegible',sans-serif;color:" + bodyColor) }, DEADLINE_ESTIMATE_CAVEAT));
   };
   const AddDeadlineDatePrompt = ({ dark, dl }) => {
     if (!dl || profile.eventDate) return null;
@@ -2159,7 +2270,7 @@ function App() {
     const logBreakdown = computeOwedBreakdown(entries, rateNum);
     const payBreakdown = computeWeeklyPayBreakdown(entries, rateNum);
     const editing = editingEntryIdx != null && entries[editingEntryIdx];
-    const PLACEHOLDER_BODY = "No detail added yet \u2014 tap to edit while it is fresh.";
+    const PLACEHOLDER_BODY = ENTRY_PLACEHOLDER_BODY;
     const editOriginalRef = logEditOriginalRef;
     const computedHours = kind.asksHours ? computeHoursFromTimes(logStartTime, logEndTime) : null;
     const finalHours = computedHours != null ? computedHours.hours : Number(logHours) || 0;
@@ -2416,7 +2527,28 @@ function App() {
     const u = retal && safeUrl(retal.sourceUrl);
     return /* @__PURE__ */ React.createElement("div", { style: css("padding:16px 18px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F;display:flex;flex-direction:column;gap:6px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "You are protected from retaliation for speaking up"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "It is illegal for your employer to retaliate against you \u2014 fire, demote, cut your hours, or otherwise punish you \u2014 for asking about, complaining about, or filing a wage claim, even an internal or verbal complaint. ", retal ? retal.citation : "29 U.S.C. \xA7 215(a)(3)", u ? /* @__PURE__ */ React.createElement(React.Fragment, null, " \xB7 ", /* @__PURE__ */ React.createElement("a", { href: u, target: "_blank", rel: "noopener noreferrer", className: "hoverfx", style: css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 13px 'IBM Plex Mono',monospace;text-decoration:none") }, "[source \u2197]")) : null));
   })(), /* @__PURE__ */ React.createElement("div", { style: css("padding:16px;border-radius:14px;background:#E8F6EE;border:2px solid #14181F;display:flex;flex-direction:column;gap:10px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#25302B") }, "Your case file \u2014 timeline, documents, and the exemption analysis \u2014 exports as one PDF you control, to bring to whichever agency (or attorney) you contact."), /* @__PURE__ */ React.createElement("button", { onClick: () => {
-    const path = printLetter("WorkLaw case file", buildCaseFile({ youName, employerName, locationLabel, issue, caseOpened, strength, unpaidHours, owedEstimate, entries }));
+    const fedF = federal && federal.facts || [];
+    const stF = stateData && stateData.facts || [];
+    const dl = pickDeadlineFactAcross(stF, fedF, cfg.key);
+    const payBreakdown = computeWeeklyPayBreakdown(entries, rateNum);
+    const path = printLetter("WorkLaw case file", buildCaseFile({
+      youName,
+      employerName,
+      locationLabel,
+      issue,
+      caseOpened,
+      strength,
+      unpaidHours,
+      owedEstimate,
+      entries,
+      profile,
+      dl,
+      rateNum,
+      payBreakdown,
+      wizNode,
+      cfgKey: cfg.key,
+      caseTitle: cfg.caseTitle
+    }));
     setExportPath(path);
     setCaseFileDownloaded(true);
   }, style: css("padding:15px;border-radius:12px;border:none;background:#2B3AA8;color:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, "Download your case file"), caseFileDownloaded && /* @__PURE__ */ React.createElement("p", { style: css("margin:2px 0 0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:" + (exportPath === "failed" ? "#B3264F" : "#136B3C")) }, exportPath === "download" ? "Your case file downloaded as a .txt file (your browser blocked the new-tab preview)." : exportPath === "failed" ? "Export did not work in this browser \u2014 note your case details from the dashboard manually." : "Your case file opened in a new tab \u2014 save it as PDF.")), /* @__PURE__ */ React.createElement("div", { style: css("padding:16px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "You may also want to consult an employment attorney licensed in ", stateLabel, ". WorkLaw does not operate a referral service or recommend specific firms \u2014 your state or local bar association's lawyer-referral service is a reliable place to start.")), /* @__PURE__ */ React.createElement("div", { style: css("padding:16px;border-radius:14px;border:2px solid #14181F;background:#fff;display:flex;flex-direction:column;gap:10px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Manage your case data"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 13px/1.5 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Everything you enter stays in this browser on this device \u2014 nothing is uploaded. On a shared or work computer, delete your case when you\u2019re done."), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;gap:10px;flex-wrap:wrap") }, /* @__PURE__ */ React.createElement("button", { onClick: startFreshCase, className: "hoverfx", style: css("padding:12px 16px;border-radius:12px;border:2px solid #14181F;background:transparent;color:#14181F;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;min-height:44px") }, "Start a fresh case"), /* @__PURE__ */ React.createElement("button", { onClick: clearCase, className: "hoverfx", style: css("padding:12px 16px;border-radius:12px;border:2px solid #B3264F;background:transparent;color:#B3264F;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;min-height:44px") }, "Delete my case & start over"))), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "This is legal information, not legal advice."));
