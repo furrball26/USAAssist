@@ -389,6 +389,36 @@ const DEADLINE_ESTIMATE_CAVEAT = 'Estimated from the date you entered and the ge
 // continuation of another deadline's text.
 const FLSA_SOL_TIMING_NOTE = 'Separately, the federal FLSA lawsuit deadline is 2–3 years, and it keeps running while you wait — filing with the Labor Department does not pause it. Talk to an attorney before the oldest weeks age out.';
 
+// Damages / back-pay estimator (see DamagesEstimator) — the non-wage issues
+// (termination, harassment, discrimination) have no real owed-amount calc the
+// way wage does (computeOwedBreakdown). Every dollar figure this tool ever
+// shows must be framed as hypothetical and non-authoritative — never a
+// valuation of the user's actual case, never a promise of entitlement — so
+// this copy is shared between the termination back-pay card and the exported
+// case file rather than risking the hedging drifting or getting dropped at a
+// second call site.
+const BACKPAY_HEDGE_INTRO = 'This is a hypothetical, educational estimate — not a valuation of your case, and not a promise you are entitled to anything. IF a claim succeeds, back pay is often calculated as your lost weekly pay × the weeks you were out of work, minus what you earned (or reasonably could have earned) elsewhere in the meantime — called mitigation.';
+const BACKPAY_ROUGH_CAVEAT = 'This is a rough, hypothetical figure, not what you are owed. Actual back pay depends on many case-specific facts a lawyer must assess, and courts apply mitigation offsets, caps, and other adjustments — it can end up higher or lower than this.';
+const BACKPAY_FRONTPAY_NOTE = 'Some cases also add front pay — a hypothetical amount for future lost wages, sometimes awarded when reinstatement (getting your job back) is not practical. Whether reinstatement, front pay, or neither applies; how mitigation actually gets calculated; and any state-law caps or offsets are case-specific determinations only an employment attorney can make.';
+
+// General federal rule, not sourced from content/*.json (same reasoning as
+// DocDeadlineWatch's OWBPA note above) — 42 U.S.C. § 1981a(b)(3) caps combined
+// Title VII compensatory (non-economic) + punitive damages by employer size,
+// per person bringing a claim. Back pay itself is not counted against this
+// cap. Deliberately labeled "general federal rule" and never presented as a
+// number that applies to the user's specific case.
+const TITLE_VII_PUNITIVE_CAPS_NOTE = 'General federal rule (42 U.S.C. § 1981a(b)(3)) — for private employers, Title VII caps combined compensatory (non-economic) and punitive damages by employer size, per person bringing a claim: $50,000 (15–100 employees), $100,000 (101–200), $200,000 (201–500), or $300,000 (500+). Back pay is not counted against this cap. Some state laws allow more. This is general information, not a figure calculated for your case.';
+// Educational checklist only — no dollar figure is ever computed for
+// emotional distress; amounts vary too much by facts, jurisdiction, and
+// evidence for any generic tool to responsibly estimate one.
+const DAMAGE_CATEGORIES = [
+  { title:'Back pay', body:'Lost wages if your pay was cut, you lost the job, or you were denied a raise or promotion because of what happened.' },
+  { title:'Front pay', body:'A hypothetical amount for future lost wages, sometimes awarded when reinstatement is not practical.' },
+  { title:'Emotional distress / compensatory damages', body:'Compensation for emotional harm, humiliation, or similar non-economic harm. Amounts vary enormously by facts, jurisdiction, and evidence — this app does not estimate a number for this category.' },
+  { title:'Punitive damages', body: TITLE_VII_PUNITIVE_CAPS_NOTE },
+  { title:'Out-of-pocket costs', body:'Costs you paid because of what happened — job search expenses, therapy or counseling, medical care, and similar. You can optionally tally yours below.' },
+];
+
 // F4 — a worker fired/pushed out for reporting a safety hazard has a SEPARATE,
 // much shorter federal deadline (OSHA Section 11(c) whistleblower complaint,
 // 30 days — deadlines.oshaWhistleblower) than the EEOC discrimination-charge
@@ -781,6 +811,7 @@ function stamp(d){
   return MONTHS[d.getMonth()].toUpperCase() + ' ' + d.getDate() + ', ' + d.getFullYear() + ' · ' + h + ':' + m + ' ' + ap;
 }
 function money(n){ return '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 }); }
+const round2 = n => Math.round((n + Number.EPSILON) * 100) / 100;
 // FLSA's default method for converting a fixed weekly/annual salary to an hourly-
 // equivalent regular rate assumes the salary covers a standard 40-hour workweek
 // (29 C.F.R. § 778.113). Used only to give a SALARIED worker an owed-amount
@@ -791,6 +822,29 @@ function money(n){ return '$' + Number(n || 0).toLocaleString('en-US', { minimum
 function hourlyEquivFromSalary(annualSalary){
   const n = Number(annualSalary) || 0;
   return n > 0 ? n / 52 / 40 : 0;
+}
+// Weekly-pay estimate used only by the termination back-pay estimator (see
+// DamagesEstimator) — assumes a standard 40-hour work week to translate an
+// hourly rate (or a salary's already-hourly-equivalent rateNum) into a weekly
+// figure, the same 29 C.F.R. § 778.113 assumption hourlyEquivFromSalary
+// already makes. When rateNum is 0 (no pay data on file), returns 0 rather
+// than a fabricated figure, so the caller can honestly degrade to "framework,
+// no number" instead of showing $0.00.
+function weeklyPayEstimate(rateNum){
+  const n = Number(rateNum) || 0;
+  return n > 0 ? round2(n * 40) : 0;
+}
+// Rough, HYPOTHETICAL back-pay-so-far figure — lost weekly pay × weeks out of
+// work. Deliberately does NOT subtract mitigation (what the user earned
+// elsewhere), since nothing here collects that figure; the caller must show
+// the mitigation caveat (BACKPAY_ROUGH_CAVEAT) alongside any number this
+// returns. Returns 0 — never a number — when either input is missing or zero,
+// so "no pay data" or "no weeks entered" both honestly degrade to the
+// framework-only view.
+function roughBackPayEstimate(weeklyPay, weeksOut){
+  const w = Number(weeklyPay) || 0;
+  const wk = Number(weeksOut) || 0;
+  return (w > 0 && wk > 0) ? round2(w * wk) : 0;
 }
 // Sunday-start key for the workweek an ISO timestamp falls in, so multi-week logs
 // aren't billed as if every logged hour fell inside a single ">40 hrs" workweek.
@@ -1791,7 +1845,12 @@ function App(){
   const [county, setCounty] = useState(() => saved.county || '');
   const [countyQuery, setCountyQuery] = useState('');
   const [issue, setIssue] = useState(() => saved.issue || null);
-  const [profile, setProfile] = useState(() => Object.assign({ name:'', employer:'', payType:'', rate:'', salary:'', eventDate:'' }, saved.profile));
+  // weeksOut/stillUnemployed (termination back-pay estimator) and the
+  // oop* out-of-pocket cost fields (harassment/discrimination damages
+  // checklist) — see DamagesEstimator. Persisted the same way rate/salary/
+  // eventDate already are, since they're real case data worth surviving a
+  // reload, not transient form state.
+  const [profile, setProfile] = useState(() => Object.assign({ name:'', employer:'', payType:'', rate:'', salary:'', eventDate:'', weeksOut:'', stillUnemployed:'', oopJobSearch:'', oopTherapy:'', oopMedical:'', oopOther:'' }, saved.profile));
   const [caseOpened, setCaseOpened] = useState(() => saved.caseOpened || new Date().toISOString());
   const [federal, setFederal] = useState(null);
   const [stateData, setStateData] = useState(undefined); // undefined = loading, null = none, object = loaded
@@ -2656,6 +2715,16 @@ function App(){
               <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Is my non-compete enforceable?</span>
             </button>
           }
+          {/* Damages/back-pay estimator — gated to the non-wage issues that have
+              no real owed-amount calc of their own (wage already has
+              computeOwedBreakdown), same cfg.key-guard pattern as the tiles
+              above. See DamagesEstimator. */}
+          {(cfg.key === 'termination' || cfg.key === 'harassment' || cfg.key === 'discrimination') &&
+            <button onClick={nav('damages')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
+              <span aria-hidden="true"><Icon name="rights" size={24} /></span>
+              <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Estimate possible damages</span>
+            </button>
+          }
           {/* Wage is the only issue where this card is redundant: BOTH its letters
               (classification-request, wage-demand) are already reachable through the
               step list above and the wizard's non-exempt result ("Draft a wage demand
@@ -2733,6 +2802,11 @@ function App(){
           tile above, gated to the document issue the same way. */}
       {cfg.key === 'document' &&
         <button onClick={nav('noncompete')} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.6);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Is my non-compete enforceable?</button>
+      }
+      {/* Damages/back-pay estimator — Action-first equivalent of the Standard
+          Tools-grid tile, gated to the same three non-wage issues. */}
+      {(cfg.key === 'termination' || cfg.key === 'harassment' || cfg.key === 'discrimination') &&
+        <button onClick={nav('damages')} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.6);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Estimate possible damages</button>
       }
       <div style={css("display:flex;flex-direction:column;gap:12px")}>
         <button onClick={() => {
@@ -2879,6 +2953,11 @@ function App(){
                 above are gated to theirs. */}
             {K === 'document' &&
               <button onClick={nav('noncompete')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Is my non-compete enforceable?</button>
+            }
+            {/* Damages/back-pay estimator — Plain-mode equivalent, gated to the
+                same three non-wage issues as the Standard/Action tiles. */}
+            {(K === 'termination' || K === 'harassment' || K === 'discrimination') &&
+              <button onClick={nav('damages')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Estimate possible damages</button>
             }
             <button onClick={nav('log')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{K === 'wage' ? 'Add hours I worked' : 'Add to my log'}</button>
             {/* usertest — same reachability gap as HomeAction above: the primary CTA's
@@ -3720,6 +3799,116 @@ function App(){
     );
   };
 
+  // Damages / back-pay estimator — the non-wage issues (termination,
+  // harassment, discrimination) have nothing like wage's real owed-amount
+  // calc (computeOwedBreakdown). Gated to those three issues only (see the
+  // Standard/Action/Plain Tools tiles), same cfg.key-guard pattern as the
+  // overtime-exemption self-check / harassment-discrimination identifiers /
+  // non-compete checker above. EVERY dollar figure this screen can show is
+  // explicitly hedged as hypothetical, non-authoritative, and dependent on
+  // facts only a lawyer can assess — see BACKPAY_HEDGE_INTRO/
+  // BACKPAY_ROUGH_CAVEAT. Discrimination/harassment never compute an
+  // emotional-distress number — that category is educational text only.
+  // Honest-degrade: with no pay rate/salary on file, or no weeks-out entered,
+  // the termination framework still renders in full, just with no number
+  // attached (see weeklyPayEstimate/roughBackPayEstimate).
+  const DamagesEstimator = () => {
+    const K = cfg.key;
+    const weeklyPay = weeklyPayEstimate(rateNum);
+    const weeksOut = Number(profile.weeksOut) || 0;
+    const roughBackPay = roughBackPayEstimate(weeklyPay, weeksOut);
+    const oopTotal = round2(['oopJobSearch','oopTherapy','oopMedical','oopOther'].reduce((s, k) => s + (Number(profile[k]) || 0), 0));
+    return (
+    <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
+      <button onClick={nav('home')} style={css("align-self:flex-start;display:flex;align-items:center;gap:4px;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}><Icon name="back" size={18} /> Dashboard</button>
+      <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{K === 'termination' ? 'What might back pay look like?' : 'What damages might apply?'}</h1>
+      <div style={css("padding:14px 16px;border-radius:14px;border:2px solid #14181F;background:#FFF4D6")}>
+        <p style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Educational only — this is not a valuation of your case, and nothing on this screen is a promise you are entitled to anything. Only an employment attorney reviewing your actual facts can tell you what a claim might realistically be worth.</p>
+      </div>
+
+      {K === 'termination' ? (
+        <>
+          <p style={css("margin:0;font:400 16px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{BACKPAY_HEDGE_INTRO}</p>
+
+          <div style={css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff;display:flex;flex-direction:column;gap:14px")}>
+            <div style={css("display:flex;flex-direction:column;gap:6px")}>
+              <label htmlFor="dmg-weeksout" style={css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>WEEKS OUT OF WORK SO FAR (OPTIONAL)</label>
+              <input id="dmg-weeksout" type="number" min="0" step="1" value={profile.weeksOut || ''} onChange={e => setProfile(p => Object.assign({}, p, { weeksOut:e.target.value }))} placeholder="e.g. 6" style={css("width:150px;padding:14px;border-radius:12px;border:2px solid #14181F;font:400 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
+            </div>
+            <div style={css("display:flex;flex-direction:column;gap:6px")}>
+              <label id="dmg-stillunemp-label" style={css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>ARE YOU STILL OUT OF WORK?</label>
+              <div role="group" aria-labelledby="dmg-stillunemp-label" style={css("display:flex;gap:8px")}>
+                {['Yes','No'].map(t =>
+                  <button key={t} onClick={() => setProfile(p => Object.assign({}, p, { stillUnemployed:t }))} aria-pressed={profile.stillUnemployed === t} style={css('flex:1;padding:13px;border-radius:12px;border:2px solid #14181F;background:' + (profile.stillUnemployed === t ? '#2B3AA8' : '#fff') + ';color:' + (profile.stillUnemployed === t ? '#fff' : '#14181F') + ";font:700 16px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{t}</button>
+                )}
+              </div>
+            </div>
+
+            {weeklyPay > 0 ? (
+              <div style={css("padding:12px 14px;border-radius:12px;background:#F0EDE5;border:2px solid #14181F;display:flex;flex-direction:column;gap:4px")}>
+                <span style={css("font:700 12px 'IBM Plex Mono',monospace;color:#14181F;letter-spacing:.04em")}>ESTIMATED WEEKLY PAY</span>
+                <span style={css("font:700 20px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{money(weeklyPay)}/week</span>
+                <span style={css("font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Assumes a typical 40-hour work week to translate your {profile.payType === 'Salary' ? 'stated annual salary' : 'hourly rate'} into a weekly figure — adjust your own math if you usually worked fewer or more hours.</span>
+              </div>
+            ) : (
+              <div style={css("padding:12px 14px;border-radius:12px;background:#F0EDE5;border:2px solid #14181F")}>
+                <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Add your hourly rate or salary on the dashboard location screen to see a rough weekly-pay figure here.</p>
+              </div>
+            )}
+
+            {roughBackPay > 0 ? (
+              <div role="status" style={css("padding:14px 16px;border-radius:14px;background:#EEF1FF;border:2px solid #2B3AA8;display:flex;flex-direction:column;gap:6px")}>
+                <span style={css("font:700 12px 'IBM Plex Mono',monospace;color:#1B2778;letter-spacing:.04em")}>ROUGH, HYPOTHETICAL BACK PAY SO FAR</span>
+                <span style={css("font:700 24px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{money(roughBackPay)}</span>
+                <span style={css("font:400 14px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{BACKPAY_ROUGH_CAVEAT}</span>
+              </div>
+            ) : (
+              <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Enter weeks out of work above — and have a pay rate or salary on file — to see a rough, hypothetical figure. Until then, this stays a framework with no number attached.</p>
+            )}
+          </div>
+
+          <div style={css("padding:16px 18px;border-radius:14px;border:2px solid #14181F;background:#fff")}>
+            <p style={css("margin:0 0 6px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Front pay & other considerations (informational only)</p>
+            <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{BACKPAY_FRONTPAY_NOTE}</p>
+          </div>
+        </>
+      ) : (
+        <>
+          <p style={css("margin:0;font:400 16px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>This is educational information about the CATEGORIES of damages a {K === 'harassment' ? 'harassment' : 'discrimination'} claim may include — not a valuation of your case, and not a promise any of these apply to you.</p>
+
+          <div style={css("display:flex;flex-direction:column;gap:10px")}>
+            {DAMAGE_CATEGORIES.map(dc => (
+              <div key={dc.title} style={css("padding:14px 16px;border-radius:14px;border:2px solid #14181F;background:#fff")}>
+                <p style={css("margin:0 0 4px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{dc.title}</p>
+                <p style={css("margin:0;font:400 14px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{dc.body}</p>
+              </div>
+            ))}
+          </div>
+
+          <div style={css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff;display:flex;flex-direction:column;gap:12px")}>
+            <p style={css("margin:0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Optional: tally your out-of-pocket costs</p>
+            {[['oopJobSearch','Job search costs'],['oopTherapy','Therapy / counseling'],['oopMedical','Medical care'],['oopOther','Other costs']].map(([k, lbl]) => (
+              <div key={k} style={css("display:flex;align-items:center;justify-content:space-between;gap:10px")}>
+                <label htmlFor={'dmg-' + k} style={css("font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{lbl}</label>
+                <input id={'dmg-' + k} type="number" min="0" step="1" value={profile[k] || ''} onChange={e => setProfile(p => Object.assign({}, p, { [k]:e.target.value }))} placeholder="0" style={css("width:120px;padding:10px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
+              </div>
+            ))}
+            <div style={css("padding-top:8px;border-top:1px solid rgba(20,24,31,.14);display:flex;align-items:center;justify-content:space-between")}>
+              <span style={css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Total out-of-pocket so far</span>
+              <span style={css("font:700 20px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{money(oopTotal)}</span>
+            </div>
+          </div>
+        </>
+      )}
+
+      <div style={css("padding:16px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F")}>
+        <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>This is legal information, not legal advice, and none of the figures above are what you are owed. An employment attorney licensed in {stateLabel} can assess what your case might actually be worth.</p>
+      </div>
+      <button onClick={nav('agencies')} className="hoverfx" style={css("align-self:flex-start;min-height:44px;padding:12px 16px;border-radius:12px;border:2px solid #2B3AA8;background:#fff;color:#2B3AA8;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Find a lawyer →</button>
+    </div>
+    );
+  };
+
   const Letter = () => {
     const kinds = letterKindsFor(cfg.key, cfg.letterKind);
     // accommodation-request is allowed to render here even when it is not one of
@@ -4076,7 +4265,7 @@ function App(){
 
   const SCREENS = {
     onboarding: Onboarding, home: HomeScreen, chat: Chat, wizard: Wizard, log: Log,
-    doc: Doc, noncompete: NonCompeteChecker, letter: Letter, strength: Strength, rights: RightsLib, agencies: Agencies
+    doc: Doc, noncompete: NonCompeteChecker, damages: DamagesEstimator, letter: Letter, strength: Strength, rights: RightsLib, agencies: Agencies
   };
   const Current = SCREENS[screen] || HomeScreen;
 
