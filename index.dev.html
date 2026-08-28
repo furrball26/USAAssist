@@ -2259,6 +2259,19 @@ function App(){
   const strengthFill = evidenceCount > 0 ? Math.max(1, Math.round(strength.score / 20)) : 0;
   const doneCtx = { entries, wizNode };
   const doneCount = cfg.steps.filter((_, i) => isStepDone(cfg, i, done, doneCtx)).length;
+  // The hero's "current step" must be the FIRST NOT-done step, not doneCount —
+  // doneCount assumes completed steps are a contiguous prefix, but stepAutoDone
+  // (above) can auto-complete a MIDDLE step (e.g. 'log hours' auto-dones as soon
+  // as any entry exists, even before the earlier exemption-check step is done).
+  // When that happens doneCount over-counts, Math.min(doneCount, len-1) points
+  // at a step that's already done, and "Mark it done" no-ops forever because
+  // isStepDone was already true — the hero gets stuck. findIndex instead finds
+  // the first incomplete step regardless of which steps auto-completed out of
+  // order; falls back to the last step once everything is done.
+  const currentStepIdx = (() => {
+    const idx = cfg.steps.findIndex((_, i) => !isStepDone(cfg, i, done, doneCtx));
+    return idx === -1 ? cfg.steps.length - 1 : idx;
+  })();
   // F4 — surface the much shorter OSHA §11(c) whistleblower deadline (30 days)
   // alongside the regular termination deadline for the subset of termination
   // cases the user's own words identify as safety-retaliation. See
@@ -2870,8 +2883,8 @@ function App(){
       <ModeSwitch theme="dark" />
       <StorageWarningBanner />
       <LocationPill dark={true} />
-      <p style={css("margin:0;font:700 14px 'IBM Plex Mono',monospace;color:#C9D0FF;letter-spacing:.05em")}>STEP {Math.min(doneCount + 1, cfg.steps.length)} OF {cfg.steps.length} · {cfg.caseTitle.toUpperCase()}</p>
-      <h1 style={css("margin:0;font:700 40px/1.08 'Atkinson Hyperlegible',sans-serif;color:#fff;text-wrap:pretty")}>{cfg.steps[Math.min(doneCount, cfg.steps.length - 1)]}.</h1>
+      <p style={css("margin:0;font:700 14px 'IBM Plex Mono',monospace;color:#C9D0FF;letter-spacing:.05em")}>STEP {currentStepIdx + 1} OF {cfg.steps.length} · {cfg.caseTitle.toUpperCase()}</p>
+      <h1 style={css("margin:0;font:700 40px/1.08 'Atkinson Hyperlegible',sans-serif;color:#fff;text-wrap:pretty")}>{cfg.steps[currentStepIdx]}.</h1>
       <p style={css("margin:0;font:400 19px/1.5 'Atkinson Hyperlegible',sans-serif;color:#DDE2FF")}>{cfg.actionWhy}</p>
       {(() => {
         const fedF = (federal && federal.facts) || [];
@@ -2924,15 +2937,14 @@ function App(){
       }
       <div style={css("display:flex;flex-direction:column;gap:12px")}>
         <button onClick={() => {
-          const stepIdx = Math.min(doneCount, cfg.steps.length - 1);
-          const target = stepTarget(cfg, stepIdx);
-          setDone(p => Object.assign({}, p, { [stepKey(cfg, stepIdx)]: true }));
+          const target = stepTarget(cfg, currentStepIdx);
+          setDone(p => Object.assign({}, p, { [stepKey(cfg, currentStepIdx)]: true }));
           if (target.letterType) setLetterType(target.letterType);
           if (target.logKind) setLogKind(target.logKind);
           else if (target.screen === 'log') setLogKind(defaultLogKindForIssueKey(cfg.key));
           setScreen(target.screen);
         }} className="surfacefx" style={css("padding:20px;border-radius:16px;border:none;background:#FFF4D6;color:#14181F;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Do this step</button>
-        <button onClick={() => setDone(p => Object.assign({}, p, { [stepKey(cfg, Math.min(doneCount, cfg.steps.length - 1))]: true }))} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid #fff;background:transparent;color:#fff;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Mark it done</button>
+        <button onClick={() => setDone(p => Object.assign({}, p, { [stepKey(cfg, currentStepIdx)]: true }))} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid #fff;background:transparent;color:#fff;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Mark it done</button>
         {/* usertest — the step CTA above only reaches the Letter screen on the one
             step index (if any) whose stepScreens entry is 'letter'; harassment,
             discrimination, document and the generic issue never have one, so without
@@ -3017,8 +3029,7 @@ function App(){
         // Route by the current step's actual target screen, not a single issue-wide
         // letterKind check — otherwise every step (including "log the incident")
         // would jump straight to drafting a letter.
-        const stepIdx = Math.min(doneCount, cfg.steps.length - 1);
-        const target = stepTarget(cfg, stepIdx);
+        const target = stepTarget(cfg, currentStepIdx);
         const screenLabels = { log:'Log what happened', wizard:'Check my classification', doc:'Review my document', chat:'Ask a question', letter:'Start my letter', rights:'See my rights', strength:'See my case strength' };
         let primaryLabel = screenLabels[target.screen] || 'Do the next step';
         if (K === 'wage' && target.screen === 'letter') primaryLabel = target.letterType === 'wage-demand' ? 'Ask for the money' : 'Confirm my classification';
@@ -3039,7 +3050,7 @@ function App(){
               }
             </div>
             <button onClick={() => {
-              setDone(p => Object.assign({}, p, { [stepKey(cfg, stepIdx)]: true }));
+              setDone(p => Object.assign({}, p, { [stepKey(cfg, currentStepIdx)]: true }));
               if (target.letterType) setLetterType(target.letterType);
               if (target.logKind) setLogKind(target.logKind);
               else if (target.screen === 'log') setLogKind(defaultLogKindForIssueKey(cfg.key));

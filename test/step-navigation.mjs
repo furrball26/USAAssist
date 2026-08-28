@@ -111,6 +111,64 @@ const baseSeed = {
   await pg.close();
 }
 
+// Case 3: Action-first "Mark it done" must not get stuck on an auto-done middle
+// step. Regression for the bug where the hero's current-step index was derived
+// from Math.min(doneCount, len-1) — doneCount assumes completed steps are a
+// contiguous prefix, but stepAutoDone can auto-complete a middle step (the wage
+// 'log hours' step auto-dones as soon as any hours entry exists, before the
+// earlier exemption-check step is marked done). That inflated doneCount and
+// pointed the hero at a step that was already done, so clicking "Mark it done"
+// never advanced past it. Seed a wage case in Action-first mode WITH a logged
+// hours entry (so the log step auto-dones out of order) and assert repeated
+// clicks on "Mark it done" advance the STEP N label all the way to the end.
+{
+  const seed = Object.assign({}, baseSeed, {
+    homeMode: 'action',
+    entries: [{ date:'JAN 5, 2026 · 9:00 AM', iso:'2026-01-05T09:00:00.000Z', title:'Unpaid or extra hours', body:'x', color:'#EF7B22', tag:'Wage & hour', hours:8, payStatus:'unpaid' }],
+  });
+  const pg = await freshPage(seed);
+  const errs = [];
+  pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
+  pg.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
+
+  const readStep = () => pg.evaluate(() => {
+    const p = [...document.querySelectorAll('p')].find(el => /^STEP \d+ OF \d+/.test(el.textContent || ''));
+    return p ? p.textContent : null;
+  });
+  const clickMarkDone = () => pg.evaluate(() => {
+    const btn = [...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Mark it done');
+    if (btn) { btn.click(); return true; }
+    return false;
+  });
+
+  const steps = [];
+  let stuck = false;
+  const first = await readStep();
+  steps.push(first);
+  for (let i = 0; i < 6; i++) {
+    const clicked = await clickMarkDone();
+    if (!clicked) break;
+    await new Promise(r => setTimeout(r, 250));
+    const now = await readStep();
+    steps.push(now);
+  }
+  // "Stuck" = the label never changes across repeated clicks after the first one.
+  const distinct = new Set(steps).size;
+  if (distinct < 2) stuck = true;
+  const finalStep = steps[steps.length - 1];
+  const reachedEnd = /STEP 4 OF 4/.test(finalStep || '');
+
+  const problems = [];
+  if (stuck) problems.push('STEP label never advanced across repeated "Mark it done" clicks: ' + JSON.stringify(steps));
+  if (!reachedEnd) problems.push('did not reach the last step (STEP 4 OF 4) — ended on ' + JSON.stringify(finalStep) + '; sequence: ' + JSON.stringify(steps));
+  errs.forEach(e => problems.push(e));
+
+  const ok = problems.length === 0;
+  if (!ok) fails++;
+  console.log((ok ? '✅' : '❌') + ' Action-first "Mark it done" advances past an auto-done middle step (wage log-hours)' + (ok ? ' — sequence: ' + JSON.stringify(steps) : '\n   ' + problems.join('\n   ')));
+  await pg.close();
+}
+
 } finally {
   await b.close();
   server.close();
