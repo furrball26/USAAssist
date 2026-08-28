@@ -937,6 +937,14 @@ const ISSUES = {
       'Identify coworkers who witnessed the conduct',
     ],
     stepScreens:['log','log','log','log'],
+    // Index-matched to `steps` — which LOG_KINDS tag each log-step should
+    // pre-select (see stepTarget). Every step here targets 'log', but they are
+    // not all the same KIND of entry: an incident is a Statement, saved
+    // messages/emails are Records, whether-it-was-reported is a Statement, and
+    // witnesses are their own Witness kind — without this every step opened the
+    // Log with whatever kind was last picked (defaulting to 'Wage & hour', which
+    // makes no sense for a harassment case).
+    stepLogKind:['Statement','Records','Statement','Witness'],
     stepIds:['harassment-log-incident','harassment-save-evidence','harassment-note-report','harassment-witnesses'],
     chatSeed:'You mentioned harassment or a hostile workplace. Tell me what has been happening and whether it is tied to a protected characteristic, and I will explain what the law covers where you work.',
   },
@@ -951,6 +959,8 @@ const ISSUES = {
       'Record any complaint you made and the response',
     ],
     stepScreens:['log','log','log','log'],
+    // See harassment's stepLogKind above — same reasoning, per this issue's steps.
+    stepLogKind:['Statement','Statement','Records','Statement'],
     stepIds:['discrimination-log-actions','discrimination-note-comments','discrimination-save-records','discrimination-log-complaint'],
     chatSeed:'You mentioned discrimination. Tell me the protected characteristic involved and what happened, and I will explain the federal and state protections where you work.',
   },
@@ -965,6 +975,10 @@ const ISSUES = {
       'Note anything said about why you were let go, and by whom',
     ],
     stepScreens:['log','letter','log','log'],
+    // See harassment's stepLogKind above. Index 1 routes to 'letter', not 'log',
+    // so it has no log kind (null/omitted — stepTarget only reads this for the
+    // three log-screen steps).
+    stepLogKind:['Statement', null, 'Statement','Statement'],
     stepIds:['termination-log-timeline','termination-request-file','termination-save-protected-activity','termination-note-reason'],
     chatSeed:'You mentioned being fired or pushed out. Tell me the reason you were given and what happened in the weeks before, and I will explain wrongful-termination and retaliation rules where you work.',
   },
@@ -1048,7 +1062,13 @@ function letterKindsFor(issueKey, cfgLetterKind){
 function stepTarget(cfg, idx){
   const screen = (cfg.stepScreens && cfg.stepScreens[idx]) || cfg.primaryTool;
   const letterType = (cfg.stepLetterTypes && cfg.stepLetterTypes[idx]) || null;
-  return { screen, letterType };
+  // Which LOG_KINDS tag a 'log'-screen step should pre-select — e.g. harassment's
+  // "identify witnesses" step should open the Log with the Witness form already
+  // chosen, not whatever kind was last selected (which defaulted to 'Wage & hour'
+  // for every non-wage issue before this existed). Only meaningful when the step
+  // actually routes to 'log'; a null/missing entry leaves logKind untouched.
+  const logKind = (cfg.stepLogKind && cfg.stepLogKind[idx]) || null;
+  return { screen, letterType, logKind };
 }
 
 // `done` is keyed by a stable per-step id (cfg.stepIds), not the raw array index —
@@ -2372,6 +2392,7 @@ function App(){
                 <button onClick={() => {
                   setDone(p => Object.assign({}, p, { [id]: true }));
                   if (target.letterType) setLetterType(target.letterType);
+                  if (target.logKind) setLogKind(target.logKind);
                   setScreen(target.screen);
                 }} className="surfacefx" style={css('flex:1;text-align:left;padding:16px;border-radius:14px;border:2px solid #14181F;background:' + (on ? '#E8F6EE' : '#fff') + ';cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px')}>
                   <span style={css("font:700 17px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-decoration:" + (on ? 'line-through' : 'none'))}>{text}</span>
@@ -2462,6 +2483,7 @@ function App(){
           const target = stepTarget(cfg, stepIdx);
           setDone(p => Object.assign({}, p, { [stepKey(cfg, stepIdx)]: true }));
           if (target.letterType) setLetterType(target.letterType);
+          if (target.logKind) setLogKind(target.logKind);
           setScreen(target.screen);
         }} className="surfacefx" style={css("padding:20px;border-radius:16px;border:none;background:#FFF4D6;color:#14181F;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Do this step</button>
         <button onClick={() => setDone(p => Object.assign({}, p, { [stepKey(cfg, Math.min(doneCount, cfg.steps.length - 1))]: true }))} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid #fff;background:transparent;color:#fff;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Mark it done</button>
@@ -2573,6 +2595,7 @@ function App(){
             <button onClick={() => {
               setDone(p => Object.assign({}, p, { [stepKey(cfg, stepIdx)]: true }));
               if (target.letterType) setLetterType(target.letterType);
+              if (target.logKind) setLogKind(target.logKind);
               setScreen(target.screen);
             }} className="surfacefx" style={css("padding:22px;border-radius:16px;border:none;background:#14181F;color:#fff;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{primary[0]}</button>
             {/* usertest — Plain mode's single primary CTA routes by step index, and for a
