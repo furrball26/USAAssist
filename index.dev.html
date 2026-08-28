@@ -1562,6 +1562,16 @@ const LOG_KINDS = [
   { label:'+ A document',    title:'Document saved',     body:'', color:'#7A3AA8', tag:'Records' },
   { label:'+ A witness',     title:'Witness noted',      body:'', color:'#1F8A4C', tag:'Witness' },
 ];
+// The Log's default quick-add kind on first open, by issue — before this every
+// issue defaulted to 'Wage & hour' regardless of what actually made sense (a
+// harassment or discrimination user's first tap of "Add to my log" opened an
+// hours-worked form). Only used to seed initial state on case load; an
+// in-session user pick (setLogKind) is never overwritten by this.
+function defaultLogKindForIssueKey(key){
+  if (key === 'wage') return 'Wage & hour';
+  if (key === 'document') return 'Records';
+  return 'Statement'; // harassment, discrimination, termination, general
+}
 
 /* ── App ──────────────────────────────────────────────────────────── */
 
@@ -1610,7 +1620,7 @@ function App(){
   const [done, setDone] = useState(() => saved.done || {});
   const [draft, setDraft] = useState('');
   const [typing, setTyping] = useState(false);
-  const [logKind, setLogKind] = useState('Wage & hour');
+  const [logKind, setLogKind] = useState(() => defaultLogKindForIssueKey(issueCfg(saved.issue).key));
   const [logNote, setLogNote] = useState('');
   const [logHours, setLogHours] = useState(''); // manual hours fallback — used only when start/end time are not both set
   const [logDate, setLogDate] = useState(() => dateInputValue()); // "Date worked" — defaults to today, drives the entry's iso/workweek

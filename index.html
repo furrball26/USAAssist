@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-jklbuP5C3cNr4sIKc79XhgdMv3/t1OkM8Y6pVPk7e+k='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-N01w3jjnM2hf9d0vt66VER6HfdEPA900A6vkmfNuL2A='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14181F">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232B3AA8'/%3E%3Ctext x='32' y='47' font-size='42' text-anchor='middle' fill='white' font-family='Georgia,serif'%3E%C2%A7%3C/text%3E%3C/svg%3E">
@@ -1693,6 +1693,11 @@ const LOG_KINDS = [
   { label: "+ A document", title: "Document saved", body: "", color: "#7A3AA8", tag: "Records" },
   { label: "+ A witness", title: "Witness noted", body: "", color: "#1F8A4C", tag: "Witness" }
 ];
+function defaultLogKindForIssueKey(key) {
+  if (key === "wage") return "Wage & hour";
+  if (key === "document") return "Records";
+  return "Statement";
+}
 function App() {
   const [saved] = useState(loadCase);
   const [onboarded, setOnboarded] = useState(() => !!saved.onboarded);
@@ -1718,7 +1723,7 @@ function App() {
   const [done, setDone] = useState(() => saved.done || {});
   const [draft, setDraft] = useState("");
   const [typing, setTyping] = useState(false);
-  const [logKind, setLogKind] = useState("Wage & hour");
+  const [logKind, setLogKind] = useState(() => defaultLogKindForIssueKey(issueCfg(saved.issue).key));
   const [logNote, setLogNote] = useState("");
   const [logHours, setLogHours] = useState("");
   const [logDate, setLogDate] = useState(() => dateInputValue());
