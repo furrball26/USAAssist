@@ -21,7 +21,10 @@ jobs:
         run: npm ci
 
       - name: Provision headless Chrome for Puppeteer suites
-        run: npx --yes @puppeteer/browsers install chrome-headless-shell@stable
+        # --path . installs the browser to ./chrome-headless-shell, exactly where the
+        # Puppeteer suites' `find` call looks (see test/smoke.mjs). Without it the browser
+        # lands in the default cache and every browser-driven suite fails in CI.
+        run: npx --yes @puppeteer/browsers install chrome-headless-shell@stable --path .
 
       - name: Run full verify (build + validators + Puppeteer suites)
         run: npm run verify
