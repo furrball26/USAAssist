@@ -2566,13 +2566,22 @@ function App(){
   // FLSA_SOL_TIMING_NOTE is shown for a wage case.
   const FlsaSolNote = ({ dark }) => (
     <div style={css((dark
-      ? "padding:10px 12px;border-radius:0 8px 8px 0;border:none;border-left:4px solid rgba(255,227,166,.7);background:rgba(255,255,255,.14)"
+      ? "padding:10px 12px;border-radius:0 8px 8px 0;border:none;border-left:4px solid rgba(255,227,166,.7);background:#626DBF"
       : "padding:10px 12px;border-radius:0 8px 8px 0;border:none;border-left:4px solid #14181F;background:#FFF4D6") + ";display:flex;flex-direction:column;gap:3px")}>
-      <span style={css("font:700 12px 'IBM Plex Mono',monospace;color:" + (dark ? '#FFE3A6' : '#8A5A00') + ";letter-spacing:.04em")}>SEPARATE CLOCK · FEDERAL LAWSUIT DEADLINE</span>
-      {/* wl-ux contrast fix — #FFF4D6 (not #FFE3A6) against this card's composited
-          dark background (~rgb(73,86,180)) gives ~5.88:1, a wider AA margin than the
-          old color's ~5.15:1, while keeping the amber "caution" tone consistent app-wide. */}
-      <span style={css("font:700 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:" + (dark ? '#FFF4D6' : '#6B4B00'))}>{FLSA_SOL_TIMING_NOTE}</span>
+      <span style={css("font:700 12px 'IBM Plex Mono',monospace;color:" + (dark ? '#FFFEF0' : '#8A5A00') + ";letter-spacing:.04em")}>SEPARATE CLOCK · FEDERAL LAWSUIT DEADLINE</span>
+      {/* FIND-09 (docs/audit-2026-08-29.md) — the previous "wl-ux contrast fix" comment here
+          assumed a SINGLE rgba(255,255,255,.14) composite (~rgb(73,86,180)). Wrong: in
+          Action-first mode this note renders INSIDE the Deadline Watch surfacefx button,
+          which is ITSELF rgba(255,255,255,.14) over the #2B3AA8 screen — so this dark
+          variant's old rgba(255,255,255,.14) background was a SECOND translucent layer
+          stacking on the first, actually compositing to rgb(98,109,191). #FFE3A6/#FFF4D6
+          against that real value measured 3.76:1 / 4.29:1 — both under the 4.5:1 AA floor
+          for 12px/14px bold text (bold text needs ~18.66px to count as "large"). Fixed by
+          baking the composite in as an OPAQUE #626DBF background (no more stacked alpha to
+          drift), and using #FFFEF0 for both label and body, which measures 4.64:1 against
+          #626DBF — verified with a walk-the-ancestor-chain script, see
+          test/nested-translucency-contrast.mjs. */}
+      <span style={css("font:700 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:" + (dark ? '#FFFEF0' : '#6B4B00'))}>{FLSA_SOL_TIMING_NOTE}</span>
     </div>
   );
 
@@ -2592,10 +2601,23 @@ function App(){
     const { targetDate, daysLeft, isPast } = computed;
     const urgent = !isPast && daysLeft < 30;
     const tone = isPast ? 'past' : urgent ? 'urgent' : 'ok';
+    // FIND-09 (docs/audit-2026-08-29.md) — same double-translucency bug as FlsaSolNote:
+    // dark's `bg` here renders INSIDE the Deadline Watch surfacefx button (itself
+    // rgba(255,255,255,.14) over the #2B3AA8 screen), so a second rgba(...) layer was
+    // compositing to a color no one had measured. Baked in as opaque hex — the ACTUAL
+    // composite for each tone, walked ancestor-by-ancestor — so contrast is against a
+    // known value instead of an accident of stacking:
+    //   urgent rgba(255,255,255,.14)-on-layer1  -> rgb(98,109,191)  = #626DBF
+    //   past   rgba(179,38,79,.35)-on-layer1     -> rgb(110,69,145) = #6E4591
+    //   ok     rgba(255,255,255,.1)-on-layer1    -> rgb(91,103,188) = #5B67BC
+    // Measured pairs (test/nested-translucency-contrast.mjs): urgent #FFFEF0 on #626DBF
+    // = 4.64:1; past #FFE3EA on #6E4591 = 5.96:1 (already compliant, unchanged); ok
+    // #F3F5FF on #5B67BC = 4.70:1 (old #DDE2FF measured only 3.99:1 — also a real,
+    // previously-unflagged failure).
     const border = { past: dark ? 'rgba(255,180,196,.9)' : '#B3264F', urgent: dark ? 'rgba(255,227,166,.7)' : '#14181F', ok: dark ? 'rgba(255,255,255,.4)' : '#14181F' }[tone];
-    const bg = { past: dark ? 'rgba(179,38,79,.35)' : '#FFE7EC', urgent: dark ? 'rgba(255,255,255,.14)' : '#FFF4D6', ok: dark ? 'rgba(255,255,255,.1)' : '#F0EDE5' }[tone];
-    const labelColor = { past: dark ? '#FFE3EA' : '#8A1438', urgent: dark ? '#FFE3A6' : '#8A5A00', ok: dark ? '#DDE2FF' : '#14181F' }[tone];
-    const bodyColor = { past: dark ? '#FFE3EA' : '#5A1330', urgent: dark ? '#FFE3A6' : '#6B4B00', ok: dark ? '#DDE2FF' : '#3A4150' }[tone];
+    const bg = { past: dark ? '#6E4591' : '#FFE7EC', urgent: dark ? '#626DBF' : '#FFF4D6', ok: dark ? '#5B67BC' : '#F0EDE5' }[tone];
+    const labelColor = { past: dark ? '#FFE3EA' : '#8A1438', urgent: dark ? '#FFFEF0' : '#8A5A00', ok: dark ? '#F3F5FF' : '#14181F' }[tone];
+    const bodyColor = { past: dark ? '#FFE3EA' : '#5A1330', urgent: dark ? '#FFFEF0' : '#6B4B00', ok: dark ? '#F3F5FF' : '#3A4150' }[tone];
     const daysWord = Math.abs(daysLeft) === 1 ? 'day' : 'days';
     const headline = isPast
       ? 'This deadline may have passed — talk to an attorney immediately, some exceptions exist.'
