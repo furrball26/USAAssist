@@ -592,6 +592,11 @@ const ICON_PATHS = {
     <path d="m14.1 8.2 3 3"/>
   </>,
   back: <path d="M15 4.5 7 12l8 7.5"/>,
+  // FIND-17 — forward affordances ("View →", "Find a lawyer →", the next-step
+  // row arrow) were a literal "→" Unicode character with no entry in this set,
+  // so their optical size/weight/baseline didn't track the icon system the
+  // way "back" (above) does. Exact mirror of "back" across the vertical axis.
+  'chevron-forward': <path d="M9 4.5l8 7.5-8 7.5"/>,
   check: <path d="M4.5 12.5 9.5 17.5 19.5 6.5"/>,
   alert: <>
     <path d="M12 3.5 21.5 20h-19L12 3.5Z"/>
@@ -3063,7 +3068,7 @@ function App(){
       <button onClick={nav('strength')} className="surfacefx" style={css("text-align:left;padding:20px;border-radius:18px;border:2px solid #14181F;background:#E8F6EE;cursor:pointer;display:flex;flex-direction:column;gap:14px")}>
         <div style={css("display:flex;align-items:baseline;justify-content:space-between")}>
           <span style={css("font:700 15px 'IBM Plex Mono',monospace;color:#14181F;letter-spacing:.04em")}>CASE STRENGTH</span>
-          <span style={css("font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#136B3C")}>View →</span>
+          <span style={css("display:inline-flex;align-items:center;gap:4px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#136B3C")}>View <Icon name="chevron-forward" size={16} /></span>
         </div>
         <div style={css("font:700 26px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{strength.label}</div>
         <div aria-hidden="true" style={css("display:flex;gap:5px;height:14px")}>
@@ -3098,7 +3103,7 @@ function App(){
                   setScreen(target.screen);
                 }} className="surfacefx" style={css('flex:1;text-align:left;padding:16px;border-radius:14px;border:2px solid #14181F;background:' + (on ? '#E8F6EE' : '#fff') + ';cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px')}>
                   <span style={css("font:700 17px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-decoration:" + (on ? 'line-through' : 'none'))}>{text}</span>
-                  <span aria-hidden="true" style={css("flex:none;font:700 20px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8")}>→</span>
+                  <Icon name="chevron-forward" size={20} style={{ color: '#2B3AA8' }} />
                 </button>
               </div>
             );
@@ -4261,6 +4266,14 @@ function App(){
             {/* CTA straight from a flagged non-compete clause into the dedicated
                 enforceability checker, which pulls the actual sourced state fact
                 (this card's copy is only a generic keyword-match flag). */}
+            {/* FIND-17 note: this CTA's exact button text (including the
+                trailing arrow) is matched by a hardcoded string in
+                test/noncompete-checker.mjs's click() helper (test/ is
+                wl-qa's domain, not touched here) — left as the "→" glyph
+                rather than <Icon name="chevron-forward"/> to avoid
+                breaking that test out from under it. Reported for a
+                paired follow-up (app text + test selector) rather than
+                guessed at. */}
             {cl.title === 'Non-compete / restrictive covenant' &&
               <button onClick={nav('noncompete')} className="hoverfx" style={css("align-self:flex-start;margin-top:10px;min-height:44px;padding:10px 14px;border-radius:10px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Is my non-compete enforceable? →</button>
             }
@@ -4330,7 +4343,7 @@ function App(){
       <div style={css("padding:16px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F")}>
         <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>This is legal information, not legal advice, and it is not an opinion on whether your specific non-compete is enforceable. An employment attorney licensed in {stName} can review your actual agreement.</p>
       </div>
-      <button onClick={nav('agencies')} className="hoverfx" style={css("align-self:flex-start;min-height:44px;padding:12px 16px;border-radius:12px;border:2px solid #2B3AA8;background:#fff;color:#2B3AA8;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Find a lawyer →</button>
+      <button onClick={nav('agencies')} className="hoverfx" style={css("align-self:flex-start;min-height:44px;padding:12px 16px;border-radius:12px;border:2px solid #2B3AA8;background:#fff;color:#2B3AA8;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:6px")}>Find a lawyer <Icon name="chevron-forward" size={15} /></button>
     </div>
     );
   };
@@ -4440,7 +4453,7 @@ function App(){
       <div style={css("padding:16px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F")}>
         <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>This is legal information, not legal advice, and none of the figures above are what you are owed. An employment attorney licensed in {stateLabel} can assess what your case might actually be worth.</p>
       </div>
-      <button onClick={nav('agencies')} className="hoverfx" style={css("align-self:flex-start;min-height:44px;padding:12px 16px;border-radius:12px;border:2px solid #2B3AA8;background:#fff;color:#2B3AA8;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Find a lawyer →</button>
+      <button onClick={nav('agencies')} className="hoverfx" style={css("align-self:flex-start;min-height:44px;padding:12px 16px;border-radius:12px;border:2px solid #2B3AA8;background:#fff;color:#2B3AA8;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:6px")}>Find a lawyer <Icon name="chevron-forward" size={15} /></button>
     </div>
     );
   };
