@@ -1561,8 +1561,21 @@ function buildLetter(ctx){
     const list = dates.length ? '\n\nDocumented incidents:\n' + dates.map(d => '• ' + d).join('\n') : '';
     const stCite = cite(st, 'discrimination.coverage', cite(st, 'discrimination.protectedClasses', ''));
     const stClause = stCite ? ' and ' + ctx.stateSel + ' law (' + stCite + ')' : '';
+    // FIND-11 (docs/audit-2026-08-29.md) — this letter was generic Title VII
+    // boilerplate that never mentioned the ADA, disability, or a logged
+    // accommodation denial, even when the ADA tracker (profile.adaLog) already
+    // recorded exactly that fact — the app asked the user to log it, then the
+    // letter ignored it. A denied accommodation is its own, disability-specific
+    // legal theory (42 U.S.C. §12112), not just generic Title VII discrimination,
+    // so name it and cite the actual denial on file rather than staying silent.
+    const adaLog = Array.isArray(ctx.adaLog) ? ctx.adaLog : [];
+    const deniedEntry = (adaLog.length && adaLog[adaLog.length - 1].what === 'denied') ? adaLog[adaLog.length - 1] : null;
+    const adaFedCite = cite(fed, 'disability.reasonableAccommodation', '42 U.S.C. §12112');
+    const adaClause = deniedEntry
+      ? (' This also includes the denial of my request for a reasonable accommodation for a disability' + (deniedEntry.date ? ' on ' + formatLocalDateStr(deniedEntry.date) : '') + (deniedEntry.notes ? (' (' + deniedEntry.notes + ')') : '') + ', which I believe violates the Americans with Disabilities Act (' + adaFedCite + ').')
+      : '';
     const body = date + '\n\n' + emp + '\nAttn: Human Resources\n\nRe: ' + subject + '\n\nTo whom it may concern:\n\n' +
-      'I am formally reporting conduct at work that I believe violates Title VII of the Civil Rights Act of 1964' + stClause + '. I am asking that the conduct stop and that the company promptly and impartially investigate.' + list + '\n\n' +
+      'I am formally reporting conduct at work that I believe violates Title VII of the Civil Rights Act of 1964' + stClause + '.' + adaClause + ' I am asking that the conduct stop and that the company promptly and impartially investigate.' + list + '\n\n' +
       'The law prohibits retaliation against me for making this good-faith complaint. I ask that this letter be placed in my personnel file.\n\nSincerely,\n' + name;
     return { title: 'Complaint letter', subject, body, usesStateLaw: !!stCite };
   }
@@ -1574,13 +1587,37 @@ function buildLetter(ctx){
     const fedCite = cite(fed, 'disability.reasonableAccommodation', '42 U.S.C. § 12112');
     const stFact = stateFactFor(st, ['disability.accommodation', 'disability.reasonableAccommodation', 'disability.interactiveProcess']);
     const stClause = (stFact && stFact.citation) ? ' ' + ctx.stateSel + ' law (' + stFact.citation + ') may provide additional protection.' : '';
-    const subject = 'Request for a reasonable accommodation';
-    const body = date + '\n\n' + emp + '\nAttn: Human Resources\n\nRe: ' + subject + '\n\nTo whom it may concern:\n\n' +
-      'I am requesting a reasonable accommodation for a disability under the Americans with Disabilities Act (' + fedCite + ').' + stClause + '\n\n' +
-      'My limitation is: [describe your limitation in plain terms — no legal or medical terms required].\n' +
-      'The change that would help is: [describe the accommodation you are requesting].\n\n' +
-      'I understand this begins an interactive process between us to identify an effective accommodation, and I am glad to discuss options. Please confirm receipt in writing and let me know a good time to talk this week.\n\nSincerely,\n' + name;
-    return { title: 'Accommodation request letter', subject, body, usesStateLaw: !!(stFact && stFact.citation) };
+    // FIND-11 (docs/audit-2026-08-29.md) — this letter used to be written in
+    // first-ask future tense ("I am requesting... this begins an interactive
+    // process") no matter what, even after the ADA tracker (profile.adaLog —
+    // see AdaProcessTracker) already logged that the request was made AND
+    // denied. Mirrors the wage-demand letter's existing pattern of pulling real
+    // facts from a log (there, the hours log) into the letter it generates —
+    // here, the ADA interactive-process log — so a denial is reflected, not
+    // contradicted, by the letter the app hands the user next. adaLog entries
+    // are stored in the order logged (see AdaProcessTracker/buildCaseFile,
+    // which use the same array-order convention with no re-sort), so the LAST
+    // entry is the process's current status.
+    const adaLog = Array.isArray(ctx.adaLog) ? ctx.adaLog : [];
+    const requestedEntry = adaLog.find(e => e.what === 'requested');
+    const latestEntry = adaLog.length ? adaLog[adaLog.length - 1] : null;
+    const wasDenied = !!(latestEntry && latestEntry.what === 'denied');
+    const requestedDateStr = requestedEntry && requestedEntry.date ? formatLocalDateStr(requestedEntry.date) : null;
+    const deniedDateStr = wasDenied && latestEntry.date ? formatLocalDateStr(latestEntry.date) : null;
+    const subject = wasDenied ? 'Follow-up: request for a reasonable accommodation (request denied)' : 'Request for a reasonable accommodation';
+    const openingLine = wasDenied
+      ? ('I requested a reasonable accommodation for a disability under the Americans with Disabilities Act (' + fedCite + ')' + (requestedDateStr ? ' on ' + requestedDateStr : '') + '.' + stClause + ' I was told this request was denied' + (deniedDateStr ? ' on ' + deniedDateStr : '') + (latestEntry.notes ? (': ' + latestEntry.notes) : '') + '.')
+      : ('I am requesting a reasonable accommodation for a disability under the Americans with Disabilities Act (' + fedCite + ').' + stClause);
+    const bodyMiddle = wasDenied
+      ? ('I am asking the company to reconsider and to continue the interactive process the law requires. If there is a specific reason the requested accommodation cannot be provided, please state it in writing, and let\'s discuss whether an alternative accommodation would work instead.\n\n' +
+         'My limitation is: [describe your limitation in plain terms — no legal or medical terms required].\n' +
+         'The accommodation I am now requesting is: [describe the accommodation, restated or revised].\n\n' +
+         'Please confirm receipt in writing and let me know a good time to talk this week.')
+      : ('My limitation is: [describe your limitation in plain terms — no legal or medical terms required].\n' +
+         'The change that would help is: [describe the accommodation you are requesting].\n\n' +
+         'I understand this begins an interactive process between us to identify an effective accommodation, and I am glad to discuss options. Please confirm receipt in writing and let me know a good time to talk this week.');
+    const body = date + '\n\n' + emp + '\nAttn: Human Resources\n\nRe: ' + subject + '\n\nTo whom it may concern:\n\n' + openingLine + '\n\n' + bodyMiddle + '\n\nSincerely,\n' + name;
+    return { title: wasDenied ? 'Accommodation request letter (follow-up after denial)' : 'Accommodation request letter', subject, body, usesStateLaw: !!(stFact && stFact.citation) };
   }
 
   // records-request (termination, document review, or generic)
@@ -4477,6 +4514,10 @@ function App(){
     const gen = buildLetter({
       kind: activeKind, issueKey: cfg.key, youName, employerName, stateSel: stateLabel,
       unpaidHours, owedEstimate, rateNum, federal, stateData, entries, payType: profile.payType,
+      // FIND-11 — lets the accommodation-request/complaint letters incorporate a
+      // logged ADA request/denial (see buildLetter), the same way wage-demand
+      // already incorporates the hours log.
+      adaLog: profile.adaLog,
     });
     const editing = letterEdit != null;
     const text = editing ? letterEdit : gen.body;

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-pgYiadaScR+Y6TWidCPFJDk7Zq07oIScgbtaPuymkIE='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-I/ctSHQQHKVSwTifuiw0ApCLsR9eFEgelgnbREaqWSU='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14181F">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232B3AA8'/%3E%3Ctext x='32' y='47' font-size='42' text-anchor='middle' fill='white' font-family='Georgia,serif'%3E%C2%A7%3C/text%3E%3C/svg%3E">
@@ -1661,16 +1661,28 @@ function buildLetter(ctx) {
     const list = dates.length ? "\n\nDocumented incidents:\n" + dates.map((d) => "\u2022 " + d).join("\n") : "";
     const stCite = cite(st, "discrimination.coverage", cite(st, "discrimination.protectedClasses", ""));
     const stClause = stCite ? " and " + ctx.stateSel + " law (" + stCite + ")" : "";
-    const body2 = date + "\n\n" + emp + "\nAttn: Human Resources\n\nRe: " + subject2 + "\n\nTo whom it may concern:\n\nI am formally reporting conduct at work that I believe violates Title VII of the Civil Rights Act of 1964" + stClause + ". I am asking that the conduct stop and that the company promptly and impartially investigate." + list + "\n\nThe law prohibits retaliation against me for making this good-faith complaint. I ask that this letter be placed in my personnel file.\n\nSincerely,\n" + name;
+    const adaLog = Array.isArray(ctx.adaLog) ? ctx.adaLog : [];
+    const deniedEntry = adaLog.length && adaLog[adaLog.length - 1].what === "denied" ? adaLog[adaLog.length - 1] : null;
+    const adaFedCite = cite(fed, "disability.reasonableAccommodation", "42 U.S.C. \xA712112");
+    const adaClause = deniedEntry ? " This also includes the denial of my request for a reasonable accommodation for a disability" + (deniedEntry.date ? " on " + formatLocalDateStr(deniedEntry.date) : "") + (deniedEntry.notes ? " (" + deniedEntry.notes + ")" : "") + ", which I believe violates the Americans with Disabilities Act (" + adaFedCite + ")." : "";
+    const body2 = date + "\n\n" + emp + "\nAttn: Human Resources\n\nRe: " + subject2 + "\n\nTo whom it may concern:\n\nI am formally reporting conduct at work that I believe violates Title VII of the Civil Rights Act of 1964" + stClause + "." + adaClause + " I am asking that the conduct stop and that the company promptly and impartially investigate." + list + "\n\nThe law prohibits retaliation against me for making this good-faith complaint. I ask that this letter be placed in my personnel file.\n\nSincerely,\n" + name;
     return { title: "Complaint letter", subject: subject2, body: body2, usesStateLaw: !!stCite };
   }
   if (kind === "accommodation-request") {
     const fedCite = cite(fed, "disability.reasonableAccommodation", "42 U.S.C. \xA7 12112");
     const stFact = stateFactFor(st, ["disability.accommodation", "disability.reasonableAccommodation", "disability.interactiveProcess"]);
     const stClause = stFact && stFact.citation ? " " + ctx.stateSel + " law (" + stFact.citation + ") may provide additional protection." : "";
-    const subject2 = "Request for a reasonable accommodation";
-    const body2 = date + "\n\n" + emp + "\nAttn: Human Resources\n\nRe: " + subject2 + "\n\nTo whom it may concern:\n\nI am requesting a reasonable accommodation for a disability under the Americans with Disabilities Act (" + fedCite + ")." + stClause + "\n\nMy limitation is: [describe your limitation in plain terms \u2014 no legal or medical terms required].\nThe change that would help is: [describe the accommodation you are requesting].\n\nI understand this begins an interactive process between us to identify an effective accommodation, and I am glad to discuss options. Please confirm receipt in writing and let me know a good time to talk this week.\n\nSincerely,\n" + name;
-    return { title: "Accommodation request letter", subject: subject2, body: body2, usesStateLaw: !!(stFact && stFact.citation) };
+    const adaLog = Array.isArray(ctx.adaLog) ? ctx.adaLog : [];
+    const requestedEntry = adaLog.find((e) => e.what === "requested");
+    const latestEntry = adaLog.length ? adaLog[adaLog.length - 1] : null;
+    const wasDenied = !!(latestEntry && latestEntry.what === "denied");
+    const requestedDateStr = requestedEntry && requestedEntry.date ? formatLocalDateStr(requestedEntry.date) : null;
+    const deniedDateStr = wasDenied && latestEntry.date ? formatLocalDateStr(latestEntry.date) : null;
+    const subject2 = wasDenied ? "Follow-up: request for a reasonable accommodation (request denied)" : "Request for a reasonable accommodation";
+    const openingLine = wasDenied ? "I requested a reasonable accommodation for a disability under the Americans with Disabilities Act (" + fedCite + ")" + (requestedDateStr ? " on " + requestedDateStr : "") + "." + stClause + " I was told this request was denied" + (deniedDateStr ? " on " + deniedDateStr : "") + (latestEntry.notes ? ": " + latestEntry.notes : "") + "." : "I am requesting a reasonable accommodation for a disability under the Americans with Disabilities Act (" + fedCite + ")." + stClause;
+    const bodyMiddle = wasDenied ? "I am asking the company to reconsider and to continue the interactive process the law requires. If there is a specific reason the requested accommodation cannot be provided, please state it in writing, and let's discuss whether an alternative accommodation would work instead.\n\nMy limitation is: [describe your limitation in plain terms \u2014 no legal or medical terms required].\nThe accommodation I am now requesting is: [describe the accommodation, restated or revised].\n\nPlease confirm receipt in writing and let me know a good time to talk this week." : "My limitation is: [describe your limitation in plain terms \u2014 no legal or medical terms required].\nThe change that would help is: [describe the accommodation you are requesting].\n\nI understand this begins an interactive process between us to identify an effective accommodation, and I am glad to discuss options. Please confirm receipt in writing and let me know a good time to talk this week.";
+    const body2 = date + "\n\n" + emp + "\nAttn: Human Resources\n\nRe: " + subject2 + "\n\nTo whom it may concern:\n\n" + openingLine + "\n\n" + bodyMiddle + "\n\nSincerely,\n" + name;
+    return { title: wasDenied ? "Accommodation request letter (follow-up after denial)" : "Accommodation request letter", subject: subject2, body: body2, usesStateLaw: !!(stFact && stFact.citation) };
   }
   const finalPayFact = factByTopic(st, "final-pay") || factsByPrefix(st, "final-pay")[0];
   const finalPayUsed = !!(finalPayFact && finalPayFact.citation);
@@ -2927,7 +2939,11 @@ function App() {
       federal,
       stateData,
       entries,
-      payType: profile.payType
+      payType: profile.payType,
+      // FIND-11 — lets the accommodation-request/complaint letters incorporate a
+      // logged ADA request/denial (see buildLetter), the same way wage-demand
+      // already incorporates the hours log.
+      adaLog: profile.adaLog
     });
     const editing = letterEdit != null;
     const text = editing ? letterEdit : gen.body;
