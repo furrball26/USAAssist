@@ -168,7 +168,7 @@ try {
   const textAfterScan = await bodyText(pg);
   const hasLink = textAfterScan.includes('Is my non-compete enforceable?');
 
-  await click(pg, 'Is my non-compete enforceable? →');
+  await click(pg, 'Is my non-compete enforceable?');
   await new Promise(r => setTimeout(r, 300));
   const textAfterClick = await bodyText(pg);
 

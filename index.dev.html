@@ -4273,16 +4273,8 @@ function App(){
             {/* CTA straight from a flagged non-compete clause into the dedicated
                 enforceability checker, which pulls the actual sourced state fact
                 (this card's copy is only a generic keyword-match flag). */}
-            {/* FIND-17 note: this CTA's exact button text (including the
-                trailing arrow) is matched by a hardcoded string in
-                test/noncompete-checker.mjs's click() helper (test/ is
-                wl-qa's domain, not touched here) — left as the "→" glyph
-                rather than <Icon name="chevron-forward"/> to avoid
-                breaking that test out from under it. Reported for a
-                paired follow-up (app text + test selector) rather than
-                guessed at. */}
             {cl.title === 'Non-compete / restrictive covenant' &&
-              <button onClick={nav('noncompete')} className="hoverfx" style={css("align-self:flex-start;margin-top:10px;min-height:44px;padding:10px 14px;border-radius:10px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Is my non-compete enforceable? →</button>
+              <button onClick={nav('noncompete')} className="hoverfx" style={css("align-self:flex-start;margin-top:10px;min-height:44px;padding:10px 14px;border-radius:10px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:6px")}>Is my non-compete enforceable? <Icon name="chevron-forward" size={14} /></button>
             }
           </div>
         )}
