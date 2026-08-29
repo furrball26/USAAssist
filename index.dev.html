@@ -3065,7 +3065,14 @@ function App(){
         <WageRecoverPanel />
       </div>
 
-      <button onClick={nav('strength')} className="surfacefx" style={css("text-align:left;padding:20px;border-radius:18px;border:2px solid #14181F;background:#E8F6EE;cursor:pointer;display:flex;flex-direction:column;gap:14px")}>
+      {/* FIND-14 — this card was the one genuinely stray 18px radius: same
+          full-width tappable Home nav-card role as "Ready to file a
+          complaint?" below (border-radius:16px, also a 2px border), with no
+          other reason for the 2px difference. Normalized to match; the other
+          two 18px call sites (the chat bubble tail-corner shape and the
+          wizard RESULT reveal card, which also carries a unique 3px border)
+          read as deliberate, not drift — left as-is. */}
+      <button onClick={nav('strength')} className="surfacefx" style={css("text-align:left;padding:20px;border-radius:16px;border:2px solid #14181F;background:#E8F6EE;cursor:pointer;display:flex;flex-direction:column;gap:14px")}>
         <div style={css("display:flex;align-items:baseline;justify-content:space-between")}>
           <span style={css("font:700 15px 'IBM Plex Mono',monospace;color:#14181F;letter-spacing:.04em")}>CASE STRENGTH</span>
           <span style={css("display:inline-flex;align-items:center;gap:4px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#136B3C")}>View <Icon name="chevron-forward" size={16} /></span>
