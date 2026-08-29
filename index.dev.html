@@ -614,6 +614,43 @@ const RESULTS_WAGE = {
   r_hce: { v:'ex', title:'Possibly exempt — highly compensated employee', body:'At $107,432 or more a year with at least one exempt-type duty, the highly-compensated-employee test uses a relaxed duties standard — you do not need to meet the full duties test that ordinary executive, administrative or professional exemptions require. If your total-pay figure or duty description overstated things, revisit this.', cites:['29 C.F.R. §541.601','29 U.S.C. §213(a)(1)'] }
 };
 
+// FIND-01 (docs/audit-2026-08-29.md) — the wizard's federal salary-level question
+// ("Is your salary at least $684/week?") is a self-report against the FEDERAL floor
+// only. Several states set a HIGHER white-collar salary floor (content topic
+// 'overtime.salaryFloorWeekly', e.g. CA's ~$1,352/week) — a worker who clears $684
+// can still fall below a state's own number, and the salary-basis test is a floor,
+// not a duties test: failing it is disqualifying no matter how exempt the duties look.
+// This only ever DOWNGRADES a standard white-collar 'ex' verdict (r_exec/r_admin/
+// r_prof/r_creative/r_comp) to reflect the user's own stored profile salary against
+// the state's own numeric fact — it never invents a fact, never hardcodes a state or
+// dollar figure, and never flips a 'non' result to 'ex' (clearing the floor is
+// necessary, not sufficient — duties still control, so an at/above-floor salary
+// leaves the duties-based verdict exactly as computed). It intentionally does
+// nothing when: the result isn't one of these salary-basis exemptions (e.g.
+// r_outside/r_hce use different tests with no per-state weekly-floor fact here),
+// the worker is paid hourly (a different, already-handled failure mode — see
+// r_hourly/r_hourly_comp_no), there is no numeric state floor fact, or no salary is
+// on file to compare — all of those fall through unchanged rather than guessing.
+const SALARY_BASIS_EXEMPT_RESULTS = new Set(['r_exec', 'r_admin', 'r_prof', 'r_creative', 'r_comp']);
+function applyStateSalaryFloor(result, wizNode, profile, stateData){
+  if (!result || result.v !== 'ex' || !SALARY_BASIS_EXEMPT_RESULTS.has(wizNode)) return result;
+  if (!profile || profile.payType !== 'Salary') return result; // hourly: not this test's concern here
+  const floorFact = factByTopic((stateData && stateData.facts) || [], 'overtime.salaryFloorWeekly');
+  const floor = floorFact && Number(floorFact.value);
+  if (!(floor > 0)) return result; // no numeric state floor fact — unchanged federal-only behavior
+  const annual = Number(profile.salary);
+  if (!(annual > 0)) return result; // no salary on file to compare — do not guess
+  const weekly = annual / 52;
+  if (weekly >= floor) return result; // clears the state floor too — duties analysis stands
+  const stName = (stateData && stateData.name) || 'your state';
+  return Object.assign({}, result, {
+    v: 'non',
+    title: 'Not exempt in ' + stName + ' — salary is below the state floor',
+    body: 'Your duties may otherwise fit an exemption, but ' + stName + ' requires a salary of at least ' + money(floor) + '/week for the white-collar exemptions, and your stated salary works out to about ' + money(weekly) + '/week — below that line. A salary below the applicable floor fails the salary-basis test regardless of duties, so overtime is likely owed under ' + stName + ' law even though the federal $684/week test was cleared.',
+    cites: (result.cites || []).concat([floorFact.citation].filter(Boolean))
+  });
+}
+
 // wl-builder — HARASSMENT self-check (issue key 'harassment'). Same branching
 // Q&A pattern as the FLSA exemption wizard above (TREE_WAGE/RESULTS_WAGE),
 // parameterized per-issue via WIZARD_CONFIG/wizardConfigFor so the single
@@ -3354,7 +3391,10 @@ function App(){
     // per case (a case has exactly one issue), so a 'start' node in TREE_WAGE and
     // TREE_HARASSMENT never collide in practice.
     const wcfg = wizardConfigFor(cfg.key);
-    const result = wcfg.results[wizNode];
+    // FIND-01 — for the wage tree only, cross-check a standard white-collar
+    // 'ex' verdict against the active state's own salary-floor fact before it
+    // ever reaches the screen (see applyStateSalaryFloor above).
+    const result = cfg.key === 'wage' ? applyStateSalaryFloor(wcfg.results[wizNode], wizNode, profile, stateData) : wcfg.results[wizNode];
     const wizDone = !!result;
     const cur = wcfg.tree[wizNode] || wcfg.tree.start;
     const depth = wizPath.length + 1;

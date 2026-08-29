@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-6LODX1gYbwa1RpB/xGbFz8fxuZLUnZqQ1Wmm4C+v4y4='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-pgYiadaScR+Y6TWidCPFJDk7Zq07oIScgbtaPuymkIE='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14181F">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232B3AA8'/%3E%3Ctext x='32' y='47' font-size='42' text-anchor='middle' fill='white' font-family='Georgia,serif'%3E%C2%A7%3C/text%3E%3C/svg%3E">
@@ -882,6 +882,25 @@ const RESULTS_WAGE = {
   // FULL duties test the ordinary executive/admin/professional routes require.
   r_hce: { v: "ex", title: "Possibly exempt \u2014 highly compensated employee", body: "At $107,432 or more a year with at least one exempt-type duty, the highly-compensated-employee test uses a relaxed duties standard \u2014 you do not need to meet the full duties test that ordinary executive, administrative or professional exemptions require. If your total-pay figure or duty description overstated things, revisit this.", cites: ["29 C.F.R. \xA7541.601", "29 U.S.C. \xA7213(a)(1)"] }
 };
+const SALARY_BASIS_EXEMPT_RESULTS = /* @__PURE__ */ new Set(["r_exec", "r_admin", "r_prof", "r_creative", "r_comp"]);
+function applyStateSalaryFloor(result, wizNode, profile, stateData) {
+  if (!result || result.v !== "ex" || !SALARY_BASIS_EXEMPT_RESULTS.has(wizNode)) return result;
+  if (!profile || profile.payType !== "Salary") return result;
+  const floorFact = factByTopic(stateData && stateData.facts || [], "overtime.salaryFloorWeekly");
+  const floor = floorFact && Number(floorFact.value);
+  if (!(floor > 0)) return result;
+  const annual = Number(profile.salary);
+  if (!(annual > 0)) return result;
+  const weekly = annual / 52;
+  if (weekly >= floor) return result;
+  const stName = stateData && stateData.name || "your state";
+  return Object.assign({}, result, {
+    v: "non",
+    title: "Not exempt in " + stName + " \u2014 salary is below the state floor",
+    body: "Your duties may otherwise fit an exemption, but " + stName + " requires a salary of at least " + money(floor) + "/week for the white-collar exemptions, and your stated salary works out to about " + money(weekly) + "/week \u2014 below that line. A salary below the applicable floor fails the salary-basis test regardless of duties, so overtime is likely owed under " + stName + " law even though the federal $684/week test was cleared.",
+    cites: (result.cites || []).concat([floorFact.citation].filter(Boolean))
+  });
+}
 const RESULTS_HARASSMENT = {
   r_h_no_link: { v: "non", title: "This may not be legally protected harassment", body: "Harassment law generally requires that the conduct be tied to a protected characteristic \u2014 race, sex, religion, national origin, age 40+, disability, or similar. General rudeness or a personality conflict, on its own, usually is not enough, even if it feels the same day to day. If you notice a pattern tied to who you are, run this check again \u2014 and a workplace policy can still prohibit conduct that is not illegal.", cites: ["42 U.S.C. \xA72000e-2(a)(1)"] },
   r_h_not_unwelcome: { v: "maybe", title: "An element may be missing \u2014 \u201Cunwelcome\u201D conduct", body: "Harassment law also generally requires that the conduct be unwelcome to you. If it was not, this specific legal theory may not apply. If this answer does not reflect what actually happened, or the situation has changed, run the check again.", cites: ["Meritor Savings Bank v. Vinson, 477 U.S. 57 (1986)"] },
@@ -2579,7 +2598,7 @@ function App() {
   }, placeholder: "Type your question", style: css("flex:1;padding:16px;border-radius:14px;border:2px solid #14181F;background:#fff;font:400 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }), /* @__PURE__ */ React.createElement("button", { onClick: () => send(draft), style: css("padding:16px 20px;border-radius:14px;border:none;background:#2B3AA8;color:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, "Send")), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 13px/1.35 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "AI can be wrong. Verify anything important with an attorney \u2014 tap Agencies in the tab bar.")));
   const Wizard = () => {
     const wcfg = wizardConfigFor(cfg.key);
-    const result = wcfg.results[wizNode];
+    const result = cfg.key === "wage" ? applyStateSalaryFloor(wcfg.results[wizNode], wizNode, profile, stateData) : wcfg.results[wizNode];
     const wizDone = !!result;
     const cur = wcfg.tree[wizNode] || wcfg.tree.start;
     const depth = wizPath.length + 1;
