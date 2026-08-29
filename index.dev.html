@@ -122,12 +122,13 @@
       grid-template-areas:"rail status" "rail main";
       border-radius:0; border:none; box-shadow:none;
       height:100%;
-      /* R2: at the desktop tier the mode color (navy/white/cream — set inline
-         as --mode-bg, see screenBg in the App component) belongs only on the
-         680px reading column, not flooding the whole viewport. .screen itself
-         becomes the calm beige "desk" gutter; !important is required because
-         it overrides the same-element inline `background` used at every
-         narrower tier, where .screen SHOULD be full-bleed mode-colored. */
+      /* R2: at the desktop tier the screen color (set inline as --mode-bg, see
+         screenBg in the App component — a fixed cream now that Home is a
+         single Standard layout) belongs only on the 680px reading column, not
+         flooding the whole viewport. .screen itself becomes the calm beige
+         "desk" gutter; !important is required because it overrides the
+         same-element inline `background` used at every narrower tier, where
+         .screen SHOULD be full-bleed screen-colored. */
       background:#F3EFE7 !important;
     }
     .screen.no-tabbar{ grid-template-columns:1fr; grid-template-areas:"status" "main"; }
@@ -135,9 +136,8 @@
     .scrollarea{ grid-area:main; display:flex; flex-direction:column; align-items:center; padding:48px 40px 64px; }
     /* flex:0 0 auto — at the desktop tier .scrollarea is a fixed-height flex
        column; without this, children default to flex-shrink:1 and get compressed
-       below their content height, so a tall screen (e.g. Action-first/Plain home)
-       overflows onto the sibling privacy/footer cards. Keep natural height and let
-       .scrollarea scroll instead. */
+       below their content height, so a tall screen overflows onto the sibling
+       privacy/footer cards. Keep natural height and let .scrollarea scroll instead. */
     .scrollarea > *{ width:100%; max-width:680px; background:var(--mode-bg); flex:0 0 auto; }
     /* design HIGH #8 — a 14%-opacity hairline was the only thing separating the
        rail from the beige desk gutter, unlike every other card/surface boundary
@@ -2831,8 +2831,9 @@ function App(){
             // C1 — the selected-state token for an in-form data selection (this radio,
             // the Log entry-type/paid-status pills) is a solid #2B3AA8 inverted fill
             // with white text, not a light tint — the tint read too weak next to those
-            // other pills' stronger selected state. Structural view toggles (ModeSwitch)
-            // use the separate #14181F ink-fill token instead.
+            // other pills' stronger selected state. Structural view toggles (the
+            // retired Standard/Action-first/Plain ModeSwitch) used the separate
+            // #14181F ink-fill token instead.
             return (
             <button key={name} onClick={() => setDIssue(name)} role="radio" aria-checked={on} className="surfacefx"
               style={css('text-align:left;display:flex;flex-direction:column;gap:5px;padding:18px;border-radius:16px;border:2px solid ' + (on ? '#2B3AA8' : '#14181F') + ';background:' + (on ? '#2B3AA8' : '#fff') + ';cursor:pointer')}>
@@ -2963,26 +2964,6 @@ function App(){
     );
   };
 
-  const ModeSwitch = ({ theme }) => {
-    const dark = theme === 'dark';
-    const modes = [['standard','Standard'],['action','Action-first'],['plain','Plain']];
-    return (
-      <div role="group" aria-label="Dashboard view" style={css("display:flex;gap:6px;margin-bottom:4px")}>
-        {modes.map(([k, label]) => {
-          const on = homeMode === k;
-          // C1 — a structural view toggle (this switch, not an in-form data
-          // selection) uses the OTHER selected-state token: a solid #14181F
-          // ink fill, the same on either theme, instead of the previous
-          // dark-theme-only light-yellow fill (#FFF4D6) that didn't match.
-          const border = on ? '#14181F' : (dark ? '#fff' : '#14181F');
-          const bg = on ? '#14181F' : 'transparent';
-          const color = on ? '#fff' : (dark ? '#fff' : '#14181F');
-          return <button key={k} onClick={() => setHomeMode(k)} aria-pressed={on} className="surfacefx" style={css('flex:1;min-height:44px;padding:13px 6px;border-radius:999px;border:2px solid ' + border + ';background:' + bg + ';color:' + color + ";font:700 13px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{label}</button>;
-        })}
-      </div>
-    );
-  };
-
   // Opens the ◉ edit-location/profile flow, staging the current case into
   // editDraft (F10's model) so nothing changes until Save is tapped.
   const openEditFlow = () => { setEditDraft({ stateSel, county, issue, profile: Object.assign({}, profile) }); setScreen('onboarding'); setOnbStep(1); };
@@ -3028,7 +3009,6 @@ function App(){
   const HomeStandard = () => (
     <div style={css("padding:8px 22px 34px;display:flex;flex-direction:column;gap:24px")}>
       <div style={css("display:flex;flex-direction:column;gap:16px")}>
-        <ModeSwitch theme="light" />
         <StorageWarningBanner />
         <div style={css("display:flex;align-items:center;justify-content:space-between;gap:10px")}>
           <LocationPill dark={false} />
@@ -3230,271 +3210,14 @@ function App(){
     </div>
   );
 
-  /* 1b — alternate home: action-first, one thing at a time */
-  const HomeAction = () => (
-    <div style={css("padding:16px 24px 28px;display:flex;flex-direction:column;gap:18px;min-height:0")}>
-      <ModeSwitch theme="dark" />
-      <StorageWarningBanner />
-      <LocationPill dark={true} />
-      <p style={css("margin:0;font:700 14px 'IBM Plex Mono',monospace;color:#C9D0FF;letter-spacing:.05em")}>STEP {currentStepIdx + 1} OF {cfg.steps.length} · {cfg.caseTitle.toUpperCase()}</p>
-      {/* FIND-10 (docs/audit-2026-08-29.md) — this headline used to render at
-          font-size:40px/line-height:43.2px, ~302px tall across long step text
-          wrapped to 7 lines, pushing the primary "Do this step" CTA to
-          top:1048px on an 844px viewport (1.25 screens down) — the slowest
-          path to the action in a mode whose entire premise is speed. Capped
-          to the same 28px scale HomeStandard's H1 uses everywhere else. */}
-      <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#fff;text-wrap:pretty")}>{cfg.steps[currentStepIdx]}.</h1>
-      <p style={css("margin:0;font:400 19px/1.5 'Atkinson Hyperlegible',sans-serif;color:#DDE2FF")}>{cfg.actionWhy}</p>
-      {/* FIND-10 (docs/audit-2026-08-29.md) — the primary CTA moves here, directly
-          under the headline/why-copy, instead of after the Deadline Watch card and
-          its explainer sub-blocks. Those still render (below), just no longer
-          gate reaching the step's actual action. */}
-      <div style={css("display:flex;flex-direction:column;gap:12px")}>
-        <button onClick={() => {
-          const target = stepTarget(cfg, currentStepIdx);
-          setDone(p => Object.assign({}, p, { [stepKey(cfg, currentStepIdx)]: true }));
-          if (target.letterType) setLetterType(target.letterType);
-          if (target.logKind) setLogKind(target.logKind);
-          else if (target.screen === 'log') setLogKind(defaultLogKindForIssueKey(cfg.key));
-          setScreen(target.screen);
-        }} className="surfacefx" style={css("padding:20px;border-radius:16px;border:none;background:#FFF4D6;color:#14181F;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Do this step</button>
-        <button onClick={() => setDone(p => Object.assign({}, p, { [stepKey(cfg, currentStepIdx)]: true }))} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid #fff;background:transparent;color:#fff;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Mark it done</button>
-      </div>
-      {(() => {
-        const fedF = (federal && federal.facts) || [];
-        const stF = (stateData && stateData.facts) || [];
-        const dl = pickDeadlineFactAcross(stF, fedF, cfg.key);
-        return dl ? (
-          <>
-            <button onClick={nav('strength')} className="surfacefx" style={css("text-align:left;padding:14px 16px;border-radius:12px;border:2px solid rgba(255,255,255,.4);background:rgba(255,255,255,.14);cursor:pointer;display:flex;flex-direction:column;gap:4px")}>
-              <span style={css("font:700 12px 'IBM Plex Mono',monospace;color:#DDE2FF;letter-spacing:.05em;display:inline-flex;align-items:center;gap:6px")}><Icon name="deadline-clock" size={13} /> DEADLINE WATCH</span>
-              <span style={css("font:700 16px/1.3 'Atkinson Hyperlegible',sans-serif;color:#fff")}>{dl.value || dl.summary}</span>
-              <DeadlineComputedBlock dark={true} dl={dl} />
-              {/* G1 (docs/flsa-process-gap.md) — the clock is not paused by a WHD complaint. */}
-              {cfg.key === 'wage' && <FlsaSolNote dark={true} />}
-            </button>
-            <AddDeadlineDatePrompt dark={true} dl={dl} />
-          </>
-        ) : (!stateSel || !issue) ? <MissingDeadlineCTA dark={true} /> : null;
-      })()}
-      <DocDeadlineWatch dark={true} />
-      <OshaWatch dark={true} />
-      {/* Harassment/discrimination identifier tool — same visibility rule as the
-          wage wizard's Standard/Plain tiles (cfg.key guard), surfaced here as its
-          own affordance since Action-first's step routing doesn't reach 'wizard'
-          for these two issues. */}
-      {cfg.key === 'harassment' &&
-        <button onClick={nav('wizard')} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.6);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Is this harassment?</button>
-      }
-      {cfg.key === 'discrimination' &&
-        <button onClick={nav('wizard')} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.6);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Is this discrimination?</button>
-      }
-      {/* Non-compete checker — Action-first equivalent of the Standard Tools-grid
-          tile above, gated to the document issue the same way. */}
-      {cfg.key === 'document' &&
-        <button onClick={nav('noncompete')} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.6);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Is my non-compete enforceable?</button>
-      }
-      {/* Damages/back-pay estimator — Action-first equivalent of the Standard
-          Tools-grid tile, gated to the same three non-wage issues. */}
-      {(cfg.key === 'termination' || cfg.key === 'harassment' || cfg.key === 'discrimination') &&
-        <button onClick={nav('damages')} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.6);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Estimate possible damages</button>
-      }
-      {/* Records-request tracker — Action-first equivalent of the Standard
-          Tools-grid tile, gated to termination the same way. */}
-      {cfg.key === 'termination' &&
-        <button onClick={nav('recordsRequest')} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.6);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Track my records request</button>
-      }
-      {/* ADA interactive-process tracker — Action-first equivalent of the
-          Standard Tools-grid tile, gated to discrimination the same way. See
-          the self-selecting-label note on the Standard tile above. */}
-      {cfg.key === 'discrimination' &&
-        <button onClick={nav('adaProcess')} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.6);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Track the ADA process — if you're requesting an accommodation</button>
-      }
-      <div style={css("display:flex;flex-direction:column;gap:12px")}>
-        {/* usertest — the step CTA above only reaches the Letter screen on the one
-            step index (if any) whose stepScreens entry is 'letter'; harassment,
-            discrimination, document and the generic issue never have one, so without
-            this, Action-first mode has no path to that issue's letter at all (matches
-            the always-visible "Draft a letter" card HomeStandard's Tools grid keeps
-            for the same reason, scoped the same way: wage already reaches both its
-            letters through the step list and the wizard). */}
-        {cfg.key !== 'wage' &&
-          <button onClick={nav('letter')} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.6);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Draft a letter</button>
-        }
-        <button onClick={nav('rights')} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.6);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Why this matters</button>
-      </div>
-      {/* WebKit fix: a flex-grow spacer pins the footer to the bottom without the
-          Safari auto-margin-in-overflowing-flex-column overlap bug (see margin-top:auto). */}
-      <div aria-hidden="true" style={css("flex:1 1 auto;min-height:0")} />
-      <div style={css("display:flex;flex-direction:column;gap:12px")}>
-        <div style={css("padding:16px;border-radius:14px;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.35)")}>
-          <p style={css("margin:0 0 4px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#fff")}>Done so far</p>
-          <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#DDE2FF")}>{['Set your location: ' + locationLabel, evidenceCount + ' ' + (evidenceCount === 1 ? 'entry' : 'entries') + ' logged', doneCount + ' of ' + cfg.steps.length + ' steps done'].join(' · ')}</p>
-        </div>
-        <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#C9D0FF")}>Legal information, not legal advice.</p>
-      </div>
-    </div>
-  );
-
-  /* 1c — alternate home: plain-language mode, max legibility.
-     "Plain" is expressed through a larger type scale and shorter sentences —
-     it uses the same ink/border/radius language as the other two home modes,
-     not a separate visual system. */
-  const HomePlain = () => (
-    <div style={css("padding:14px 22px 28px;display:flex;flex-direction:column;gap:16px;min-height:0")}>
-      <ModeSwitch theme="light" />
-      <StorageWarningBanner />
-      <LocationPill dark={false} />
-      {(() => {
-        const fedF = (federal && federal.facts) || [];
-        const stF = (stateData && stateData.facts) || [];
-        const dl = pickDeadlineFactAcross(stF, fedF, cfg.key);
-        return dl ? (
-          <>
-            <button onClick={nav('strength')} className="surfacefx" style={css("text-align:left;padding:18px 20px;border-radius:16px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;flex-direction:column;gap:6px")}>
-              <span style={css("font:700 15px 'IBM Plex Mono',monospace;color:#14181F;letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px")}><Icon name="deadline-clock" size={16} /> DEADLINE WATCH</span>
-              <span style={css("font:700 22px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{dl.value || dl.summary}</span>
-              <span style={css("font:400 17px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{dl.summary}</span>
-              <DeadlineComputedBlock dark={false} dl={dl} />
-              {/* G1 (docs/flsa-process-gap.md) — the clock is not paused by a WHD complaint. */}
-              {cfg.key === 'wage' && <FlsaSolNote dark={false} />}
-            </button>
-            <AddDeadlineDatePrompt dark={false} dl={dl} />
-          </>
-        ) : (!stateSel || !issue) ? <MissingDeadlineCTA dark={false} /> : null;
-      })()}
-      <DocDeadlineWatch dark={false} />
-      <OshaWatch dark={false} />
-      {(() => {
-        const K = cfg.key;
-        const heads = {
-          wage: unpaidHours > 0 ? 'You logged ' + unpaidHours + ' hours you may not have been paid for.' : 'Unpaid hours add up fast.',
-          harassment: 'What is happening at work is not okay.',
-          discrimination: 'Being treated worse for who you are is illegal.',
-          termination: 'Losing your job this way may not be the end of it.',
-          document: 'Do not sign anything you do not fully understand.',
-          general: 'Let us figure out your rights.',
-        };
-        let bigLine, sub;
-        if (K === 'wage') {
-          bigLine = owedEstimate > 0 ? 'You may be owed about ' + money(owedEstimate) + '.' : 'You may be owed 1.5× pay for those hours.';
-          sub = owedEstimate > 0
-            ? 'The law gives most hourly workers 1.5× pay after 40 hours in a week. Your state may add daily overtime — check Rights.'
-            : 'Add your hours and hourly rate so we can estimate what you are owed. Your state may add more — check Rights.';
-        } else {
-          const map = {
-            harassment: 'The law protects you from harassment tied to who you are — and from being punished for reporting it.',
-            discrimination: 'Federal and state law forbid treating you worse because of a protected characteristic.',
-            termination: 'If you were fired for an illegal reason — or for speaking up — you may have a claim.',
-            document: 'Severance and separation papers are negotiable. You usually have time to review and revoke.',
-            general: 'Federal law sets a floor; your state and county can add more on top.',
-          };
-          bigLine = 'You have rights where you work.';
-          sub = map[K] || map.general + ' Open Rights to see the exact law for ' + stateSel + '.';
-        }
-        // Route by the current step's actual target screen, not a single issue-wide
-        // letterKind check — otherwise every step (including "log the incident")
-        // would jump straight to drafting a letter.
-        const target = stepTarget(cfg, currentStepIdx);
-        const screenLabels = { log:'Log what happened', wizard:'Check my classification', doc:'Review my document', chat:'Ask a question', letter:'Start my letter', rights:'See my rights', strength:'See my case strength' };
-        let primaryLabel = screenLabels[target.screen] || 'Do the next step';
-        if (K === 'wage' && target.screen === 'letter') primaryLabel = target.letterType === 'wage-demand' ? 'Ask for the money' : 'Confirm my classification';
-        const primary = [primaryLabel, target.screen];
-        return (
-          <>
-            <h1 style={css("margin:0;font:700 30px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{heads[K] || heads.general}</h1>
-            <div style={css("padding:20px;border-radius:16px;background:#FFF4D6;border:2px solid #14181F")}>
-              <p style={css("margin:0 0 10px;font:700 24px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{bigLine}</p>
-              <p style={css("margin:0;font:400 20px/1.5 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{sub}</p>
-              {/* G2 (docs/flsa-process-gap.md) — this figure is the straight unpaid-premium
-                  amount only; a private lawsuit can roughly double it via liquidated damages
-                  plus recover attorney's fees on top (remedies.liquidatedDamages,
-                  remedies.attorneysFees) — labeling it prevents the number from reading as
-                  the full amount actually recoverable. */}
-              {K === 'wage' && owedEstimate > 0 &&
-                <p style={css("margin:8px 0 0;font:700 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#6B4B00")}>Back wages only — actual recovery may be up to double, plus attorney's fees, if you sue.</p>
-              }
-              {/* State remedies.* facts beyond the federal figure above — only the
-                  ones this claim's shape (and, for the minimum-wage-specific fact,
-                  the logged rate) actually triggers; see applicableWageRemedies.
-                  Never folded into bigLine's dollar figure. */}
-              {K === 'wage' && owedEstimate > 0 && (() => {
-                const stRemedies = applicableWageRemedies((stateData && stateData.facts) || [], owedBreakdown, rateNum, factByTopic((stateData && stateData.facts) || [], 'minimumWage.hourly'));
-                const note = wageRemedyDashboardNote(stateSel, stRemedies);
-                const stRev = !!(stateData && stateData.reviewed === true);
-                return note ? <p style={css("margin:6px 0 0;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#6B4B00")}>{note}{stRev ? '' : ' (DRAFT — pending attorney review)'}</p> : null;
-              })()}
-            </div>
-            <button onClick={() => {
-              setDone(p => Object.assign({}, p, { [stepKey(cfg, currentStepIdx)]: true }));
-              if (target.letterType) setLetterType(target.letterType);
-              if (target.logKind) setLogKind(target.logKind);
-              else if (target.screen === 'log') setLogKind(defaultLogKindForIssueKey(cfg.key));
-              setScreen(target.screen);
-            }} className="surfacefx" style={css("padding:22px;border-radius:16px;border:none;background:#14181F;color:#fff;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{primary[0]}</button>
-            {/* usertest — Plain mode's single primary CTA routes by step index, and for a
-                wage case that CTA can be "Confirm my classification" / "Ask for the money"
-                depending which step is next. Now that the exemption self-check is step 1,
-                the button already opens the wizard first for a fresh case — but once that
-                step is marked done, the CTA can settle on "Confirm my classification" /
-                "Ask for the money" for the rest of the case. Wage users still need a direct,
-                plainly-labeled way
-                to check exemption status no matter which step is current. */}
-            {K === 'wage' &&
-              <button onClick={nav('wizard')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Am I exempt from overtime?</button>
-            }
-            {/* Harassment/discrimination identifier — same always-visible, direct
-                way in as the wage self-check above (cfg.key guard). */}
-            {K === 'harassment' &&
-              <button onClick={nav('wizard')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Is this harassment?</button>
-            }
-            {K === 'discrimination' &&
-              <button onClick={nav('wizard')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Is this discrimination?</button>
-            }
-            {/* Non-compete checker — Plain-mode equivalent, gated to the document
-                issue the same way the wage/harassment/discrimination self-checks
-                above are gated to theirs. */}
-            {K === 'document' &&
-              <button onClick={nav('noncompete')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Is my non-compete enforceable?</button>
-            }
-            {/* Damages/back-pay estimator — Plain-mode equivalent, gated to the
-                same three non-wage issues as the Standard/Action tiles. */}
-            {(K === 'termination' || K === 'harassment' || K === 'discrimination') &&
-              <button onClick={nav('damages')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Estimate possible damages</button>
-            }
-            {/* Records-request tracker — Plain-mode equivalent, gated to
-                termination the same way as the Standard/Action tiles. */}
-            {K === 'termination' &&
-              <button onClick={nav('recordsRequest')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Track my records request</button>
-            }
-            {/* ADA interactive-process tracker — Plain-mode equivalent, gated
-                to discrimination the same way as the Standard/Action tiles.
-                See the self-selecting-label note on the Standard tile above. */}
-            {K === 'discrimination' &&
-              <button onClick={nav('adaProcess')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Track the ADA process — if you're requesting an accommodation</button>
-            }
-            <button onClick={() => { setLogKind(defaultLogKindForIssueKey(K)); setScreen('log'); }} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{K === 'wage' ? 'Add hours I worked' : 'Add to my log'}</button>
-            {/* usertest — same reachability gap as HomeAction above: the primary CTA's
-                step routing never lands on 'letter' for harassment/discrimination/
-                document/general, so Plain mode needs its own always-visible way in. */}
-            {K !== 'wage' &&
-              <button onClick={nav('letter')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Draft a letter</button>
-            }
-            <button onClick={nav('agencies')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Where to file a complaint</button>
-          </>
-        );
-      })()}
-      {/* WebKit fix: flex-grow spacer instead of margin-top:auto (Safari overflow overlap). */}
-      <div aria-hidden="true" style={css("flex:1 1 auto;min-height:0")} />
-      <div style={css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff")}>
-        <p style={css("margin:0;font:700 18px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>This app explains the law. It is not your lawyer.</p>
-      </div>
-    </div>
-  );
-
-  const HomeScreen = () => (
-    homeMode === 'action' ? <HomeAction /> : homeMode === 'plain' ? <HomePlain /> : <HomeStandard />
-  );
+  // Home used to switch between three layouts (Standard/Action-first/Plain)
+  // via homeMode + a ModeSwitch tab control. That control and the two
+  // alternate layouts (HomeAction/HomePlain) are gone; Standard is the single
+  // home now. homeMode itself stays in the saved-case model (see useState
+  // above and the saveCase() call) purely so an old case saved with
+  // homeMode:'action'/'plain' still loads without a shape error — nothing
+  // reads it to pick a layout anymore.
+  const HomeScreen = () => <HomeStandard />;
 
   const Chat = () => (
     <div style={css("display:flex;flex-direction:column;min-height:100%")}>
@@ -5001,9 +4724,12 @@ function App(){
   };
   const Current = SCREENS[screen] || HomeScreen;
 
-  const altHome = screen === 'home' ? homeMode : null;
-  const screenBg = altHome === 'action' ? '#2B3AA8' : altHome === 'plain' ? '#FFFFFF' : '#FFFDF8';
-  const statusColor = altHome === 'action' ? '#fff' : '#14181F';
+  // Home is a single (Standard) layout now — screenBg/statusColor used to
+  // branch on homeMode ('action' painted the screen dark-blue, 'plain'
+  // white) so a case saved under one of the retired modes wouldn't leave
+  // the chrome mismatched against Standard's always-light content.
+  const screenBg = '#FFFDF8';
+  const statusColor = '#14181F';
 
   return (
     <div className="device">
@@ -5048,18 +4774,15 @@ function App(){
               <button onClick={() => setPrivacyNoteSeen(true)} className="hoverfx" style={css("align-self:flex-start;min-height:44px;padding:10px 16px;border-radius:10px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Got it</button>
             </div>
           }
-          {screen === 'home' && (() => {
-            const dark = altHome === 'action';
-            return (
-              <div style={css("margin:0 22px 30px;padding-top:16px;border-top:1px solid " + (dark ? 'rgba(255,255,255,.25)' : 'rgba(20,24,31,.14)'))}>
-                <p style={css("margin:0 0 10px;font:400 13px/1.5 'Atkinson Hyperlegible',sans-serif;color:" + (dark ? '#DDE2FF' : '#4A5162'))}>Everything you enter stays in this browser on this device — nothing is uploaded. On a shared or work computer, delete your case when you’re done.</p>
-                <div style={css("display:flex;gap:10px;flex-wrap:wrap")}>
-                  <button onClick={startFreshCase} style={css("padding:12px 16px;border-radius:12px;border:2px solid " + (dark ? 'rgba(255,255,255,.55)' : '#14181F') + ";background:transparent;color:" + (dark ? '#fff' : '#14181F') + ";font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;min-height:44px")}>Start a fresh case</button>
-                  <button onClick={clearCase} style={css("padding:12px 16px;border-radius:12px;border:2px solid " + (dark ? 'rgba(255,255,255,.55)' : '#B3264F') + ";background:transparent;color:" + (dark ? '#fff' : '#B3264F') + ";font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;min-height:44px")}>Delete my case &amp; start over</button>
-                </div>
+          {screen === 'home' &&
+            <div style={css("margin:0 22px 30px;padding-top:16px;border-top:1px solid rgba(20,24,31,.14)")}>
+              <p style={css("margin:0 0 10px;font:400 13px/1.5 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Everything you enter stays in this browser on this device — nothing is uploaded. On a shared or work computer, delete your case when you’re done.</p>
+              <div style={css("display:flex;gap:10px;flex-wrap:wrap")}>
+                <button onClick={startFreshCase} style={css("padding:12px 16px;border-radius:12px;border:2px solid #14181F;background:transparent;color:#14181F;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;min-height:44px")}>Start a fresh case</button>
+                <button onClick={clearCase} style={css("padding:12px 16px;border-radius:12px;border:2px solid #B3264F;background:transparent;color:#B3264F;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;min-height:44px")}>Delete my case &amp; start over</button>
               </div>
-            );
-          })()}
+            </div>
+          }
         </main>
       </div>
     </div>

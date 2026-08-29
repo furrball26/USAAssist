@@ -2,11 +2,14 @@
 /*
  * Dark-background focus-ring contrast regression test (R6, docs/review-2-report.md).
  *
- * The browser's default focus ring is only ~1.5:1 against the Action-first
- * home's navy #2B3AA8 background (WCAG 1.4.11 needs >=3:1) — effectively
- * invisible to a keyboard user. A global :focus-visible rule now paints a
- * two-tone "halo" (white inner outline + dark outer box-shadow ring) that
- * stays high-contrast on both a navy hero AND a plain white/cream screen.
+ * The browser's default focus ring was only ~1.5:1 against the (now-retired)
+ * Action-first home's navy #2B3AA8 background (WCAG 1.4.11 needs >=3:1) —
+ * effectively invisible to a keyboard user. A global :focus-visible rule
+ * paints a two-tone "halo" (white inner outline + dark outer box-shadow
+ * ring) that stays high-contrast regardless of background. Home is a single
+ * (always light/cream) Standard layout now; this still runs across the
+ * legacy `homeMode` values a saved case might carry, purely as a backward-
+ * compat check that the halo mechanism itself is unaffected by that field.
  *
  * Run: node test/focus-visible-contrast.mjs
  */

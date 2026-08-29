@@ -67,11 +67,10 @@ try {
   txt = await bodyText();
   assert(/Tools|next steps|CASE #|evidence/i.test(txt), 'dashboard did not render after skip');
 
-  // exercise all three home modes (Standard / Action-first / Plain)
-  for (const mode of ['Action-first', 'Plain', 'Standard']) {
-    const ok = await clickText(mode);
-    assert(ok, `home mode "${mode}" button not found`);
-  }
+  // Home is a single Standard layout now — the Standard/Action-first/Plain
+  // mode tabs (ModeSwitch) are gone entirely; confirm none of them render.
+  const modeTabsGone = await page.evaluate(() => !document.querySelector('[role="group"][aria-label="Dashboard view"]'));
+  assert(modeTabsGone, 'Standard/Action-first/Plain mode tabs still render on Home');
 
   // visit every tab + tool screen
   const stops = ['Ask AI', 'Log', 'Rights', 'Agencies', 'Home'];

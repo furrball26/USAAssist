@@ -1,11 +1,16 @@
 #!/usr/bin/env node
 /*
- * Edit-location pill in every home mode regression test (F17).
+ * Edit-location pill on Home regression test (F17), updated for the
+ * Standard/Action-first/Plain mode-switcher removal.
  *
  * The ◉ edit-location/profile pill previously only rendered in HomeStandard
  * — Action-first and Plain modes had no way at all to fix a wrong state or
- * county without first switching back to Standard. It must now be present
- * (and open the onboarding edit flow) in all three modes.
+ * county without first switching back to Standard. Those two alternate
+ * layouts (and the ModeSwitch tab control that picked between them) are now
+ * gone entirely — Home is always the Standard layout. This test checks the
+ * pill still works on the single Home, and that a case saved under one of
+ * the retired `homeMode` values ('action'/'plain') still loads fine and
+ * shows the single Standard layout with no mode tabs.
  *
  * Run: node test/home-mode-edit-pill.mjs
  */
@@ -46,6 +51,10 @@ async function freshPage(homeMode) {
   return pg;
 }
 
+// homeMode is exercised for its saved-case (backward-compat) value only —
+// it no longer picks a layout. A case saved under a retired mode value
+// ('action'/'plain') must still open onto the single Standard home, with no
+// mode tabs and a working ◉ edit-location pill, same as a fresh 'standard' case.
 for (const mode of ['standard', 'action', 'plain']) {
   const pg = await freshPage(mode);
   const errs = [];
@@ -53,19 +62,21 @@ for (const mode of ['standard', 'action', 'plain']) {
   pg.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
 
   const pillPresent = await pg.evaluate(() => !!document.querySelector('button[aria-label^="Edit your state"]'));
+  const modeTabsGone = await pg.evaluate(() => !document.querySelector('[role="group"][aria-label="Dashboard view"]'));
   const clicked = await pg.evaluate(() => { const btn = document.querySelector('button[aria-label^="Edit your state"]'); if (btn) { btn.click(); return true; } return false; });
   await new Promise(r => setTimeout(r, 300));
   const onOnboardingScreen = await pg.evaluate(() => !!document.querySelector('#onb-state'));
 
   const problems = [];
-  if (!pillPresent) problems.push('◉ edit-location pill missing in "' + mode + '" home mode');
-  if (!clicked) problems.push('◉ pill not clickable in "' + mode + '" home mode');
-  if (!onOnboardingScreen) problems.push('tapping ◉ in "' + mode + '" mode did not open the edit-location flow');
+  if (!pillPresent) problems.push('◉ edit-location pill missing on Home (saved homeMode: "' + mode + '")');
+  if (!modeTabsGone) problems.push('Standard/Action-first/Plain mode tabs still render (saved homeMode: "' + mode + '")');
+  if (!clicked) problems.push('◉ pill not clickable (saved homeMode: "' + mode + '")');
+  if (!onOnboardingScreen) problems.push('tapping ◉ did not open the edit-location flow (saved homeMode: "' + mode + '")');
   errs.forEach(e => problems.push(e));
 
   const ok = problems.length === 0;
   if (!ok) fails++;
-  console.log((ok ? '✅' : '❌') + ' "' + mode + '" home mode has a working ◉ edit-location pill' + (ok ? '' : '\n   ' + problems.join('\n   ')));
+  console.log((ok ? '✅' : '❌') + ' saved homeMode "' + mode + '" opens the single Home with a working ◉ edit-location pill and no mode tabs' + (ok ? '' : '\n   ' + problems.join('\n   ')));
   await pg.close();
 }
 

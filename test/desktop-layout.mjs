@@ -148,13 +148,16 @@ const deviceBox = (pg) => pg.evaluate(() => {
 }
 
 // Case 4: >=1024px — "desktop" tier — full-height shell, left rail nav,
-// content column capped at 680px, for all three home modes.
+// content column capped at 680px.
 // R2 (review-2-report.md): .screen itself must be the beige "desk" gutter
-// (#F3EFE7 = rgb(243, 239, 231)); the mode color (screenBg — navy for
-// Action-first, white for Plain, cream elsewhere) must be confined to the
-// 680px reading column, not flood the full-width .screen.
+// (#F3EFE7 = rgb(243, 239, 231)); the reading column color must be confined
+// to the 680px reading column, not flood the full-width .screen.
+// Home is a single Standard layout now — the mode-dependent column color
+// (navy for Action-first, white for Plain) is gone; the column is always
+// Standard's cream, including for a case saved under one of those retired
+// `homeMode` values (backward compat — see home-mode-edit-pill.mjs).
 const DESK_BG = 'rgb(243, 239, 231)';
-const MODE_COLUMN_BG = { standard: 'rgb(255, 253, 248)', action: 'rgb(43, 58, 168)', plain: 'rgb(255, 255, 255)' };
+const STANDARD_COLUMN_BG = 'rgb(255, 253, 248)';
 for (const [width, mode] of [[1280, 'standard'], [1280, 'action'], [1280, 'plain'], [1920, 'standard']]) {
   const pg = await b.newPage();
   const errs = [];
@@ -173,12 +176,12 @@ for (const [width, mode] of [[1280, 'standard'], [1280, 'action'], [1280, 'plain
   // reset in the 768-1023 "wide" tier, leaking a navy rounded frame at >=1024).
   if (box.deviceBg !== 'rgba(0, 0, 0, 0)' && box.deviceBg !== 'transparent') problems.push('.device still has the dark phone-bezel background at ' + width + 'px: ' + box.deviceBg);
   if (box.screenBg !== DESK_BG) problems.push('.screen is not the beige desk gutter (' + DESK_BG + ') at ' + width + 'px: ' + box.screenBg);
-  if (box.columnBg !== MODE_COLUMN_BG[mode]) problems.push('680px column background for "' + mode + '" mode should be ' + MODE_COLUMN_BG[mode] + ' at ' + width + 'px, got ' + box.columnBg);
+  if (box.columnBg !== STANDARD_COLUMN_BG) problems.push('680px column background (saved homeMode "' + mode + '") should always be Standard\'s cream ' + STANDARD_COLUMN_BG + ' at ' + width + 'px, got ' + box.columnBg);
   errs.forEach(e => problems.push(e));
 
   const ok = problems.length === 0;
   if (!ok) fails++;
-  console.log((ok ? '✅' : '❌') + width + 'px desktop tier (home mode "' + mode + '"): left rail + 680px capped column' + (ok ? '' : '\n   ' + problems.join('\n   ')));
+  console.log((ok ? '✅' : '❌') + width + 'px desktop tier (saved homeMode "' + mode + '"): left rail + 680px capped Standard column' + (ok ? '' : '\n   ' + problems.join('\n   ')));
   await pg.close();
 }
 
