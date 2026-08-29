@@ -2915,7 +2915,7 @@ function App(){
         </div>
       }
 
-      <div style={css("padding:18px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F")}>
+      <div style={css("padding:18px;border-radius:14px;background:#F0EDE5;border:2px solid #14181F")}>
         <p style={css("margin:0 0 6px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>WorkLaw is legal information, not legal advice.</p>
         <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>We explain the law where you live and help you organize facts. We are not your attorney and no attorney–client relationship is created.</p>
       </div>
@@ -3120,7 +3120,7 @@ function App(){
               harassment/discrimination/termination/document/general case is never
               offered a tool that answers a question it didn't ask. */}
           {cfg.key === 'wage' &&
-            <button onClick={nav('wizard')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#FFF4D6;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
+            <button onClick={nav('wizard')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
               <span aria-hidden="true"><Icon name="rights" size={24} /></span>
               <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Am I exempt from overtime?</span>
             </button>
@@ -3128,13 +3128,13 @@ function App(){
           {/* Harassment/discrimination identifiers — same tile, gated to their own
               issue the same way the overtime self-check is gated to cfg.key === 'wage'. */}
           {cfg.key === 'harassment' &&
-            <button onClick={nav('wizard')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#FFF4D6;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
+            <button onClick={nav('wizard')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
               <span aria-hidden="true"><Icon name="rights" size={24} /></span>
               <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Is this harassment?</span>
             </button>
           }
           {cfg.key === 'discrimination' &&
-            <button onClick={nav('wizard')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#FFF4D6;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
+            <button onClick={nav('wizard')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
               <span aria-hidden="true"><Icon name="rights" size={24} /></span>
               <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Is this discrimination?</span>
             </button>
@@ -3216,7 +3216,7 @@ function App(){
         <span style={css("font:400 16px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{cfg.key === 'document' ? 'See where to get help near ' + countyShort + '. Your case file exports in one tap.' : 'See the free government agencies that handle this near ' + countyShort + '. Your case file exports in one tap.'}</span>
       </button>
 
-      <div style={css("padding:18px;border-radius:16px;background:#FFF4D6;border:2px solid #14181F")}>
+      <div style={css("padding:18px;border-radius:16px;background:#F0EDE5;border:2px solid #14181F")}>
         <p style={css("margin:0 0 6px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Information, not advice</p>
         <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>Everything here explains the law that applies in {locationLabel}. It is not legal advice and WorkLaw is not your attorney.</p>
       </div>
@@ -3933,8 +3933,8 @@ function App(){
         <p style={css("margin:0;padding:12px 14px;border-radius:12px;background:#EEF1FF;border:2px solid #2B3AA8;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>This log is evidence. Your employer is legally required to keep accurate time and pay records — when those records are missing or wrong, a good personal log is what a court or investigator relies on instead.</p>
       }
 
-      <div style={css('padding:16px;border-radius:16px;border:2px solid #14181F;background:' + (editing ? '#FFF4D6' : '#fff') + ';display:flex;flex-direction:column;gap:12px')}>
-        {editing && <p role="status" style={css("margin:0;font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#6B4B00")}>Editing the entry from {entries[editingEntryIdx].date}</p>}
+      <div style={css('padding:16px;border-radius:16px;border:2px solid #14181F;background:' + (editing ? '#F0EDE5' : '#fff') + ';display:flex;flex-direction:column;gap:12px')}>
+        {editing && <p role="status" style={css("margin:0;font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Editing the entry from {entries[editingEntryIdx].date}</p>}
         <div role="group" aria-label="Entry type" style={css("display:flex;gap:8px;flex-wrap:wrap")}>
           {LOG_KINDS.map(k =>
             <button key={k.tag} onClick={() => setLogKind(k.tag)} aria-pressed={logKind === k.tag} className="surfacefx" style={css('min-height:44px;padding:10px 13px;border-radius:999px;border:2px solid ' + (logKind === k.tag ? '#2B3AA8' : '#14181F') + ';background:' + (logKind === k.tag ? '#2B3AA8' : '#fff') + ';color:' + (logKind === k.tag ? '#fff' : '#14181F') + ";font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{k.label.replace('+ ','')}</button>
@@ -4226,7 +4226,7 @@ function App(){
     <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
       <button onClick={nav('home')} style={css("align-self:flex-start;display:flex;align-items:center;gap:4px;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}><Icon name="back" size={18} /> Dashboard</button>
       <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Review a document</h1>
-      <div style={css("padding:14px 16px;border-radius:12px;background:#FFF4D6;border:2px solid #14181F")}>
+      <div style={css("padding:14px 16px;border-radius:12px;background:#F0EDE5;border:2px solid #14181F")}>
         <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}><strong>Uploaded files are not read</strong> — the picker below only notes the file name. <strong>Pasted text IS scanned</strong>, entirely on your device, for common clause types across offer letters, NDAs, employment contracts, severance, PIPs and non-competes (release of claims, non-disparagement, non-compete, non-solicitation, arbitration/class-action waiver, confidentiality, consideration/revocation period, at-will status, IP assignment, governing law, liquidated damages, performance-plan timelines). This is a basic keyword match, not a legal opinion — it can miss real issues and flag benign text. Bring your actual document to an attorney before signing.</p>
       </div>
       <p style={css("margin:0;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>This is legal information, not legal advice, and it is not a review of your standing to bring a claim — only an attorney can tell you that.</p>
@@ -4281,7 +4281,7 @@ function App(){
         )}
       </div>
       }
-      <div style={css("padding:16px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F")}>
+      <div style={css("padding:16px;border-radius:14px;background:#F0EDE5;border:2px solid #14181F")}>
         <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>If your document mentions a consideration/revocation period, you typically have <strong>21 days</strong> to consider it and <strong>7 days</strong> to revoke after signing. Do not sign to hit an artificial deadline.</p>
       </div>
     </div>
@@ -4340,7 +4340,7 @@ function App(){
         <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>In states that test non-competes for “reasonableness” rather than banning them outright, courts commonly look at: how narrow the <strong>geographic scope</strong> is, how long the <strong>duration</strong> runs, whether the employer has a genuine <strong>legitimate business interest</strong> to protect (like real trade secrets, not just avoiding competition), and whether you received real <strong>consideration</strong> (something of value, like a new job offer or a raise) in exchange for signing. This is a general description of common factors, not a scoring of your specific agreement.</p>
       </div>
 
-      <div style={css("padding:16px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F")}>
+      <div style={css("padding:16px;border-radius:14px;background:#F0EDE5;border:2px solid #14181F")}>
         <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>This is legal information, not legal advice, and it is not an opinion on whether your specific non-compete is enforceable. An employment attorney licensed in {stName} can review your actual agreement.</p>
       </div>
       <button onClick={nav('agencies')} className="hoverfx" style={css("align-self:flex-start;min-height:44px;padding:12px 16px;border-radius:12px;border:2px solid #2B3AA8;background:#fff;color:#2B3AA8;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:6px")}>Find a lawyer <Icon name="chevron-forward" size={15} /></button>
@@ -4371,7 +4371,7 @@ function App(){
     <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
       <button onClick={nav('home')} style={css("align-self:flex-start;display:flex;align-items:center;gap:4px;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}><Icon name="back" size={18} /> Dashboard</button>
       <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{K === 'termination' ? 'What might back pay look like?' : 'What damages might apply?'}</h1>
-      <div style={css("padding:14px 16px;border-radius:14px;border:2px solid #14181F;background:#FFF4D6")}>
+      <div style={css("padding:14px 16px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5")}>
         <p style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Educational only — this is not a valuation of your case, and nothing on this screen is a promise you are entitled to anything. Only an employment attorney reviewing your actual facts can tell you what a claim might realistically be worth.</p>
       </div>
 
@@ -4450,7 +4450,7 @@ function App(){
         </>
       )}
 
-      <div style={css("padding:16px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F")}>
+      <div style={css("padding:16px;border-radius:14px;background:#F0EDE5;border:2px solid #14181F")}>
         <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>This is legal information, not legal advice, and none of the figures above are what you are owed. An employment attorney licensed in {stateLabel} can assess what your case might actually be worth.</p>
       </div>
       <button onClick={nav('agencies')} className="hoverfx" style={css("align-self:flex-start;min-height:44px;padding:12px 16px;border-radius:12px;border:2px solid #2B3AA8;background:#fff;color:#2B3AA8;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:6px")}>Find a lawyer <Icon name="chevron-forward" size={15} /></button>
@@ -4557,7 +4557,7 @@ function App(){
         </div>
       </div>
 
-      <div style={css("padding:16px 18px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F")}>
+      <div style={css("padding:16px 18px;border-radius:14px;background:#F0EDE5;border:2px solid #14181F")}>
         <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>An employer who never responds — or produces less than you asked for — can itself be a relevant fact, not just a dead end. Keep this tracker updated; it exports with the rest of your case file.</p>
       </div>
       <p style={css("margin:0;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>This is legal information, not legal advice.</p>
@@ -4629,7 +4629,7 @@ function App(){
         </div>
       }
 
-      <div style={css("padding:16px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F")}>
+      <div style={css("padding:16px;border-radius:14px;background:#F0EDE5;border:2px solid #14181F")}>
         <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>This is legal information, not legal advice.</p>
       </div>
     </div>
@@ -4975,7 +4975,7 @@ function App(){
           </p>
         }
       </div>
-      <div style={css("padding:16px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F")}>
+      <div style={css("padding:16px;border-radius:14px;background:#F0EDE5;border:2px solid #14181F")}>
         <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>You may also want to consult an employment attorney licensed in {stateLabel}. WorkLaw does not operate a referral service or recommend specific firms — your state or local bar association's lawyer-referral service is a reliable place to start.</p>
       </div>
       {/* wl-security/usertest — "Delete my case" previously lived only in the Home
