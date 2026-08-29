@@ -2833,6 +2833,19 @@ function App(){
 
       {onbStep === 4 &&
         <div style={css("display:flex;flex-direction:column;gap:14px")}>
+          {/* FIND-21 (docs/audit-2026-08-29.md) — this is the moment a user is about
+              to type identifying details (name, employer) for the first time, before
+              any case exists yet. The app already discloses "stays on this device"
+              reactively, after the fact, on Home (privacyNoteSeen) and next to the
+              delete control on Agencies — but nothing said so proactively, right here
+              at the point of creation, before they type it in. Purely a shared/public-
+              computer and forensic-recovery framing (there is no remote exposure path
+              — see wl-security's threat model): honest and specific, not alarmist. */}
+          {!editing &&
+            <div style={css("padding:14px 16px;border-radius:12px;border:2px solid #14181F;background:#EEF1FF")}>
+              <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>What you enter below is saved only in this browser, on this device — never uploaded anywhere. It stays in place, in plain text, until you delete it (Home → Delete my case). On a shared or public computer, delete your case when you’re done.</p>
+            </div>
+          }
           <div style={css("display:flex;flex-direction:column;gap:6px")}>
             <label htmlFor="onb-name" style={css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>YOUR NAME</label>
             <input id="onb-name" value={dProfile.name} onChange={e => setDProfile(p => Object.assign({}, p, { name:e.target.value }))} placeholder="e.g. your full name" style={css("padding:14px;border-radius:12px;border:2px solid #14181F;font:400 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
