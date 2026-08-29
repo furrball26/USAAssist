@@ -77,9 +77,9 @@ Content-Type: application/json
      for anything outside its grounding (mirrors today's `fallbackReply` behavior).
   4. Calls the Claude API server-side with that system prompt + the user's message (and any
      client-supplied prior turns), using the **latest available Claude model** at deploy
-     time (currently the Claude Opus/Sonnet 4.x family; pin a specific model string in
-     config and revisit periodically — do not hardcode a model version here, since "latest"
-     will drift).
+     time; pin a specific model string in config and revisit periodically — do not
+     hardcode a model version here (or in any repo artifact), since "latest" will drift
+     and any name written down today will be stale by the time this ships.
   5. Returns `{ text, cites: [{ citation, sourceUrl }] }` — the same shape the client's
      `messages`/`REPLIES` objects already use, so the swap from canned to real is a
      same-interface change on the client side.
