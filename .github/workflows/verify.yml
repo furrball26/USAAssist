@@ -4,7 +4,10 @@ on:
   push:
     branches: [main, auto/agents]
   pull_request:
-    branches: [main]
+    # CONTRIBUTING.md requires every change to land on auto/agents first, so PRs
+    # targeting auto/agents must be gated too — listing only main left the repo's
+    # own documented flow with no pre-merge CI at all.
+    branches: [main, auto/agents]
 
 jobs:
   verify:
