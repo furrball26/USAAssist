@@ -378,6 +378,27 @@ function formatDeadlineDate(d){
   try { return d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric' }); }
   catch (e) { return dateInputValue(d); }
 }
+// FIND-19 (docs/audit-2026-08-29.md) — the draft-letter disclaimer hardcoded "a
+// {stateLabel} law", which reads as "a Alabama law", "a Ohio law", "a Illinois
+// law", "a Arkansas law" for the several state names that start with a vowel
+// sound. Picks the article from the word's LEADING SOUND, not just its
+// leading letter, the same way a careful writer would: a silent-consonant
+// vowel sound ("an hour", "an honest mistake") still gets "an" even though
+// the letter is a consonant, and a consonant-SOUNDING vowel letter ("a
+// European law", "a one-time fee", "a university policy") still gets "a"
+// even though the letter is a vowel. No current US state or territory name
+// actually needs either exception (every vowel-led one — Alabama, Alaska,
+// Arizona, Arkansas, Idaho, Illinois, Indiana, Iowa, Ohio, Oklahoma, Oregon —
+// starts with a true vowel sound), but the sound-based rule is exactly as
+// cheap to write as the letter-based one and correctly future-proofs any
+// future label this is reused for.
+function articleFor(word){
+  const w = String(word == null ? '' : word).trim();
+  if (!w) return 'a';
+  if (/^(honest|honor|honou?r|hour|heir)/i.test(w)) return 'an'; // silent-h vowel sound
+  if (/^(uni|use[dfrs]?|ubiquit|euro|one\b|ouija)/i.test(w)) return 'a'; // consonant-sounding vowel
+  return /^[aeiou]/i.test(w) ? 'an' : 'a';
+}
 // Shared between DeadlineComputedBlock (Home's Deadline Watch card) and
 // buildCaseFile's KEY DEADLINE section, so the exported packet's computed-date
 // caveat never drifts from the in-app wording.
@@ -4639,7 +4660,7 @@ function App(){
       <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{built}</p>
       {stateLawUnreviewed &&
         <div style={css("padding:12px 15px;border-radius:12px;background:#FFF4D6;border:2px solid #14181F")}>
-          <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>This letter cites a {stateLabel} law that, like the rest of this app's {stateLabel} content, is marked <strong>(DRAFT)</strong> on the Rights tab — not yet verified by counsel. The citation is sourced from an official government site, but confirm it before sending.</p>
+          <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>This letter cites {articleFor(stateLabel)} {stateLabel} law that, like the rest of this app's {stateLabel} content, is marked <strong>(DRAFT)</strong> on the Rights tab — not yet verified by counsel. The citation is sourced from an official government site, but confirm it before sending.</p>
         </div>
       }
       {(!youName || !employerName) &&
