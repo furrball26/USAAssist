@@ -220,6 +220,42 @@ const onOnboarding = (pg) => pg.evaluate(() => !!document.querySelector('#onb-st
   await pg.close();
 }
 
+// Case 6: the opposite direction of Case 5 — a stale history entry claiming
+// `screen:'onboarding'` must never win over a REAL onboarded case already in
+// localStorage. Otherwise the app would mount the onboarding wizard on top
+// of a live case, and finishing that wizard writes straight over it with no
+// confirmation (silent data loss — see the initializer at ~index.dev.html:1956).
+{
+  const pg = await b.newPage();
+  const errs = [];
+  pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
+  pg.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
+
+  const seed = {
+    onboarded:true, stateSel:'Texas', county:'Travis County', issue:'Unpaid overtime or wages',
+    profile:{ name:'Pat Vega', employer:'Northgate Co', payType:'Salary', rate:'50000' },
+    caseOpened:new Date().toISOString(), homeMode:'standard', entries:[], done:{}, messages:[],
+  };
+  // Registration order matters: the case seed first, then a second script
+  // that stamps this fresh document's (still-empty, pre-app) history entry
+  // with {screen:'onboarding'} — simulating a tab that was left open on the
+  // onboarding wizard in a prior session before this real case existed.
+  await pg.evaluateOnNewDocument((s) => { localStorage.clear(); localStorage.setItem('worklaw.case.v2', JSON.stringify(s)); }, seed);
+  await pg.evaluateOnNewDocument(() => { window.history.replaceState({ screen: 'onboarding' }, ''); });
+  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`);
+  await new Promise(r => setTimeout(r, 700));
+
+  const isOnboarding = await onOnboarding(pg);
+  const problems = [];
+  if (isOnboarding) problems.push('a stale "onboarding" history entry routed an already-onboarded case back into the onboarding wizard — the live case is at risk of being silently overwritten');
+  errs.forEach(e => problems.push(e));
+
+  const ok = problems.length === 0;
+  if (!ok) fails++;
+  console.log((ok ? '✅' : '❌') + ' a stale "onboarding" history entry never overrides a real onboarded case' + (ok ? '' : '\n   ' + problems.join('\n   ')));
+  await pg.close();
+}
+
 } finally {
   await b.close();
   server.close();

@@ -1102,59 +1102,80 @@ const ISSUES = {
     chatSeed:'You mentioned unpaid hours or overtime. Tell me your job title and how you are paid — salary or hourly — and I will explain which overtime rules apply where you work.',
   },
   'Harassment or a hostile workplace': {
-    key:'harassment', caseTitle:'Harassment / hostile workplace', primaryTool:'log', letterKind:'complaint',
-    action:'Write down what happened, while it is fresh.',
-    actionWhy:'Contemporaneous notes — dates, words, who was present — are the backbone of a harassment claim.',
+    key:'harassment', caseTitle:'Harassment / hostile workplace', primaryTool:'wizard', letterKind:'complaint',
+    action:'Check whether what happened may legally be harassment.',
+    actionWhy:'Knowing whether this fits the legal definition — tied to a protected characteristic, unwelcome, severe or pervasive — shapes what you log and who you send it to. The self-check takes about two minutes.',
+    // Mirrors the wage issue's order: the self-check runs FIRST (step 1), same
+    // as wage's exemption self-check, so harassment follows the same
+    // "diagnose, then document, then act" model instead of jumping straight to
+    // logging with no idea whether what happened fits the legal definition.
     steps:[
+      'Check whether what happened may legally be harassment (2 minutes)',
       'Log each incident: date, what was said or done, who saw it',
       'Save any messages, emails or images involved',
       'Note whether you reported it, to whom, and what happened',
       'Identify coworkers who witnessed the conduct',
+      'Send a complaint letter to HR, or file directly with the EEOC/your state agency',
     ],
-    stepScreens:['log','log','log','log'],
+    stepScreens:['wizard','log','log','log','log','letter'],
+    stepLetterTypes:[null,null,null,null,null,'complaint'],
     // Index-matched to `steps` — which LOG_KINDS tag each log-step should
-    // pre-select (see stepTarget). Every step here targets 'log', but they are
-    // not all the same KIND of entry: an incident is a Statement, saved
+    // pre-select (see stepTarget). Every log step here targets 'log', but they
+    // are not all the same KIND of entry: an incident is a Statement, saved
     // messages/emails are Records, whether-it-was-reported is a Statement, and
     // witnesses are their own Witness kind — without this every step opened the
     // Log with whatever kind was last picked (defaulting to 'Wage & hour', which
     // makes no sense for a harassment case).
-    stepLogKind:['Statement','Records','Statement','Witness'],
-    stepIds:['harassment-log-incident','harassment-save-evidence','harassment-note-report','harassment-witnesses'],
+    stepLogKind:[null,'Statement','Records','Statement','Witness',null],
+    stepIds:['harassment-legal-check','harassment-log-incident','harassment-save-evidence','harassment-note-report','harassment-witnesses','harassment-complaint-letter'],
     chatSeed:'You mentioned harassment or a hostile workplace. Tell me what has been happening and whether it is tied to a protected characteristic, and I will explain what the law covers where you work.',
   },
   'Discrimination': {
-    key:'discrimination', caseTitle:'Workplace discrimination', primaryTool:'rights', letterKind:'complaint',
-    action:'Document the pattern and who decided.',
-    actionWhy:'Discrimination cases turn on comparisons and timing. A dated log of decisions and comments matters.',
+    key:'discrimination', caseTitle:'Workplace discrimination', primaryTool:'wizard', letterKind:'complaint',
+    action:'Check whether this may legally be discrimination.',
+    actionWhy:'Discrimination cases turn on comparisons, timing, and a protected characteristic — the self-check helps you see whether that link exists before you spend time documenting. It takes about two minutes.',
+    // Mirrors the wage issue's order: the self-check runs FIRST (step 1), same
+    // as wage's exemption self-check and harassment's legal-identifier.
     steps:[
+      'Check whether this may legally be discrimination (2 minutes)',
       'Log the adverse actions: what changed, when, and who decided',
       'Note comments or treatment tied to a protected characteristic',
       'Save reviews, pay records and comparably-situated coworkers',
       'Record any complaint you made and the response',
+      'Send a complaint letter, or file with the EEOC/your state agency',
     ],
-    stepScreens:['log','log','log','log'],
+    stepScreens:['wizard','log','log','log','log','letter'],
+    stepLetterTypes:[null,null,null,null,null,'complaint'],
     // See harassment's stepLogKind above — same reasoning, per this issue's steps.
-    stepLogKind:['Statement','Statement','Records','Statement'],
-    stepIds:['discrimination-log-actions','discrimination-note-comments','discrimination-save-records','discrimination-log-complaint'],
+    stepLogKind:[null,'Statement','Statement','Records','Statement',null],
+    stepIds:['discrimination-legal-check','discrimination-log-actions','discrimination-note-comments','discrimination-save-records','discrimination-log-complaint','discrimination-complaint-letter'],
     chatSeed:'You mentioned discrimination. Tell me the protected characteristic involved and what happened, and I will explain the federal and state protections where you work.',
   },
   'Fired or pushed out': {
     key:'termination', caseTitle:'Termination / pushed out', primaryTool:'strength', letterKind:'records-request',
     action:'Request your personnel file in writing.',
     actionWhy:'Many states require your employer to hand over your file. It often shows the real reason for a firing.',
+    // Wires up the records tracker (previously an orphaned Tools-grid tile)
+    // right after the records-request letter, so following through on that
+    // request is part of the guided flow, not a side tool you have to find on
+    // your own — and the damages estimator as a final optional step, matching
+    // how the flow audit treats every non-wage issue's own tools.
     steps:[
       'Log the timeline: the reason given, and what led up to it',
       'Request your personnel file and final pay records in writing',
+      'Track whether your employer responds, and by when',
       'Save any protected activity that preceded it (complaints, leave, injury)',
       'Note anything said about why you were let go, and by whom',
+      'Optional: see what back pay might look like while you search for work',
     ],
-    stepScreens:['log','letter','log','log'],
-    // See harassment's stepLogKind above. Index 1 routes to 'letter', not 'log',
-    // so it has no log kind (null/omitted — stepTarget only reads this for the
-    // three log-screen steps).
-    stepLogKind:['Statement', null, 'Statement','Statement'],
-    stepIds:['termination-log-timeline','termination-request-file','termination-save-protected-activity','termination-note-reason'],
+    stepScreens:['log','letter','recordsRequest','log','log','damages'],
+    stepLetterTypes:[null,'records-request',null,null,null,null],
+    // See harassment's stepLogKind above. Index 1 routes to 'letter' and index 2
+    // to 'recordsRequest' and index 5 to 'damages' — none of those are 'log', so
+    // they have no log kind (null/omitted — stepTarget only reads this for
+    // steps that actually route to 'log').
+    stepLogKind:['Statement', null, null, 'Statement','Statement', null],
+    stepIds:['termination-log-timeline','termination-request-file','termination-track-request','termination-save-protected-activity','termination-note-reason','termination-damages-estimate'],
     chatSeed:'You mentioned being fired or pushed out. Tell me the reason you were given and what happened in the weeks before, and I will explain wrongful-termination and retaliation rules where you work.',
   },
   'A document to review': {
@@ -1167,7 +1188,10 @@ const ISSUES = {
       'Note the consideration and revocation deadlines',
       'Ask about anything you are giving up before signing',
     ],
-    stepScreens:['doc','doc','doc','doc'],
+    // Step 4 promises a Q&A ("ask about anything you are giving up"), not
+    // another pass over the static clause list — route it to the chat, which
+    // already has a chatSeed built for this issue, instead of the 'doc' screen.
+    stepScreens:['doc','doc','doc','chat'],
     stepIds:['document-upload','document-review-clauses','document-note-deadlines','document-ask-questions'],
     chatSeed:'You have a document to review — an offer, NDA, severance or PIP. Tell me which, and what you are worried about, and I will walk through it in plain language.',
   },
@@ -1266,6 +1290,15 @@ function stepAutoDone(id, ctx){
   }
   if (id === 'wage-exempt-check') {
     return !!RESULTS_WAGE[ctx.wizNode];
+  }
+  if (id === 'harassment-legal-check') {
+    return !!RESULTS_HARASSMENT[ctx.wizNode];
+  }
+  if (id === 'discrimination-legal-check') {
+    return !!RESULTS_DISCRIMINATION[ctx.wizNode];
+  }
+  if (id === 'termination-track-request') {
+    return !!(ctx.profile && ctx.profile.recordsRequest && ctx.profile.recordsRequest.dateSent);
   }
   return false;
 }
@@ -1922,7 +1955,12 @@ function App(){
   // onboarding gate.
   const [screen, setScreen] = useState(() => {
     const histScreen = typeof window !== 'undefined' && window.history.state && window.history.state.screen;
-    if (typeof histScreen === 'string' && (saved.onboarded || histScreen === 'onboarding')) return histScreen;
+    // An already-onboarded case always wins over a stale 'onboarding' history
+    // entry (e.g. a second tab left open on the wizard before this case was
+    // created) — otherwise the onboarding selects would write straight over
+    // the live case with no confirmation. Only honor a stale history screen
+    // for an onboarded case when it names a real in-app screen.
+    if (typeof histScreen === 'string' && saved.onboarded && histScreen !== 'onboarding') return histScreen;
     return saved.onboarded ? 'home' : 'onboarding';
   });
   const [onbStep, setOnbStep] = useState(1);
@@ -2267,7 +2305,7 @@ function App(){
   // pct 12, so score is ~12 even with no evidence — Math.round(12/20) would light
   // one bar under the "Not started" label. Only fill bars once there's real evidence.
   const strengthFill = evidenceCount > 0 ? Math.max(1, Math.round(strength.score / 20)) : 0;
-  const doneCtx = { entries, wizNode };
+  const doneCtx = { entries, wizNode, profile };
   const doneCount = cfg.steps.filter((_, i) => isStepDone(cfg, i, done, doneCtx)).length;
   // The hero's "current step" must be the FIRST NOT-done step, not doneCount —
   // doneCount assumes completed steps are a contiguous prefix, but stepAutoDone
@@ -2848,11 +2886,17 @@ function App(){
             </button>
           }
           {/* ADA interactive-process tracker — gated to discrimination, same
-              cfg.key-guard pattern as the tiles above. See AdaProcessTracker. */}
+              cfg.key-guard pattern as the tiles above. See AdaProcessTracker.
+              flow audit: this used to imply every discrimination case (even
+              race/age/sex, no accommodation involved) is mid-ADA-process. The
+              label now reads as self-selecting instead of assumed-relevant;
+              kept reachable for every discrimination case (not gated on
+              profile.adaLog/letterType) since that would make it unreachable
+              the first time a user actually needs it. */}
           {cfg.key === 'discrimination' &&
             <button onClick={nav('adaProcess')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#F1EAFB;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
               <span aria-hidden="true"><Icon name="log" size={24} /></span>
-              <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Track the ADA process</span>
+              <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Track the ADA process — if you're requesting an accommodation</span>
             </button>
           }
           {/* Wage is the only issue where this card is redundant: BOTH its letters
@@ -2944,9 +2988,10 @@ function App(){
         <button onClick={nav('recordsRequest')} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.6);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Track my records request</button>
       }
       {/* ADA interactive-process tracker — Action-first equivalent of the
-          Standard Tools-grid tile, gated to discrimination the same way. */}
+          Standard Tools-grid tile, gated to discrimination the same way. See
+          the self-selecting-label note on the Standard tile above. */}
       {cfg.key === 'discrimination' &&
-        <button onClick={nav('adaProcess')} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.6);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Track the ADA process</button>
+        <button onClick={nav('adaProcess')} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.6);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Track the ADA process — if you're requesting an accommodation</button>
       }
       <div style={css("display:flex;flex-direction:column;gap:12px")}>
         <button onClick={() => {
@@ -3105,9 +3150,10 @@ function App(){
               <button onClick={nav('recordsRequest')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Track my records request</button>
             }
             {/* ADA interactive-process tracker — Plain-mode equivalent, gated
-                to discrimination the same way as the Standard/Action tiles. */}
+                to discrimination the same way as the Standard/Action tiles.
+                See the self-selecting-label note on the Standard tile above. */}
             {K === 'discrimination' &&
-              <button onClick={nav('adaProcess')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Track the ADA process</button>
+              <button onClick={nav('adaProcess')} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Track the ADA process — if you're requesting an accommodation</button>
             }
             <button onClick={() => { setLogKind(defaultLogKindForIssueKey(K)); setScreen('log'); }} className="hoverfx" style={css("padding:22px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 22px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{K === 'wage' ? 'Add hours I worked' : 'Add to my log'}</button>
             {/* usertest — same reachability gap as HomeAction above: the primary CTA's
