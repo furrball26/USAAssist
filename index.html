@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-I/ctSHQQHKVSwTifuiw0ApCLsR9eFEgelgnbREaqWSU='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-g8cGpMrB6AzyoRLJJsDBBJCPc3oY/HY4rVSFDiOPGlU='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14181F">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232B3AA8'/%3E%3Ctext x='32' y='47' font-size='42' text-anchor='middle' fill='white' font-family='Georgia,serif'%3E%C2%A7%3C/text%3E%3C/svg%3E">
@@ -1125,6 +1125,7 @@ const REPLIES = [
 ];
 const ADA_REPLY = { text: "Put it in writing, plainly: describe your limitation and what change would help \u2014 no legal terms required. Your employer must then start an interactive process with you. I can draft that request from a template and add it to your case file.", cites: ["42 U.S.C. \xA712112"] };
 const DISCRIMINATION_REPLY = { text: 'Discrimination is adverse treatment \u2014 not hired, denied a promotion, paid less, disciplined, or fired \u2014 because of a protected characteristic: race, color, sex (including pregnancy, sexual orientation, gender identity), religion, national origin, age 40+, or disability. Harassment is unwelcome conduct tied to one of those same characteristics that is severe or pervasive enough to create a hostile work environment, or a "quid pro quo" demand tied to a job benefit. Log the dates, what was said or done, who was involved, and any witnesses \u2014 that pattern is what these claims turn on. I can draft a complaint letter to HR from your case file.', cites: ["42 U.S.C. \xA72000e-2"] };
+const WRONGFUL_TERMINATION_REPLY = { text: 'Most states follow "at-will" employment: either side can end the job at any time, for any reason or no reason \u2014 but not for an ILLEGAL one. The main exceptions courts generally recognize are (1) discriminatory discharge \u2014 firing because of a protected characteristic like race, sex, age 40+ or disability; (2) retaliatory discharge \u2014 firing for doing something legally protected, like reporting harassment or filing a wage claim; and, in many but not all states, (3) a public-policy exception (for example, firing you for refusing to break the law or for exercising a legal right) or (4) an implied-contract exception, where a handbook or specific promises undercut at-will status. Which of these applies depends on your state and your facts \u2014 log the stated reason, any change in that reason over time, and what you were doing right before you were let go.', cites: [] };
 const STORE_KEY = "worklaw.case.v2";
 function sanitizeCase(raw) {
   const c = raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {};
@@ -2256,7 +2257,8 @@ function App() {
     const lower = text.toLowerCase();
     const hasWord = (re) => re.test(lower);
     const isAda = hasWord(/\baccommodat\w*/) || hasWord(/\bada\b/) || hasWord(/\bdisab\w*/);
-    const isRetaliation = hasWord(/\bretaliat\w*/) || hasWord(/\bfired\b/) || hasWord(/\bterminat\w*/) || hasWord(/\bpushed out\b/) || hasWord(/\blet go\b/);
+    const isWrongfulTermination = hasWord(/\bwrongful(?:ly)?\s+(?:terminat\w*|discharg\w*|fired)\b/);
+    const isRetaliation = !isWrongfulTermination && (hasWord(/\bretaliat\w*/) || hasWord(/\bfired\b/) || hasWord(/\bterminat\w*/) || hasWord(/\bpushed out\b/) || hasWord(/\blet go\b/));
     const isSeverance = hasWord(/\bseverance\b/) || hasWord(/\b(release|separation) agreement\b/) || hasWord(/\brelease of claims\b/);
     const isClassificationQuestion = hasWord(/\b(1099|independent contractor|misclassif\w*|self-employed|gig work\w*|freelanc\w*)\b/) && (hasWord(/\bcovered\b/) || hasWord(/\bw-?2\b/) || hasWord(/\bemployee\b/));
     const isOvertime = !isClassificationQuestion && (hasWord(/\bovertime\b/) || hasWord(/\bunpaid\b/) || hasWord(/\boff[\s-]the[\s-]clock\b/) || hasWord(/\bwages?\b/));
@@ -2293,7 +2295,7 @@ function App() {
       text: "I can only give sample answers on a few topics: unpaid overtime and wages, discrimination and harassment, termination and retaliation, and severance or documents you've been asked to sign. Try rephrasing toward one of those. For anything else, your state labor agency or a local attorney (see Agencies) is the best next step.",
       cites: []
     };
-    const matched = isAda ? adaReply : isRetaliation ? repliesResolved[1] : isDiscrimination ? discriminationReply : isSeverance ? repliesResolved[2] : isOvertime ? repliesResolved[0] : null;
+    const matched = isAda ? adaReply : isWrongfulTermination ? WRONGFUL_TERMINATION_REPLY : isRetaliation ? repliesResolved[1] : isDiscrimination ? discriminationReply : isSeverance ? repliesResolved[2] : isOvertime ? repliesResolved[0] : null;
     setMessages((prev) => {
       const next = prev.concat([{ role: "user", text }]);
       clearTimeout(timer.current);

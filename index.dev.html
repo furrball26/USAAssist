@@ -848,6 +848,15 @@ const REPLIES = [
 const ADA_REPLY = { text:'Put it in writing, plainly: describe your limitation and what change would help — no legal terms required. Your employer must then start an interactive process with you. I can draft that request from a template and add it to your case file.', cites:['42 U.S.C. §12112'] };
 // cites resolved per-user-state in send() from stateData facts — see discriminationReply.
 const DISCRIMINATION_REPLY = { text:'Discrimination is adverse treatment — not hired, denied a promotion, paid less, disciplined, or fired — because of a protected characteristic: race, color, sex (including pregnancy, sexual orientation, gender identity), religion, national origin, age 40+, or disability. Harassment is unwelcome conduct tied to one of those same characteristics that is severe or pervasive enough to create a hostile work environment, or a "quid pro quo" demand tied to a job benefit. Log the dates, what was said or done, who was involved, and any witnesses — that pattern is what these claims turn on. I can draft a complaint letter to HR from your case file.', cites:['42 U.S.C. §2000e-2'] };
+// FIND-05 (docs/audit-2026-08-29.md) — the app's own seeded chat prompt for the
+// termination issue, "Is this a wrongful termination?", has no dedicated reply
+// bucket: the retaliation keyword regex matches "terminat" inside the question
+// itself and answers with the (narrower, different-theory) retaliation reply
+// instead. This is general information about the at-will framework and its main
+// exceptions — never a state-specific legal conclusion, since which exceptions a
+// given state actually recognizes (and how) varies widely and is not modeled as a
+// single consistent content fact across states.
+const WRONGFUL_TERMINATION_REPLY = { text:'Most states follow "at-will" employment: either side can end the job at any time, for any reason or no reason — but not for an ILLEGAL one. The main exceptions courts generally recognize are (1) discriminatory discharge — firing because of a protected characteristic like race, sex, age 40+ or disability; (2) retaliatory discharge — firing for doing something legally protected, like reporting harassment or filing a wage claim; and, in many but not all states, (3) a public-policy exception (for example, firing you for refusing to break the law or for exercising a legal right) or (4) an implied-contract exception, where a handbook or specific promises undercut at-will status. Which of these applies depends on your state and your facts — log the stated reason, any change in that reason over time, and what you were doing right before you were let go.', cites:[] };
 
 /* ── Dynamic case model ───────────────────────────────────────────── */
 
@@ -2364,7 +2373,17 @@ function App(){
     // that then reads as authoritative for a question we never actually matched.
     const hasWord = (re) => re.test(lower);
     const isAda = hasWord(/\baccommodat\w*/) || hasWord(/\bada\b/) || hasWord(/\bdisab\w*/);
-    const isRetaliation = hasWord(/\bretaliat\w*/) || hasWord(/\bfired\b/) || hasWord(/\bterminat\w*/) || hasWord(/\bpushed out\b/) || hasWord(/\blet go\b/);
+    // FIND-05 — "wrongful termination/discharge" is a distinct legal theory from
+    // retaliation (at-will exceptions in general, not specifically "fired for doing
+    // something protected"). Matched on the ordered PHRASE ("wrongful" immediately
+    // before the terminate/discharge/fired word), not the bare "terminat" stem the
+    // retaliation regex below uses — that stem alone is what previously misrouted the
+    // app's own seeded prompt, "Is this a wrongful termination?", to the retaliation
+    // reply. Checked BEFORE isRetaliation so a genuine wrongful-termination question
+    // never falls through to the narrower retaliation bucket just because it also
+    // contains "terminat...".
+    const isWrongfulTermination = hasWord(/\bwrongful(?:ly)?\s+(?:terminat\w*|discharg\w*|fired)\b/);
+    const isRetaliation = !isWrongfulTermination && (hasWord(/\bretaliat\w*/) || hasWord(/\bfired\b/) || hasWord(/\bterminat\w*/) || hasWord(/\bpushed out\b/) || hasWord(/\blet go\b/));
     // Only route to the severance/OWBPA reply (21 days to consider, 7 to revoke —
     // specific to a severance/release-of-claims document, 29 U.S.C. §626(f)) for a
     // message that's actually about ONE of those documents. The previous check
@@ -2434,7 +2453,7 @@ function App(){
       text: "I can only give sample answers on a few topics: unpaid overtime and wages, discrimination and harassment, termination and retaliation, and severance or documents you've been asked to sign. Try rephrasing toward one of those. For anything else, your state labor agency or a local attorney (see Agencies) is the best next step.",
       cites: []
     };
-    const matched = isAda ? adaReply : isRetaliation ? repliesResolved[1] : isDiscrimination ? discriminationReply : isSeverance ? repliesResolved[2] : isOvertime ? repliesResolved[0] : null;
+    const matched = isAda ? adaReply : isWrongfulTermination ? WRONGFUL_TERMINATION_REPLY : isRetaliation ? repliesResolved[1] : isDiscrimination ? discriminationReply : isSeverance ? repliesResolved[2] : isOvertime ? repliesResolved[0] : null;
     setMessages(prev => {
       const next = prev.concat([{ role:'user', text }]);
       clearTimeout(timer.current);
