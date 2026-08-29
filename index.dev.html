@@ -3183,8 +3183,29 @@ function App(){
       <StorageWarningBanner />
       <LocationPill dark={true} />
       <p style={css("margin:0;font:700 14px 'IBM Plex Mono',monospace;color:#C9D0FF;letter-spacing:.05em")}>STEP {currentStepIdx + 1} OF {cfg.steps.length} · {cfg.caseTitle.toUpperCase()}</p>
-      <h1 style={css("margin:0;font:700 40px/1.08 'Atkinson Hyperlegible',sans-serif;color:#fff;text-wrap:pretty")}>{cfg.steps[currentStepIdx]}.</h1>
+      {/* FIND-10 (docs/audit-2026-08-29.md) — this headline used to render at
+          font-size:40px/line-height:43.2px, ~302px tall across long step text
+          wrapped to 7 lines, pushing the primary "Do this step" CTA to
+          top:1048px on an 844px viewport (1.25 screens down) — the slowest
+          path to the action in a mode whose entire premise is speed. Capped
+          to the same 28px scale HomeStandard's H1 uses everywhere else. */}
+      <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#fff;text-wrap:pretty")}>{cfg.steps[currentStepIdx]}.</h1>
       <p style={css("margin:0;font:400 19px/1.5 'Atkinson Hyperlegible',sans-serif;color:#DDE2FF")}>{cfg.actionWhy}</p>
+      {/* FIND-10 (docs/audit-2026-08-29.md) — the primary CTA moves here, directly
+          under the headline/why-copy, instead of after the Deadline Watch card and
+          its explainer sub-blocks. Those still render (below), just no longer
+          gate reaching the step's actual action. */}
+      <div style={css("display:flex;flex-direction:column;gap:12px")}>
+        <button onClick={() => {
+          const target = stepTarget(cfg, currentStepIdx);
+          setDone(p => Object.assign({}, p, { [stepKey(cfg, currentStepIdx)]: true }));
+          if (target.letterType) setLetterType(target.letterType);
+          if (target.logKind) setLogKind(target.logKind);
+          else if (target.screen === 'log') setLogKind(defaultLogKindForIssueKey(cfg.key));
+          setScreen(target.screen);
+        }} className="surfacefx" style={css("padding:20px;border-radius:16px;border:none;background:#FFF4D6;color:#14181F;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Do this step</button>
+        <button onClick={() => setDone(p => Object.assign({}, p, { [stepKey(cfg, currentStepIdx)]: true }))} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid #fff;background:transparent;color:#fff;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Mark it done</button>
+      </div>
       {(() => {
         const fedF = (federal && federal.facts) || [];
         const stF = (stateData && stateData.facts) || [];
@@ -3236,15 +3257,6 @@ function App(){
         <button onClick={nav('adaProcess')} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.6);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Track the ADA process — if you're requesting an accommodation</button>
       }
       <div style={css("display:flex;flex-direction:column;gap:12px")}>
-        <button onClick={() => {
-          const target = stepTarget(cfg, currentStepIdx);
-          setDone(p => Object.assign({}, p, { [stepKey(cfg, currentStepIdx)]: true }));
-          if (target.letterType) setLetterType(target.letterType);
-          if (target.logKind) setLogKind(target.logKind);
-          else if (target.screen === 'log') setLogKind(defaultLogKindForIssueKey(cfg.key));
-          setScreen(target.screen);
-        }} className="surfacefx" style={css("padding:20px;border-radius:16px;border:none;background:#FFF4D6;color:#14181F;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Do this step</button>
-        <button onClick={() => setDone(p => Object.assign({}, p, { [stepKey(cfg, currentStepIdx)]: true }))} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid #fff;background:transparent;color:#fff;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Mark it done</button>
         {/* usertest — the step CTA above only reaches the Letter screen on the one
             step index (if any) whose stepScreens entry is 'letter'; harassment,
             discrimination, document and the generic issue never have one, so without
