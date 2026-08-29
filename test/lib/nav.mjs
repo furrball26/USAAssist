@@ -1,5 +1,6 @@
 /*
- * Shared navigation helper (R5b, review-2-report.md).
+ * Shared navigation helper (R5b, review-2-report.md; FIND-20,
+ * docs/audit-2026-08-29.md).
  *
  * All suites cold-launch a fresh Chrome + static server and then call
  * page.goto()/page.reload() with the app's `networkidle0` wait condition.
@@ -8,11 +9,32 @@
  * try/finally cleanup — orphaned Chrome processes and compounded failures
  * across the run. This helper:
  *   - raises the navigation timeout from 20000ms to 40000ms, and
- *   - retries exactly once (after a short backoff) on a Puppeteer
- *     TimeoutError, so a single slow load doesn't fail the whole suite.
+ *   - retries exactly once (after a short backoff) on a retryable
+ *     navigation error, so a single slow/flaky load doesn't fail the
+ *     whole suite.
  *
  * Use in place of `page.goto(url, { waitUntil:'networkidle0', timeout:20000 })`
  * and `page.reload({ waitUntil:'networkidle0', timeout:20000 })`.
+ *
+ * What counts as retryable (FIND-20): a full `npm run verify` run (~60
+ * sequential Chrome launches) observed `test/desktop-layout.mjs` die at
+ * `gotoApp` with:
+ *   Error: Navigating frame was detached
+ *     cause: LifecycleWatcher disposed
+ * — a puppeteer-core `LifecycleWatcher` navigation race under launch
+ * contention (see `LifecycleWatcher.js`: `#onFrameDetached` sets that exact
+ * message, and `dispose()` unconditionally sets that exact cause), not a
+ * product defect: the same suite passed standalone immediately after, and
+ * every other suite in the run passed individually. The retry predicate
+ * below matches:
+ *   - Puppeteer `TimeoutError` / any "timeout" message (already retried), and
+ *   - `LifecycleWatcher`-originated navigation races: "Navigating frame was
+ *     detached" and "LifecycleWatcher disposed"/"terminated", checked on
+ *     both the error's own message and its `.cause`.
+ * It deliberately does NOT match broader "closed"/"detached" phrasing such
+ * as "Session closed", "Protocol error", or "Target closed" — those
+ * indicate the browser/page itself died and are real failures that must
+ * still fail loudly rather than be retried into a false pass.
  */
 
 export const NAV_TIMEOUT_MS = 40000;
@@ -22,11 +44,26 @@ function isTimeout(e) {
   return !!e && (e.name === 'TimeoutError' || /timeout/i.test(e.message || ''));
 }
 
+function isLifecycleWatcherRace(e) {
+  if (!e) return false;
+  const msg = e.message || '';
+  const causeMsg = (e.cause && e.cause.message) || '';
+  return (
+    /navigating frame was detached/i.test(msg) ||
+    /lifecyclewatcher (disposed|terminated)/i.test(msg) ||
+    /lifecyclewatcher (disposed|terminated)/i.test(causeMsg)
+  );
+}
+
+function isRetryableNavError(e) {
+  return isTimeout(e) || isLifecycleWatcherRace(e);
+}
+
 async function withRetry(op) {
   try {
     return await op(NAV_TIMEOUT_MS);
   } catch (e) {
-    if (!isTimeout(e)) throw e;
+    if (!isRetryableNavError(e)) throw e;
     await new Promise((r) => setTimeout(r, RETRY_BACKOFF_MS));
     return op(NAV_TIMEOUT_MS);
   }

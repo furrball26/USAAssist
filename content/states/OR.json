@@ -86,15 +86,15 @@
     },
     {
       "topic": "deadlines.discriminationComplaint",
-      "value": "5 years",
-      "summary": "For incidents on or after September 29, 2019, an employee has up to five years to file an unlawful-employment-practice complaint with BOLI or a civil lawsuit, much longer than the federal EEOC 180/300-day charge deadline.",
-      "citation": "ORS 659A.875",
+      "value": "1 year for most claims; up to 5 years for claims under ORS 659A.030, 659A.082, 659A.112, 659A.370, or 243.323",
+      "summary": "An employee generally has 1 year from the alleged unlawful practice to file either an administrative complaint with BOLI or a civil action in court. Oregon's Workplace Fairness Act extends that deadline to 5 years -- for both a BOLI complaint and a civil lawsuit -- for incidents occurring on or after September 29, 2019, if the claim falls under ORS 659A.030 (race, color, religion, sex, sexual orientation, gender identity, national origin, marital status, or age discrimination), 659A.082, 659A.112 (disability), 659A.370, or 243.323. Other unlawful-employment-practice claims keep the general 1-year deadline; confirm which limitations period applies to the specific claim before relying on either figure.",
+      "citation": "ORS 659A.820; ORS 659A.875",
       "sourceUrl": "https://www.oregon.gov/boli/workers/Pages/discrimination-at-work.aspx",
       "sourceAgency": "Oregon Bureau of Labor & Industries (BOLI)",
-      "lastChecked": "2026-07-30",
+      "lastChecked": "2026-08-29",
       "reviewed": false,
       "reviewedBy": null,
-      "notes": "Five-year window applies to incidents on/after Sept 29, 2019 (following SB 726). Some claim types may carry shorter periods; verify ORS 659A.875 subsections for the specific claim."
+      "notes": "The 5-year window (added by 2019 SB 726, the Workplace Fairness Act) applies to BOTH the BOLI administrative complaint (ORS 659A.820) and a civil action (ORS 659A.875) -- it is not limited to civil suits -- but only for the enumerated statutes (243.323, 659A.030, 659A.082, 659A.112, 659A.370), which cover most but not all discrimination/retaliation claim types. Any unlawful-employment-practice claim outside that list is subject to the general 1-year deadline in both forums. Verify the applicable statute for the specific claim before relying on a deadline."
     },
     {
       "topic": "final-pay",

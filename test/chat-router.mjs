@@ -23,7 +23,7 @@
 import { createServer } from 'node:http';
 import { readFileSync, existsSync, statSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
-import { execSync } from 'node:child_process';
+import { resolveChromePath } from './lib/chrome.mjs';
 import puppeteer from 'puppeteer-core';
 import { gotoApp, reloadApp } from './lib/nav.mjs';
 
@@ -37,7 +37,7 @@ const server = createServer((req, res) => {
 });
 await new Promise(r => server.listen(0, r));
 const PORT = server.address().port;
-const chrome = execSync(`find "${ROOT}chrome-headless-shell" -type f -name 'chrome-headless-shell' | head -1`).toString().trim();
+const chrome = resolveChromePath();
 
 const FALLBACK_SNIPPET = 'I can only give sample answers';
 
@@ -65,6 +65,16 @@ const CASES = [
   { q:'I was fired for reporting safety issues, is that retaliation?', expectSnippet:'Retaliation means' },
   { q:'How do I ask for an ADA accommodation?', expectSnippet:'interactive process', expectCite:'42 U.S.C. §12112' },
   { q:'Can my boss refuse to pay overtime?', expectSnippet:'Not approved' },
+  // FIND-05 (docs/audit-2026-08-29.md) — the app's own seeded quick-reply chip for
+  // termination cases, verbatim, must route to the wrongful-termination reply, not
+  // the (different-theory) retaliation reply the bare "terminat" stem previously
+  // matched.
+  { q:'Is this a wrongful termination?', expectSnippet:'at-will', expectNotSnippet:'Retaliation means' },
+  { q:'Was I wrongfully discharged?', expectSnippet:'at-will', expectNotSnippet:'Retaliation means' },
+  // A genuine retaliation question — including one that also happens to say
+  // "fired" — must still route to the retaliation reply, not the wrongful-
+  // termination one, since the phrase "wrongful" never appears.
+  { q:'I was fired right after I filed a complaint, is that retaliation?', expectSnippet:'Retaliation means' },
 ];
 
 const b = await puppeteer.launch({ executablePath: chrome, headless: true, args: ['--no-sandbox'] });
@@ -110,6 +120,7 @@ for (const c of CASES) {
     if (c.expectFallback && !last.includes(FALLBACK_SNIPPET)) problems.push('expected fallback reply, got: ' + JSON.stringify(last));
     if (c.expectFallback && /§|U\.S\.C\.|C\.F\.R\./.test(last)) problems.push('unmatched/fallback reply carries a citation: ' + JSON.stringify(last));
     if (c.expectSnippet && !last.includes(c.expectSnippet)) problems.push('expected reply to include ' + JSON.stringify(c.expectSnippet) + ', got: ' + JSON.stringify(last));
+    if (c.expectNotSnippet && last.includes(c.expectNotSnippet)) problems.push('reply wrongly includes ' + JSON.stringify(c.expectNotSnippet) + ': ' + JSON.stringify(last));
     if (c.expectCite && !last.includes(c.expectCite)) problems.push('expected citation ' + JSON.stringify(c.expectCite) + ' missing from: ' + JSON.stringify(last));
   }
   errs.forEach(e => problems.push(e));

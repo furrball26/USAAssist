@@ -101,6 +101,30 @@
       "notes": "Federal FLSA has no comparable final-pay deadline, so this is a state addition. Violation is a petty offense."
     },
     {
+      "topic": "remedies.trebleDamages",
+      "value": "Treble (3x) damages available at the court's discretion in a civil action for unpaid wages",
+      "summary": "If an employer fails to pay wages due, an employee may bring a civil action against the employer or former employer and recover an amount that is treble the unpaid wages -- but Arizona courts have held the statute's 'may recover' language is discretionary, not automatic. The Arizona Court of Appeals has held that a trial court may decline to award treble damages even where wages are undisputedly owed (e.g., a brief, good-faith, inadvertent oversight corrected on notice, or a genuine good-faith dispute over the amount due), while treble damages are more clearly warranted where an employer withholds wages without reasonable justification. This is a separate, more general remedy from A.R.S. 23-364(G) (see remedies.minimumWageDamages), which applies only to minimum-wage/earned-paid-sick-time violations and uses different, mandatory language.",
+      "citation": "A.R.S. § 23-355(A)",
+      "sourceUrl": "https://www.azleg.gov/ars/23/00355.htm",
+      "sourceAgency": "Arizona State Legislature (Arizona Revised Statutes)",
+      "lastChecked": "2026-08-29",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Do not present as an automatic 3x multiplier: Arizona appellate case law (e.g., Crum v. Maricopa County, 190 Ariz. 512 (App. 1997); D'Amico v. Structural I Co. (App. 2012)) construes the 'may recover' language of 23-355(A) as permissive, giving the trial court discretion to deny treble damages even absent a good-faith wage dispute. This remedy covers general unpaid-wage civil actions; Arizona has no state overtime statute (see overtime.daily), so an unpaid-overtime claim is ordinarily a federal FLSA claim (see _federal remedies.liquidatedDamages, which doubles rather than trebles) rather than a 23-355 state-law claim -- which theory fits a given claimant's facts is a question for counsel. Could not fetch azleg.gov directly this session (network egress to azleg.gov was blocked); statutory text and the discretionary holding corroborated by cross-checking multiple independent secondary sources that reproduce the azleg.gov text (law.justia.com, codes.findlaw.com, casemine.com, law.onecle.com) and summarize the case law (berklawgroup.com case summary of D'Amico v. Structural I Co.), which agree with each other. VERIFY 2027 against azleg.gov directly and re-check for any amending legislation or new appellate decisions."
+    },
+    {
+      "topic": "remedies.minimumWageDamages",
+      "value": "Unpaid balance plus interest, plus a mandatory additional amount equal to twice the underpaid wages or earned paid sick time (roughly 3x the shortfall in total)",
+      "summary": "An employer who fails to pay the minimum wage or earned paid sick time required by Arizona's Fair Wages and Healthy Families Act must pay the employee the balance owed (including interest) PLUS an additional amount equal to twice the underpaid wages or earned paid sick time -- for a total recovery of roughly three times the shortfall. This is a distinct remedy from the general, discretionary treble-damages civil action under A.R.S. 23-355 (see remedies.trebleDamages): it applies specifically to minimum-wage and earned-paid-sick-time violations under this article, and its 'shall be required to pay' language is mandatory rather than permissive.",
+      "citation": "A.R.S. § 23-364(G)",
+      "sourceUrl": "https://www.azleg.gov/ars/23/00364.htm",
+      "sourceAgency": "Arizona State Legislature (Arizona Revised Statutes)",
+      "lastChecked": "2026-08-29",
+      "reviewed": false,
+      "reviewedBy": null,
+      "notes": "Scope is limited to minimum-wage and earned-paid-sick-time violations under the Fair Wages and Healthy Families Act (Article 8, Title 23) -- it is NOT the same cause of action as the general unpaid-wages treble-damages remedy in A.R.S. 23-355 (remedies.trebleDamages), which has its own separate 'may recover'/discretionary standard; do not merge these two facts or present one figure as covering both. A.R.S. 23-364 also authorizes separate civil penalties against the employer (at least $250 for a first violation, at least $1,000 for a subsequent or willful violation) and a separate retaliation remedy (not less than $150/day the violation continues), which are not captured by this fact and would need their own entry if added later. Could not fetch azleg.gov directly this session (network egress blocked); statutory text corroborated across azica.gov's own official Minimum Wage Act FAQ PDF (industrial Commission of Arizona) and independent secondary reproductions of the azleg.gov text (law.justia.com, codes.findlaw.com, law.onecle.com), which agree with each other on the 'shall ... balance ... plus twice the underpaid' language. VERIFY 2027 against azleg.gov directly."
+    },
+    {
       "topic": "leave.earnedPaidSickTime",
       "value": "state-mandated earned paid sick time",
       "summary": "Arizona requires employers to provide earned paid sick time (accrued at one hour per 30 hours worked) under the Fair Wages and Healthy Families Act — a benefit with no federal equivalent.",

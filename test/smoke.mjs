@@ -6,7 +6,7 @@
 import { createServer } from 'node:http';
 import { readFileSync, existsSync, statSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
-import { execSync } from 'node:child_process';
+import { resolveChromePath } from './lib/chrome.mjs';
 import puppeteer from 'puppeteer-core';
 import { gotoApp, reloadApp } from './lib/nav.mjs';
 
@@ -29,9 +29,7 @@ const PORT = server.address().port;
 const BASE = `http://127.0.0.1:${PORT}`;
 
 // locate the installed chrome-headless-shell
-const chromePath = execSync(
-  `find "${ROOT}chrome-headless-shell" -type f -name 'chrome-headless-shell' 2>/dev/null | head -1`
-).toString().trim();
+const chromePath = resolveChromePath();
 
 const errors = [];
 const browser = await puppeteer.launch({ executablePath: chromePath, headless: true, args: ['--no-sandbox'] });

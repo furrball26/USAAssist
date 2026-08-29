@@ -9,10 +9,14 @@
  *
  * Checks:
  *   (a) Every file is valid JSON and every fact has all required fields.
- *   (b) Every sourceUrl is https:// and on an official-looking domain (.gov, .us, or a
- *       small allowlist of non-.gov/.us hosts already used in the data for state
- *       code/legislature/agency portals). Anything else is a WARNING, not a hard fail —
- *       wl-content owns swapping a source, not this script.
+ *   (b) Every sourceUrl (facts[].sourceUrl) AND every agency contact link
+ *       (agencies.wageHour.url / agencies.discrimination.url) is https:// and on an
+ *       official-looking domain (.gov, .us, or a small allowlist of non-.gov/.us hosts
+ *       already used in the data for state code/legislature/agency portals). For
+ *       facts[].sourceUrl this is a WARNING, not a hard fail — wl-content owns swapping a
+ *       source, not this script. For agencies.*.url it IS a hard fail: it's a small,
+ *       fully-auditable set (2 links x 50 states) that the app surfaces as its primary
+ *       "contact this agency" action, not a best-effort citation footnote.
  *   (c) content/index.json's states[] list matches the files on disk in content/states/
  *       (minus _TEMPLATE.json, which is a scaffold, not authored content).
  *   (d) `reviewed` is false everywhere — file-level and per-fact. This is the rendering
@@ -50,6 +54,11 @@ const REQUIRED_FACT_FIELDS = [
 const HOST_ALLOWLIST = new Set([
   'nmonesource.com',       // New Mexico Compilation Commission — official statute portal
   'www.floridajobs.org',   // Florida Dept of Commerce — FL has no separate state DOL
+  'fchr.myflorida.com',    // Florida Commission on Human Relations — official state agency
+  'www.khrc.net',          // Kansas Human Rights Commission — official state agency
+  'khrc.net',
+  'www.laworks.net',       // Louisiana Workforce Commission — official state agency
+  'laworks.net',
 ]);
 
 // Staleness threshold for the lastChecked warning (days). Configurable via env var so
@@ -64,6 +73,31 @@ const warn = (msg) => warnings.push(msg);
 function isOfficialHost(host) {
   host = host.toLowerCase();
   return host.endsWith('.gov') || host.endsWith('.us') || HOST_ALLOWLIST.has(host);
+}
+
+// Shared sourcing-hygiene check for any URL field the app treats as a clickable official
+// link (facts[].sourceUrl, agencies.wageHour.url, agencies.discrimination.url). A
+// malformed URL is always a hard fail (broken data, not a sourcing nit). Scheme/host
+// hygiene severity is caller-controlled via `severity` ('warn', the default, or 'err'):
+// facts[].sourceUrl stays a WARNING (wl-content owns swapping a source, high volume,
+// best-effort citations — see the file-header comment on (b)); agencies.*.url is called
+// with severity: 'err' because it's a small, fully-auditable set (2 links x 50 states)
+// that the app surfaces as its primary "contact this agency" action, not a citation
+// footnote — an unofficial/broken agency link is a hard fail, not a hygiene nit.
+function checkOfficialUrl(label, fieldName, rawUrl, severity = 'warn') {
+  const flag = severity === 'err' ? err : warn;
+  let url;
+  try {
+    url = new URL(rawUrl);
+  } catch {
+    err(`${label}: ${fieldName} is not a valid URL ("${rawUrl}")`);
+    return;
+  }
+  if (url.protocol !== 'https:') {
+    flag(`${label}: ${fieldName} is not https:// ("${rawUrl}") — the app's safeUrl() guard will silently drop this as a clickable link`);
+  } else if (!isOfficialHost(url.hostname)) {
+    flag(`${label}: ${fieldName} host "${url.hostname}" is not .gov/.us and not on the allowlist — confirm it's an official source or swap it ("${rawUrl}")`);
+  }
 }
 
 function checkFile(relPath) {
@@ -140,28 +174,21 @@ function checkFile(relPath) {
     }
 
     if (typeof fact.sourceUrl === 'string' && fact.sourceUrl) {
-      let url;
-      try {
-        url = new URL(fact.sourceUrl);
-      } catch {
-        // A malformed URL (unparseable) is a hard fail — a valid https official URL that
-        // fails a lower-severity sourcing check is a warning (see below), but garbage
-        // input isn't a "sourcing hygiene" nit, it's broken data.
-        err(`${label}: sourceUrl is not a valid URL ("${fact.sourceUrl}")`);
-        return;
-      }
-      // Sourcing-hygiene checks (scheme + host) are WARNINGS, not hard fails, per spec:
-      // this script validates shape/sourcing, not legal substance, and doesn't own fixing
-      // a source URL — that's wl-content. The app's own safeUrl() already refuses to render
-      // non-https hrefs at runtime, so a flagged URL degrades (drops the link) rather than
-      // ever executing/crashing; it's a real defect worth surfacing, just not a build-breaker.
-      if (url.protocol !== 'https:') {
-        warn(`${label}: sourceUrl is not https:// ("${fact.sourceUrl}") — the app's safeUrl() guard will silently drop this as a clickable source link`);
-      } else if (!isOfficialHost(url.hostname)) {
-        warn(`${label}: sourceUrl host "${url.hostname}" is not .gov/.us and not on the allowlist — confirm it's an official source or swap it ("${fact.sourceUrl}")`);
-      }
+      checkOfficialUrl(label, 'sourceUrl', fact.sourceUrl);
     }
   });
+
+  // (b, cont'd) agencies.wageHour.url / agencies.discrimination.url — same sourcing-hygiene
+  // bar as facts[].sourceUrl. These are the app's "contact the agency" links and were
+  // previously unchecked entirely.
+  if (data.agencies && typeof data.agencies === 'object') {
+    for (const agencyKey of ['wageHour', 'discrimination']) {
+      const agency = data.agencies[agencyKey];
+      if (agency && typeof agency.url === 'string' && agency.url) {
+        checkOfficialUrl(`${relPath} agencies.${agencyKey}`, 'url', agency.url, 'err');
+      }
+    }
+  }
 }
 
 // (a)+(b)+(d): federal + every state file

@@ -9,6 +9,17 @@
  * directory, run the real build.mjs against that copy, and diff its output against the
  * working tree's index.html / assets/app.js. Any difference = drift = fail.
  *
+ * ORDERING: this MUST run in `npm run verify` BEFORE `node build.mjs`. It compares the
+ * on-disk index.html/assets/app.js against a *fresh rebuild of the on-disk index.dev.html*
+ * — if `node build.mjs` has already run earlier in the same command, it will have just
+ * overwritten both artifacts, so this check would always trivially pass (comparing a
+ * freshly-built file to another freshly-built file) and could never catch real drift
+ * (index.dev.html edited without a rebuild). Running before the build means it validates
+ * whatever is actually on disk — which, on a fresh CI checkout, is exactly what's
+ * committed, and for a developer with legitimate uncommitted index.dev.html edits it still
+ * passes as long as they've also rebuilt (per AUTONOMY.md: "always rebuild in the same
+ * commit"), since it only ever compares on-disk files to each other, never to git HEAD.
+ *
  * Run: node automation/check-artifacts-fresh.mjs
  */
 import { mkdtempSync, cpSync, mkdirSync, symlinkSync, readFileSync, rmSync } from 'node:fs';

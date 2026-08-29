@@ -176,7 +176,7 @@ const CONTENT_BASE = (typeof window !== 'undefined' && window.CONTENT_BASE)
 // SHA-pinned fallback source for the same content/ path, tried once if the primary
 // CONTENT_BASE fetch fails (network error or non-2xx) before surfacing the error state.
 // Bump this SHA as part of routine maintenance so it stays a recent known-good commit.
-const CONTENT_FALLBACK_BASE = 'https://raw.githubusercontent.com/furrball26/USAAssist/a0da2fca9c18a11d64511b22d8f2c72e712eba1f/';
+const CONTENT_FALLBACK_BASE = 'https://raw.githubusercontent.com/furrball26/USAAssist/ccc3e708258b4b6ec8248d134e1f4a79e702bf79/';
 function fetchContentJson(path){
   return fetch(CONTENT_BASE + path)
     .then(r => { if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
@@ -378,6 +378,27 @@ function formatDeadlineDate(d){
   try { return d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric' }); }
   catch (e) { return dateInputValue(d); }
 }
+// FIND-19 (docs/audit-2026-08-29.md) — the draft-letter disclaimer hardcoded "a
+// {stateLabel} law", which reads as "a Alabama law", "a Ohio law", "a Illinois
+// law", "a Arkansas law" for the several state names that start with a vowel
+// sound. Picks the article from the word's LEADING SOUND, not just its
+// leading letter, the same way a careful writer would: a silent-consonant
+// vowel sound ("an hour", "an honest mistake") still gets "an" even though
+// the letter is a consonant, and a consonant-SOUNDING vowel letter ("a
+// European law", "a one-time fee", "a university policy") still gets "a"
+// even though the letter is a vowel. No current US state or territory name
+// actually needs either exception (every vowel-led one — Alabama, Alaska,
+// Arizona, Arkansas, Idaho, Illinois, Indiana, Iowa, Ohio, Oklahoma, Oregon —
+// starts with a true vowel sound), but the sound-based rule is exactly as
+// cheap to write as the letter-based one and correctly future-proofs any
+// future label this is reused for.
+function articleFor(word){
+  const w = String(word == null ? '' : word).trim();
+  if (!w) return 'a';
+  if (/^(honest|honor|honou?r|hour|heir)/i.test(w)) return 'an'; // silent-h vowel sound
+  if (/^(uni|use[dfrs]?|ubiquit|euro|one\b|ouija)/i.test(w)) return 'a'; // consonant-sounding vowel
+  return /^[aeiou]/i.test(w) ? 'an' : 'a';
+}
 // Shared between DeadlineComputedBlock (Home's Deadline Watch card) and
 // buildCaseFile's KEY DEADLINE section, so the exported packet's computed-date
 // caveat never drifts from the in-app wording.
@@ -492,6 +513,32 @@ function css(str){
   return out;
 }
 
+/* Shared style for every <input type="date"> / <input type="time"> in the app.
+   Single source of truth so the 9 near-duplicate inline styles can't drift
+   (FIND-15) — and so a fix like this one only has to be made once.
+   iOS Safari renders these as native controls with an intrinsic minimum width
+   that plain `width:100%` cannot shrink below, so on a real iPhone they can
+   render wider than their card and spill past its border even though a
+   headless-Chromium screenshot shows zero overflow. `-webkit-appearance:none`
+   (+ `appearance:none` for the standard property) drops the native chrome
+   sizing, and `min-width:0` removes the flex/grid item default that would
+   otherwise still let the intrinsic content width win. Screen-specific
+   density (font size / corner radius / an optional cap width) stays a param
+   so this doesn't force every screen's date field to look identical to the
+   others — only the sizing/appearance rules that fix the overflow are shared. */
+function dateTimeInputStyle(opts){
+  opts = opts || {};
+  const radius = opts.radius || 10;
+  const fontSize = opts.fontSize || 16;
+  let str = "width:100%;box-sizing:border-box;min-width:0;min-height:44px;" +
+    "padding:10px 12px;border-radius:" + radius + "px;border:2px solid #14181F;" +
+    "font:400 " + fontSize + "px 'Atkinson Hyperlegible',sans-serif;" +
+    "-webkit-appearance:none;appearance:none;";
+  if (opts.maxWidth) str += "max-width:" + opts.maxWidth + "px;";
+  if (opts.color) str += "color:" + opts.color + ";";
+  return css(str);
+}
+
 /* ── Icon set — monoline 24×24 grid, stroke=currentColor, fill=none ─────────
    Single source of truth for every glyph in the app. Add new geometry to
    ICON_PATHS; render anywhere with <Icon name="..." size={22} />. Decorative
@@ -545,6 +592,11 @@ const ICON_PATHS = {
     <path d="m14.1 8.2 3 3"/>
   </>,
   back: <path d="M15 4.5 7 12l8 7.5"/>,
+  // FIND-17 — forward affordances ("View →", "Find a lawyer →", the next-step
+  // row arrow) were a literal "→" Unicode character with no entry in this set,
+  // so their optical size/weight/baseline didn't track the icon system the
+  // way "back" (above) does. Exact mirror of "back" across the vertical axis.
+  'chevron-forward': <path d="M9 4.5l8 7.5-8 7.5"/>,
   check: <path d="M4.5 12.5 9.5 17.5 19.5 6.5"/>,
   alert: <>
     <path d="M12 3.5 21.5 20h-19L12 3.5Z"/>
@@ -588,6 +640,43 @@ const RESULTS_WAGE = {
   r_hce: { v:'ex', title:'Possibly exempt — highly compensated employee', body:'At $107,432 or more a year with at least one exempt-type duty, the highly-compensated-employee test uses a relaxed duties standard — you do not need to meet the full duties test that ordinary executive, administrative or professional exemptions require. If your total-pay figure or duty description overstated things, revisit this.', cites:['29 C.F.R. §541.601','29 U.S.C. §213(a)(1)'] }
 };
 
+// FIND-01 (docs/audit-2026-08-29.md) — the wizard's federal salary-level question
+// ("Is your salary at least $684/week?") is a self-report against the FEDERAL floor
+// only. Several states set a HIGHER white-collar salary floor (content topic
+// 'overtime.salaryFloorWeekly', e.g. CA's ~$1,352/week) — a worker who clears $684
+// can still fall below a state's own number, and the salary-basis test is a floor,
+// not a duties test: failing it is disqualifying no matter how exempt the duties look.
+// This only ever DOWNGRADES a standard white-collar 'ex' verdict (r_exec/r_admin/
+// r_prof/r_creative/r_comp) to reflect the user's own stored profile salary against
+// the state's own numeric fact — it never invents a fact, never hardcodes a state or
+// dollar figure, and never flips a 'non' result to 'ex' (clearing the floor is
+// necessary, not sufficient — duties still control, so an at/above-floor salary
+// leaves the duties-based verdict exactly as computed). It intentionally does
+// nothing when: the result isn't one of these salary-basis exemptions (e.g.
+// r_outside/r_hce use different tests with no per-state weekly-floor fact here),
+// the worker is paid hourly (a different, already-handled failure mode — see
+// r_hourly/r_hourly_comp_no), there is no numeric state floor fact, or no salary is
+// on file to compare — all of those fall through unchanged rather than guessing.
+const SALARY_BASIS_EXEMPT_RESULTS = new Set(['r_exec', 'r_admin', 'r_prof', 'r_creative', 'r_comp']);
+function applyStateSalaryFloor(result, wizNode, profile, stateData){
+  if (!result || result.v !== 'ex' || !SALARY_BASIS_EXEMPT_RESULTS.has(wizNode)) return result;
+  if (!profile || profile.payType !== 'Salary') return result; // hourly: not this test's concern here
+  const floorFact = factByTopic((stateData && stateData.facts) || [], 'overtime.salaryFloorWeekly');
+  const floor = floorFact && Number(floorFact.value);
+  if (!(floor > 0)) return result; // no numeric state floor fact — unchanged federal-only behavior
+  const annual = Number(profile.salary);
+  if (!(annual > 0)) return result; // no salary on file to compare — do not guess
+  const weekly = annual / 52;
+  if (weekly >= floor) return result; // clears the state floor too — duties analysis stands
+  const stName = (stateData && stateData.name) || 'your state';
+  return Object.assign({}, result, {
+    v: 'non',
+    title: 'Not exempt in ' + stName + ' — salary is below the state floor',
+    body: 'Your duties may otherwise fit an exemption, but ' + stName + ' requires a salary of at least ' + money(floor) + '/week for the white-collar exemptions, and your stated salary works out to about ' + money(weekly) + '/week — below that line. A salary below the applicable floor fails the salary-basis test regardless of duties, so overtime is likely owed under ' + stName + ' law even though the federal $684/week test was cleared.',
+    cites: (result.cites || []).concat([floorFact.citation].filter(Boolean))
+  });
+}
+
 // wl-builder — HARASSMENT self-check (issue key 'harassment'). Same branching
 // Q&A pattern as the FLSA exemption wizard above (TREE_WAGE/RESULTS_WAGE),
 // parameterized per-issue via WIZARD_CONFIG/wizardConfigFor so the single
@@ -603,11 +692,11 @@ const RESULTS_HARASSMENT = {
   r_h_hostile: { v:'ex', title:'This may rise to a hostile work environment', body:'Your answers have the shape courts generally look for: conduct unwelcome to you, tied to a protected characteristic, and either severe on its own or repeated over time. This is general information about the legal standard, not a legal opinion about your situation — an attorney would still need to review the specifics.', cites:['Meritor Savings Bank v. Vinson, 477 U.S. 57 (1986)','Harris v. Forklift Systems, Inc., 510 U.S. 17 (1993)'] },
 };
 const TREE_HARASSMENT = {
-  start: { q:'Is the conduct tied to a protected characteristic — race, sex (including pregnancy, sexual orientation or gender identity), religion, national origin, age 40+, disability, or genetic information?', help:'Harassment law only covers conduct connected to who you are in one of these ways — not rudeness in general.', opts:[['Yes, it is tied to one of those','unwelcome','PROTECTED: YES'],['No, it feels like general rudeness or a personality conflict','r_h_no_link','PROTECTED: NO'],['Not sure','unwelcome','PROTECTED: NOT SURE']] },
-  unwelcome: { q:'Was the conduct unwelcome to you — you did not invite or welcome it?', help:'This is usually straightforward, but it is a required element of the legal standard.', opts:[['Yes, it was unwelcome','severity','UNWELCOME: YES'],['No, or it was mutual','r_h_not_unwelcome','UNWELCOME: NO']] },
-  severity: { q:'How often did it happen, and how severe was it?', help:'Courts generally treat a single incident as enough only if it is severe (for example an assault or a serious threat) — otherwise they look for a pattern over time.', opts:[['One severe incident (assault, a slur, a serious threat)','who','SEVERITY: ONE SEVERE'],['Repeated over time','who','SEVERITY: REPEATED'],['A few isolated, minor comments','r_h_isolated','SEVERITY: ISOLATED/MINOR']] },
-  who: { q:'Who did this?', help:'Who was involved can change how an employer is held responsible — not whether the conduct counts as harassment in the first place.', opts:[['My supervisor or manager','reported','WHO: SUPERVISOR'],['A coworker','reported','WHO: COWORKER'],['A customer or other third party','reported','WHO: THIRD PARTY']] },
-  reported: { q:'Did you report it internally, and what happened?', help:'Reporting is not required to have a claim, but it can matter for what an employer can be held liable for.', opts:[['I reported it and nothing changed','r_h_hostile','REPORTED: NO ACTION'],['I reported it and it was addressed','r_h_hostile','REPORTED: FIXED'],['I have not reported it','r_h_hostile','NOT REPORTED']] },
+  start: { q:'Is the conduct tied to a protected characteristic — race, sex (including pregnancy, sexual orientation or gender identity), religion, national origin, age 40+, disability, or genetic information?', help:'Harassment law only covers conduct connected to who you are in one of these ways — not rudeness in general.', opts:[['Yes, it is tied to one of those','unwelcome','Tied to a protected characteristic'],['No, it feels like general rudeness or a personality conflict','r_h_no_link','Not tied to a protected characteristic'],['Not sure','unwelcome','Not sure if protected']] },
+  unwelcome: { q:'Was the conduct unwelcome to you — you did not invite or welcome it?', help:'This is usually straightforward, but it is a required element of the legal standard.', opts:[['Yes, it was unwelcome','severity','Conduct was unwelcome'],['No, or it was mutual','r_h_not_unwelcome','Conduct was not unwelcome']] },
+  severity: { q:'How often did it happen, and how severe was it?', help:'Courts generally treat a single incident as enough only if it is severe (for example an assault or a serious threat) — otherwise they look for a pattern over time.', opts:[['One severe incident (assault, a slur, a serious threat)','who','One severe incident'],['Repeated over time','who','Repeated over time'],['A few isolated, minor comments','r_h_isolated','Isolated, minor comments']] },
+  who: { q:'Who did this?', help:'Who was involved can change how an employer is held responsible — not whether the conduct counts as harassment in the first place.', opts:[['My supervisor or manager','reported','Done by a supervisor'],['A coworker','reported','Done by a coworker'],['A customer or other third party','reported','Done by a customer or third party']] },
+  reported: { q:'Did you report it internally, and what happened?', help:'Reporting is not required to have a claim, but it can matter for what an employer can be held liable for.', opts:[['I reported it and nothing changed','r_h_hostile','Reported, nothing changed'],['I reported it and it was addressed','r_h_hostile','Reported and addressed'],['I have not reported it','r_h_hostile','Not reported']] },
 };
 
 // wl-builder — DISCRIMINATION self-check (issue key 'discrimination'). Same
@@ -618,10 +707,10 @@ const RESULTS_DISCRIMINATION = {
   r_d_shape: { v:'ex', title:'This has the shape of a discrimination claim', body:'Your situation may have the elements courts generally look for: a protected characteristic, a real adverse action, and a comparator or pretext signal connecting them. This is general information about the legal framework, not a legal opinion about your situation — an attorney would still need to review the specifics, and the deadline below is real.', cites:['42 U.S.C. §2000e-2 (Title VII)','Bostock v. Clayton County (2020)'] },
 };
 const TREE_DISCRIMINATION = {
-  start: { q:'Which protected characteristic is involved?', help:'Federal law covers race, color, religion, sex (including pregnancy, sexual orientation and gender identity), national origin, age 40+, disability, and genetic information.', opts:[['One of those is involved','employerSize','CHARACTERISTIC: NAMED'],['Not sure','employerSize','CHARACTERISTIC: NOT SURE']] },
-  employerSize: { q:'How many employees does your employer have?', help:'Title VII and the ADA generally cover employers with 15+ employees (the ADEA, 20+). Some states cover smaller employers too — check the panel on your result.', opts:[['15 or more','adverseAction','SIZE: 15+'],['Fewer than 15','r_d_coverage_gap','SIZE: <15'],['Not sure','adverseAction','SIZE: NOT SURE']] },
-  adverseAction: { q:'What adverse action was taken?', help:'An adverse action is a real, tangible change — not just an uncomfortable conversation.', opts:[['Fired','comparator','ACTION: FIRED'],['Not hired or not promoted','comparator','ACTION: NOT HIRED/PROMOTED'],['Demoted or pay cut','comparator','ACTION: DEMOTED/PAY CUT'],['Disciplined','comparator','ACTION: DISCIPLINED'],['Other','comparator','ACTION: OTHER']] },
-  comparator: { q:'Was someone NOT in your protected group treated better in a similar situation — or did the employer’s stated reason seem false or keep shifting?', help:'Courts generally look for a comparator (someone similarly situated treated better) or a pretext signal (a reason that does not hold up) connecting the adverse action to the protected characteristic.', opts:[['Yes, someone was treated better (a comparator)','r_d_shape','COMPARATOR: YES'],['The stated reason seems false or has changed','r_d_shape','PRETEXT SIGNAL'],['No','r_d_thin','COMPARATOR: NO'],['Not sure','r_d_thin','COMPARATOR: NOT SURE']] },
+  start: { q:'Which protected characteristic is involved?', help:'Federal law covers race, color, religion, sex (including pregnancy, sexual orientation and gender identity), national origin, age 40+, disability, and genetic information.', opts:[['One of those is involved','employerSize','Protected characteristic named'],['Not sure','employerSize','Not sure which characteristic']] },
+  employerSize: { q:'How many employees does your employer have?', help:'Title VII and the ADA generally cover employers with 15+ employees (the ADEA, 20+). Some states cover smaller employers too — check the panel on your result.', opts:[['15 or more','adverseAction','15 or more employees'],['Fewer than 15','r_d_coverage_gap','Fewer than 15 employees'],['Not sure','adverseAction','Not sure of employer size']] },
+  adverseAction: { q:'What adverse action was taken?', help:'An adverse action is a real, tangible change — not just an uncomfortable conversation.', opts:[['Fired','comparator','Fired'],['Not hired or not promoted','comparator','Not hired or promoted'],['Demoted or pay cut','comparator','Demoted or pay cut'],['Disciplined','comparator','Disciplined'],['Other','comparator','Other adverse action']] },
+  comparator: { q:'Was someone NOT in your protected group treated better in a similar situation — or did the employer’s stated reason seem false or keep shifting?', help:'Courts generally look for a comparator (someone similarly situated treated better) or a pretext signal (a reason that does not hold up) connecting the adverse action to the protected characteristic.', opts:[['Yes, someone was treated better (a comparator)','r_d_shape','A comparator was treated better'],['The stated reason seems false or has changed','r_d_shape','Stated reason seems false'],['No','r_d_thin','No comparator identified'],['Not sure','r_d_thin','Not sure about a comparator']] },
 };
 
 // Per-issue federal fact topics the wizard result screen cites for harassment/
@@ -630,17 +719,17 @@ const HARASSMENT_FACT_TOPICS = ['harassment.hostileEnvironmentStandard', 'harass
 const DISCRIMINATION_FACT_TOPICS = ['discrimination.protectedClasses', 'discrimination.coverageTitleVII'];
 
 const TREE_WAGE = {
-  start: { q:'How are you paid?', help:'Most exemptions require a fixed salary — this is the salary-basis test.', opts:[['A fixed salary every period','salaryLevel','SALARY'],['Hourly','hourlyType','HOURLY'],['Commission or piece rate','r_commission','COMMISSION'],['I am an outside salesperson','outsideSales','OUTSIDE SALES']] },
-  salaryLevel: { q:'Is your salary at least $684 per week?', help:'That is $35,568/year — the federal salary-level test. Some states set a higher salary floor; your state’s figure alongside the federal one will be shown on your result.', opts:[['Yes, $684/week or more','hceCheck','≥ $684/WK'],['No, less than that','r_salary_low','< $684/WK'],['Not sure','duties','SALARY ?']] },
+  start: { q:'How are you paid?', help:'Most exemptions require a fixed salary — this is the salary-basis test.', opts:[['A fixed salary every period','salaryLevel','Paid a salary'],['Hourly','hourlyType','Paid hourly'],['Commission or piece rate','r_commission','Paid by commission or piece rate'],['I am an outside salesperson','outsideSales','Outside salesperson']] },
+  salaryLevel: { q:'Is your salary at least $684 per week?', help:'That is $35,568/year — the federal salary-level test. Some states set a higher salary floor; your state’s figure alongside the federal one will be shown on your result.', opts:[['Yes, $684/week or more','hceCheck','Meets the $684/week federal floor'],['No, less than that','r_salary_low','Below the $684/week federal floor'],['Not sure','duties','Not sure of salary amount']] },
   // G7 — asked only after the salary floor is cleared, before the ordinary duties
   // question, so a high earner who would otherwise land in "routine tasks" (or another
   // duty that fails the FULL duties test) still gets a shot at the relaxed HCE test.
-  hceCheck: { q:'Is your total annual pay at least $107,432 — including salary, commissions and nondiscretionary bonuses?', help:'That is the highly-compensated-employee threshold. It relaxes the duties test but does not remove it — you still need at least one exempt-type duty, checked next.', opts:[['Yes, $107,432/year or more','hceDuty','≥ $107,432/YR'],['No, or not sure','duties','< $107,432/YR']] },
-  hceDuty: { q:'Do you regularly perform at least one exempt-type duty — for example directing the work of other employees, or office/business work involving discretion on significant matters?', help:'The highly-compensated test only requires ONE such duty, not the full executive/administrative/professional duties test.', opts:[['Yes, at least one of those','r_hce','HCE DUTY: YES'],['No, mostly routine tasks','duties','HCE DUTY: NO']] },
-  duties: { q:'What do you mainly do all day?', help:'The duties test looks at your real work, not your job title. Pick the closest.', opts:[['Manage two or more employees','execAuth','MANAGES 2+'],['Office work with independent judgment on significant matters','r_admin','ADMIN DUTIES'],['Work requiring an advanced degree (law, engineering, medicine…)','r_prof','PROFESSIONAL'],['Original creative or artistic work','r_creative','CREATIVE'],['Systems analysis, software design or programming','r_comp','COMPUTER'],['Follow set procedures and tasks','r_duties_none','ROUTINE TASKS']] },
-  execAuth: { q:'Can you hire or fire — or do your recommendations carry real weight?', help:'The executive exemption requires genuine authority over other employees’ jobs, not just scheduling shifts.', opts:[['Yes, I have that authority','r_exec','HIRE/FIRE: YES'],['No, I just supervise the work','r_exec_no','HIRE/FIRE: NO']] },
-  hourlyType: { q:'Is your main job computer systems work — like software development or IT systems analysis — paid at $27.63/hour or more?', help:'Hourly workers are almost always owed overtime — the one big exception is computer employees at or above $27.63/hour.', opts:[['Yes, both of those','r_comp','COMPUTER $27.63+'],['No','r_hourly','HOURLY, OTHER']] },
-  outsideSales: { q:'Do you regularly make sales away from your employer’s place of business?', help:'Customer sites, door-to-door, the field. Selling by phone or email from home or an office does not count.', opts:[['Yes, mostly in the field','r_outside','FIELD SALES'],['No, mostly from a desk','r_outside_no','INSIDE SALES']] }
+  hceCheck: { q:'Is your total annual pay at least $107,432 — including salary, commissions and nondiscretionary bonuses?', help:'That is the highly-compensated-employee threshold. It relaxes the duties test but does not remove it — you still need at least one exempt-type duty, checked next.', opts:[['Yes, $107,432/year or more','hceDuty','Meets the $107,432/year HCE threshold'],['No, or not sure','duties','Below the $107,432/year HCE threshold']] },
+  hceDuty: { q:'Do you regularly perform at least one exempt-type duty — for example directing the work of other employees, or office/business work involving discretion on significant matters?', help:'The highly-compensated test only requires ONE such duty, not the full executive/administrative/professional duties test.', opts:[['Yes, at least one of those','r_hce','Performs an exempt-type duty'],['No, mostly routine tasks','duties','Mostly routine tasks']] },
+  duties: { q:'What do you mainly do all day?', help:'The duties test looks at your real work, not your job title. Pick the closest.', opts:[['Manage two or more employees','execAuth','Manages two or more employees'],['Office work with independent judgment on significant matters','r_admin','Office work with independent judgment'],['Work requiring an advanced degree (law, engineering, medicine…)','r_prof','Advanced-degree professional work'],['Original creative or artistic work','r_creative','Creative or artistic work'],['Systems analysis, software design or programming','r_comp','Computer systems work'],['Follow set procedures and tasks','r_duties_none','Follows set procedures']] },
+  execAuth: { q:'Can you hire or fire — or do your recommendations carry real weight?', help:'The executive exemption requires genuine authority over other employees’ jobs, not just scheduling shifts.', opts:[['Yes, I have that authority','r_exec','Has hire/fire authority'],['No, I just supervise the work','r_exec_no','No hire/fire authority']] },
+  hourlyType: { q:'Is your main job computer systems work — like software development or IT systems analysis — paid at $27.63/hour or more?', help:'Hourly workers are almost always owed overtime — the one big exception is computer employees at or above $27.63/hour.', opts:[['Yes, both of those','r_comp','Computer work at $27.63+/hour'],['No','r_hourly','Hourly, other work']] },
+  outsideSales: { q:'Do you regularly make sales away from your employer’s place of business?', help:'Customer sites, door-to-door, the field. Selling by phone or email from home or an office does not count.', opts:[['Yes, mostly in the field','r_outside','Mostly sells in the field'],['No, mostly from a desk','r_outside_no','Mostly sells from a desk']] }
 };
 
 // Selects which TREE/RESULTS pair (and header copy) the Wizard component
@@ -669,7 +758,7 @@ function wizardConfigFor(issueKey){ return WIZARD_CONFIG[issueKey] || WIZARD_CON
 
 // Illustrative-only — shown labeled "EXAMPLE" until the user pastes real text.
 const CLAUSES = [
-  { title:'Release of claims', level:'READ CLOSELY', quote:'…releases all claims arising from employment, known or unknown…', plain:'You give up the right to sue for anything that already happened. In many states, wages you already earned generally cannot be waived — even by signing this.', tone:'#FFE7EC', badge:'#C81E1B' },
+  { title:'Release of claims', level:'READ CLOSELY', quote:'…releases all claims arising from employment, known or unknown…', plain:'You give up the right to sue for anything that already happened. In many states, wages you already earned generally cannot be waived — even by signing this.', tone:'#FFE7EC', badge:'#B3264F' },
   { title:'Non-disparagement', level:'NEGOTIABLE', quote:'…shall not make any statement that reflects negatively on the Company…', plain:'As written this is broad. Many states protect your ability to describe unlawful conduct you experienced; that carve-out is missing here.', tone:'#FFF4D6', badge:'#8A5A00' },
   { title:'Severance amount', level:'STANDARD', quote:'…eight (8) weeks of base salary, less withholdings…', plain:'Eight weeks is within a normal range for your tenure. It is separate from wages you are already owed.', tone:'#E8F6EE', badge:'#136B3C' }
 ];
@@ -680,19 +769,19 @@ const CLAUSES = [
 // benign text. Deliberately does NOT claim to read uploaded files (PDF/DOC/etc
 // parsing is out of scope here) — only text actually pasted into the textarea.
 const CLAUSE_PATTERNS = [
-  { title:'Release of claims', level:'READ CLOSELY', tone:'#FFE7EC', badge:'#C81E1B',
+  { title:'Release of claims', level:'READ CLOSELY', tone:'#FFE7EC', badge:'#B3264F',
     re:/\b(releas(?:es?|ed|ing)|waiv(?:es?|ed|ing)|discharg(?:es?|ed|ing)|forever discharge)\b[^.]{0,100}\b(claims?|causes? of action|liability|demands?)\b/i,
     plain:'Looks like a release of legal claims — you may be giving up the right to sue for things that already happened. In many states, wages you already earned generally cannot be waived by signing this.' },
   { title:'Non-disparagement', level:'NEGOTIABLE', tone:'#FFF4D6', badge:'#8A5A00',
     re:/non-?disparage\w*|(?:shall not|agrees? not to|will not|must not)[^.]{0,40}(disparage\w*|make any (?:statement|comment)s?|speak (?:negatively|ill)|reflects? negatively)/i,
     plain:'Looks like a non-disparagement clause. As commonly written these are broad; many states protect your ability to describe unlawful conduct you experienced, and that carve-out is sometimes missing.' },
-  { title:'Non-compete / restrictive covenant', level:'READ CLOSELY', tone:'#FFE7EC', badge:'#C81E1B',
+  { title:'Non-compete / restrictive covenant', level:'READ CLOSELY', tone:'#FFE7EC', badge:'#B3264F',
     re:/non-?compet\w*|restrictive covenant|(?:shall not|agrees? not to|will not|must not)[^.]{0,40}(compete with|work for|be employed by|provide services to)/i,
     plain:'Looks like a non-compete or restrictive-covenant clause. Several states ban or sharply limit these for most workers — check the Rights tab for your state before assuming it is enforceable.' },
   { title:'Non-solicitation', level:'NEGOTIABLE', tone:'#FFF4D6', badge:'#8A5A00',
     re:/non-?solicit\w*|(?:shall not|agrees? not to|will not|must not)[^.]{0,40}solicit\w*/i,
     plain:'Looks like a non-solicitation clause restricting you from pursuing former coworkers, customers or clients. These are usually narrower than a non-compete but can still be negotiated — check how long it lasts and who it covers.' },
-  { title:'Arbitration / class-action waiver', level:'READ CLOSELY', tone:'#FFE7EC', badge:'#C81E1B',
+  { title:'Arbitration / class-action waiver', level:'READ CLOSELY', tone:'#FFE7EC', badge:'#B3264F',
     re:/\barbitrat\w*|class(?:-|\s)action waiver|waiv(?:es?|ed|ing)[^.]{0,40}(class|collective) action|jury trial/i,
     plain:'Looks like an arbitration clause, a waiver of your right to a jury trial, or a waiver of your right to join a class or collective action. This can limit how and where you can bring a future claim.' },
   { title:'Confidentiality / non-disclosure', level:'NEGOTIABLE', tone:'#FFF4D6', badge:'#8A5A00',
@@ -710,10 +799,10 @@ const CLAUSE_PATTERNS = [
   { title:'Governing law / venue', level:'STANDARD', tone:'#E8F6EE', badge:'#136B3C',
     re:/governing law|govern(?:ed)? by the laws of|exclusive jurisdiction|venue (?:shall|will|is) (?:be|lie)/i,
     plain:'Sets which state\'s law applies and/or where a dispute must be filed. This can matter a lot if it points to a state other than where you live or work — it can make it harder and costlier to bring a claim.' },
-  { title:'Liquidated damages / penalty', level:'READ CLOSELY', tone:'#FFE7EC', badge:'#C81E1B',
+  { title:'Liquidated damages / penalty', level:'READ CLOSELY', tone:'#FFE7EC', badge:'#B3264F',
     re:/liquidated damages|penalty (?:of|equal to|in the amount)/i,
     plain:'Looks like a pre-set dollar amount you would owe for breaching the agreement (for example, breaking a non-compete or confidentiality clause). These clauses can create real financial exposure — read the trigger and the amount closely.' },
-  { title:'Performance plan / termination timeline', level:'READ CLOSELY', tone:'#FFE7EC', badge:'#C81E1B',
+  { title:'Performance plan / termination timeline', level:'READ CLOSELY', tone:'#FFE7EC', badge:'#B3264F',
     re:/performance improvement plan|\bPIP\b|(?:30|60|90|thirty|sixty|ninety)[-\s]day (?:improvement|action) plan|failure to (?:meet|achieve)[^.]{0,60}(?:may|will|could) result in[^.]{0,30}termination/i,
     plain:'Looks like a performance-improvement plan or a stated timeline tied to termination. Note the deadline and the specific goals — missing an unclear or unreachable goal is often used to justify a later firing.' },
 ];
@@ -785,6 +874,15 @@ const REPLIES = [
 const ADA_REPLY = { text:'Put it in writing, plainly: describe your limitation and what change would help — no legal terms required. Your employer must then start an interactive process with you. I can draft that request from a template and add it to your case file.', cites:['42 U.S.C. §12112'] };
 // cites resolved per-user-state in send() from stateData facts — see discriminationReply.
 const DISCRIMINATION_REPLY = { text:'Discrimination is adverse treatment — not hired, denied a promotion, paid less, disciplined, or fired — because of a protected characteristic: race, color, sex (including pregnancy, sexual orientation, gender identity), religion, national origin, age 40+, or disability. Harassment is unwelcome conduct tied to one of those same characteristics that is severe or pervasive enough to create a hostile work environment, or a "quid pro quo" demand tied to a job benefit. Log the dates, what was said or done, who was involved, and any witnesses — that pattern is what these claims turn on. I can draft a complaint letter to HR from your case file.', cites:['42 U.S.C. §2000e-2'] };
+// FIND-05 (docs/audit-2026-08-29.md) — the app's own seeded chat prompt for the
+// termination issue, "Is this a wrongful termination?", has no dedicated reply
+// bucket: the retaliation keyword regex matches "terminat" inside the question
+// itself and answers with the (narrower, different-theory) retaliation reply
+// instead. This is general information about the at-will framework and its main
+// exceptions — never a state-specific legal conclusion, since which exceptions a
+// given state actually recognizes (and how) varies widely and is not modeled as a
+// single consistent content fact across states.
+const WRONGFUL_TERMINATION_REPLY = { text:'Most states follow "at-will" employment: either side can end the job at any time, for any reason or no reason — but not for an ILLEGAL one. The main exceptions courts generally recognize are (1) discriminatory discharge — firing because of a protected characteristic like race, sex, age 40+ or disability; (2) retaliatory discharge — firing for doing something legally protected, like reporting harassment or filing a wage claim; and, in many but not all states, (3) a public-policy exception (for example, firing you for refusing to break the law or for exercising a legal right) or (4) an implied-contract exception, where a handbook or specific promises undercut at-will status. Which of these applies depends on your state and your facts — log the stated reason, any change in that reason over time, and what you were doing right before you were let go.', cites:[] };
 
 /* ── Dynamic case model ───────────────────────────────────────────── */
 
@@ -1307,6 +1405,70 @@ function isStepDone(cfg, idx, done, ctx){
   return !!done[id] || stepAutoDone(id, ctx);
 }
 
+// State wage-remedy facts (`remedies.*`) beyond the federal `remedies.liquidatedDamages`
+// this app already reads unconditionally for every wage claim. Keyed by TOPIC NAME, not
+// by state — so a future state's analogous fact (MA/NY/WA/OR/NM are expected to add
+// these same two topics) gets the identical safe framing automatically, with no
+// per-state branching anywhere in the app:
+//   - remedies.trebleDamages: a GENERAL unpaid-wages civil remedy. Some states (like
+//     Arizona) have no state overtime statute, so an overtime-only shortfall is
+//     ordinarily a federal FLSA claim, not this state claim — this only ever applies
+//     to hours that were paid nothing at all (bd.unpaidRegHrs), never to an overtime
+//     premium differential alone. It is also typically DISCRETIONARY ("may recover"),
+//     never presented as an automatic multiplier.
+//   - remedies.minimumWageDamages: specific to pay that actually fell below the
+//     state's own minimum wage. Only surfaced when the user's own logged rate is
+//     demonstrably below that floor (never inferred from "some hours were unpaid"
+//     alone) — a state's own facts may still mark it MANDATORY language, so unlike
+//     trebleDamages it is not hedged with "may"/"at a court's discretion".
+// These are two distinct causes of action for the same shortfall, not cumulative —
+// when both are applicable the caller must present them as alternative theories
+// (see wageRemedyDashboardNote / wageRemedyLetterSentence), never add them together
+// or let either read as a promised outcome.
+function applicableWageRemedies(stFacts, bd, rateNum, mwFact){
+  const out = [];
+  const hasUnpaidWagesClaim = !!(bd && bd.unpaidRegHrs > 0);
+  if (!hasUnpaidWagesClaim) return out;
+  const treble = factByTopic(stFacts, 'remedies.trebleDamages');
+  if (treble) out.push({ fact: treble, discretionary: true });
+  const minWage = Number(mwFact && mwFact.value);
+  const belowMinimumWage = !!(rateNum > 0 && minWage > 0 && rateNum < minWage);
+  if (belowMinimumWage) {
+    const mwDamages = factByTopic(stFacts, 'remedies.minimumWageDamages');
+    if (mwDamages) out.push({ fact: mwDamages, discretionary: false });
+  }
+  return out;
+}
+// Short, honestly-hedged dashboard/card copy for applicableWageRemedies() — third
+// person, alongside the existing federal figure, never folded into it.
+function wageRemedyDashboardNote(stateSel, remedies){
+  if (!remedies || !remedies.length) return null;
+  const st = stateSel || 'Your state';
+  if (remedies.length > 1) {
+    const parts = remedies.map(r => (r.discretionary ? 'discretionary' : 'mandatory') + ' damages under ' + r.fact.citation);
+    return st + " law may provide additional damages here through more than one legal theory — for example " + parts.join(', or ') + ". Which theory fits your facts, and whether they can be combined, is a question for an attorney.";
+  }
+  const r = remedies[0];
+  return r.discretionary
+    ? st + ' law (' + r.fact.citation + ') may also allow a court, at its discretion, to award additional damages on unpaid wages beyond the figure above.'
+    : 'Because the pay rate on file is below ' + st + "'s minimum wage, " + st + ' law (' + r.fact.citation + ') requires an additional mandatory amount on top of the unpaid balance.';
+}
+// First-person sentence appended to the wage-demand letter (real leverage, sent to
+// the employer) for applicableWageRemedies() — only when the claim shape (and, for
+// the minimum-wage fact, the logged rate) actually triggers it.
+function wageRemedyLetterSentence(stateSel, remedies){
+  if (!remedies || !remedies.length) return '';
+  const st = stateSel || 'State';
+  if (remedies.length > 1) {
+    const parts = remedies.map(r => (r.discretionary ? 'discretionary' : 'mandatory') + ' damages under ' + r.fact.citation);
+    return ' I also note that ' + st + ' law may provide additional damages here — for example ' + parts.join(', or ') + '.';
+  }
+  const r = remedies[0];
+  return r.discretionary
+    ? ' I also note that ' + st + ' law (' + r.fact.citation + ') allows a court, at its discretion, to award additional damages on unpaid wages in a civil action.'
+    : ' I also note that because the pay rate reflected here is below ' + st + "'s minimum wage, " + st + ' law (' + r.fact.citation + ') requires payment of the unpaid balance plus an additional mandatory amount.';
+}
+
 // Generate a self-send letter from the user's real inputs (no fabricated persona).
 function buildLetter(ctx){
   const name = (ctx.youName || '').trim() || '[Your name]';
@@ -1410,6 +1572,12 @@ function buildLetter(ctx){
     // leverage behind the request, not just an internal ask with a self-imposed deadline.
     const liqCite = cite(fed, 'remedies.liquidatedDamages', '29 U.S.C. § 216(b)');
     const liqLine = ' Please note that a private lawsuit under the FLSA (' + liqCite + ') can recover these wages plus an equal amount in liquidated damages, plus attorney\'s fees and costs — I would prefer to resolve this directly with you first.';
+    // State remedies.* facts (see applicableWageRemedies) — real leverage in a letter
+    // sent to the employer, but only cited when this claim's shape actually triggers
+    // them (never for an overtime-only shortfall a state has no overtime statute for)
+    // and always worded to match the underlying statute's discretion standard.
+    const stRemedies = applicableWageRemedies(st, bd, ctx.rateNum, factByTopic(st, 'minimumWage.hourly'));
+    const stRemedyLine = wageRemedyLetterSentence(ctx.stateSel, stRemedies);
     // G4 — same retaliation protection as the classification-request letter above.
     const retalCite = cite(fed, 'retaliation.flsa', '29 U.S.C. § 215(a)(3)');
     const retalLine = ' Federal law (' + retalCite + ') prohibits retaliation against me for making this request.';
@@ -1417,8 +1585,8 @@ function buildLetter(ctx){
     const body = date + '\n\n' + emp + '\nAttn: Payroll / Human Resources\n\nRe: ' + subject + '\n\nTo whom it may concern:\n\n' +
       'I am writing to request payment of wages I earned and was not paid correctly. ' + claimLine + '\n\n' +
       legalBasisLine + '\n\n' +
-      amountLine + ' I request payment within 14 days of the date of this letter.' + liqLine + retalLine + ' Please contact me to arrange payment.\n\nSincerely,\n' + name;
-    return { title: 'Wage demand letter', subject, body, usesStateLaw: hasRealStateOT };
+      amountLine + ' I request payment within 14 days of the date of this letter.' + liqLine + stRemedyLine + retalLine + ' Please contact me to arrange payment.\n\nSincerely,\n' + name;
+    return { title: 'Wage demand letter', subject, body, usesStateLaw: hasRealStateOT || stRemedies.length > 0 };
   }
 
   if (kind === 'complaint') {
@@ -1428,8 +1596,21 @@ function buildLetter(ctx){
     const list = dates.length ? '\n\nDocumented incidents:\n' + dates.map(d => '• ' + d).join('\n') : '';
     const stCite = cite(st, 'discrimination.coverage', cite(st, 'discrimination.protectedClasses', ''));
     const stClause = stCite ? ' and ' + ctx.stateSel + ' law (' + stCite + ')' : '';
+    // FIND-11 (docs/audit-2026-08-29.md) — this letter was generic Title VII
+    // boilerplate that never mentioned the ADA, disability, or a logged
+    // accommodation denial, even when the ADA tracker (profile.adaLog) already
+    // recorded exactly that fact — the app asked the user to log it, then the
+    // letter ignored it. A denied accommodation is its own, disability-specific
+    // legal theory (42 U.S.C. §12112), not just generic Title VII discrimination,
+    // so name it and cite the actual denial on file rather than staying silent.
+    const adaLog = Array.isArray(ctx.adaLog) ? ctx.adaLog : [];
+    const deniedEntry = (adaLog.length && adaLog[adaLog.length - 1].what === 'denied') ? adaLog[adaLog.length - 1] : null;
+    const adaFedCite = cite(fed, 'disability.reasonableAccommodation', '42 U.S.C. §12112');
+    const adaClause = deniedEntry
+      ? (' This also includes the denial of my request for a reasonable accommodation for a disability' + (deniedEntry.date ? ' on ' + formatLocalDateStr(deniedEntry.date) : '') + (deniedEntry.notes ? (' (' + deniedEntry.notes + ')') : '') + ', which I believe violates the Americans with Disabilities Act (' + adaFedCite + ').')
+      : '';
     const body = date + '\n\n' + emp + '\nAttn: Human Resources\n\nRe: ' + subject + '\n\nTo whom it may concern:\n\n' +
-      'I am formally reporting conduct at work that I believe violates Title VII of the Civil Rights Act of 1964' + stClause + '. I am asking that the conduct stop and that the company promptly and impartially investigate.' + list + '\n\n' +
+      'I am formally reporting conduct at work that I believe violates Title VII of the Civil Rights Act of 1964' + stClause + '.' + adaClause + ' I am asking that the conduct stop and that the company promptly and impartially investigate.' + list + '\n\n' +
       'The law prohibits retaliation against me for making this good-faith complaint. I ask that this letter be placed in my personnel file.\n\nSincerely,\n' + name;
     return { title: 'Complaint letter', subject, body, usesStateLaw: !!stCite };
   }
@@ -1441,13 +1622,37 @@ function buildLetter(ctx){
     const fedCite = cite(fed, 'disability.reasonableAccommodation', '42 U.S.C. § 12112');
     const stFact = stateFactFor(st, ['disability.accommodation', 'disability.reasonableAccommodation', 'disability.interactiveProcess']);
     const stClause = (stFact && stFact.citation) ? ' ' + ctx.stateSel + ' law (' + stFact.citation + ') may provide additional protection.' : '';
-    const subject = 'Request for a reasonable accommodation';
-    const body = date + '\n\n' + emp + '\nAttn: Human Resources\n\nRe: ' + subject + '\n\nTo whom it may concern:\n\n' +
-      'I am requesting a reasonable accommodation for a disability under the Americans with Disabilities Act (' + fedCite + ').' + stClause + '\n\n' +
-      'My limitation is: [describe your limitation in plain terms — no legal or medical terms required].\n' +
-      'The change that would help is: [describe the accommodation you are requesting].\n\n' +
-      'I understand this begins an interactive process between us to identify an effective accommodation, and I am glad to discuss options. Please confirm receipt in writing and let me know a good time to talk this week.\n\nSincerely,\n' + name;
-    return { title: 'Accommodation request letter', subject, body, usesStateLaw: !!(stFact && stFact.citation) };
+    // FIND-11 (docs/audit-2026-08-29.md) — this letter used to be written in
+    // first-ask future tense ("I am requesting... this begins an interactive
+    // process") no matter what, even after the ADA tracker (profile.adaLog —
+    // see AdaProcessTracker) already logged that the request was made AND
+    // denied. Mirrors the wage-demand letter's existing pattern of pulling real
+    // facts from a log (there, the hours log) into the letter it generates —
+    // here, the ADA interactive-process log — so a denial is reflected, not
+    // contradicted, by the letter the app hands the user next. adaLog entries
+    // are stored in the order logged (see AdaProcessTracker/buildCaseFile,
+    // which use the same array-order convention with no re-sort), so the LAST
+    // entry is the process's current status.
+    const adaLog = Array.isArray(ctx.adaLog) ? ctx.adaLog : [];
+    const requestedEntry = adaLog.find(e => e.what === 'requested');
+    const latestEntry = adaLog.length ? adaLog[adaLog.length - 1] : null;
+    const wasDenied = !!(latestEntry && latestEntry.what === 'denied');
+    const requestedDateStr = requestedEntry && requestedEntry.date ? formatLocalDateStr(requestedEntry.date) : null;
+    const deniedDateStr = wasDenied && latestEntry.date ? formatLocalDateStr(latestEntry.date) : null;
+    const subject = wasDenied ? 'Follow-up: request for a reasonable accommodation (request denied)' : 'Request for a reasonable accommodation';
+    const openingLine = wasDenied
+      ? ('I requested a reasonable accommodation for a disability under the Americans with Disabilities Act (' + fedCite + ')' + (requestedDateStr ? ' on ' + requestedDateStr : '') + '.' + stClause + ' I was told this request was denied' + (deniedDateStr ? ' on ' + deniedDateStr : '') + (latestEntry.notes ? (': ' + latestEntry.notes) : '') + '.')
+      : ('I am requesting a reasonable accommodation for a disability under the Americans with Disabilities Act (' + fedCite + ').' + stClause);
+    const bodyMiddle = wasDenied
+      ? ('I am asking the company to reconsider and to continue the interactive process the law requires. If there is a specific reason the requested accommodation cannot be provided, please state it in writing, and let\'s discuss whether an alternative accommodation would work instead.\n\n' +
+         'My limitation is: [describe your limitation in plain terms — no legal or medical terms required].\n' +
+         'The accommodation I am now requesting is: [describe the accommodation, restated or revised].\n\n' +
+         'Please confirm receipt in writing and let me know a good time to talk this week.')
+      : ('My limitation is: [describe your limitation in plain terms — no legal or medical terms required].\n' +
+         'The change that would help is: [describe the accommodation you are requesting].\n\n' +
+         'I understand this begins an interactive process between us to identify an effective accommodation, and I am glad to discuss options. Please confirm receipt in writing and let me know a good time to talk this week.');
+    const body = date + '\n\n' + emp + '\nAttn: Human Resources\n\nRe: ' + subject + '\n\nTo whom it may concern:\n\n' + openingLine + '\n\n' + bodyMiddle + '\n\nSincerely,\n' + name;
+    return { title: wasDenied ? 'Accommodation request letter (follow-up after denial)' : 'Accommodation request letter', subject, body, usesStateLaw: !!(stFact && stFact.citation) };
   }
 
   // records-request (termination, document review, or generic)
@@ -1806,6 +2011,14 @@ const ATTACHMENT_MAX_BYTES = 1.5 * 1024 * 1024; // 1.5MB per attachment
 // case, not just attachments). Cap the SUM of attachment bytes across every
 // logged entry, checked before a new attachment is staged.
 const ATTACHMENT_TOTAL_MAX_BYTES = 6 * 1024 * 1024; // 6MB total across the case
+// FIND-16 — shared disabled-state pair for primary CTAs that can be not-ready
+// (empty required field, etc). Previously only onboarding's Continue button had
+// any visual disabled treatment, as an inline one-off; chat's Send looked fully
+// solid/clickable even with an empty draft. Kept as plain string constants (this
+// codebase has no separate token/theme layer) so every disabled primary button
+// pulls the same pair instead of re-inventing its own gray.
+const DISABLED_BG = '#E4E1D8';
+const DISABLED_FG = '#4A5162';
 // wl-security — an attachment is stored and later re-rendered as a data URL (an
 // <img src> when its type starts with "image/", or an <a href download>
 // otherwise). image/svg+xml is a text/XML format that can carry an inline
@@ -2194,7 +2407,17 @@ function App(){
     // that then reads as authoritative for a question we never actually matched.
     const hasWord = (re) => re.test(lower);
     const isAda = hasWord(/\baccommodat\w*/) || hasWord(/\bada\b/) || hasWord(/\bdisab\w*/);
-    const isRetaliation = hasWord(/\bretaliat\w*/) || hasWord(/\bfired\b/) || hasWord(/\bterminat\w*/) || hasWord(/\bpushed out\b/) || hasWord(/\blet go\b/);
+    // FIND-05 — "wrongful termination/discharge" is a distinct legal theory from
+    // retaliation (at-will exceptions in general, not specifically "fired for doing
+    // something protected"). Matched on the ordered PHRASE ("wrongful" immediately
+    // before the terminate/discharge/fired word), not the bare "terminat" stem the
+    // retaliation regex below uses — that stem alone is what previously misrouted the
+    // app's own seeded prompt, "Is this a wrongful termination?", to the retaliation
+    // reply. Checked BEFORE isRetaliation so a genuine wrongful-termination question
+    // never falls through to the narrower retaliation bucket just because it also
+    // contains "terminat...".
+    const isWrongfulTermination = hasWord(/\bwrongful(?:ly)?\s+(?:terminat\w*|discharg\w*|fired)\b/);
+    const isRetaliation = !isWrongfulTermination && (hasWord(/\bretaliat\w*/) || hasWord(/\bfired\b/) || hasWord(/\bterminat\w*/) || hasWord(/\bpushed out\b/) || hasWord(/\blet go\b/));
     // Only route to the severance/OWBPA reply (21 days to consider, 7 to revoke —
     // specific to a severance/release-of-claims document, 29 U.S.C. §626(f)) for a
     // message that's actually about ONE of those documents. The previous check
@@ -2264,7 +2487,7 @@ function App(){
       text: "I can only give sample answers on a few topics: unpaid overtime and wages, discrimination and harassment, termination and retaliation, and severance or documents you've been asked to sign. Try rephrasing toward one of those. For anything else, your state labor agency or a local attorney (see Agencies) is the best next step.",
       cites: []
     };
-    const matched = isAda ? adaReply : isRetaliation ? repliesResolved[1] : isDiscrimination ? discriminationReply : isSeverance ? repliesResolved[2] : isOvertime ? repliesResolved[0] : null;
+    const matched = isAda ? adaReply : isWrongfulTermination ? WRONGFUL_TERMINATION_REPLY : isRetaliation ? repliesResolved[1] : isDiscrimination ? discriminationReply : isSeverance ? repliesResolved[2] : isOvertime ? repliesResolved[0] : null;
     setMessages(prev => {
       const next = prev.concat([{ role:'user', text }]);
       clearTimeout(timer.current);
@@ -2377,13 +2600,22 @@ function App(){
   // FLSA_SOL_TIMING_NOTE is shown for a wage case.
   const FlsaSolNote = ({ dark }) => (
     <div style={css((dark
-      ? "padding:10px 12px;border-radius:0 8px 8px 0;border:none;border-left:4px solid rgba(255,227,166,.7);background:rgba(255,255,255,.14)"
+      ? "padding:10px 12px;border-radius:0 8px 8px 0;border:none;border-left:4px solid rgba(255,227,166,.7);background:#626DBF"
       : "padding:10px 12px;border-radius:0 8px 8px 0;border:none;border-left:4px solid #14181F;background:#FFF4D6") + ";display:flex;flex-direction:column;gap:3px")}>
-      <span style={css("font:700 12px 'IBM Plex Mono',monospace;color:" + (dark ? '#FFE3A6' : '#8A5A00') + ";letter-spacing:.04em")}>SEPARATE CLOCK · FEDERAL LAWSUIT DEADLINE</span>
-      {/* wl-ux contrast fix — #FFF4D6 (not #FFE3A6) against this card's composited
-          dark background (~rgb(73,86,180)) gives ~5.88:1, a wider AA margin than the
-          old color's ~5.15:1, while keeping the amber "caution" tone consistent app-wide. */}
-      <span style={css("font:700 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:" + (dark ? '#FFF4D6' : '#6B4B00'))}>{FLSA_SOL_TIMING_NOTE}</span>
+      <span style={css("font:700 12px 'IBM Plex Mono',monospace;color:" + (dark ? '#FFFEF0' : '#8A5A00') + ";letter-spacing:.04em")}>SEPARATE CLOCK · FEDERAL LAWSUIT DEADLINE</span>
+      {/* FIND-09 (docs/audit-2026-08-29.md) — the previous "wl-ux contrast fix" comment here
+          assumed a SINGLE rgba(255,255,255,.14) composite (~rgb(73,86,180)). Wrong: in
+          Action-first mode this note renders INSIDE the Deadline Watch surfacefx button,
+          which is ITSELF rgba(255,255,255,.14) over the #2B3AA8 screen — so this dark
+          variant's old rgba(255,255,255,.14) background was a SECOND translucent layer
+          stacking on the first, actually compositing to rgb(98,109,191). #FFE3A6/#FFF4D6
+          against that real value measured 3.76:1 / 4.29:1 — both under the 4.5:1 AA floor
+          for 12px/14px bold text (bold text needs ~18.66px to count as "large"). Fixed by
+          baking the composite in as an OPAQUE #626DBF background (no more stacked alpha to
+          drift), and using #FFFEF0 for both label and body, which measures 4.64:1 against
+          #626DBF — verified with a walk-the-ancestor-chain script, see
+          test/nested-translucency-contrast.mjs. */}
+      <span style={css("font:700 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:" + (dark ? '#FFFEF0' : '#6B4B00'))}>{FLSA_SOL_TIMING_NOTE}</span>
     </div>
   );
 
@@ -2403,10 +2635,23 @@ function App(){
     const { targetDate, daysLeft, isPast } = computed;
     const urgent = !isPast && daysLeft < 30;
     const tone = isPast ? 'past' : urgent ? 'urgent' : 'ok';
+    // FIND-09 (docs/audit-2026-08-29.md) — same double-translucency bug as FlsaSolNote:
+    // dark's `bg` here renders INSIDE the Deadline Watch surfacefx button (itself
+    // rgba(255,255,255,.14) over the #2B3AA8 screen), so a second rgba(...) layer was
+    // compositing to a color no one had measured. Baked in as opaque hex — the ACTUAL
+    // composite for each tone, walked ancestor-by-ancestor — so contrast is against a
+    // known value instead of an accident of stacking:
+    //   urgent rgba(255,255,255,.14)-on-layer1  -> rgb(98,109,191)  = #626DBF
+    //   past   rgba(179,38,79,.35)-on-layer1     -> rgb(110,69,145) = #6E4591
+    //   ok     rgba(255,255,255,.1)-on-layer1    -> rgb(91,103,188) = #5B67BC
+    // Measured pairs (test/nested-translucency-contrast.mjs): urgent #FFFEF0 on #626DBF
+    // = 4.64:1; past #FFE3EA on #6E4591 = 5.96:1 (already compliant, unchanged); ok
+    // #F3F5FF on #5B67BC = 4.70:1 (old #DDE2FF measured only 3.99:1 — also a real,
+    // previously-unflagged failure).
     const border = { past: dark ? 'rgba(255,180,196,.9)' : '#B3264F', urgent: dark ? 'rgba(255,227,166,.7)' : '#14181F', ok: dark ? 'rgba(255,255,255,.4)' : '#14181F' }[tone];
-    const bg = { past: dark ? 'rgba(179,38,79,.35)' : '#FFE7EC', urgent: dark ? 'rgba(255,255,255,.14)' : '#FFF4D6', ok: dark ? 'rgba(255,255,255,.1)' : '#F0EDE5' }[tone];
-    const labelColor = { past: dark ? '#FFE3EA' : '#8A1438', urgent: dark ? '#FFE3A6' : '#8A5A00', ok: dark ? '#DDE2FF' : '#14181F' }[tone];
-    const bodyColor = { past: dark ? '#FFE3EA' : '#5A1330', urgent: dark ? '#FFE3A6' : '#6B4B00', ok: dark ? '#DDE2FF' : '#3A4150' }[tone];
+    const bg = { past: dark ? '#6E4591' : '#FFE7EC', urgent: dark ? '#626DBF' : '#FFF4D6', ok: dark ? '#5B67BC' : '#F0EDE5' }[tone];
+    const labelColor = { past: dark ? '#FFE3EA' : '#8A1438', urgent: dark ? '#FFFEF0' : '#8A5A00', ok: dark ? '#F3F5FF' : '#14181F' }[tone];
+    const bodyColor = { past: dark ? '#FFE3EA' : '#5A1330', urgent: dark ? '#FFFEF0' : '#6B4B00', ok: dark ? '#F3F5FF' : '#3A4150' }[tone];
     const daysWord = Math.abs(daysLeft) === 1 ? 'day' : 'days';
     const headline = isPast
       ? 'This deadline may have passed — talk to an attorney immediately, some exceptions exist.'
@@ -2430,6 +2675,24 @@ function App(){
       <button onClick={openEditFlowAtDate} className="hoverfx" style={css("align-self:flex-start;min-height:44px;display:inline-flex;align-items:center;padding:8px 4px;margin:-6px 0 0;background:none;border:none;cursor:pointer;text-align:left;font:700 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:" + (dark ? '#FFE3A6' : '#2B3AA8') + ";text-decoration:underline")}>Add the date this happened to see your actual deadline</button>
     );
   };
+  // FIND-06 (docs/audit-2026-08-29.md) — onboarding's "Skip to dashboard" leaves
+  // stateSel/issue unset, so pickDeadlineFactAcross has nothing to key off and every
+  // Home mode rendered NO Deadline Watch card and no indication anything was
+  // missing — silently dropping the app's most time-critical widget for exactly the
+  // hurried user that shortcut targets. Rendered in the very slot the real Deadline
+  // Watch card would occupy, ONLY when state or issue is actually unset — a fully
+  // set-up case where the fact lookup legitimately comes back empty (e.g.
+  // deadlineKeywordsFor returning [] for the document/general issues) is a real "no
+  // applicable deadline concept here," not a missing input, so this must not fire then.
+  const MissingDeadlineCTA = ({ dark }) => (
+    <button onClick={openEditFlow} className="surfacefx" style={css((dark
+      ? "border:2px solid rgba(255,255,255,.4);background:rgba(255,255,255,.14);color:#fff"
+      : "border:2px solid #14181F;background:#F0EDE5;color:#14181F") + ";text-align:left;padding:14px 16px;border-radius:12px;cursor:pointer;display:flex;flex-direction:column;gap:4px")}>
+      <span style={css("font:700 12px 'IBM Plex Mono',monospace;letter-spacing:.05em;display:inline-flex;align-items:center;gap:6px;color:" + (dark ? '#DDE2FF' : '#14181F'))}><Icon name="deadline-clock" size={13} /> DEADLINE WATCH</span>
+      <span style={css("font:700 16px/1.3 'Atkinson Hyperlegible',sans-serif")}>Add your state to see your filing deadline</span>
+      <span style={css("font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:" + (dark ? '#DDE2FF' : '#3A4150'))}>Filing deadlines are set by your state and your issue — add both to find out how much time you have.</span>
+    </button>
+  );
 
   // G2/G3 (docs/flsa-process-gap.md) — the app routed wage users to WHD as free/first
   // without ever describing the OTHER path (a private §216(b) lawsuit), that it can
@@ -2442,15 +2705,28 @@ function App(){
   const WageRecoverPanel = () => {
     if (cfg.key !== 'wage') return null;
     const fedF = (federal && federal.facts) || [];
+    const stF = (stateData && stateData.facts) || [];
     const enf = factByTopic(fedF, 'enforcement.paths');
     const liq = factByTopic(fedF, 'remedies.liquidatedDamages');
     const fees = factByTopic(fedF, 'remedies.attorneysFees');
     const src = f => { const u = f && safeUrl(f.sourceUrl); return u ? <a href={u} target="_blank" rel="noopener noreferrer" className="hoverfx" aria-label={'Official source for ' + (f.citation || f.topic)} style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null; };
+    // Beyond the federal §216(b) doubling above, a STATE may add its own wage
+    // remedy — but only ever the one(s) this claim's shape (and, for a
+    // minimum-wage-specific fact, the logged rate) actually triggers; see
+    // applicableWageRemedies. Never adds to the dollar figure shown elsewhere,
+    // and carries the same (DRAFT) / pending-review treatment as every other
+    // state-sourced fact in the app.
+    const stRemedies = applicableWageRemedies(stF, owedBreakdown, rateNum, factByTopic(stF, 'minimumWage.hourly'));
+    const stRemedyNote = wageRemedyDashboardNote(stateSel, stRemedies);
+    const stRev = !!(stateData && stateData.reviewed === true);
     return (
       <div style={css("padding:18px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF;display:flex;flex-direction:column;gap:10px")}>
         <p style={css("margin:0;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>How to actually recover this</p>
         <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}><strong>File a free WHD complaint</strong> with the Department of Labor's Wage and Hour Division — confidential, no cost, but as of 2025 it recovers back wages only (no liquidated damages administratively). {src(enf)}</p>
         <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}><strong>Or file a private lawsuit</strong> — it can recover back wages plus an equal amount in liquidated damages (about double), plus your attorney's fees and costs, which is why many wage lawyers take these cases on contingency. {src(liq) || src(fees)}</p>
+        {stRemedyNote &&
+          <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}><strong>{stateSel || 'Your state'} may add more{stRev ? '' : ' (DRAFT — pending attorney review)'}:</strong> {stRemedyNote} {stRemedies.map(r => src(r.fact))}</p>
+        }
         <p style={css("margin:0;padding:10px 12px;border-radius:0 8px 8px 0;background:#FFE7EC;border:none;border-left:4px solid #B3264F;font:700 14px/1.5 'Atkinson Hyperlegible',sans-serif;color:#5A1330;display:flex;align-items:flex-start;gap:8px")}><Icon name="alert" size={18} style={{ flex: 'none', marginTop: '2px' }} /><span>Accepting back pay under WHD supervision — or a case the Secretary of Labor already sued over — can waive your right to sue privately for those same wages.</span></p>
         <p style={css("margin:0;font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>29 U.S.C. § 216(b), (c) · this is general information, not a recommendation of which path to take — talk to an employment attorney before choosing.</p>
       </div>
@@ -2570,6 +2846,19 @@ function App(){
 
       {onbStep === 4 &&
         <div style={css("display:flex;flex-direction:column;gap:14px")}>
+          {/* FIND-21 (docs/audit-2026-08-29.md) — this is the moment a user is about
+              to type identifying details (name, employer) for the first time, before
+              any case exists yet. The app already discloses "stays on this device"
+              reactively, after the fact, on Home (privacyNoteSeen) and next to the
+              delete control on Agencies — but nothing said so proactively, right here
+              at the point of creation, before they type it in. Purely a shared/public-
+              computer and forensic-recovery framing (there is no remote exposure path
+              — see wl-security's threat model): honest and specific, not alarmist. */}
+          {!editing &&
+            <div style={css("padding:14px 16px;border-radius:12px;border:2px solid #14181F;background:#EEF1FF")}>
+              <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>What you enter below is saved only in this browser, on this device — never uploaded anywhere. It stays in place, in plain text, until you delete it (Home → Delete my case). On a shared or public computer, delete your case when you’re done.</p>
+            </div>
+          }
           <div style={css("display:flex;flex-direction:column;gap:6px")}>
             <label htmlFor="onb-name" style={css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>YOUR NAME</label>
             <input id="onb-name" value={dProfile.name} onChange={e => setDProfile(p => Object.assign({}, p, { name:e.target.value }))} placeholder="e.g. your full name" style={css("padding:14px;border-radius:12px;border:2px solid #14181F;font:400 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
@@ -2620,13 +2909,13 @@ function App(){
               never required — onboarding must stay completable without it. */}
           <div style={css("display:flex;flex-direction:column;gap:6px")}>
             <label htmlFor="onb-event-date" style={css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{eventDateLabelFor(dIssue ? issueCfg(dIssue).key : 'general').toUpperCase() + ' (OPTIONAL)'}</label>
-            <input id="onb-event-date" type="date" value={dProfile.eventDate || ''} max={dateInputValue()} onChange={e => setDProfile(p => Object.assign({}, p, { eventDate:e.target.value }))} style={css("width:100%;max-width:260px;box-sizing:border-box;min-height:44px;padding:10px 12px;border-radius:12px;border:2px solid #14181F;font:400 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
+            <input id="onb-event-date" type="date" value={dProfile.eventDate || ''} max={dateInputValue()} onChange={e => setDProfile(p => Object.assign({}, p, { eventDate:e.target.value }))} style={dateTimeInputStyle({ radius:12, fontSize:17, maxWidth:260, color:'#14181F' })} />
             <span style={css("font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Lets us show your actual filing deadline — a specific date, not just a duration — on your dashboard. Nothing is filed automatically; you can leave this blank and add it later.</span>
           </div>
         </div>
       }
 
-      <div style={css("padding:18px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F")}>
+      <div style={css("padding:18px;border-radius:14px;background:#F0EDE5;border:2px solid #14181F")}>
         <p style={css("margin:0 0 6px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>WorkLaw is legal information, not legal advice.</p>
         <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>We explain the law where you live and help you organize facts. We are not your attorney and no attorney–client relationship is created.</p>
       </div>
@@ -2660,7 +2949,7 @@ function App(){
         };
         return (
           <div style={css("display:flex;flex-direction:column;gap:8px")}>
-            <button onClick={go} aria-disabled={blocked} style={css("width:100%;padding:20px;border:none;border-radius:16px;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:" + (blocked ? 'not-allowed' : 'pointer') + ";background:" + (blocked ? '#E4E1D8' : '#2B3AA8') + ";color:" + (blocked ? '#4A5162' : '#fff'))}>{onbStep === 4 ? (editing ? 'Save changes' : 'Open my dashboard') : 'Continue'}</button>
+            <button onClick={go} aria-disabled={blocked} style={css("width:100%;padding:20px;border:none;border-radius:16px;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:" + (blocked ? 'not-allowed' : 'pointer') + ";background:" + (blocked ? DISABLED_BG : '#2B3AA8') + ";color:" + (blocked ? DISABLED_FG : '#fff'))}>{onbStep === 4 ? (editing ? 'Save changes' : 'Open my dashboard') : 'Continue'}</button>
             {blocked && <p role="status" style={css("margin:0;text-align:center;font:600 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>{need}</p>}
           </div>
         );
@@ -2769,17 +3058,24 @@ function App(){
               </button>
               <AddDeadlineDatePrompt dark={false} dl={dl} />
             </>
-          ) : null;
+          ) : (!stateSel || !issue) ? <MissingDeadlineCTA dark={false} /> : null;
         })()}
         <DocDeadlineWatch dark={false} />
         <OshaWatch dark={false} />
         <WageRecoverPanel />
       </div>
 
-      <button onClick={nav('strength')} className="surfacefx" style={css("text-align:left;padding:20px;border-radius:18px;border:2px solid #14181F;background:#E8F6EE;cursor:pointer;display:flex;flex-direction:column;gap:14px")}>
+      {/* FIND-14 — this card was the one genuinely stray 18px radius: same
+          full-width tappable Home nav-card role as "Ready to file a
+          complaint?" below (border-radius:16px, also a 2px border), with no
+          other reason for the 2px difference. Normalized to match; the other
+          two 18px call sites (the chat bubble tail-corner shape and the
+          wizard RESULT reveal card, which also carries a unique 3px border)
+          read as deliberate, not drift — left as-is. */}
+      <button onClick={nav('strength')} className="surfacefx" style={css("text-align:left;padding:20px;border-radius:16px;border:2px solid #14181F;background:#E8F6EE;cursor:pointer;display:flex;flex-direction:column;gap:14px")}>
         <div style={css("display:flex;align-items:baseline;justify-content:space-between")}>
           <span style={css("font:700 15px 'IBM Plex Mono',monospace;color:#14181F;letter-spacing:.04em")}>CASE STRENGTH</span>
-          <span style={css("font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#136B3C")}>View →</span>
+          <span style={css("display:inline-flex;align-items:center;gap:4px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#136B3C")}>View <Icon name="chevron-forward" size={16} /></span>
         </div>
         <div style={css("font:700 26px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{strength.label}</div>
         <div aria-hidden="true" style={css("display:flex;gap:5px;height:14px")}>
@@ -2814,7 +3110,7 @@ function App(){
                   setScreen(target.screen);
                 }} className="surfacefx" style={css('flex:1;text-align:left;padding:16px;border-radius:14px;border:2px solid #14181F;background:' + (on ? '#E8F6EE' : '#fff') + ';cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px')}>
                   <span style={css("font:700 17px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-decoration:" + (on ? 'line-through' : 'none'))}>{text}</span>
-                  <span aria-hidden="true" style={css("flex:none;font:700 20px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8")}>→</span>
+                  <Icon name="chevron-forward" size={20} style={{ color: '#2B3AA8' }} />
                 </button>
               </div>
             );
@@ -2831,7 +3127,7 @@ function App(){
               harassment/discrimination/termination/document/general case is never
               offered a tool that answers a question it didn't ask. */}
           {cfg.key === 'wage' &&
-            <button onClick={nav('wizard')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#FFF4D6;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
+            <button onClick={nav('wizard')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
               <span aria-hidden="true"><Icon name="rights" size={24} /></span>
               <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Am I exempt from overtime?</span>
             </button>
@@ -2839,13 +3135,13 @@ function App(){
           {/* Harassment/discrimination identifiers — same tile, gated to their own
               issue the same way the overtime self-check is gated to cfg.key === 'wage'. */}
           {cfg.key === 'harassment' &&
-            <button onClick={nav('wizard')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#FFF4D6;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
+            <button onClick={nav('wizard')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
               <span aria-hidden="true"><Icon name="rights" size={24} /></span>
               <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Is this harassment?</span>
             </button>
           }
           {cfg.key === 'discrimination' &&
-            <button onClick={nav('wizard')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#FFF4D6;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
+            <button onClick={nav('wizard')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
               <span aria-hidden="true"><Icon name="rights" size={24} /></span>
               <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Is this discrimination?</span>
             </button>
@@ -2927,7 +3223,7 @@ function App(){
         <span style={css("font:400 16px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{cfg.key === 'document' ? 'See where to get help near ' + countyShort + '. Your case file exports in one tap.' : 'See the free government agencies that handle this near ' + countyShort + '. Your case file exports in one tap.'}</span>
       </button>
 
-      <div style={css("padding:18px;border-radius:16px;background:#FFF4D6;border:2px solid #14181F")}>
+      <div style={css("padding:18px;border-radius:16px;background:#F0EDE5;border:2px solid #14181F")}>
         <p style={css("margin:0 0 6px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Information, not advice</p>
         <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>Everything here explains the law that applies in {locationLabel}. It is not legal advice and WorkLaw is not your attorney.</p>
       </div>
@@ -2941,8 +3237,29 @@ function App(){
       <StorageWarningBanner />
       <LocationPill dark={true} />
       <p style={css("margin:0;font:700 14px 'IBM Plex Mono',monospace;color:#C9D0FF;letter-spacing:.05em")}>STEP {currentStepIdx + 1} OF {cfg.steps.length} · {cfg.caseTitle.toUpperCase()}</p>
-      <h1 style={css("margin:0;font:700 40px/1.08 'Atkinson Hyperlegible',sans-serif;color:#fff;text-wrap:pretty")}>{cfg.steps[currentStepIdx]}.</h1>
+      {/* FIND-10 (docs/audit-2026-08-29.md) — this headline used to render at
+          font-size:40px/line-height:43.2px, ~302px tall across long step text
+          wrapped to 7 lines, pushing the primary "Do this step" CTA to
+          top:1048px on an 844px viewport (1.25 screens down) — the slowest
+          path to the action in a mode whose entire premise is speed. Capped
+          to the same 28px scale HomeStandard's H1 uses everywhere else. */}
+      <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#fff;text-wrap:pretty")}>{cfg.steps[currentStepIdx]}.</h1>
       <p style={css("margin:0;font:400 19px/1.5 'Atkinson Hyperlegible',sans-serif;color:#DDE2FF")}>{cfg.actionWhy}</p>
+      {/* FIND-10 (docs/audit-2026-08-29.md) — the primary CTA moves here, directly
+          under the headline/why-copy, instead of after the Deadline Watch card and
+          its explainer sub-blocks. Those still render (below), just no longer
+          gate reaching the step's actual action. */}
+      <div style={css("display:flex;flex-direction:column;gap:12px")}>
+        <button onClick={() => {
+          const target = stepTarget(cfg, currentStepIdx);
+          setDone(p => Object.assign({}, p, { [stepKey(cfg, currentStepIdx)]: true }));
+          if (target.letterType) setLetterType(target.letterType);
+          if (target.logKind) setLogKind(target.logKind);
+          else if (target.screen === 'log') setLogKind(defaultLogKindForIssueKey(cfg.key));
+          setScreen(target.screen);
+        }} className="surfacefx" style={css("padding:20px;border-radius:16px;border:none;background:#FFF4D6;color:#14181F;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Do this step</button>
+        <button onClick={() => setDone(p => Object.assign({}, p, { [stepKey(cfg, currentStepIdx)]: true }))} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid #fff;background:transparent;color:#fff;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Mark it done</button>
+      </div>
       {(() => {
         const fedF = (federal && federal.facts) || [];
         const stF = (stateData && stateData.facts) || [];
@@ -2958,7 +3275,7 @@ function App(){
             </button>
             <AddDeadlineDatePrompt dark={true} dl={dl} />
           </>
-        ) : null;
+        ) : (!stateSel || !issue) ? <MissingDeadlineCTA dark={true} /> : null;
       })()}
       <DocDeadlineWatch dark={true} />
       <OshaWatch dark={true} />
@@ -2994,15 +3311,6 @@ function App(){
         <button onClick={nav('adaProcess')} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid rgba(255,255,255,.6);background:transparent;color:#DDE2FF;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Track the ADA process — if you're requesting an accommodation</button>
       }
       <div style={css("display:flex;flex-direction:column;gap:12px")}>
-        <button onClick={() => {
-          const target = stepTarget(cfg, currentStepIdx);
-          setDone(p => Object.assign({}, p, { [stepKey(cfg, currentStepIdx)]: true }));
-          if (target.letterType) setLetterType(target.letterType);
-          if (target.logKind) setLogKind(target.logKind);
-          else if (target.screen === 'log') setLogKind(defaultLogKindForIssueKey(cfg.key));
-          setScreen(target.screen);
-        }} className="surfacefx" style={css("padding:20px;border-radius:16px;border:none;background:#FFF4D6;color:#14181F;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Do this step</button>
-        <button onClick={() => setDone(p => Object.assign({}, p, { [stepKey(cfg, currentStepIdx)]: true }))} className="surfacefx" style={css("padding:20px;border-radius:16px;border:2px solid #fff;background:transparent;color:#fff;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Mark it done</button>
         {/* usertest — the step CTA above only reaches the Letter screen on the one
             step index (if any) whose stepScreens entry is 'letter'; harassment,
             discrimination, document and the generic issue never have one, so without
@@ -3053,7 +3361,7 @@ function App(){
             </button>
             <AddDeadlineDatePrompt dark={false} dl={dl} />
           </>
-        ) : null;
+        ) : (!stateSel || !issue) ? <MissingDeadlineCTA dark={false} /> : null;
       })()}
       <DocDeadlineWatch dark={false} />
       <OshaWatch dark={false} />
@@ -3106,6 +3414,16 @@ function App(){
               {K === 'wage' && owedEstimate > 0 &&
                 <p style={css("margin:8px 0 0;font:700 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#6B4B00")}>Back wages only — actual recovery may be up to double, plus attorney's fees, if you sue.</p>
               }
+              {/* State remedies.* facts beyond the federal figure above — only the
+                  ones this claim's shape (and, for the minimum-wage-specific fact,
+                  the logged rate) actually triggers; see applicableWageRemedies.
+                  Never folded into bigLine's dollar figure. */}
+              {K === 'wage' && owedEstimate > 0 && (() => {
+                const stRemedies = applicableWageRemedies((stateData && stateData.facts) || [], owedBreakdown, rateNum, factByTopic((stateData && stateData.facts) || [], 'minimumWage.hourly'));
+                const note = wageRemedyDashboardNote(stateSel, stRemedies);
+                const stRev = !!(stateData && stateData.reviewed === true);
+                return note ? <p style={css("margin:6px 0 0;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#6B4B00")}>{note}{stRev ? '' : ' (DRAFT — pending attorney review)'}</p> : null;
+              })()}
             </div>
             <button onClick={() => {
               setDone(p => Object.assign({}, p, { [stepKey(cfg, currentStepIdx)]: true }));
@@ -3220,7 +3538,7 @@ function App(){
         </div>
         <div style={css("display:flex;gap:10px;align-items:center")}>
           <input aria-label="Your question" value={draft} onChange={e => setDraft(e.target.value)} onKeyDown={e => { if(e.key === 'Enter' && draft.trim()) send(draft); }} placeholder="Type your question" style={css("flex:1;padding:16px;border-radius:14px;border:2px solid #14181F;background:#fff;font:400 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
-          <button onClick={() => send(draft)} style={css("padding:16px 20px;border-radius:14px;border:none;background:#2B3AA8;color:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Send</button>
+          <button onClick={() => send(draft)} aria-disabled={!draft.trim()} style={css("padding:16px 20px;border-radius:14px;border:none;font:700 17px 'Atkinson Hyperlegible',sans-serif;cursor:" + (draft.trim() ? 'pointer' : 'not-allowed') + ";background:" + (draft.trim() ? '#2B3AA8' : DISABLED_BG) + ";color:" + (draft.trim() ? '#fff' : DISABLED_FG))}>Send</button>
         </div>
         <p style={css("margin:0;font:400 13px/1.35 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>AI can be wrong. Verify anything important with an attorney — tap Agencies in the tab bar.</p>
       </div>
@@ -3235,7 +3553,10 @@ function App(){
     // per case (a case has exactly one issue), so a 'start' node in TREE_WAGE and
     // TREE_HARASSMENT never collide in practice.
     const wcfg = wizardConfigFor(cfg.key);
-    const result = wcfg.results[wizNode];
+    // FIND-01 — for the wage tree only, cross-check a standard white-collar
+    // 'ex' verdict against the active state's own salary-floor fact before it
+    // ever reaches the screen (see applyStateSalaryFloor above).
+    const result = cfg.key === 'wage' ? applyStateSalaryFloor(wcfg.results[wizNode], wizNode, profile, stateData) : wcfg.results[wizNode];
     const wizDone = !!result;
     const cur = wcfg.tree[wizNode] || wcfg.tree.start;
     const depth = wizPath.length + 1;
@@ -3261,8 +3582,17 @@ function App(){
         {wizDone &&
           <div style={css("display:flex;flex-direction:column;gap:24px")}>
           <div style={css("display:flex;flex-direction:column;gap:12px")}>
+            {/* FIND-18 (docs/audit-2026-08-29.md) — this trail used to render the
+                raw internal option tags (e.g. "SALARY", "≥ $684/WK", "ROUTINE
+                TASKS") in IBM Plex Mono, reading as internal codes rather than
+                the plain-language answer review it actually is. The tree
+                options now carry short plain-language phrases instead of
+                terse codes, and the pills render in Atkinson Hyperlegible
+                (this app's convention: IBM Plex Mono is reserved for short
+                data/code labels like citations or deadline kickers, not
+                full-sentence content). */}
             <div style={css("display:flex;flex-wrap:wrap;gap:8px")}>
-              {wizPath.map((a, ai) => <span key={ai} style={css("padding:8px 12px;border-radius:999px;background:#F0EDE5;border:2px solid rgba(20,24,31,.25);font:600 13px 'IBM Plex Mono',monospace;color:#14181F")}>{a}</span>)}
+              {wizPath.map((a, ai) => <span key={ai} style={css("padding:8px 12px;border-radius:999px;background:#F0EDE5;border:2px solid rgba(20,24,31,.25);font:600 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{a}</span>)}
             </div>
             <div style={css('padding:22px;border-radius:18px;border:3px solid #14181F;background:' + (result.v === 'non' ? '#E8F6EE' : result.v === 'ex' ? '#FFE7EC' : '#FFF4D6'))}>
               <p style={css("margin:0 0 8px;font:700 14px 'IBM Plex Mono',monospace;letter-spacing:.05em;color:" + (result.v === 'non' ? '#136B3C' : result.v === 'ex' ? '#B3264F' : '#8A5A00'))}>RESULT</p>
@@ -3610,8 +3940,8 @@ function App(){
         <p style={css("margin:0;padding:12px 14px;border-radius:12px;background:#EEF1FF;border:2px solid #2B3AA8;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>This log is evidence. Your employer is legally required to keep accurate time and pay records — when those records are missing or wrong, a good personal log is what a court or investigator relies on instead.</p>
       }
 
-      <div style={css('padding:16px;border-radius:16px;border:2px solid #14181F;background:' + (editing ? '#FFF4D6' : '#fff') + ';display:flex;flex-direction:column;gap:12px')}>
-        {editing && <p role="status" style={css("margin:0;font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#6B4B00")}>Editing the entry from {entries[editingEntryIdx].date}</p>}
+      <div style={css('padding:16px;border-radius:16px;border:2px solid #14181F;background:' + (editing ? '#F0EDE5' : '#fff') + ';display:flex;flex-direction:column;gap:12px')}>
+        {editing && <p role="status" style={css("margin:0;font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Editing the entry from {entries[editingEntryIdx].date}</p>}
         <div role="group" aria-label="Entry type" style={css("display:flex;gap:8px;flex-wrap:wrap")}>
           {LOG_KINDS.map(k =>
             <button key={k.tag} onClick={() => setLogKind(k.tag)} aria-pressed={logKind === k.tag} className="surfacefx" style={css('min-height:44px;padding:10px 13px;border-radius:999px;border:2px solid ' + (logKind === k.tag ? '#2B3AA8' : '#14181F') + ';background:' + (logKind === k.tag ? '#2B3AA8' : '#fff') + ';color:' + (logKind === k.tag ? '#fff' : '#14181F') + ";font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{k.label.replace('+ ','')}</button>
@@ -3640,16 +3970,16 @@ function App(){
                 Start/End time in a 2-col grid so the pair never wraps mid-field. */}
             <div style={css("display:flex;flex-direction:column;gap:6px")}>
               <label htmlFor="log-date" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Date worked</label>
-              <input id="log-date" type="date" value={logDate} max={dateInputValue()} onChange={e => setLogDate(e.target.value)} style={css("width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif")} />
+              <input id="log-date" type="date" value={logDate} max={dateInputValue()} onChange={e => setLogDate(e.target.value)} style={dateTimeInputStyle()} />
             </div>
             <div style={css("display:grid;grid-template-columns:1fr 1fr;gap:10px")}>
               <div style={css("display:flex;flex-direction:column;gap:6px;min-width:0")}>
                 <label htmlFor="log-start" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Start time</label>
-                <input id="log-start" type="time" value={logStartTime} onChange={e => setLogStartTime(e.target.value)} style={css("width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif")} />
+                <input id="log-start" type="time" value={logStartTime} onChange={e => setLogStartTime(e.target.value)} style={dateTimeInputStyle()} />
               </div>
               <div style={css("display:flex;flex-direction:column;gap:6px;min-width:0")}>
                 <label htmlFor="log-end" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>End time</label>
-                <input id="log-end" type="time" value={logEndTime} onChange={e => setLogEndTime(e.target.value)} style={css("width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif")} />
+                <input id="log-end" type="time" value={logEndTime} onChange={e => setLogEndTime(e.target.value)} style={dateTimeInputStyle()} />
               </div>
             </div>
             {computedHours != null ?
@@ -3718,7 +4048,7 @@ function App(){
             </div>
             <div style={css("display:flex;flex-direction:column;gap:6px")}>
               <label htmlFor="log-said-when" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>When</label>
-              <input id="log-said-when" type="date" value={logSaidWhen} max={dateInputValue()} onChange={e => setLogSaidWhen(e.target.value)} style={css("width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif")} />
+              <input id="log-said-when" type="date" value={logSaidWhen} max={dateInputValue()} onChange={e => setLogSaidWhen(e.target.value)} style={dateTimeInputStyle()} />
             </div>
             <div style={css("display:flex;flex-direction:column;gap:6px")}>
               <label htmlFor="log-said-where" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Where / how</label>
@@ -3744,7 +4074,7 @@ function App(){
             </div>
             <div style={css("display:flex;flex-direction:column;gap:6px")}>
               <label htmlFor="log-doc-date" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Document date</label>
-              <input id="log-doc-date" type="date" value={logDocDate} max={dateInputValue()} onChange={e => setLogDocDate(e.target.value)} style={css("width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif")} />
+              <input id="log-doc-date" type="date" value={logDocDate} max={dateInputValue()} onChange={e => setLogDocDate(e.target.value)} style={dateTimeInputStyle()} />
             </div>
             <div style={css("display:flex;flex-direction:column;gap:6px")}>
               <label htmlFor="log-doc-parties" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Author / parties</label>
@@ -3903,7 +4233,7 @@ function App(){
     <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
       <button onClick={nav('home')} style={css("align-self:flex-start;display:flex;align-items:center;gap:4px;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}><Icon name="back" size={18} /> Dashboard</button>
       <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Review a document</h1>
-      <div style={css("padding:14px 16px;border-radius:12px;background:#FFF4D6;border:2px solid #14181F")}>
+      <div style={css("padding:14px 16px;border-radius:12px;background:#F0EDE5;border:2px solid #14181F")}>
         <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}><strong>Uploaded files are not read</strong> — the picker below only notes the file name. <strong>Pasted text IS scanned</strong>, entirely on your device, for common clause types across offer letters, NDAs, employment contracts, severance, PIPs and non-competes (release of claims, non-disparagement, non-compete, non-solicitation, arbitration/class-action waiver, confidentiality, consideration/revocation period, at-will status, IP assignment, governing law, liquidated damages, performance-plan timelines). This is a basic keyword match, not a legal opinion — it can miss real issues and flag benign text. Bring your actual document to an attorney before signing.</p>
       </div>
       <p style={css("margin:0;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>This is legal information, not legal advice, and it is not a review of your standing to bring a claim — only an attorney can tell you that.</p>
@@ -3944,13 +4274,13 @@ function App(){
                 enforceability checker, which pulls the actual sourced state fact
                 (this card's copy is only a generic keyword-match flag). */}
             {cl.title === 'Non-compete / restrictive covenant' &&
-              <button onClick={nav('noncompete')} className="hoverfx" style={css("align-self:flex-start;margin-top:10px;min-height:44px;padding:10px 14px;border-radius:10px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Is my non-compete enforceable? →</button>
+              <button onClick={nav('noncompete')} className="hoverfx" style={css("align-self:flex-start;margin-top:10px;min-height:44px;padding:10px 14px;border-radius:10px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:6px")}>Is my non-compete enforceable? <Icon name="chevron-forward" size={14} /></button>
             }
           </div>
         )}
       </div>
       }
-      <div style={css("padding:16px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F")}>
+      <div style={css("padding:16px;border-radius:14px;background:#F0EDE5;border:2px solid #14181F")}>
         <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>If your document mentions a consideration/revocation period, you typically have <strong>21 days</strong> to consider it and <strong>7 days</strong> to revoke after signing. Do not sign to hit an artificial deadline.</p>
       </div>
     </div>
@@ -4009,10 +4339,10 @@ function App(){
         <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>In states that test non-competes for “reasonableness” rather than banning them outright, courts commonly look at: how narrow the <strong>geographic scope</strong> is, how long the <strong>duration</strong> runs, whether the employer has a genuine <strong>legitimate business interest</strong> to protect (like real trade secrets, not just avoiding competition), and whether you received real <strong>consideration</strong> (something of value, like a new job offer or a raise) in exchange for signing. This is a general description of common factors, not a scoring of your specific agreement.</p>
       </div>
 
-      <div style={css("padding:16px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F")}>
+      <div style={css("padding:16px;border-radius:14px;background:#F0EDE5;border:2px solid #14181F")}>
         <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>This is legal information, not legal advice, and it is not an opinion on whether your specific non-compete is enforceable. An employment attorney licensed in {stName} can review your actual agreement.</p>
       </div>
-      <button onClick={nav('agencies')} className="hoverfx" style={css("align-self:flex-start;min-height:44px;padding:12px 16px;border-radius:12px;border:2px solid #2B3AA8;background:#fff;color:#2B3AA8;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Find a lawyer →</button>
+      <button onClick={nav('agencies')} className="hoverfx" style={css("align-self:flex-start;min-height:44px;padding:12px 16px;border-radius:12px;border:2px solid #2B3AA8;background:#fff;color:#2B3AA8;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:6px")}>Find a lawyer <Icon name="chevron-forward" size={15} /></button>
     </div>
     );
   };
@@ -4040,7 +4370,7 @@ function App(){
     <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
       <button onClick={nav('home')} style={css("align-self:flex-start;display:flex;align-items:center;gap:4px;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}><Icon name="back" size={18} /> Dashboard</button>
       <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{K === 'termination' ? 'What might back pay look like?' : 'What damages might apply?'}</h1>
-      <div style={css("padding:14px 16px;border-radius:14px;border:2px solid #14181F;background:#FFF4D6")}>
+      <div style={css("padding:14px 16px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5")}>
         <p style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Educational only — this is not a valuation of your case, and nothing on this screen is a promise you are entitled to anything. Only an employment attorney reviewing your actual facts can tell you what a claim might realistically be worth.</p>
       </div>
 
@@ -4119,10 +4449,10 @@ function App(){
         </>
       )}
 
-      <div style={css("padding:16px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F")}>
+      <div style={css("padding:16px;border-radius:14px;background:#F0EDE5;border:2px solid #14181F")}>
         <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>This is legal information, not legal advice, and none of the figures above are what you are owed. An employment attorney licensed in {stateLabel} can assess what your case might actually be worth.</p>
       </div>
-      <button onClick={nav('agencies')} className="hoverfx" style={css("align-self:flex-start;min-height:44px;padding:12px 16px;border-radius:12px;border:2px solid #2B3AA8;background:#fff;color:#2B3AA8;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Find a lawyer →</button>
+      <button onClick={nav('agencies')} className="hoverfx" style={css("align-self:flex-start;min-height:44px;padding:12px 16px;border-radius:12px;border:2px solid #2B3AA8;background:#fff;color:#2B3AA8;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:6px")}>Find a lawyer <Icon name="chevron-forward" size={15} /></button>
     </div>
     );
   };
@@ -4159,7 +4489,7 @@ function App(){
       : 'Request sent ' + formatLocalDateStr(rr.dateSent) + ' — mark below whether a response has come in yet.';
     const src = f => { const u = f && safeUrl(f.sourceUrl); return u ? <a href={u} target="_blank" rel="noopener noreferrer" className="hoverfx" style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null; };
     const fieldLabel = css("font:700 13px 'IBM Plex Mono',monospace;color:#14181F;letter-spacing:.04em");
-    const dateInputStyle = css("width:100%;max-width:260px;box-sizing:border-box;min-height:44px;padding:10px 12px;border-radius:12px;border:2px solid #14181F;font:400 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F");
+    const dateInputStyle = dateTimeInputStyle({ radius:12, fontSize:17, maxWidth:260, color:'#14181F' });
     const textareaStyle = css("width:100%;box-sizing:border-box;padding:14px;border-radius:12px;border:2px solid #14181F;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#14181F;resize:vertical");
     return (
     <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
@@ -4226,7 +4556,7 @@ function App(){
         </div>
       </div>
 
-      <div style={css("padding:16px 18px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F")}>
+      <div style={css("padding:16px 18px;border-radius:14px;background:#F0EDE5;border:2px solid #14181F")}>
         <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>An employer who never responds — or produces less than you asked for — can itself be a relevant fact, not just a dead end. Keep this tracker updated; it exports with the rest of your case file.</p>
       </div>
       <p style={css("margin:0;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>This is legal information, not legal advice.</p>
@@ -4261,7 +4591,7 @@ function App(){
       <div style={css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff;display:flex;flex-direction:column;gap:14px")}>
         <div style={css("display:flex;flex-direction:column;gap:6px")}>
           <label htmlFor="ada-date" style={fieldLabel}>DATE</label>
-          <input id="ada-date" type="date" value={adaLogDate} max={dateInputValue()} onChange={e => setAdaLogDate(e.target.value)} style={css("width:100%;max-width:260px;box-sizing:border-box;min-height:44px;padding:10px 12px;border-radius:12px;border:2px solid #14181F;font:400 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
+          <input id="ada-date" type="date" value={adaLogDate} max={dateInputValue()} onChange={e => setAdaLogDate(e.target.value)} style={dateTimeInputStyle({ radius:12, fontSize:17, maxWidth:260, color:'#14181F' })} />
         </div>
         <div style={css("display:flex;flex-direction:column;gap:6px")}>
           <label id="ada-what-label" style={fieldLabel}>WHAT HAPPENED</label>
@@ -4298,7 +4628,7 @@ function App(){
         </div>
       }
 
-      <div style={css("padding:16px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F")}>
+      <div style={css("padding:16px;border-radius:14px;background:#F0EDE5;border:2px solid #14181F")}>
         <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>This is legal information, not legal advice.</p>
       </div>
     </div>
@@ -4318,6 +4648,10 @@ function App(){
     const gen = buildLetter({
       kind: activeKind, issueKey: cfg.key, youName, employerName, stateSel: stateLabel,
       unpaidHours, owedEstimate, rateNum, federal, stateData, entries, payType: profile.payType,
+      // FIND-11 — lets the accommodation-request/complaint letters incorporate a
+      // logged ADA request/denial (see buildLetter), the same way wage-demand
+      // already incorporates the hours log.
+      adaLog: profile.adaLog,
     });
     const editing = letterEdit != null;
     const text = editing ? letterEdit : gen.body;
@@ -4359,7 +4693,7 @@ function App(){
       <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{built}</p>
       {stateLawUnreviewed &&
         <div style={css("padding:12px 15px;border-radius:12px;background:#FFF4D6;border:2px solid #14181F")}>
-          <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>This letter cites a {stateLabel} law that, like the rest of this app's {stateLabel} content, is marked <strong>(DRAFT)</strong> on the Rights tab — not yet verified by counsel. The citation is sourced from an official government site, but confirm it before sending.</p>
+          <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>This letter cites {articleFor(stateLabel)} {stateLabel} law that, like the rest of this app's {stateLabel} content, is marked <strong>(DRAFT)</strong> on the Rights tab — not yet verified by counsel. The citation is sourced from an official government site, but confirm it before sending.</p>
         </div>
       }
       {(!youName || !employerName) &&
@@ -4640,7 +4974,7 @@ function App(){
           </p>
         }
       </div>
-      <div style={css("padding:16px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F")}>
+      <div style={css("padding:16px;border-radius:14px;background:#F0EDE5;border:2px solid #14181F")}>
         <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>You may also want to consult an employment attorney licensed in {stateLabel}. WorkLaw does not operate a referral service or recommend specific firms — your state or local bar association's lawyer-referral service is a reliable place to start.</p>
       </div>
       {/* wl-security/usertest — "Delete my case" previously lived only in the Home
