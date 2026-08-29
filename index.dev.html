@@ -2006,6 +2006,14 @@ const ATTACHMENT_MAX_BYTES = 1.5 * 1024 * 1024; // 1.5MB per attachment
 // case, not just attachments). Cap the SUM of attachment bytes across every
 // logged entry, checked before a new attachment is staged.
 const ATTACHMENT_TOTAL_MAX_BYTES = 6 * 1024 * 1024; // 6MB total across the case
+// FIND-16 — shared disabled-state pair for primary CTAs that can be not-ready
+// (empty required field, etc). Previously only onboarding's Continue button had
+// any visual disabled treatment, as an inline one-off; chat's Send looked fully
+// solid/clickable even with an empty draft. Kept as plain string constants (this
+// codebase has no separate token/theme layer) so every disabled primary button
+// pulls the same pair instead of re-inventing its own gray.
+const DISABLED_BG = '#E4E1D8';
+const DISABLED_FG = '#4A5162';
 // wl-security — an attachment is stored and later re-rendered as a data URL (an
 // <img src> when its type starts with "image/", or an <a href download>
 // otherwise). image/svg+xml is a text/XML format that can carry an inline
@@ -2936,7 +2944,7 @@ function App(){
         };
         return (
           <div style={css("display:flex;flex-direction:column;gap:8px")}>
-            <button onClick={go} aria-disabled={blocked} style={css("width:100%;padding:20px;border:none;border-radius:16px;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:" + (blocked ? 'not-allowed' : 'pointer') + ";background:" + (blocked ? '#E4E1D8' : '#2B3AA8') + ";color:" + (blocked ? '#4A5162' : '#fff'))}>{onbStep === 4 ? (editing ? 'Save changes' : 'Open my dashboard') : 'Continue'}</button>
+            <button onClick={go} aria-disabled={blocked} style={css("width:100%;padding:20px;border:none;border-radius:16px;font:700 19px 'Atkinson Hyperlegible',sans-serif;cursor:" + (blocked ? 'not-allowed' : 'pointer') + ";background:" + (blocked ? DISABLED_BG : '#2B3AA8') + ";color:" + (blocked ? DISABLED_FG : '#fff'))}>{onbStep === 4 ? (editing ? 'Save changes' : 'Open my dashboard') : 'Continue'}</button>
             {blocked && <p role="status" style={css("margin:0;text-align:center;font:600 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>{need}</p>}
           </div>
         );
@@ -3518,7 +3526,7 @@ function App(){
         </div>
         <div style={css("display:flex;gap:10px;align-items:center")}>
           <input aria-label="Your question" value={draft} onChange={e => setDraft(e.target.value)} onKeyDown={e => { if(e.key === 'Enter' && draft.trim()) send(draft); }} placeholder="Type your question" style={css("flex:1;padding:16px;border-radius:14px;border:2px solid #14181F;background:#fff;font:400 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
-          <button onClick={() => send(draft)} style={css("padding:16px 20px;border-radius:14px;border:none;background:#2B3AA8;color:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Send</button>
+          <button onClick={() => send(draft)} aria-disabled={!draft.trim()} style={css("padding:16px 20px;border-radius:14px;border:none;font:700 17px 'Atkinson Hyperlegible',sans-serif;cursor:" + (draft.trim() ? 'pointer' : 'not-allowed') + ";background:" + (draft.trim() ? '#2B3AA8' : DISABLED_BG) + ";color:" + (draft.trim() ? '#fff' : DISABLED_FG))}>Send</button>
         </div>
         <p style={css("margin:0;font:400 13px/1.35 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>AI can be wrong. Verify anything important with an attorney — tap Agencies in the tab bar.</p>
       </div>
