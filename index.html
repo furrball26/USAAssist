@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-8xx1jaO1hvZAJj+gavkleL4eLwncrc6RtIY0A28EkD0='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-Mv88TxCqK8VQRqaVP/PNaVcjHGX2UfksBQT7ky3dvY4='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14181F">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232B3AA8'/%3E%3Ctext x='32' y='47' font-size='42' text-anchor='middle' fill='white' font-family='Georgia,serif'%3E%C2%A7%3C/text%3E%3C/svg%3E">
@@ -977,7 +977,7 @@ function wizardConfigFor(issueKey) {
   return WIZARD_CONFIG[issueKey] || WIZARD_CONFIG.wage;
 }
 const CLAUSES = [
-  { title: "Release of claims", level: "READ CLOSELY", quote: "\u2026releases all claims arising from employment, known or unknown\u2026", plain: "You give up the right to sue for anything that already happened. In many states, wages you already earned generally cannot be waived \u2014 even by signing this.", tone: "#FFE7EC", badge: "#C81E1B" },
+  { title: "Release of claims", level: "READ CLOSELY", quote: "\u2026releases all claims arising from employment, known or unknown\u2026", plain: "You give up the right to sue for anything that already happened. In many states, wages you already earned generally cannot be waived \u2014 even by signing this.", tone: "#FFE7EC", badge: "#B3264F" },
   { title: "Non-disparagement", level: "NEGOTIABLE", quote: "\u2026shall not make any statement that reflects negatively on the Company\u2026", plain: "As written this is broad. Many states protect your ability to describe unlawful conduct you experienced; that carve-out is missing here.", tone: "#FFF4D6", badge: "#8A5A00" },
   { title: "Severance amount", level: "STANDARD", quote: "\u2026eight (8) weeks of base salary, less withholdings\u2026", plain: "Eight weeks is within a normal range for your tenure. It is separate from wages you are already owed.", tone: "#E8F6EE", badge: "#136B3C" }
 ];
@@ -986,7 +986,7 @@ const CLAUSE_PATTERNS = [
     title: "Release of claims",
     level: "READ CLOSELY",
     tone: "#FFE7EC",
-    badge: "#C81E1B",
+    badge: "#B3264F",
     re: /\b(releas(?:es?|ed|ing)|waiv(?:es?|ed|ing)|discharg(?:es?|ed|ing)|forever discharge)\b[^.]{0,100}\b(claims?|causes? of action|liability|demands?)\b/i,
     plain: "Looks like a release of legal claims \u2014 you may be giving up the right to sue for things that already happened. In many states, wages you already earned generally cannot be waived by signing this."
   },
@@ -1002,7 +1002,7 @@ const CLAUSE_PATTERNS = [
     title: "Non-compete / restrictive covenant",
     level: "READ CLOSELY",
     tone: "#FFE7EC",
-    badge: "#C81E1B",
+    badge: "#B3264F",
     re: /non-?compet\w*|restrictive covenant|(?:shall not|agrees? not to|will not|must not)[^.]{0,40}(compete with|work for|be employed by|provide services to)/i,
     plain: "Looks like a non-compete or restrictive-covenant clause. Several states ban or sharply limit these for most workers \u2014 check the Rights tab for your state before assuming it is enforceable."
   },
@@ -1018,7 +1018,7 @@ const CLAUSE_PATTERNS = [
     title: "Arbitration / class-action waiver",
     level: "READ CLOSELY",
     tone: "#FFE7EC",
-    badge: "#C81E1B",
+    badge: "#B3264F",
     re: /\barbitrat\w*|class(?:-|\s)action waiver|waiv(?:es?|ed|ing)[^.]{0,40}(class|collective) action|jury trial/i,
     plain: "Looks like an arbitration clause, a waiver of your right to a jury trial, or a waiver of your right to join a class or collective action. This can limit how and where you can bring a future claim."
   },
@@ -1066,7 +1066,7 @@ const CLAUSE_PATTERNS = [
     title: "Liquidated damages / penalty",
     level: "READ CLOSELY",
     tone: "#FFE7EC",
-    badge: "#C81E1B",
+    badge: "#B3264F",
     re: /liquidated damages|penalty (?:of|equal to|in the amount)/i,
     plain: "Looks like a pre-set dollar amount you would owe for breaching the agreement (for example, breaking a non-compete or confidentiality clause). These clauses can create real financial exposure \u2014 read the trigger and the amount closely."
   },
@@ -1074,7 +1074,7 @@ const CLAUSE_PATTERNS = [
     title: "Performance plan / termination timeline",
     level: "READ CLOSELY",
     tone: "#FFE7EC",
-    badge: "#C81E1B",
+    badge: "#B3264F",
     re: /performance improvement plan|\bPIP\b|(?:30|60|90|thirty|sixty|ninety)[-\s]day (?:improvement|action) plan|failure to (?:meet|achieve)[^.]{0,60}(?:may|will|could) result in[^.]{0,30}termination/i,
     plain: "Looks like a performance-improvement plan or a stated timeline tied to termination. Note the deadline and the specific goals \u2014 missing an unclear or unreachable goal is often used to justify a later firing."
   }
