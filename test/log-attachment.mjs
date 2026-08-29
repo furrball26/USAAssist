@@ -14,7 +14,7 @@ import { createServer } from 'node:http';
 import { readFileSync, existsSync, statSync, writeFileSync, mkdtempSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
 import { tmpdir } from 'node:os';
-import { execSync } from 'node:child_process';
+import { resolveChromePath } from './lib/chrome.mjs';
 import puppeteer from 'puppeteer-core';
 import { gotoApp, reloadApp } from './lib/nav.mjs';
 
@@ -28,7 +28,7 @@ const server = createServer((req, res) => {
 });
 await new Promise(r => server.listen(0, r));
 const PORT = server.address().port;
-const chrome = execSync(`find "${ROOT}chrome-headless-shell" -type f -name 'chrome-headless-shell' | head -1`).toString().trim();
+const chrome = resolveChromePath();
 
 // A minimal valid 1x1 transparent PNG.
 const TINY_PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', 'base64');

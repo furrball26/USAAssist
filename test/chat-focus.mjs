@@ -1,14 +1,14 @@
 import { createServer } from 'node:http';
 import { readFileSync, existsSync, statSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
-import { execSync } from 'node:child_process';
+import { resolveChromePath } from './lib/chrome.mjs';
 import puppeteer from 'puppeteer-core';
 import { gotoApp } from './lib/nav.mjs';
 const ROOT = new URL('..', import.meta.url).pathname;
 const T = { '.html':'text/html','.js':'text/javascript','.json':'application/json','.svg':'image/svg+xml' };
 const srv = createServer((q,s)=>{let p=decodeURIComponent(q.url.split('?')[0]);if(p==='/')p='/index.html';const f=normalize(join(ROOT,p));if(!f.startsWith(ROOT)||!existsSync(f)||statSync(f).isDirectory()){s.writeHead(404);s.end();return;}s.writeHead(200,{'content-type':T[extname(f)]||'application/octet-stream'});s.end(readFileSync(f));});
 await new Promise(r=>srv.listen(0,r));const PORT=srv.address().port;
-const chrome=execSync(`find "${ROOT}chrome-headless-shell" -type f -name 'chrome-headless-shell'|head -1`).toString().trim();
+const chrome=resolveChromePath();
 const b=await puppeteer.launch({executablePath:chrome,headless:true,args:['--no-sandbox']});
 let ok = false;
 try {

@@ -2,7 +2,7 @@
 import { createServer } from 'node:http';
 import { readFileSync, existsSync, statSync, mkdirSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
-import { execSync } from 'node:child_process';
+import { resolveChromePath } from './lib/chrome.mjs';
 import puppeteer from 'puppeteer-core';
 import { gotoApp, reloadApp } from './lib/nav.mjs';
 
@@ -22,7 +22,7 @@ await new Promise(r => server.listen(0, r));
 const PORT = server.address().port;
 const BASE = `http://127.0.0.1:${PORT}`;
 
-const chromePath = execSync(`find "${ROOT}chrome-headless-shell" -type f -name 'chrome-headless-shell' 2>/dev/null | head -1`).toString().trim();
+const chromePath = resolveChromePath();
 const browser = await puppeteer.launch({ executablePath: chromePath, headless: true, args: ['--no-sandbox'] });
 
 const clickText = async (page, label) => {

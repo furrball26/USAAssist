@@ -7,7 +7,7 @@
 import { createServer } from 'node:http';
 import { readFileSync, existsSync, statSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
-import { execSync } from 'node:child_process';
+import { resolveChromePath } from './lib/chrome.mjs';
 import puppeteer from 'puppeteer-core';
 import { gotoApp, reloadApp } from './lib/nav.mjs';
 
@@ -21,7 +21,7 @@ const server = createServer((req, res) => {
 });
 await new Promise(r => server.listen(0, r));
 const PORT = server.address().port;
-const chrome = execSync(`find "${ROOT}chrome-headless-shell" -type f -name 'chrome-headless-shell' | head -1`).toString().trim();
+const chrome = resolveChromePath();
 
 // Strings from the old hardcoded persona that must NEVER appear in any rendered screen.
 const LEAKS = ['Sam Okonkwo', 'Rivera Logistics', 'CASE #24-118', '$2,418', '62 hours', '62.5', 'Embarcadero', 'March–June', 'Mar–Jun', 'Opened 14 days ago'];
