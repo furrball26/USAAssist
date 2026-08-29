@@ -2619,6 +2619,24 @@ function App(){
       <button onClick={openEditFlowAtDate} className="hoverfx" style={css("align-self:flex-start;min-height:44px;display:inline-flex;align-items:center;padding:8px 4px;margin:-6px 0 0;background:none;border:none;cursor:pointer;text-align:left;font:700 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:" + (dark ? '#FFE3A6' : '#2B3AA8') + ";text-decoration:underline")}>Add the date this happened to see your actual deadline</button>
     );
   };
+  // FIND-06 (docs/audit-2026-08-29.md) — onboarding's "Skip to dashboard" leaves
+  // stateSel/issue unset, so pickDeadlineFactAcross has nothing to key off and every
+  // Home mode rendered NO Deadline Watch card and no indication anything was
+  // missing — silently dropping the app's most time-critical widget for exactly the
+  // hurried user that shortcut targets. Rendered in the very slot the real Deadline
+  // Watch card would occupy, ONLY when state or issue is actually unset — a fully
+  // set-up case where the fact lookup legitimately comes back empty (e.g.
+  // deadlineKeywordsFor returning [] for the document/general issues) is a real "no
+  // applicable deadline concept here," not a missing input, so this must not fire then.
+  const MissingDeadlineCTA = ({ dark }) => (
+    <button onClick={openEditFlow} className="surfacefx" style={css((dark
+      ? "border:2px solid rgba(255,255,255,.4);background:rgba(255,255,255,.14);color:#fff"
+      : "border:2px solid #14181F;background:#F0EDE5;color:#14181F") + ";text-align:left;padding:14px 16px;border-radius:12px;cursor:pointer;display:flex;flex-direction:column;gap:4px")}>
+      <span style={css("font:700 12px 'IBM Plex Mono',monospace;letter-spacing:.05em;display:inline-flex;align-items:center;gap:6px;color:" + (dark ? '#DDE2FF' : '#14181F'))}><Icon name="deadline-clock" size={13} /> DEADLINE WATCH</span>
+      <span style={css("font:700 16px/1.3 'Atkinson Hyperlegible',sans-serif")}>Add your state to see your filing deadline</span>
+      <span style={css("font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:" + (dark ? '#DDE2FF' : '#3A4150'))}>Filing deadlines are set by your state and your issue — add both to find out how much time you have.</span>
+    </button>
+  );
 
   // G2/G3 (docs/flsa-process-gap.md) — the app routed wage users to WHD as free/first
   // without ever describing the OTHER path (a private §216(b) lawsuit), that it can
@@ -2971,7 +2989,7 @@ function App(){
               </button>
               <AddDeadlineDatePrompt dark={false} dl={dl} />
             </>
-          ) : null;
+          ) : (!stateSel || !issue) ? <MissingDeadlineCTA dark={false} /> : null;
         })()}
         <DocDeadlineWatch dark={false} />
         <OshaWatch dark={false} />
@@ -3160,7 +3178,7 @@ function App(){
             </button>
             <AddDeadlineDatePrompt dark={true} dl={dl} />
           </>
-        ) : null;
+        ) : (!stateSel || !issue) ? <MissingDeadlineCTA dark={true} /> : null;
       })()}
       <DocDeadlineWatch dark={true} />
       <OshaWatch dark={true} />
@@ -3255,7 +3273,7 @@ function App(){
             </button>
             <AddDeadlineDatePrompt dark={false} dl={dl} />
           </>
-        ) : null;
+        ) : (!stateSel || !issue) ? <MissingDeadlineCTA dark={false} /> : null;
       })()}
       <DocDeadlineWatch dark={false} />
       <OshaWatch dark={false} />
