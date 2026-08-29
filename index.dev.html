@@ -1333,6 +1333,70 @@ function isStepDone(cfg, idx, done, ctx){
   return !!done[id] || stepAutoDone(id, ctx);
 }
 
+// State wage-remedy facts (`remedies.*`) beyond the federal `remedies.liquidatedDamages`
+// this app already reads unconditionally for every wage claim. Keyed by TOPIC NAME, not
+// by state — so a future state's analogous fact (MA/NY/WA/OR/NM are expected to add
+// these same two topics) gets the identical safe framing automatically, with no
+// per-state branching anywhere in the app:
+//   - remedies.trebleDamages: a GENERAL unpaid-wages civil remedy. Some states (like
+//     Arizona) have no state overtime statute, so an overtime-only shortfall is
+//     ordinarily a federal FLSA claim, not this state claim — this only ever applies
+//     to hours that were paid nothing at all (bd.unpaidRegHrs), never to an overtime
+//     premium differential alone. It is also typically DISCRETIONARY ("may recover"),
+//     never presented as an automatic multiplier.
+//   - remedies.minimumWageDamages: specific to pay that actually fell below the
+//     state's own minimum wage. Only surfaced when the user's own logged rate is
+//     demonstrably below that floor (never inferred from "some hours were unpaid"
+//     alone) — a state's own facts may still mark it MANDATORY language, so unlike
+//     trebleDamages it is not hedged with "may"/"at a court's discretion".
+// These are two distinct causes of action for the same shortfall, not cumulative —
+// when both are applicable the caller must present them as alternative theories
+// (see wageRemedyDashboardNote / wageRemedyLetterSentence), never add them together
+// or let either read as a promised outcome.
+function applicableWageRemedies(stFacts, bd, rateNum, mwFact){
+  const out = [];
+  const hasUnpaidWagesClaim = !!(bd && bd.unpaidRegHrs > 0);
+  if (!hasUnpaidWagesClaim) return out;
+  const treble = factByTopic(stFacts, 'remedies.trebleDamages');
+  if (treble) out.push({ fact: treble, discretionary: true });
+  const minWage = Number(mwFact && mwFact.value);
+  const belowMinimumWage = !!(rateNum > 0 && minWage > 0 && rateNum < minWage);
+  if (belowMinimumWage) {
+    const mwDamages = factByTopic(stFacts, 'remedies.minimumWageDamages');
+    if (mwDamages) out.push({ fact: mwDamages, discretionary: false });
+  }
+  return out;
+}
+// Short, honestly-hedged dashboard/card copy for applicableWageRemedies() — third
+// person, alongside the existing federal figure, never folded into it.
+function wageRemedyDashboardNote(stateSel, remedies){
+  if (!remedies || !remedies.length) return null;
+  const st = stateSel || 'Your state';
+  if (remedies.length > 1) {
+    const parts = remedies.map(r => (r.discretionary ? 'discretionary' : 'mandatory') + ' damages under ' + r.fact.citation);
+    return st + " law may provide additional damages here through more than one legal theory — for example " + parts.join(', or ') + ". Which theory fits your facts, and whether they can be combined, is a question for an attorney.";
+  }
+  const r = remedies[0];
+  return r.discretionary
+    ? st + ' law (' + r.fact.citation + ') may also allow a court, at its discretion, to award additional damages on unpaid wages beyond the figure above.'
+    : 'Because the pay rate on file is below ' + st + "'s minimum wage, " + st + ' law (' + r.fact.citation + ') requires an additional mandatory amount on top of the unpaid balance.';
+}
+// First-person sentence appended to the wage-demand letter (real leverage, sent to
+// the employer) for applicableWageRemedies() — only when the claim shape (and, for
+// the minimum-wage fact, the logged rate) actually triggers it.
+function wageRemedyLetterSentence(stateSel, remedies){
+  if (!remedies || !remedies.length) return '';
+  const st = stateSel || 'State';
+  if (remedies.length > 1) {
+    const parts = remedies.map(r => (r.discretionary ? 'discretionary' : 'mandatory') + ' damages under ' + r.fact.citation);
+    return ' I also note that ' + st + ' law may provide additional damages here — for example ' + parts.join(', or ') + '.';
+  }
+  const r = remedies[0];
+  return r.discretionary
+    ? ' I also note that ' + st + ' law (' + r.fact.citation + ') allows a court, at its discretion, to award additional damages on unpaid wages in a civil action.'
+    : ' I also note that because the pay rate reflected here is below ' + st + "'s minimum wage, " + st + ' law (' + r.fact.citation + ') requires payment of the unpaid balance plus an additional mandatory amount.';
+}
+
 // Generate a self-send letter from the user's real inputs (no fabricated persona).
 function buildLetter(ctx){
   const name = (ctx.youName || '').trim() || '[Your name]';
@@ -1436,6 +1500,12 @@ function buildLetter(ctx){
     // leverage behind the request, not just an internal ask with a self-imposed deadline.
     const liqCite = cite(fed, 'remedies.liquidatedDamages', '29 U.S.C. § 216(b)');
     const liqLine = ' Please note that a private lawsuit under the FLSA (' + liqCite + ') can recover these wages plus an equal amount in liquidated damages, plus attorney\'s fees and costs — I would prefer to resolve this directly with you first.';
+    // State remedies.* facts (see applicableWageRemedies) — real leverage in a letter
+    // sent to the employer, but only cited when this claim's shape actually triggers
+    // them (never for an overtime-only shortfall a state has no overtime statute for)
+    // and always worded to match the underlying statute's discretion standard.
+    const stRemedies = applicableWageRemedies(st, bd, ctx.rateNum, factByTopic(st, 'minimumWage.hourly'));
+    const stRemedyLine = wageRemedyLetterSentence(ctx.stateSel, stRemedies);
     // G4 — same retaliation protection as the classification-request letter above.
     const retalCite = cite(fed, 'retaliation.flsa', '29 U.S.C. § 215(a)(3)');
     const retalLine = ' Federal law (' + retalCite + ') prohibits retaliation against me for making this request.';
@@ -1443,8 +1513,8 @@ function buildLetter(ctx){
     const body = date + '\n\n' + emp + '\nAttn: Payroll / Human Resources\n\nRe: ' + subject + '\n\nTo whom it may concern:\n\n' +
       'I am writing to request payment of wages I earned and was not paid correctly. ' + claimLine + '\n\n' +
       legalBasisLine + '\n\n' +
-      amountLine + ' I request payment within 14 days of the date of this letter.' + liqLine + retalLine + ' Please contact me to arrange payment.\n\nSincerely,\n' + name;
-    return { title: 'Wage demand letter', subject, body, usesStateLaw: hasRealStateOT };
+      amountLine + ' I request payment within 14 days of the date of this letter.' + liqLine + stRemedyLine + retalLine + ' Please contact me to arrange payment.\n\nSincerely,\n' + name;
+    return { title: 'Wage demand letter', subject, body, usesStateLaw: hasRealStateOT || stRemedies.length > 0 };
   }
 
   if (kind === 'complaint') {
@@ -2468,15 +2538,28 @@ function App(){
   const WageRecoverPanel = () => {
     if (cfg.key !== 'wage') return null;
     const fedF = (federal && federal.facts) || [];
+    const stF = (stateData && stateData.facts) || [];
     const enf = factByTopic(fedF, 'enforcement.paths');
     const liq = factByTopic(fedF, 'remedies.liquidatedDamages');
     const fees = factByTopic(fedF, 'remedies.attorneysFees');
     const src = f => { const u = f && safeUrl(f.sourceUrl); return u ? <a href={u} target="_blank" rel="noopener noreferrer" className="hoverfx" aria-label={'Official source for ' + (f.citation || f.topic)} style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null; };
+    // Beyond the federal §216(b) doubling above, a STATE may add its own wage
+    // remedy — but only ever the one(s) this claim's shape (and, for a
+    // minimum-wage-specific fact, the logged rate) actually triggers; see
+    // applicableWageRemedies. Never adds to the dollar figure shown elsewhere,
+    // and carries the same (DRAFT) / pending-review treatment as every other
+    // state-sourced fact in the app.
+    const stRemedies = applicableWageRemedies(stF, owedBreakdown, rateNum, factByTopic(stF, 'minimumWage.hourly'));
+    const stRemedyNote = wageRemedyDashboardNote(stateSel, stRemedies);
+    const stRev = !!(stateData && stateData.reviewed === true);
     return (
       <div style={css("padding:18px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF;display:flex;flex-direction:column;gap:10px")}>
         <p style={css("margin:0;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>How to actually recover this</p>
         <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}><strong>File a free WHD complaint</strong> with the Department of Labor's Wage and Hour Division — confidential, no cost, but as of 2025 it recovers back wages only (no liquidated damages administratively). {src(enf)}</p>
         <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}><strong>Or file a private lawsuit</strong> — it can recover back wages plus an equal amount in liquidated damages (about double), plus your attorney's fees and costs, which is why many wage lawyers take these cases on contingency. {src(liq) || src(fees)}</p>
+        {stRemedyNote &&
+          <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}><strong>{stateSel || 'Your state'} may add more{stRev ? '' : ' (DRAFT — pending attorney review)'}:</strong> {stRemedyNote} {stRemedies.map(r => src(r.fact))}</p>
+        }
         <p style={css("margin:0;padding:10px 12px;border-radius:0 8px 8px 0;background:#FFE7EC;border:none;border-left:4px solid #B3264F;font:700 14px/1.5 'Atkinson Hyperlegible',sans-serif;color:#5A1330;display:flex;align-items:flex-start;gap:8px")}><Icon name="alert" size={18} style={{ flex: 'none', marginTop: '2px' }} /><span>Accepting back pay under WHD supervision — or a case the Secretary of Labor already sued over — can waive your right to sue privately for those same wages.</span></p>
         <p style={css("margin:0;font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>29 U.S.C. § 216(b), (c) · this is general information, not a recommendation of which path to take — talk to an employment attorney before choosing.</p>
       </div>
@@ -3132,6 +3215,16 @@ function App(){
               {K === 'wage' && owedEstimate > 0 &&
                 <p style={css("margin:8px 0 0;font:700 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#6B4B00")}>Back wages only — actual recovery may be up to double, plus attorney's fees, if you sue.</p>
               }
+              {/* State remedies.* facts beyond the federal figure above — only the
+                  ones this claim's shape (and, for the minimum-wage-specific fact,
+                  the logged rate) actually triggers; see applicableWageRemedies.
+                  Never folded into bigLine's dollar figure. */}
+              {K === 'wage' && owedEstimate > 0 && (() => {
+                const stRemedies = applicableWageRemedies((stateData && stateData.facts) || [], owedBreakdown, rateNum, factByTopic((stateData && stateData.facts) || [], 'minimumWage.hourly'));
+                const note = wageRemedyDashboardNote(stateSel, stRemedies);
+                const stRev = !!(stateData && stateData.reviewed === true);
+                return note ? <p style={css("margin:6px 0 0;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#6B4B00")}>{note}{stRev ? '' : ' (DRAFT — pending attorney review)'}</p> : null;
+              })()}
             </div>
             <button onClick={() => {
               setDone(p => Object.assign({}, p, { [stepKey(cfg, currentStepIdx)]: true }));
