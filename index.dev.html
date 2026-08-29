@@ -492,6 +492,32 @@ function css(str){
   return out;
 }
 
+/* Shared style for every <input type="date"> / <input type="time"> in the app.
+   Single source of truth so the 9 near-duplicate inline styles can't drift
+   (FIND-15) — and so a fix like this one only has to be made once.
+   iOS Safari renders these as native controls with an intrinsic minimum width
+   that plain `width:100%` cannot shrink below, so on a real iPhone they can
+   render wider than their card and spill past its border even though a
+   headless-Chromium screenshot shows zero overflow. `-webkit-appearance:none`
+   (+ `appearance:none` for the standard property) drops the native chrome
+   sizing, and `min-width:0` removes the flex/grid item default that would
+   otherwise still let the intrinsic content width win. Screen-specific
+   density (font size / corner radius / an optional cap width) stays a param
+   so this doesn't force every screen's date field to look identical to the
+   others — only the sizing/appearance rules that fix the overflow are shared. */
+function dateTimeInputStyle(opts){
+  opts = opts || {};
+  const radius = opts.radius || 10;
+  const fontSize = opts.fontSize || 16;
+  let str = "width:100%;box-sizing:border-box;min-width:0;min-height:44px;" +
+    "padding:10px 12px;border-radius:" + radius + "px;border:2px solid #14181F;" +
+    "font:400 " + fontSize + "px 'Atkinson Hyperlegible',sans-serif;" +
+    "-webkit-appearance:none;appearance:none;";
+  if (opts.maxWidth) str += "max-width:" + opts.maxWidth + "px;";
+  if (opts.color) str += "color:" + opts.color + ";";
+  return css(str);
+}
+
 /* ── Icon set — monoline 24×24 grid, stroke=currentColor, fill=none ─────────
    Single source of truth for every glyph in the app. Add new geometry to
    ICON_PATHS; render anywhere with <Icon name="..." size={22} />. Decorative
@@ -2620,7 +2646,7 @@ function App(){
               never required — onboarding must stay completable without it. */}
           <div style={css("display:flex;flex-direction:column;gap:6px")}>
             <label htmlFor="onb-event-date" style={css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{eventDateLabelFor(dIssue ? issueCfg(dIssue).key : 'general').toUpperCase() + ' (OPTIONAL)'}</label>
-            <input id="onb-event-date" type="date" value={dProfile.eventDate || ''} max={dateInputValue()} onChange={e => setDProfile(p => Object.assign({}, p, { eventDate:e.target.value }))} style={css("width:100%;max-width:260px;box-sizing:border-box;min-height:44px;padding:10px 12px;border-radius:12px;border:2px solid #14181F;font:400 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
+            <input id="onb-event-date" type="date" value={dProfile.eventDate || ''} max={dateInputValue()} onChange={e => setDProfile(p => Object.assign({}, p, { eventDate:e.target.value }))} style={dateTimeInputStyle({ radius:12, fontSize:17, maxWidth:260, color:'#14181F' })} />
             <span style={css("font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Lets us show your actual filing deadline — a specific date, not just a duration — on your dashboard. Nothing is filed automatically; you can leave this blank and add it later.</span>
           </div>
         </div>
@@ -3640,16 +3666,16 @@ function App(){
                 Start/End time in a 2-col grid so the pair never wraps mid-field. */}
             <div style={css("display:flex;flex-direction:column;gap:6px")}>
               <label htmlFor="log-date" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Date worked</label>
-              <input id="log-date" type="date" value={logDate} max={dateInputValue()} onChange={e => setLogDate(e.target.value)} style={css("width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif")} />
+              <input id="log-date" type="date" value={logDate} max={dateInputValue()} onChange={e => setLogDate(e.target.value)} style={dateTimeInputStyle()} />
             </div>
             <div style={css("display:grid;grid-template-columns:1fr 1fr;gap:10px")}>
               <div style={css("display:flex;flex-direction:column;gap:6px;min-width:0")}>
                 <label htmlFor="log-start" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Start time</label>
-                <input id="log-start" type="time" value={logStartTime} onChange={e => setLogStartTime(e.target.value)} style={css("width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif")} />
+                <input id="log-start" type="time" value={logStartTime} onChange={e => setLogStartTime(e.target.value)} style={dateTimeInputStyle()} />
               </div>
               <div style={css("display:flex;flex-direction:column;gap:6px;min-width:0")}>
                 <label htmlFor="log-end" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>End time</label>
-                <input id="log-end" type="time" value={logEndTime} onChange={e => setLogEndTime(e.target.value)} style={css("width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif")} />
+                <input id="log-end" type="time" value={logEndTime} onChange={e => setLogEndTime(e.target.value)} style={dateTimeInputStyle()} />
               </div>
             </div>
             {computedHours != null ?
@@ -3718,7 +3744,7 @@ function App(){
             </div>
             <div style={css("display:flex;flex-direction:column;gap:6px")}>
               <label htmlFor="log-said-when" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>When</label>
-              <input id="log-said-when" type="date" value={logSaidWhen} max={dateInputValue()} onChange={e => setLogSaidWhen(e.target.value)} style={css("width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif")} />
+              <input id="log-said-when" type="date" value={logSaidWhen} max={dateInputValue()} onChange={e => setLogSaidWhen(e.target.value)} style={dateTimeInputStyle()} />
             </div>
             <div style={css("display:flex;flex-direction:column;gap:6px")}>
               <label htmlFor="log-said-where" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Where / how</label>
@@ -3744,7 +3770,7 @@ function App(){
             </div>
             <div style={css("display:flex;flex-direction:column;gap:6px")}>
               <label htmlFor="log-doc-date" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Document date</label>
-              <input id="log-doc-date" type="date" value={logDocDate} max={dateInputValue()} onChange={e => setLogDocDate(e.target.value)} style={css("width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif")} />
+              <input id="log-doc-date" type="date" value={logDocDate} max={dateInputValue()} onChange={e => setLogDocDate(e.target.value)} style={dateTimeInputStyle()} />
             </div>
             <div style={css("display:flex;flex-direction:column;gap:6px")}>
               <label htmlFor="log-doc-parties" style={css("font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Author / parties</label>
@@ -4159,7 +4185,7 @@ function App(){
       : 'Request sent ' + formatLocalDateStr(rr.dateSent) + ' — mark below whether a response has come in yet.';
     const src = f => { const u = f && safeUrl(f.sourceUrl); return u ? <a href={u} target="_blank" rel="noopener noreferrer" className="hoverfx" style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null; };
     const fieldLabel = css("font:700 13px 'IBM Plex Mono',monospace;color:#14181F;letter-spacing:.04em");
-    const dateInputStyle = css("width:100%;max-width:260px;box-sizing:border-box;min-height:44px;padding:10px 12px;border-radius:12px;border:2px solid #14181F;font:400 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F");
+    const dateInputStyle = dateTimeInputStyle({ radius:12, fontSize:17, maxWidth:260, color:'#14181F' });
     const textareaStyle = css("width:100%;box-sizing:border-box;padding:14px;border-radius:12px;border:2px solid #14181F;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#14181F;resize:vertical");
     return (
     <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
@@ -4261,7 +4287,7 @@ function App(){
       <div style={css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff;display:flex;flex-direction:column;gap:14px")}>
         <div style={css("display:flex;flex-direction:column;gap:6px")}>
           <label htmlFor="ada-date" style={fieldLabel}>DATE</label>
-          <input id="ada-date" type="date" value={adaLogDate} max={dateInputValue()} onChange={e => setAdaLogDate(e.target.value)} style={css("width:100%;max-width:260px;box-sizing:border-box;min-height:44px;padding:10px 12px;border-radius:12px;border:2px solid #14181F;font:400 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
+          <input id="ada-date" type="date" value={adaLogDate} max={dateInputValue()} onChange={e => setAdaLogDate(e.target.value)} style={dateTimeInputStyle({ radius:12, fontSize:17, maxWidth:260, color:'#14181F' })} />
         </div>
         <div style={css("display:flex;flex-direction:column;gap:6px")}>
           <label id="ada-what-label" style={fieldLabel}>WHAT HAPPENED</label>
