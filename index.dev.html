@@ -176,7 +176,7 @@ const CONTENT_BASE = (typeof window !== 'undefined' && window.CONTENT_BASE)
 // SHA-pinned fallback source for the same content/ path, tried once if the primary
 // CONTENT_BASE fetch fails (network error or non-2xx) before surfacing the error state.
 // Bump this SHA as part of routine maintenance so it stays a recent known-good commit.
-const CONTENT_FALLBACK_BASE = 'https://raw.githubusercontent.com/furrball26/USAAssist/a0da2fca9c18a11d64511b22d8f2c72e712eba1f/';
+const CONTENT_FALLBACK_BASE = 'https://raw.githubusercontent.com/furrball26/USAAssist/ccc3e708258b4b6ec8248d134e1f4a79e702bf79/';
 function fetchContentJson(path){
   return fetch(CONTENT_BASE + path)
     .then(r => { if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
