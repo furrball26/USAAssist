@@ -2397,6 +2397,20 @@ function App(){
     setMessages([{ role:'ai', text: issueCfg(issue).chatSeed }]);
     setLetterEdit(null); setLetterType(null); setDocName(''); setDocText(''); setCaseFileDownloaded(false); setExportPath('');
     setWizNode('start'); setWizPath([]);
+    // Case-instance fields nested under profile — same class of data as
+    // entries/done above, just stored on a different piece of state. Left
+    // untouched, a prior case's ADA interactive-process log, records-request
+    // tracker, and damages-estimator figures would silently bleed into the new
+    // case (and into its exported case file). name/employer/payType/rate/
+    // salary/eventDate stay, per the confirm dialog above — those describe the
+    // person/employer, not this particular case. Reset to the same empty
+    // shapes used by the fresh-profile initializer and sanitizeCase (adaLog/
+    // recordsRequest absent so callers' own `Array.isArray(...) ? ... : []`
+    // and `Object.assign({defaults}, ...)` fallbacks apply).
+    setProfile(p => Object.assign({}, p, {
+      adaLog: undefined, recordsRequest: undefined,
+      weeksOut:'', stillUnemployed:'', oopJobSearch:'', oopTherapy:'', oopMedical:'', oopOther:''
+    }));
     setCaseOpened(new Date().toISOString());
   }, [issue]);
 

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-S8on6JZzphOMvB+RT4nWWC4oOyOLmDJmHv4xTSu4nMc='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-v6XT53WOYAWDSRVd/9px2O5+tPpxUMbChwp70jfgIac='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14181F">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232B3AA8'/%3E%3Ctext x='32' y='47' font-size='42' text-anchor='middle' fill='white' font-family='Georgia,serif'%3E%C2%A7%3C/text%3E%3C/svg%3E">
@@ -2264,6 +2264,16 @@ function App() {
     setExportPath("");
     setWizNode("start");
     setWizPath([]);
+    setProfile((p) => Object.assign({}, p, {
+      adaLog: void 0,
+      recordsRequest: void 0,
+      weeksOut: "",
+      stillUnemployed: "",
+      oopJobSearch: "",
+      oopTherapy: "",
+      oopMedical: "",
+      oopOther: ""
+    }));
     setCaseOpened((/* @__PURE__ */ new Date()).toISOString());
   }, [issue]);
   const send = (text) => {
