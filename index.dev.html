@@ -2170,6 +2170,18 @@ function caseTitleForKey(key){
 // only what's issue-relevant — here the same mapping becomes `suggestedFor`,
 // a SUGGESTED-chip hint, never a lock; every row always renders.
 //
+// Group names — Understand / Build / Act, exactly matching Home's phase
+// spine (HOME_PHASES) — were originally "Work out what happened" / "Build
+// your record" / "Take action", written before that spine existed. Once
+// HOME_PHASES shipped (move 1) and Agencies was retitled "Take action" under
+// a "PHASE 4 · ACT" kicker (move 4), the catalogue's own group names became a
+// second, competing vocabulary for the same three ideas — a user had no way
+// to tell "Build your record" here from "Build" on the spine, or "Take
+// action" here from the "Take action" screen, were the same concept. Renamed
+// to read as the same system, not a parallel one; TOOL_CATALOGUE_GROUPS below
+// carries a one-line description of what each phase means, reworded to
+// explain the phase rather than restate the old heading text.
+//
 // The three self-checks (overtime exemption, harassment identifier,
 // discrimination identifier) are a special case, called out where handled
 // in AllTools below: they are not independent screens, they share ONE
@@ -2182,49 +2194,58 @@ function caseTitleForKey(key){
 // the live wizard only when `key` matches the case's actual issue, and
 // otherwise shows an explanation in place, never touching wizNode/wizPath.
 const TOOL_CATALOGUE = [
-  { id:'exempt-check', group:'Work out what happened', label:'Am I exempt from overtime?', icon:'rights',
+  { id:'exempt-check', group:'Understand', label:'Am I exempt from overtime?', icon:'rights',
     desc:"A short Q&A on federal (and your state's) overtime rules for your specific job.",
     suggestedFor:['wage'], action:{ type:'selfcheck', key:'wage' } },
-  { id:'harassment-id', group:'Work out what happened', label:'Is this harassment?', icon:'rights',
+  { id:'harassment-id', group:'Understand', label:'Is this harassment?', icon:'rights',
     desc:'Checks what you describe against the legal standard for a hostile work environment.',
     suggestedFor:['harassment'], action:{ type:'selfcheck', key:'harassment' } },
-  { id:'discrimination-id', group:'Work out what happened', label:'Is this discrimination?', icon:'rights',
+  { id:'discrimination-id', group:'Understand', label:'Is this discrimination?', icon:'rights',
     desc:'Checks what you describe against the legal elements of a discrimination claim.',
     suggestedFor:['discrimination'], action:{ type:'selfcheck', key:'discrimination' } },
-  { id:'doc-review', group:'Work out what happened', label:'Review a document', icon:'document',
+  { id:'doc-review', group:'Understand', label:'Review a document', icon:'document',
     desc:'Scan an offer letter, write-up, severance agreement or other document for notable clauses.',
     suggestedFor:null, action:{ type:'nav', screen:'doc' } },
-  { id:'noncompete', group:'Work out what happened', label:'Is my non-compete enforceable?', icon:'rights',
+  { id:'noncompete', group:'Understand', label:'Is my non-compete enforceable?', icon:'rights',
     desc:'See how your state treats non-compete agreements, with the sourced rule behind it.',
     suggestedFor:['document'], action:{ type:'nav', screen:'noncompete' } },
 
-  { id:'log', group:'Build your record', label:'Log an incident or hours', icon:'log',
+  { id:'log', group:'Build', label:'Log an incident or hours', icon:'log',
     desc:"Keep a dated record of what happened, or the hours and pay you're tracking.",
     suggestedFor:null, action:{ type:'log' } },
-  { id:'strength', group:'Build your record', label:'Understand your case', icon:'rights',
+  { id:'strength', group:'Build', label:'Understand your case', icon:'rights',
     desc:'See how strong your case looks so far, and what would help most next.',
     suggestedFor:null, action:{ type:'nav', screen:'strength' } },
-  { id:'records-request', group:'Build your record', label:'Track my records request', icon:'document',
+  { id:'records-request', group:'Build', label:'Track my records request', icon:'document',
     desc:'Follow through on a personnel/pay-file request — what you sent, what came back.',
     suggestedFor:['termination'], action:{ type:'nav', screen:'recordsRequest' } },
-  { id:'ada-process', group:'Build your record', label:'Track the ADA process', icon:'log',
+  { id:'ada-process', group:'Build', label:'Track the ADA process', icon:'log',
     desc:"Log each back-and-forth if you're requesting a workplace accommodation.",
     suggestedFor:['discrimination'], action:{ type:'nav', screen:'adaProcess' } },
 
-  { id:'letter', group:'Take action', label:'Draft a letter', icon:'pencil',
+  { id:'letter', group:'Act', label:'Draft a letter', icon:'pencil',
     desc:'Generate a letter to your employer — a demand, request, or complaint.',
     suggestedFor:null, action:{ type:'nav', screen:'letter' } },
-  { id:'damages', group:'Take action', label:'Estimate possible damages', icon:'rights',
+  { id:'damages', group:'Act', label:'Estimate possible damages', icon:'rights',
     desc:'Educational, hypothetical figures for what a claim like yours might include.',
     suggestedFor:['termination','harassment','discrimination'], action:{ type:'nav', screen:'damages' } },
-  { id:'agencies', group:'Take action', label:'Where to file a complaint', icon:'building',
+  { id:'agencies', group:'Act', label:'Where to file a complaint', icon:'building',
     desc:'Free government agencies that handle claims like yours, near you.',
     suggestedFor:null, action:{ type:'nav', screen:'agencies' } },
-  { id:'chat', group:'Take action', label:'Ask a question', icon:'sparkle',
+  { id:'chat', group:'Act', label:'Ask a question', icon:'sparkle',
     desc:'Ask the AI assistant about your specific situation.',
     suggestedFor:null, action:{ type:'nav', screen:'chat' } },
 ];
-const TOOL_CATALOGUE_GROUPS = ['Work out what happened', 'Build your record', 'Take action'];
+// Same three phase names as HOME_PHASES ("Set up" is done by the time a case
+// can even reach this screen, so it has no catalogue group of its own) —
+// each with a one-line description of what the phase MEANS, not a restated
+// heading, so "All tools" reads as the spine's own vocabulary rather than a
+// second taxonomy next to it.
+const TOOL_CATALOGUE_GROUPS = [
+  { name:'Understand', desc:"Make sense of what happened and how the law treats it." },
+  { name:'Build', desc:'Turn what happened into a dated record you can point to.' },
+  { name:'Act', desc:"Use what you've built to reach out, file, or ask for help." },
+];
 
 /* ── App ──────────────────────────────────────────────────────────── */
 
@@ -3724,10 +3745,13 @@ function App(){
         <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Every tool in WorkLaw, not just the ones picked for {cfg.caseTitle.toLowerCase()}. SUGGESTED marks what's most relevant to your case right now.</p>
       </div>
       {TOOL_CATALOGUE_GROUPS.map(group => (
-        <div key={group} style={css("display:flex;flex-direction:column;gap:10px")}>
-          <h2 style={css("margin:0;font:700 18px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{group}</h2>
+        <div key={group.name} style={css("display:flex;flex-direction:column;gap:10px")}>
+          <div>
+            <h2 style={css("margin:0;font:700 18px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{group.name}</h2>
+            <p style={css("margin:2px 0 0;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{group.desc}</p>
+          </div>
           <div style={css("display:flex;flex-direction:column;gap:10px")}>
-            {TOOL_CATALOGUE.filter(t => t.group === group).map(tool => {
+            {TOOL_CATALOGUE.filter(t => t.group === group.name).map(tool => {
               const suggested = isSuggested(tool);
               const isMismatchedSelfCheck = tool.action.type === 'selfcheck' && tool.action.key !== cfg.key;
               const whyOpen = !!allToolsWhyOpen[tool.id];

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-kEEZq7dGfJF37dOyPelM27Df/dHMYP4q3xgfE72bi+Q='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-o+njppzSy9SskJRD5WZ86nP0nAf1KgyLZsBaxOZRFOI='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14181F">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232B3AA8'/%3E%3Ctext x='32' y='47' font-size='42' text-anchor='middle' fill='white' font-family='Georgia,serif'%3E%C2%A7%3C/text%3E%3C/svg%3E">
@@ -2035,7 +2035,7 @@ function caseTitleForKey(key) {
 const TOOL_CATALOGUE = [
   {
     id: "exempt-check",
-    group: "Work out what happened",
+    group: "Understand",
     label: "Am I exempt from overtime?",
     icon: "rights",
     desc: "A short Q&A on federal (and your state's) overtime rules for your specific job.",
@@ -2044,7 +2044,7 @@ const TOOL_CATALOGUE = [
   },
   {
     id: "harassment-id",
-    group: "Work out what happened",
+    group: "Understand",
     label: "Is this harassment?",
     icon: "rights",
     desc: "Checks what you describe against the legal standard for a hostile work environment.",
@@ -2053,7 +2053,7 @@ const TOOL_CATALOGUE = [
   },
   {
     id: "discrimination-id",
-    group: "Work out what happened",
+    group: "Understand",
     label: "Is this discrimination?",
     icon: "rights",
     desc: "Checks what you describe against the legal elements of a discrimination claim.",
@@ -2062,7 +2062,7 @@ const TOOL_CATALOGUE = [
   },
   {
     id: "doc-review",
-    group: "Work out what happened",
+    group: "Understand",
     label: "Review a document",
     icon: "document",
     desc: "Scan an offer letter, write-up, severance agreement or other document for notable clauses.",
@@ -2071,7 +2071,7 @@ const TOOL_CATALOGUE = [
   },
   {
     id: "noncompete",
-    group: "Work out what happened",
+    group: "Understand",
     label: "Is my non-compete enforceable?",
     icon: "rights",
     desc: "See how your state treats non-compete agreements, with the sourced rule behind it.",
@@ -2080,7 +2080,7 @@ const TOOL_CATALOGUE = [
   },
   {
     id: "log",
-    group: "Build your record",
+    group: "Build",
     label: "Log an incident or hours",
     icon: "log",
     desc: "Keep a dated record of what happened, or the hours and pay you're tracking.",
@@ -2089,7 +2089,7 @@ const TOOL_CATALOGUE = [
   },
   {
     id: "strength",
-    group: "Build your record",
+    group: "Build",
     label: "Understand your case",
     icon: "rights",
     desc: "See how strong your case looks so far, and what would help most next.",
@@ -2098,7 +2098,7 @@ const TOOL_CATALOGUE = [
   },
   {
     id: "records-request",
-    group: "Build your record",
+    group: "Build",
     label: "Track my records request",
     icon: "document",
     desc: "Follow through on a personnel/pay-file request \u2014 what you sent, what came back.",
@@ -2107,7 +2107,7 @@ const TOOL_CATALOGUE = [
   },
   {
     id: "ada-process",
-    group: "Build your record",
+    group: "Build",
     label: "Track the ADA process",
     icon: "log",
     desc: "Log each back-and-forth if you're requesting a workplace accommodation.",
@@ -2116,7 +2116,7 @@ const TOOL_CATALOGUE = [
   },
   {
     id: "letter",
-    group: "Take action",
+    group: "Act",
     label: "Draft a letter",
     icon: "pencil",
     desc: "Generate a letter to your employer \u2014 a demand, request, or complaint.",
@@ -2125,7 +2125,7 @@ const TOOL_CATALOGUE = [
   },
   {
     id: "damages",
-    group: "Take action",
+    group: "Act",
     label: "Estimate possible damages",
     icon: "rights",
     desc: "Educational, hypothetical figures for what a claim like yours might include.",
@@ -2134,7 +2134,7 @@ const TOOL_CATALOGUE = [
   },
   {
     id: "agencies",
-    group: "Take action",
+    group: "Act",
     label: "Where to file a complaint",
     icon: "building",
     desc: "Free government agencies that handle claims like yours, near you.",
@@ -2143,7 +2143,7 @@ const TOOL_CATALOGUE = [
   },
   {
     id: "chat",
-    group: "Take action",
+    group: "Act",
     label: "Ask a question",
     icon: "sparkle",
     desc: "Ask the AI assistant about your specific situation.",
@@ -2151,7 +2151,11 @@ const TOOL_CATALOGUE = [
     action: { type: "nav", screen: "chat" }
   }
 ];
-const TOOL_CATALOGUE_GROUPS = ["Work out what happened", "Build your record", "Take action"];
+const TOOL_CATALOGUE_GROUPS = [
+  { name: "Understand", desc: "Make sense of what happened and how the law treats it." },
+  { name: "Build", desc: "Turn what happened into a dated record you can point to." },
+  { name: "Act", desc: "Use what you've built to reach out, file, or ask for help." }
+];
 function App() {
   const [saved] = useState(loadCase);
   const [onboarded, setOnboarded] = useState(() => !!saved.onboarded);
@@ -2791,7 +2795,7 @@ function App() {
         setAllToolsWhyOpen((p) => Object.assign({}, p, { [tool.id]: !p[tool.id] }));
       }
     };
-    return /* @__PURE__ */ React.createElement("div", { style: css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:20px") }, /* @__PURE__ */ React.createElement("button", { onClick: nav("home"), style: css("align-self:flex-start;display:flex;align-items:center;gap:4px;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer") }, /* @__PURE__ */ React.createElement(Icon, { name: "back", size: 18 }), " Dashboard"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", { style: css("margin:0 0 6px;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "All tools"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Every tool in WorkLaw, not just the ones picked for ", cfg.caseTitle.toLowerCase(), ". SUGGESTED marks what's most relevant to your case right now.")), TOOL_CATALOGUE_GROUPS.map((group) => /* @__PURE__ */ React.createElement("div", { key: group, style: css("display:flex;flex-direction:column;gap:10px") }, /* @__PURE__ */ React.createElement("h2", { style: css("margin:0;font:700 18px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, group), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:10px") }, TOOL_CATALOGUE.filter((t) => t.group === group).map((tool) => {
+    return /* @__PURE__ */ React.createElement("div", { style: css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:20px") }, /* @__PURE__ */ React.createElement("button", { onClick: nav("home"), style: css("align-self:flex-start;display:flex;align-items:center;gap:4px;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer") }, /* @__PURE__ */ React.createElement(Icon, { name: "back", size: 18 }), " Dashboard"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", { style: css("margin:0 0 6px;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "All tools"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Every tool in WorkLaw, not just the ones picked for ", cfg.caseTitle.toLowerCase(), ". SUGGESTED marks what's most relevant to your case right now.")), TOOL_CATALOGUE_GROUPS.map((group) => /* @__PURE__ */ React.createElement("div", { key: group.name, style: css("display:flex;flex-direction:column;gap:10px") }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { style: css("margin:0;font:700 18px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, group.name), /* @__PURE__ */ React.createElement("p", { style: css("margin:2px 0 0;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, group.desc)), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:10px") }, TOOL_CATALOGUE.filter((t) => t.group === group.name).map((tool) => {
       const suggested = isSuggested(tool);
       const isMismatchedSelfCheck = tool.action.type === "selfcheck" && tool.action.key !== cfg.key;
       const whyOpen = !!allToolsWhyOpen[tool.id];
