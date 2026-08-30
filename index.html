@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-YG8Zlk4F9pPSGyvjd0jMv6YufRWPkgvhKbB+OlERbeM='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-reNLkfpftV4ty5si38T0YLYo4Gq+LzWItizwCpAEoTw='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14181F">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232B3AA8'/%3E%3Ctext x='32' y='47' font-size='42' text-anchor='middle' fill='white' font-family='Georgia,serif'%3E%C2%A7%3C/text%3E%3C/svg%3E">
@@ -2028,6 +2028,134 @@ function defaultLogKindForIssueKey(key) {
   if (key === "document") return "Records";
   return "Statement";
 }
+function caseTitleForKey(key) {
+  const found = Object.values(ISSUES).find((i) => i.key === key);
+  return found ? found.caseTitle : "your workplace case";
+}
+const TOOL_CATALOGUE = [
+  {
+    id: "exempt-check",
+    group: "Understand",
+    label: "Am I exempt from overtime?",
+    icon: "rights",
+    desc: "A short Q&A on federal (and your state's) overtime rules for your specific job.",
+    suggestedFor: ["wage"],
+    action: { type: "selfcheck", key: "wage" }
+  },
+  {
+    id: "harassment-id",
+    group: "Understand",
+    label: "Is this harassment?",
+    icon: "rights",
+    desc: "Checks what you describe against the legal standard for a hostile work environment.",
+    suggestedFor: ["harassment"],
+    action: { type: "selfcheck", key: "harassment" }
+  },
+  {
+    id: "discrimination-id",
+    group: "Understand",
+    label: "Is this discrimination?",
+    icon: "rights",
+    desc: "Checks what you describe against the legal elements of a discrimination claim.",
+    suggestedFor: ["discrimination"],
+    action: { type: "selfcheck", key: "discrimination" }
+  },
+  {
+    id: "doc-review",
+    group: "Understand",
+    label: "Review a document",
+    icon: "document",
+    desc: "Scan an offer letter, write-up, severance agreement or other document for notable clauses.",
+    suggestedFor: null,
+    action: { type: "nav", screen: "doc" }
+  },
+  {
+    id: "noncompete",
+    group: "Understand",
+    label: "Is my non-compete enforceable?",
+    icon: "rights",
+    desc: "See how your state treats non-compete agreements, with the sourced rule behind it.",
+    suggestedFor: ["document"],
+    action: { type: "nav", screen: "noncompete" }
+  },
+  {
+    id: "log",
+    group: "Build",
+    label: "Log an incident or hours",
+    icon: "log",
+    desc: "Keep a dated record of what happened, or the hours and pay you're tracking.",
+    suggestedFor: null,
+    action: { type: "log" }
+  },
+  {
+    id: "strength",
+    group: "Build",
+    label: "Understand your case",
+    icon: "rights",
+    desc: "See how strong your case looks so far, and what would help most next.",
+    suggestedFor: null,
+    action: { type: "nav", screen: "strength" }
+  },
+  {
+    id: "records-request",
+    group: "Build",
+    label: "Track my records request",
+    icon: "document",
+    desc: "Follow through on a personnel/pay-file request \u2014 what you sent, what came back.",
+    suggestedFor: ["termination"],
+    action: { type: "nav", screen: "recordsRequest" }
+  },
+  {
+    id: "ada-process",
+    group: "Build",
+    label: "Track the ADA process",
+    icon: "log",
+    desc: "Log each back-and-forth if you're requesting a workplace accommodation.",
+    suggestedFor: ["discrimination"],
+    action: { type: "nav", screen: "adaProcess" }
+  },
+  {
+    id: "letter",
+    group: "Act",
+    label: "Draft a letter",
+    icon: "pencil",
+    desc: "Generate a letter to your employer \u2014 a demand, request, or complaint.",
+    suggestedFor: null,
+    action: { type: "nav", screen: "letter" }
+  },
+  {
+    id: "damages",
+    group: "Act",
+    label: "Estimate possible damages",
+    icon: "rights",
+    desc: "Educational, hypothetical figures for what a claim like yours might include.",
+    suggestedFor: ["termination", "harassment", "discrimination"],
+    action: { type: "nav", screen: "damages" }
+  },
+  {
+    id: "agencies",
+    group: "Act",
+    label: "Where to file a complaint",
+    icon: "building",
+    desc: "Free government agencies that handle claims like yours, near you.",
+    suggestedFor: null,
+    action: { type: "nav", screen: "agencies" }
+  },
+  {
+    id: "chat",
+    group: "Act",
+    label: "Ask a question",
+    icon: "sparkle",
+    desc: "Ask the AI assistant about your specific situation.",
+    suggestedFor: null,
+    action: { type: "nav", screen: "chat" }
+  }
+];
+const TOOL_CATALOGUE_GROUPS = [
+  { name: "Understand", desc: "Make sense of what happened and how the law treats it." },
+  { name: "Build", desc: "Turn what happened into a dated record you can point to." },
+  { name: "Act", desc: "Use what you've built to reach out, file, or ask for help." }
+];
 function App() {
   const [saved] = useState(loadCase);
   const [onboarded, setOnboarded] = useState(() => !!saved.onboarded);
@@ -2088,6 +2216,7 @@ function App() {
   const [exportPath, setExportPath] = useState("");
   const [wizNode, setWizNode] = useState(() => saved.wizNode || "start");
   const [wizPath, setWizPath] = useState(() => saved.wizPath || []);
+  const [allToolsWhyOpen, setAllToolsWhyOpen] = useState({});
   const [messages, setMessages] = useState(
     () => saved.messages && saved.messages.length ? saved.messages : [{ role: "ai", text: issueCfg(saved.issue).chatSeed }]
   );
@@ -2584,7 +2713,7 @@ function App() {
     }))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { style: css("margin:0 0 12px;font:700 20px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "More tools"), /* @__PURE__ */ React.createElement("div", { style: css("display:grid;grid-template-columns:1fr 1fr;gap:10px") }, cfg.key === "wage" && /* @__PURE__ */ React.createElement("button", { onClick: nav("wizard"), className: "surfacefx", style: css("text-align:left;padding:14px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:44px") }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Icon, { name: "rights", size: 20 })), /* @__PURE__ */ React.createElement("span", { style: css("font:700 15px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Am I exempt from overtime?")), cfg.key === "harassment" && /* @__PURE__ */ React.createElement("button", { onClick: nav("wizard"), className: "surfacefx", style: css("text-align:left;padding:14px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:44px") }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Icon, { name: "rights", size: 20 })), /* @__PURE__ */ React.createElement("span", { style: css("font:700 15px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Is this harassment?")), cfg.key === "discrimination" && /* @__PURE__ */ React.createElement("button", { onClick: nav("wizard"), className: "surfacefx", style: css("text-align:left;padding:14px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:44px") }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Icon, { name: "rights", size: 20 })), /* @__PURE__ */ React.createElement("span", { style: css("font:700 15px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Is this discrimination?")), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       setLogKind(defaultLogKindForIssueKey(cfg.key));
       setScreen("log");
-    }, className: "surfacefx", style: css("text-align:left;padding:14px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:44px") }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Icon, { name: "log", size: 20 })), /* @__PURE__ */ React.createElement("span", { style: css("font:700 15px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Log an incident or hours")), /* @__PURE__ */ React.createElement("button", { onClick: nav("doc"), className: "surfacefx", style: css("text-align:left;padding:14px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:44px") }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Icon, { name: "document", size: 20 })), /* @__PURE__ */ React.createElement("span", { style: css("font:700 15px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Review a document")), cfg.key === "document" && /* @__PURE__ */ React.createElement("button", { onClick: nav("noncompete"), className: "surfacefx", style: css("text-align:left;padding:14px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:44px") }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Icon, { name: "rights", size: 20 })), /* @__PURE__ */ React.createElement("span", { style: css("font:700 15px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Is my non-compete enforceable?")), (cfg.key === "termination" || cfg.key === "harassment" || cfg.key === "discrimination") && /* @__PURE__ */ React.createElement("button", { onClick: nav("damages"), className: "surfacefx", style: css("text-align:left;padding:14px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:44px") }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Icon, { name: "rights", size: 20 })), /* @__PURE__ */ React.createElement("span", { style: css("font:700 15px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Estimate possible damages")), cfg.key === "termination" && /* @__PURE__ */ React.createElement("button", { onClick: nav("recordsRequest"), className: "surfacefx", style: css("text-align:left;padding:14px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:44px") }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Icon, { name: "document", size: 20 })), /* @__PURE__ */ React.createElement("span", { style: css("font:700 15px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Track my records request")), cfg.key === "discrimination" && /* @__PURE__ */ React.createElement("button", { onClick: nav("adaProcess"), className: "surfacefx", style: css("text-align:left;padding:14px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:44px") }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Icon, { name: "log", size: 20 })), /* @__PURE__ */ React.createElement("span", { style: css("font:700 15px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Track the ADA process \u2014 if you're requesting an accommodation")), cfg.key !== "wage" && /* @__PURE__ */ React.createElement("button", { onClick: nav("letter"), className: "surfacefx", style: css("text-align:left;padding:14px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:44px") }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Icon, { name: "pencil", size: 20 })), /* @__PURE__ */ React.createElement("span", { style: css("font:700 15px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Draft a letter")))), /* @__PURE__ */ React.createElement("button", { onClick: nav("agencies"), className: "hoverfx", style: css("text-align:left;padding:18px 20px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF;cursor:pointer;display:flex;flex-direction:column;gap:6px") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 18px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, cfg.key === "document" ? "Ready for next steps?" : "Ready to file a complaint?"), /* @__PURE__ */ React.createElement("span", { style: css("font:400 16px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, cfg.key === "document" ? "See where to get help near " + countyShort + ". Your case file exports in one tap." : "See the free government agencies that handle this near " + countyShort + ". Your case file exports in one tap.")), /* @__PURE__ */ React.createElement("div", { style: css("padding:18px;border-radius:16px;background:#F0EDE5;border:2px solid #14181F") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 6px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Information, not advice"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "Everything here explains the law that applies in ", locationLabel, ". It is not legal advice and WorkLaw is not your attorney.")));
+    }, className: "surfacefx", style: css("text-align:left;padding:14px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:44px") }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Icon, { name: "log", size: 20 })), /* @__PURE__ */ React.createElement("span", { style: css("font:700 15px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Log an incident or hours")), /* @__PURE__ */ React.createElement("button", { onClick: nav("doc"), className: "surfacefx", style: css("text-align:left;padding:14px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:44px") }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Icon, { name: "document", size: 20 })), /* @__PURE__ */ React.createElement("span", { style: css("font:700 15px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Review a document")), cfg.key === "document" && /* @__PURE__ */ React.createElement("button", { onClick: nav("noncompete"), className: "surfacefx", style: css("text-align:left;padding:14px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:44px") }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Icon, { name: "rights", size: 20 })), /* @__PURE__ */ React.createElement("span", { style: css("font:700 15px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Is my non-compete enforceable?")), (cfg.key === "termination" || cfg.key === "harassment" || cfg.key === "discrimination") && /* @__PURE__ */ React.createElement("button", { onClick: nav("damages"), className: "surfacefx", style: css("text-align:left;padding:14px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:44px") }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Icon, { name: "rights", size: 20 })), /* @__PURE__ */ React.createElement("span", { style: css("font:700 15px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Estimate possible damages")), cfg.key === "termination" && /* @__PURE__ */ React.createElement("button", { onClick: nav("recordsRequest"), className: "surfacefx", style: css("text-align:left;padding:14px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:44px") }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Icon, { name: "document", size: 20 })), /* @__PURE__ */ React.createElement("span", { style: css("font:700 15px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Track my records request")), cfg.key === "discrimination" && /* @__PURE__ */ React.createElement("button", { onClick: nav("adaProcess"), className: "surfacefx", style: css("text-align:left;padding:14px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:44px") }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Icon, { name: "log", size: 20 })), /* @__PURE__ */ React.createElement("span", { style: css("font:700 15px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Track the ADA process \u2014 if you're requesting an accommodation")), cfg.key !== "wage" && /* @__PURE__ */ React.createElement("button", { onClick: nav("letter"), className: "surfacefx", style: css("text-align:left;padding:14px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:44px") }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Icon, { name: "pencil", size: 20 })), /* @__PURE__ */ React.createElement("span", { style: css("font:700 15px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Draft a letter"))), /* @__PURE__ */ React.createElement("button", { onClick: nav("allTools"), className: "hoverfx", style: css("margin-top:10px;width:100%;box-sizing:border-box;text-align:left;padding:14px 16px;border-radius:14px;border:2px solid #14181F;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "See all ", TOOL_CATALOGUE.length, " tools"), /* @__PURE__ */ React.createElement(Icon, { name: "chevron-forward", size: 16, style: { color: "#14181F" } }))), /* @__PURE__ */ React.createElement("button", { onClick: nav("agencies"), className: "hoverfx", style: css("text-align:left;padding:18px 20px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF;cursor:pointer;display:flex;flex-direction:column;gap:6px") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 18px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, cfg.key === "document" ? "Ready for next steps?" : "Ready to file a complaint?"), /* @__PURE__ */ React.createElement("span", { style: css("font:400 16px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, cfg.key === "document" ? "See where to get help near " + countyShort + ". Your case file exports in one tap." : "See the free government agencies that handle this near " + countyShort + ". Your case file exports in one tap.")), /* @__PURE__ */ React.createElement("div", { style: css("padding:18px;border-radius:16px;background:#F0EDE5;border:2px solid #14181F") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 6px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Information, not advice"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "Everything here explains the law that applies in ", locationLabel, ". It is not legal advice and WorkLaw is not your attorney.")));
   };
   const HomeScreen = () => /* @__PURE__ */ React.createElement(HomeStandard, null);
   const Chat = () => /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;min-height:100%") }, /* @__PURE__ */ React.createElement("div", { style: css("padding:6px 22px 14px;border-bottom:2px solid rgba(20,24,31,.1)") }, /* @__PURE__ */ React.createElement("h1", { style: css("margin:0 0 4px;font:700 26px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Ask about your rights"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "General information for ", stateSel || "your state", " \u2014 not legal advice. Responses in this preview are sample answers.")), /* @__PURE__ */ React.createElement("div", { role: "log", "aria-live": "polite", "aria-label": "Conversation", style: css("flex:1;padding:18px 22px;display:flex;flex-direction:column;gap:14px") }, messages.map((m, idx) => {
@@ -2657,6 +2786,43 @@ function App() {
       setWizNode("start");
       setWizPath([]);
     }, style: css("padding:16px;border-radius:16px;border:2px solid #14181F;background:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer") }, "Run the check again"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, wcfg.doneDisclaimer))));
+  };
+  const AllTools = () => {
+    const isSuggested = (tool) => Array.isArray(tool.suggestedFor) && tool.suggestedFor.indexOf(cfg.key) >= 0;
+    const runTool = (tool) => {
+      if (tool.action.type === "nav") {
+        setScreen(tool.action.screen);
+        return;
+      }
+      if (tool.action.type === "log") {
+        setLogKind(defaultLogKindForIssueKey(cfg.key));
+        setScreen("log");
+        return;
+      }
+      if (tool.action.type === "selfcheck") {
+        if (tool.action.key === cfg.key) {
+          setScreen("wizard");
+          return;
+        }
+        setAllToolsWhyOpen((p) => Object.assign({}, p, { [tool.id]: !p[tool.id] }));
+      }
+    };
+    return /* @__PURE__ */ React.createElement("div", { style: css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:20px") }, /* @__PURE__ */ React.createElement("button", { onClick: nav("home"), style: css("align-self:flex-start;display:flex;align-items:center;gap:4px;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer") }, /* @__PURE__ */ React.createElement(Icon, { name: "back", size: 18 }), " Dashboard"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", { style: css("margin:0 0 6px;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "All tools"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Every tool in WorkLaw, not just the ones picked for ", cfg.caseTitle.toLowerCase(), ". SUGGESTED marks what's most relevant to your case right now.")), TOOL_CATALOGUE_GROUPS.map((group) => /* @__PURE__ */ React.createElement("div", { key: group.name, style: css("display:flex;flex-direction:column;gap:10px") }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { style: css("margin:0;font:700 18px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, group.name), /* @__PURE__ */ React.createElement("p", { style: css("margin:2px 0 0;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, group.desc)), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:10px") }, TOOL_CATALOGUE.filter((t) => t.group === group.name).map((tool) => {
+      const suggested = isSuggested(tool);
+      const isMismatchedSelfCheck = tool.action.type === "selfcheck" && tool.action.key !== cfg.key;
+      const whyOpen = !!allToolsWhyOpen[tool.id];
+      return /* @__PURE__ */ React.createElement("div", { key: tool.id }, /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: () => runTool(tool),
+          "aria-expanded": isMismatchedSelfCheck ? whyOpen : void 0,
+          className: "surfacefx",
+          style: css("width:100%;box-sizing:border-box;text-align:left;padding:16px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;align-items:flex-start;gap:12px;min-height:44px")
+        },
+        /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: css("flex:none;margin-top:2px") }, /* @__PURE__ */ React.createElement(Icon, { name: tool.icon, size: 20 })),
+        /* @__PURE__ */ React.createElement("span", { style: css("display:flex;flex-direction:column;gap:4px;flex:1;min-width:0") }, /* @__PURE__ */ React.createElement("span", { style: css("display:flex;align-items:center;gap:8px;flex-wrap:wrap") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, tool.label), suggested && /* @__PURE__ */ React.createElement("span", { style: css("padding:3px 8px;border-radius:999px;background:#FFF4D6;border:2px solid #14181F;font:700 11px 'IBM Plex Mono',monospace;letter-spacing:.04em;color:#6B4B00") }, "SUGGESTED")), /* @__PURE__ */ React.createElement("span", { style: css("font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, tool.desc))
+      ), isMismatchedSelfCheck && whyOpen && /* @__PURE__ */ React.createElement("div", { role: "note", style: css("margin-top:6px;padding:14px 16px;border-radius:12px;border:2px solid rgba(20,24,31,.25);background:#fff;display:flex;flex-direction:column;gap:10px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 14px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, 'This self-check is built for a case filed as "', caseTitleForKey(tool.action.key), '" \u2014 yours is filed as "', cfg.caseTitle, `". Answering it here would overwrite your case's own saved self-check, so WorkLaw keeps this one closed instead of mixing the two up.`), /* @__PURE__ */ React.createElement("button", { onClick: nav("chat"), className: "hoverfx", style: css("align-self:flex-start;min-height:44px;padding:10px 16px;border-radius:10px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, "Ask the AI about your situation")));
+    })))), /* @__PURE__ */ React.createElement("div", { style: css("padding:16px;border-radius:14px;background:#F0EDE5;border:2px solid #14181F") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Everything here explains the law that applies in ", locationLabel, ". It is not legal advice and WorkLaw is not your attorney.")));
   };
   const Log = () => {
     const kind = LOG_KINDS.find((k) => k.tag === logKind) || LOG_KINDS[0];
@@ -2887,7 +3053,7 @@ function App() {
     const oopTotal = round2(["oopJobSearch", "oopTherapy", "oopMedical", "oopOther"].reduce((s, k) => s + (Number(profile[k]) || 0), 0));
     return /* @__PURE__ */ React.createElement("div", { style: css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px") }, /* @__PURE__ */ React.createElement("button", { onClick: nav("home"), style: css("align-self:flex-start;display:flex;align-items:center;gap:4px;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer") }, /* @__PURE__ */ React.createElement(Icon, { name: "back", size: 18 }), " Dashboard"), /* @__PURE__ */ React.createElement("h1", { style: css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, K === "termination" ? "What might back pay look like?" : "What damages might apply?"), /* @__PURE__ */ React.createElement("div", { style: css("padding:14px 16px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Educational only \u2014 this is not a valuation of your case, and nothing on this screen is a promise you are entitled to anything. Only an employment attorney reviewing your actual facts can tell you what a claim might realistically be worth.")), K === "termination" ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 16px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, BACKPAY_HEDGE_INTRO), /* @__PURE__ */ React.createElement("div", { style: css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff;display:flex;flex-direction:column;gap:14px") }, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:6px") }, /* @__PURE__ */ React.createElement("label", { htmlFor: "dmg-weeksout", style: css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "WEEKS OUT OF WORK SO FAR (OPTIONAL)"), /* @__PURE__ */ React.createElement("input", { id: "dmg-weeksout", type: "number", min: "0", step: "1", value: profile.weeksOut || "", onChange: (e) => setProfile((p) => Object.assign({}, p, { weeksOut: e.target.value })), placeholder: "e.g. 6", style: css("width:150px;padding:14px;border-radius:12px;border:2px solid #14181F;font:400 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F") })), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:6px") }, /* @__PURE__ */ React.createElement("label", { id: "dmg-stillunemp-label", style: css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "ARE YOU STILL OUT OF WORK?"), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-labelledby": "dmg-stillunemp-label", style: css("display:flex;gap:8px") }, ["Yes", "No"].map(
       (t) => /* @__PURE__ */ React.createElement("button", { key: t, onClick: () => setProfile((p) => Object.assign({}, p, { stillUnemployed: t })), "aria-pressed": profile.stillUnemployed === t, style: css("flex:1;padding:13px;border-radius:12px;border:2px solid #14181F;background:" + (profile.stillUnemployed === t ? "#2B3AA8" : "#fff") + ";color:" + (profile.stillUnemployed === t ? "#fff" : "#14181F") + ";font:700 16px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, t)
-    ))), weeklyPay > 0 ? /* @__PURE__ */ React.createElement("div", { style: css("padding:12px 14px;border-radius:12px;background:#F0EDE5;border:2px solid #14181F;display:flex;flex-direction:column;gap:4px") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 12px 'IBM Plex Mono',monospace;color:#14181F;letter-spacing:.04em") }, "ESTIMATED WEEKLY PAY"), /* @__PURE__ */ React.createElement("span", { style: css("font:700 20px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, money(weeklyPay), "/week"), /* @__PURE__ */ React.createElement("span", { style: css("font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Assumes a typical 40-hour work week to translate your ", profile.payType === "Salary" ? "stated annual salary" : "hourly rate", " into a weekly figure \u2014 adjust your own math if you usually worked fewer or more hours.")) : /* @__PURE__ */ React.createElement("div", { style: css("padding:12px 14px;border-radius:12px;background:#F0EDE5;border:2px solid #14181F") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Add your hourly rate or salary on the dashboard location screen to see a rough weekly-pay figure here.")), roughBackPay > 0 ? /* @__PURE__ */ React.createElement("div", { role: "status", style: css("padding:14px 16px;border-radius:14px;background:#EEF1FF;border:2px solid #2B3AA8;display:flex;flex-direction:column;gap:6px") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 12px 'IBM Plex Mono',monospace;color:#1B2778;letter-spacing:.04em") }, "ROUGH, HYPOTHETICAL BACK PAY SO FAR"), /* @__PURE__ */ React.createElement("span", { style: css("font:700 24px 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, money(roughBackPay)), /* @__PURE__ */ React.createElement("span", { style: css("font:400 14px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, BACKPAY_ROUGH_CAVEAT)) : /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Enter weeks out of work above \u2014 and have a pay rate or salary on file \u2014 to see a rough, hypothetical figure. Until then, this stays a framework with no number attached.")), /* @__PURE__ */ React.createElement("div", { style: css("padding:16px 18px;border-radius:14px;border:2px solid #14181F;background:#fff") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 6px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Front pay & other considerations (informational only)"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, BACKPAY_FRONTPAY_NOTE))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 16px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "This is educational information about the CATEGORIES of damages a ", K === "harassment" ? "harassment" : "discrimination", " claim may include \u2014 not a valuation of your case, and not a promise any of these apply to you."), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:10px") }, DAMAGE_CATEGORIES.map((dc) => /* @__PURE__ */ React.createElement("div", { key: dc.title, style: css("padding:14px 16px;border-radius:14px;border:2px solid #14181F;background:#fff") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 4px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, dc.title), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 14px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, dc.body)))), /* @__PURE__ */ React.createElement("div", { style: css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff;display:flex;flex-direction:column;gap:12px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Optional: tally your out-of-pocket costs"), [["oopJobSearch", "Job search costs"], ["oopTherapy", "Therapy / counseling"], ["oopMedical", "Medical care"], ["oopOther", "Other costs"]].map(([k, lbl]) => /* @__PURE__ */ React.createElement("div", { key: k, style: css("display:flex;align-items:center;justify-content:space-between;gap:10px") }, /* @__PURE__ */ React.createElement("label", { htmlFor: "dmg-" + k, style: css("font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, lbl), /* @__PURE__ */ React.createElement("input", { id: "dmg-" + k, type: "number", min: "0", step: "1", value: profile[k] || "", onChange: (e) => setProfile((p) => Object.assign({}, p, { [k]: e.target.value })), placeholder: "0", style: css("width:120px;padding:10px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }))), /* @__PURE__ */ React.createElement("div", { style: css("padding-top:8px;border-top:1px solid rgba(20,24,31,.14);display:flex;align-items:center;justify-content:space-between") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Total out-of-pocket so far"), /* @__PURE__ */ React.createElement("span", { style: css("font:700 20px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, money(oopTotal))))), /* @__PURE__ */ React.createElement("div", { style: css("padding:16px;border-radius:14px;background:#F0EDE5;border:2px solid #14181F") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "This is legal information, not legal advice, and none of the figures above are what you are owed. An employment attorney licensed in ", stateLabel, " can assess what your case might actually be worth.")), /* @__PURE__ */ React.createElement("button", { onClick: nav("agencies"), className: "hoverfx", style: css("align-self:flex-start;min-height:44px;padding:12px 16px;border-radius:12px;border:2px solid #2B3AA8;background:#fff;color:#2B3AA8;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:6px") }, "Find a lawyer ", /* @__PURE__ */ React.createElement(Icon, { name: "chevron-forward", size: 15 })));
+    ))), weeklyPay > 0 ? /* @__PURE__ */ React.createElement("div", { style: css("padding:12px 14px;border-radius:12px;background:#F0EDE5;border:2px solid #14181F;display:flex;flex-direction:column;gap:4px") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 12px 'IBM Plex Mono',monospace;color:#14181F;letter-spacing:.04em") }, "ESTIMATED WEEKLY PAY"), /* @__PURE__ */ React.createElement("span", { style: css("font:700 20px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, money(weeklyPay), "/week"), /* @__PURE__ */ React.createElement("span", { style: css("font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Assumes a typical 40-hour work week to translate your ", profile.payType === "Salary" ? "stated annual salary" : "hourly rate", " into a weekly figure \u2014 adjust your own math if you usually worked fewer or more hours.")) : /* @__PURE__ */ React.createElement("div", { style: css("padding:12px 14px;border-radius:12px;background:#F0EDE5;border:2px solid #14181F") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Add your hourly rate or salary on the dashboard location screen to see a rough weekly-pay figure here.")), roughBackPay > 0 ? /* @__PURE__ */ React.createElement("div", { role: "status", style: css("padding:14px 16px;border-radius:14px;background:#EEF1FF;border:2px solid #2B3AA8;display:flex;flex-direction:column;gap:6px") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 12px 'IBM Plex Mono',monospace;color:#1B2778;letter-spacing:.04em") }, "ROUGH, HYPOTHETICAL BACK PAY SO FAR"), /* @__PURE__ */ React.createElement("span", { style: css("font:700 24px 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, money(roughBackPay)), /* @__PURE__ */ React.createElement("span", { style: css("font:400 14px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, BACKPAY_ROUGH_CAVEAT)) : /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Enter weeks out of work above \u2014 and have a pay rate or salary on file \u2014 to see a rough, hypothetical figure. Until then, this stays a framework with no number attached.")), /* @__PURE__ */ React.createElement("div", { style: css("padding:16px 18px;border-radius:14px;border:2px solid #14181F;background:#fff") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 6px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Front pay & other considerations (informational only)"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, BACKPAY_FRONTPAY_NOTE))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 16px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "This is educational information about the CATEGORIES of damages a ", K === "harassment" ? "harassment" : K === "discrimination" ? "discrimination" : K === "wage" ? "wage" : "employment", " claim may include \u2014 not a valuation of your case, and not a promise any of these apply to you."), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:10px") }, DAMAGE_CATEGORIES.map((dc) => /* @__PURE__ */ React.createElement("div", { key: dc.title, style: css("padding:14px 16px;border-radius:14px;border:2px solid #14181F;background:#fff") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 4px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, dc.title), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 14px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, dc.body)))), /* @__PURE__ */ React.createElement("div", { style: css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff;display:flex;flex-direction:column;gap:12px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Optional: tally your out-of-pocket costs"), [["oopJobSearch", "Job search costs"], ["oopTherapy", "Therapy / counseling"], ["oopMedical", "Medical care"], ["oopOther", "Other costs"]].map(([k, lbl]) => /* @__PURE__ */ React.createElement("div", { key: k, style: css("display:flex;align-items:center;justify-content:space-between;gap:10px") }, /* @__PURE__ */ React.createElement("label", { htmlFor: "dmg-" + k, style: css("font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, lbl), /* @__PURE__ */ React.createElement("input", { id: "dmg-" + k, type: "number", min: "0", step: "1", value: profile[k] || "", onChange: (e) => setProfile((p) => Object.assign({}, p, { [k]: e.target.value })), placeholder: "0", style: css("width:120px;padding:10px;border-radius:10px;border:2px solid #14181F;font:400 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }))), /* @__PURE__ */ React.createElement("div", { style: css("padding-top:8px;border-top:1px solid rgba(20,24,31,.14);display:flex;align-items:center;justify-content:space-between") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Total out-of-pocket so far"), /* @__PURE__ */ React.createElement("span", { style: css("font:700 20px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, money(oopTotal))))), /* @__PURE__ */ React.createElement("div", { style: css("padding:16px;border-radius:14px;background:#F0EDE5;border:2px solid #14181F") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "This is legal information, not legal advice, and none of the figures above are what you are owed. An employment attorney licensed in ", stateLabel, " can assess what your case might actually be worth.")), /* @__PURE__ */ React.createElement("button", { onClick: nav("agencies"), className: "hoverfx", style: css("align-self:flex-start;min-height:44px;padding:12px 16px;border-radius:12px;border:2px solid #2B3AA8;background:#fff;color:#2B3AA8;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:6px") }, "Find a lawyer ", /* @__PURE__ */ React.createElement(Icon, { name: "chevron-forward", size: 15 })));
   };
   const RecordsRequestTracker = () => {
     const rr = Object.assign({ dateSent: "", method: "", dateReceived: "", noResponseYet: "", produced: "", missing: "" }, profile.recordsRequest);
@@ -3111,7 +3277,8 @@ function App() {
     rights: RightsLib,
     agencies: Agencies,
     recordsRequest: RecordsRequestTracker,
-    adaProcess: AdaProcessTracker
+    adaProcess: AdaProcessTracker,
+    allTools: AllTools
   };
   const Current = SCREENS[screen] || HomeScreen;
   const screenBg = "#FFFDF8";
