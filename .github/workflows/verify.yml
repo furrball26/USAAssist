@@ -2,7 +2,12 @@ name: verify
 
 on:
   push:
-    branches: [main, auto/agents]
+    # claude/** is covered too: PRs from these branches have repeatedly produced
+    # no pull_request check run at all (PR #6 saw three pushes with zero runs
+    # while pushes to main/auto-agents ran normally), leaving the repo's own
+    # working branches unverified. Gating the push keeps them covered whatever
+    # the pull_request event does.
+    branches: [main, auto/agents, 'claude/**']
   pull_request:
     # CONTRIBUTING.md requires every change to land on auto/agents first, so PRs
     # targeting auto/agents must be gated too — listing only main left the repo's
