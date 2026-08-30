@@ -2180,7 +2180,13 @@ function App(){
     if (typeof histScreen === 'string' && saved.onboarded && histScreen !== 'onboarding') return histScreen;
     return saved.onboarded ? 'home' : 'onboarding';
   });
-  const [onbStep, setOnbStep] = useState(1);
+  // Restored from the saved case the same way wizNode/wizPath are — so a
+  // reload mid-onboarding (after picking state/county/issue but before
+  // finishing) resumes at the step the user was actually on, instead of
+  // always dropping back to step 1 even though those picks already
+  // pre-fill correctly. clearCase() and the edit-flow openers below still
+  // explicitly reset this to 1 (or 4) for their own flows.
+  const [onbStep, setOnbStep] = useState(() => saved.onbStep || 1);
   // Non-null only while re-entering the location/profile flow to EDIT an existing
   // case (via the ◉ pill) — holds a staged copy so state/county/issue/profile
   // selects don't silently commit to the live case (re-citing law, blanking the
@@ -2305,13 +2311,13 @@ function App(){
   // classification-wizard position, or noted document name previously vanished
   // on reload because they weren't in this list.
   useEffect(() => {
-    const result = saveCase({ onboarded, stateSel, county, issue, profile, caseOpened, homeMode, done, messages, entries,
+    const result = saveCase({ onboarded, onbStep, stateSel, county, issue, profile, caseOpened, homeMode, done, messages, entries,
       letterEdit, letterType, wizNode, wizPath, docName, docText, privacyNoteSeen });
     // R12 — surface a real "wasn't saved" warning instead of pretending the
     // save succeeded; clears itself the moment a save actually goes through
     // again (e.g. after the user frees up space or exports and starts fresh).
     setStorageWarning(!result.ok);
-  }, [onboarded, stateSel, county, issue, profile, caseOpened, homeMode, done, messages, entries,
+  }, [onboarded, onbStep, stateSel, county, issue, profile, caseOpened, homeMode, done, messages, entries,
       letterEdit, letterType, wizNode, wizPath, docName, docText, privacyNoteSeen]);
 
   // Load the source-cited legal-content dataset (federal once; state on selection change).
