@@ -4579,11 +4579,86 @@ function App(){
     );
   };
 
-  const Strength = () => (
+  // Move 2 of the approved redesign (design/redesign/Understand.dc.html) — the
+  // former "What makes your case" screen becomes "Understand your case": two
+  // ADDITIVE cards prepended above the untouched overall-strength/factors/
+  // causation/deadline-watch content this screen already had, plus a single
+  // CTA appended at the very bottom. Nothing below this comment's insertion
+  // point (the factors map, causation timeline, or the existing full Deadline
+  // watch section) changes.
+  const Strength = () => {
+    // "Is this illegal?" card — honest by construction, not by review: it never
+    // synthesizes a legal conclusion. wizNode is genuine persisted case state
+    // (see saved.wizNode / the wage-exempt-check / harassment-legal-check /
+    // discrimination-legal-check auto-done checks above), but WIZARD_CONFIG is
+    // keyed ONLY by the three issues that actually have a self-check — unlike
+    // wizardConfigFor(), this does NOT fall back to the wage tree for
+    // termination/document/general, so a stale wizNode left over from a
+    // DIFFERENT issue can never be misread as this issue's result (result keys
+    // are also uniquely prefixed per tree — r_/r_h_/r_d_ — so even a raw key
+    // collision on a non-terminal node id like "start" can't produce a false
+    // positive). If no such determination is on file, the card falls back to
+    // this issue's own existing actionWhy copy (ISSUES/GENERIC_ISSUE — written
+    // once, reused here verbatim) plus a button to the relevant self-check,
+    // gated by cfg.key exactly like the Home Tools tiles gate the same tools.
+    const wcfgForKey = WIZARD_CONFIG[cfg.key];
+    const wizResult = wcfgForKey ? wcfgForKey.results[wizNode] : null;
+    const selfCheckLabel = cfg.key === 'wage' ? 'Am I exempt from overtime?'
+      : cfg.key === 'harassment' ? 'Is this harassment?'
+      : cfg.key === 'discrimination' ? 'Is this discrimination?'
+      : null;
+    // Deadline summary card — calls the exact same helpers (pickDeadlineFactAcross,
+    // DeadlineComputedBlock, AddDeadlineDatePrompt, MissingDeadlineCTA) Home's
+    // Deadline Watch card uses, on the same fact data, so this can never disagree
+    // with what Home already told the user. Mirrors Home's own decision of
+    // whether to show anything at all: a resolvable deadline, then the
+    // missing-state/issue prompt, then nothing — never a fabricated date for an
+    // issue (document, general) with no deadline concept.
+    const understandDl = (() => {
+      const fedF = (federal && federal.facts) || [];
+      const stF = (stateData && stateData.facts) || [];
+      return pickDeadlineFactAcross(stF, fedF, cfg.key);
+    })();
+    return (
     <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:24px")}>
       <div style={css("display:flex;flex-direction:column;gap:12px")}>
         <button onClick={nav('home')} style={css("align-self:flex-start;display:flex;align-items:center;gap:4px;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}><Icon name="back" size={18} /> Dashboard</button>
-        <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>What makes your case</h1>
+        <div>
+          <span style={css("font:700 13px 'IBM Plex Mono',monospace;letter-spacing:.04em;color:#4A5162")}>PHASE 2 · UNDERSTAND</span>
+          <h1 style={css("margin:6px 0 0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Understand your case</h1>
+        </div>
+
+        <div style={css("display:flex;flex-direction:column;gap:10px;padding:18px;border-radius:16px;border:2px solid #14181F;background:#F0EDE5")}>
+          <span style={css("font:700 13px 'IBM Plex Mono',monospace;letter-spacing:.04em;color:#14181F")}>IS THIS ILLEGAL?</span>
+          {wizResult ? (
+            <>
+              <div style={css("font:700 20px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{wizResult.title}</div>
+              <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{wizResult.body}</p>
+              <button onClick={nav('wizard')} className="hoverfx" style={css("align-self:flex-start;min-height:44px;display:inline-flex;align-items:center;gap:4px;padding:6px 4px;margin:-4px 0 0;background:none;border:none;cursor:pointer;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8")}>Review your self-check answers <Icon name="chevron-forward" size={14} /></button>
+            </>
+          ) : (
+            <>
+              <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{cfg.actionWhy}</p>
+              {selfCheckLabel ?
+                <button onClick={nav('wizard')} className="hoverfx" style={css("align-self:flex-start;min-height:44px;padding:12px 18px;border:none;border-radius:12px;background:#2B3AA8;color:#fff;font:700 16px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{selfCheckLabel}</button>
+                :
+                <button onClick={nav('rights')} className="hoverfx" style={css("align-self:flex-start;min-height:44px;display:inline-flex;align-items:center;gap:4px;padding:6px 4px;margin:-4px 0 0;background:none;border:none;cursor:pointer;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8")}>See the law that applies <Icon name="chevron-forward" size={14} /></button>
+              }
+            </>
+          )}
+        </div>
+
+        {understandDl ? (
+          <div style={css("display:flex;flex-direction:column;gap:4px;padding:16px 18px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5")}>
+            <span style={css("font:700 13px 'IBM Plex Mono',monospace;letter-spacing:.04em;color:#14181F;display:inline-flex;align-items:center;gap:6px")}><Icon name="deadline-clock" size={14} /> YOUR DEADLINE</span>
+            <span style={css("font:700 18px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{understandDl.value || understandDl.summary}</span>
+            <span style={css("font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{understandDl.summary}</span>
+            <DeadlineComputedBlock dark={false} dl={understandDl} />
+            {cfg.key === 'wage' && <FlsaSolNote dark={false} />}
+            <AddDeadlineDatePrompt dark={false} dl={understandDl} />
+          </div>
+        ) : (!stateSel || !issue) ? <MissingDeadlineCTA dark={false} /> : null}
+
         <div style={css("padding:16px 18px;border-radius:14px;background:#E8F6EE;border:2px solid #14181F")}>
           <p style={css("margin:0 0 4px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Overall: {strength.label}</p>
           <p style={css("margin:0 0 8px;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{evidenceCount === 0 ? 'This updates as you add entries to your incident log.' : 'Based on ' + evidenceCount + ' logged ' + (evidenceCount === 1 ? 'item' : 'items') + '. Add more to strengthen the thin areas below.'}</p>
@@ -4686,8 +4761,13 @@ function App(){
           </div>
         );
       })()}
+      <button onClick={() => { setLogKind(defaultLogKindForIssueKey(cfg.key)); setScreen('log'); }} className="hoverfx" style={css("width:100%;padding:18px;border:none;border-radius:16px;background:#2B3AA8;color:#fff;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px")}>
+        Start building your evidence
+        <Icon name="chevron-forward" size={18} style={{ color: '#fff' }} />
+      </button>
     </div>
-  );
+    );
+  };
 
   const factCard = (f, i, scopeLabel, scopeTone) => (
     <div key={scopeLabel + i} style={css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff")}>
