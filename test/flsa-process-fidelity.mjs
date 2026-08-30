@@ -17,6 +17,32 @@
  *   4. G1 — the SOL timing-trap line appears on the non-exempt wizard result: the
  *      2-3 year deadline keeps running and a WHD complaint does not pause it.
  *
+ * SUSPECTED APP REGRESSION (route to wl-builder) — Case 1, "owed-estimate labeled
+ * 'back wages only'...", is currently RED and should stay red until fixed in the
+ * app, not the test:
+ *
+ * Commit a17dc38 ("remove Action-first/Plain modes, single Standard home") deleted
+ * HomePlain wholesale. The on-screen "You may be owed about $X" dollar-figure
+ * dashboard headline — together with its "Back wages only — actual recovery may be
+ * up to double, plus attorney's fees, if you sue." label (the G2 fix this case
+ * guards) — lived ONLY inside HomePlain's big-number card and was never ported to
+ * HomeStandard. Verified directly (a probe page dump of HomeStandard's rendered
+ * body text for a wage case with a logged, unpaid 10-hour entry at $20/hr) that NO
+ * dollar amount (e.g. "$200.00") appears anywhere on the Standard home at all —
+ * WageRecoverPanel (index.dev.html, ~line 2705, rendered at ~line 3142) covers the
+ * WHD-complaint-vs-lawsuit *paths* ("back wages only (no liquidated damages
+ * administratively)" re: the WHD complaint; "about double" re: a lawsuit) but never
+ * renders the computed owedEstimate figure itself, so a Standard-home user never
+ * sees a concrete "you may be owed about $X" number labeled with the
+ * liquidated-damages framing next to it — only the abstract WHD-vs-lawsuit
+ * explanation. This is a real regression, not a stale selector: per the task's
+ * instructions, the assertions below are left intact (unweakened) rather than
+ * adjusted to match the current, regressed DOM. Fix: render the owed-estimate
+ * dollar figure (computeOwedBreakdown/owedEstimate, already computed and in scope
+ * in HomeStandard) somewhere on the Standard home — e.g. inside or beside
+ * WageRecoverPanel — labeled "back wages only" with the "up to double" framing, the
+ * way HomePlain used to.
+ *
  * Run: node test/flsa-process-fidelity.mjs
  */
 import { createServer } from 'node:http';
@@ -45,7 +71,14 @@ const bodyText = async (pg) => await pg.evaluate(() => document.body.innerText);
 
 try {
 
-// 1. Liquidated-damages label on the on-screen owed estimate (Plain-mode dashboard).
+// 1. Liquidated-damages label on the on-screen owed estimate.
+//
+// KNOWN FAILING as of a17dc38 ("remove Action-first/Plain modes, single
+// Standard home") — see the SUSPECTED APP REGRESSION note at the bottom of
+// this file. This case is intentionally left asserting the full original
+// behavior (do not weaken it) even though it currently fails; homeMode is
+// seeded 'standard' since 'plain'/'action' no longer exist and homeMode is
+// ignored by rendering either way (see index.dev.html HomeScreen).
 {
   const pg = await b.newPage();
   const errs = [];
@@ -54,7 +87,7 @@ try {
   const seed = {
     onboarded:true, stateSel:'Texas', county:'Travis County', issue:'Unpaid overtime or wages',
     profile:{ name:'Pat Vega', employer:'Northgate Co', payType:'Hourly', rate:'20' },
-    caseOpened:new Date().toISOString(), homeMode:'plain', done:{}, messages:[],
+    caseOpened:new Date().toISOString(), homeMode:'standard', done:{}, messages:[],
     entries: [{ date:'JAN 5, 2026 · 9:00 AM', iso:'2026-01-05T09:00:00.000Z', title:'Unpaid or extra hours', body:'covered a shift', color:'#EF7B22', tag:'Wage & hour', hours:10, payStatus:'unpaid' }],
   };
   await pg.evaluateOnNewDocument((s) => { localStorage.clear(); localStorage.setItem('worklaw.case.v2', JSON.stringify(s)); }, seed);

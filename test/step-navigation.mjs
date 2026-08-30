@@ -111,19 +111,29 @@ const baseSeed = {
   await pg.close();
 }
 
-// Case 3: Action-first "Mark it done" must not get stuck on an auto-done middle
-// step. Regression for the bug where the hero's current-step index was derived
-// from Math.min(doneCount, len-1) — doneCount assumes completed steps are a
-// contiguous prefix, but stepAutoDone can auto-complete a middle step (the wage
-// 'log hours' step auto-dones as soon as any hours entry exists, before the
-// earlier exemption-check step is marked done). That inflated doneCount and
-// pointed the hero at a step that was already done, so clicking "Mark it done"
-// never advanced past it. Seed a wage case in Action-first mode WITH a logged
-// hours entry (so the log step auto-dones out of order) and assert repeated
-// clicks on "Mark it done" advance the STEP N label all the way to the end.
+// Case 3: the Standard home's "Do this next" hero must not get stuck on an
+// auto-done middle step. Regression for the bug where the hero's current-step
+// index was derived from Math.min(doneCount, len-1) — doneCount assumes
+// completed steps are a contiguous prefix, but stepAutoDone can auto-complete
+// a middle step (the wage 'log hours' step auto-dones as soon as any hours
+// entry exists, before the earlier exemption-check step is marked done). That
+// inflated doneCount and pointed the hero at a step that was already done, so
+// marking steps done never advanced past it. Fixed by deriving currentStepIdx
+// from findIndex(!isStepDone) instead (see index.dev.html) — the first
+// actually-incomplete step, regardless of which step auto-completed out of
+// order.
+//
+// Seed a wage case WITH a logged hours entry (so the 'log hours' step, index 2
+// of 4, auto-dones immediately, before steps 0/1 are marked done) and, using
+// the Standard home's own self-report checkbox (proven independent/
+// non-navigating in Case 2 above) to mark steps done in order, assert the "Do
+// this next" hero's headline (a) starts on step 0 (not the auto-done step 2),
+// (b) after step 0 and step 1 are checked off, SKIPS the already-auto-done
+// step 2 and lands on step 3 — never getting stuck repeating step 2 — and (c)
+// after step 3 is also checked off, still shows a valid last step with no
+// error, having advanced through all 4 steps.
 {
   const seed = Object.assign({}, baseSeed, {
-    homeMode: 'action',
     entries: [{ date:'JAN 5, 2026 · 9:00 AM', iso:'2026-01-05T09:00:00.000Z', title:'Unpaid or extra hours', body:'x', color:'#EF7B22', tag:'Wage & hour', hours:8, payStatus:'unpaid' }],
   });
   const pg = await freshPage(seed);
@@ -131,41 +141,56 @@ const baseSeed = {
   pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
   pg.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
 
-  const readStep = () => pg.evaluate(() => {
-    const p = [...document.querySelectorAll('p')].find(el => /^STEP \d+ OF \d+/.test(el.textContent || ''));
-    return p ? p.textContent : null;
-  });
-  const clickMarkDone = () => pg.evaluate(() => {
-    const btn = [...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Mark it done');
-    if (btn) { btn.click(); return true; }
-    return false;
-  });
+  // The wage issue's 4 step strings, in order (index.dev.html ISSUES['Unpaid
+  // overtime or wages'].steps) — index 2 ("Log every unpaid...") auto-dones
+  // from the seeded hours entry above, before either earlier step is checked.
+  const STEP_TEXT = [
+    'Run the overtime-exemption self-check to see whether you should be getting overtime pay',
+    'Ask HR, in writing, for your overtime (FLSA) classification and its basis',
+    'Log every unpaid or off-the-clock hour you can remember — it is evidence',
+    'Optional: send a wage-demand letter — or skip straight to a free WHD complaint or a private lawsuit; no demand letter is required by law',
+  ];
 
-  const steps = [];
-  let stuck = false;
-  const first = await readStep();
-  steps.push(first);
-  for (let i = 0; i < 6; i++) {
-    const clicked = await clickMarkDone();
-    if (!clicked) break;
-    await new Promise(r => setTimeout(r, 250));
-    const now = await readStep();
-    steps.push(now);
-  }
-  // "Stuck" = the label never changes across repeated clicks after the first one.
-  const distinct = new Set(steps).size;
-  if (distinct < 2) stuck = true;
-  const finalStep = steps[steps.length - 1];
-  const reachedEnd = /STEP 4 OF 4/.test(finalStep || '');
+  const readHero = () => pg.evaluate(() => {
+    const label = [...document.querySelectorAll('span')].find(s => s.textContent.trim() === 'DO THIS NEXT');
+    if (!label) return null;
+    const heroDiv = label.parentElement && label.parentElement.querySelector(':scope > div');
+    return heroDiv ? heroDiv.textContent.trim() : null;
+  });
+  // Clicks step `idx`'s checkbox (the self-report, non-navigating affordance
+  // proven in Case 2) — identified the same way Case 1/2 locate step rows.
+  const checkStep = (idx) => pg.evaluate((i) => {
+    const heading = [...document.querySelectorAll('h2')].find(h => h.textContent.includes('Your next steps'));
+    if (!heading) return false;
+    const container = heading.nextElementSibling.nextElementSibling; // skip the helper <p>
+    const row = container && container.children[i];
+    const cb = row && row.children[0];
+    if (cb) { cb.click(); return true; }
+    return false;
+  }, idx);
+
+  const heroSequence = [];
+  heroSequence.push(await readHero());
+  await checkStep(0);
+  await new Promise(r => setTimeout(r, 250));
+  heroSequence.push(await readHero());
+  await checkStep(1);
+  await new Promise(r => setTimeout(r, 250));
+  heroSequence.push(await readHero());
+  await checkStep(3);
+  await new Promise(r => setTimeout(r, 250));
+  heroSequence.push(await readHero());
 
   const problems = [];
-  if (stuck) problems.push('STEP label never advanced across repeated "Mark it done" clicks: ' + JSON.stringify(steps));
-  if (!reachedEnd) problems.push('did not reach the last step (STEP 4 OF 4) — ended on ' + JSON.stringify(finalStep) + '; sequence: ' + JSON.stringify(steps));
+  if (heroSequence[0] !== STEP_TEXT[0]) problems.push('expected the hero to start on step 0, got: ' + JSON.stringify(heroSequence[0]));
+  if (heroSequence[1] !== STEP_TEXT[1]) problems.push('after checking step 0, expected the hero to advance to step 1, got: ' + JSON.stringify(heroSequence[1]));
+  if (heroSequence[2] !== STEP_TEXT[3]) problems.push('after checking steps 0 and 1, expected the hero to SKIP the auto-done step 2 (log hours) and land on step 3, but it got stuck / showed: ' + JSON.stringify(heroSequence[2]));
+  if (heroSequence[3] !== STEP_TEXT[3]) problems.push('after checking every step, expected the hero to still show a valid final step, got: ' + JSON.stringify(heroSequence[3]));
   errs.forEach(e => problems.push(e));
 
   const ok = problems.length === 0;
   if (!ok) fails++;
-  console.log((ok ? '✅' : '❌') + ' Action-first "Mark it done" advances past an auto-done middle step (wage log-hours)' + (ok ? ' — sequence: ' + JSON.stringify(steps) : '\n   ' + problems.join('\n   ')));
+  console.log((ok ? '✅' : '❌') + ' Standard home\'s "Do this next" hero advances past an auto-done middle step (wage log-hours)' + (ok ? ' — sequence: ' + JSON.stringify(heroSequence) : '\n   ' + problems.join('\n   ')));
   await pg.close();
 }
 
