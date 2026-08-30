@@ -3006,7 +3006,101 @@ function App(){
     ) : null
   );
 
-  const HomeStandard = () => (
+  const HomeStandard = () => {
+    // Move 1 of the approved Home redesign (design/redesign/Main.dc.html,
+    // "YOUR PROGRESS" + "DO THIS NEXT"). Both new blocks are purely derived
+    // from state already in scope here — no new persisted/case state added.
+    //
+    // Phase spine: a decorative 4-phase progress readout. "Set up" and
+    // "Understand" are always done once a case has reached Home at all (you
+    // can't be here without having onboarded and having a state+issue to see
+    // rights/deadline/strength for). "Build" is done once there's at least one
+    // evidence item; until then it's the current phase. "Act" only ever
+    // becomes current (never auto-completes) once Build is done — there's no
+    // in-scope signal that a complaint/letter was actually filed/sent.
+    const buildPhaseDone = evidenceCount >= 1;
+    const HOME_PHASES = [
+      { label: 'Set up', state: 'done' },
+      { label: 'Understand', state: 'done' },
+      { label: 'Build', state: buildPhaseDone ? 'done' : 'current' },
+      { label: 'Act', state: buildPhaseDone ? 'current' : 'upcoming' },
+    ];
+    const currentPhaseLabel = HOME_PHASES.find(p => p.state === 'current').label;
+  
+    const HomePhaseSpine = () => (
+      <div aria-label={'Progress: ' + currentPhaseLabel + ' phase'} style={css("display:flex;flex-direction:column;gap:12px;padding:18px 16px;border-radius:16px;border:2px solid #14181F;background:#F0EDE5")}>
+        <span aria-hidden="true" style={css("font:700 13px 'IBM Plex Mono',monospace;color:#14181F;letter-spacing:.04em")}>YOUR PROGRESS</span>
+        <div aria-hidden="true" style={css("display:flex;align-items:center")}>
+          {HOME_PHASES.map((p, i) => (
+            <React.Fragment key={i}>
+              {p.state === 'done' ? (
+                <span style={css("flex:none;width:30px;height:30px;border-radius:999px;background:#1F8A4C;border:2px solid #14181F;display:flex;align-items:center;justify-content:center")}>
+                  <Icon name="check" size={16} style={{ color: '#fff' }} />
+                </span>
+              ) : p.state === 'current' ? (
+                <span style={css("flex:none;width:34px;height:34px;border-radius:999px;background:#2B3AA8;border:2px solid #14181F;box-shadow:0 0 0 4px #DDE2FF;display:flex;align-items:center;justify-content:center;font:700 15px 'IBM Plex Mono',monospace;color:#fff")}>{i + 1}</span>
+              ) : (
+                <span style={css("flex:none;width:30px;height:30px;border-radius:999px;background:#fff;border:2px solid rgba(20,24,31,.4);display:flex;align-items:center;justify-content:center;font:700 14px 'IBM Plex Mono',monospace;color:#4A5162")}>{i + 1}</span>
+              )}
+              {i < HOME_PHASES.length - 1 && (
+                <span style={css("flex:1;height:3px;background:" + (p.state === 'done' && HOME_PHASES[i + 1].state === 'done' ? '#1F8A4C' : p.state === 'done' ? 'linear-gradient(90deg,#1F8A4C,rgba(20,24,31,.18))' : 'rgba(20,24,31,.18)'))}></span>
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+        <div style={css("display:grid;grid-template-columns:repeat(4,1fr);gap:4px")}>
+          {HOME_PHASES.map((p, i) => (
+            <span key={i} style={css("font:700 12px/1.2 'Atkinson Hyperlegible',sans-serif;text-align:" + (i === 0 ? 'left' : i === HOME_PHASES.length - 1 ? 'right' : 'center') + ";color:" + (p.state === 'done' ? '#136B3C' : p.state === 'current' ? '#2B3AA8' : '#4A5162') + (p.state === 'upcoming' ? ';font-weight:400' : ''))}>{p.label}</span>
+          ))}
+        </div>
+      </div>
+    );
+  
+    // "Do this next" hero: the same single highest-priority action already
+    // computed above as currentStepIdx (the first not-done step; falls back to
+    // the last step once every step is done), routed with the exact same
+    // side-effects the step row's own button uses below — tapping either does
+    // the same thing.
+    const heroStepText = cfg.steps[currentStepIdx];
+    const heroTarget = stepTarget(cfg, currentStepIdx);
+    const goToHeroStep = () => {
+      setDone(p => Object.assign({}, p, { [stepKey(cfg, currentStepIdx)]: true }));
+      if (heroTarget.letterType) setLetterType(heroTarget.letterType);
+      if (heroTarget.logKind) setLogKind(heroTarget.logKind);
+      else if (heroTarget.screen === 'log') setLogKind(defaultLogKindForIssueKey(cfg.key));
+      setScreen(heroTarget.screen);
+    };
+    // Urgency line: reuses the SAME deadline fact + date-anchored computation
+    // the Deadline Watch card below uses (pickDeadlineFactAcross +
+    // computeDeadlineFromEvent) — never a separate/invented estimate. Only
+    // shown when there's an actual computed day-count, it hasn't passed, and
+    // it's within 14 days; otherwise silently omitted rather than guessed.
+    const heroUrgencyDays = (() => {
+      const fedF = (federal && federal.facts) || [];
+      const stF = (stateData && stateData.facts) || [];
+      const dl = pickDeadlineFactAcross(stF, fedF, cfg.key);
+      if (!dl || !profile.eventDate) return null;
+      const computed = computeDeadlineFromEvent(profile.eventDate, dl.value || dl.summary);
+      if (!computed || computed.isPast || computed.daysLeft > 14) return null;
+      return computed.daysLeft;
+    })();
+  
+    const HomeDoThisNext = () => (
+      <div style={css("display:flex;flex-direction:column;gap:12px;padding:20px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF")}>
+        <span style={css("font:700 13px 'IBM Plex Mono',monospace;color:#1B2778;letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px")}><Icon name="sparkle" size={14} /> DO THIS NEXT</span>
+        {heroUrgencyDays != null && (
+          <span style={css("font:700 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#8A5A00")}>⏳ {heroUrgencyDays === 0 ? 'Due today' : heroUrgencyDays + ' day' + (heroUrgencyDays === 1 ? '' : 's') + ' left'} to file</span>
+        )}
+        <div style={css("font:700 22px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{heroStepText}</div>
+        <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#28304A")}>The next step in your case.</p>
+        <button onClick={goToHeroStep} className="hoverfx" style={css("align-self:flex-start;min-height:48px;padding:13px 20px;border:none;border-radius:12px;background:#2B3AA8;color:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:8px")}>
+          Do it now
+          <Icon name="chevron-forward" size={16} style={{ color: '#fff' }} />
+        </button>
+      </div>
+    );
+  
+  return (
     <div style={css("padding:8px 22px 34px;display:flex;flex-direction:column;gap:24px")}>
       <div style={css("display:flex;flex-direction:column;gap:16px")}>
         <StorageWarningBanner />
@@ -3020,6 +3114,9 @@ function App(){
           <p style={css("margin:0;font:400 17px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{employerName ? employerName + ' · ' : ''}Opened {openedLabel} · {evidenceCount} evidence {evidenceCount === 1 ? 'item' : 'items'}</p>
         </div>
       </div>
+
+      <HomePhaseSpine />
+      <HomeDoThisNext />
 
       <div style={css("display:flex;flex-direction:column;gap:16px")}>
         {(() => {
@@ -3099,7 +3196,13 @@ function App(){
       </div>
 
       <div>
-        <h2 style={css("margin:0 0 12px;font:700 20px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Tools</h2>
+        {/* Move 1 of the approved Home redesign — demoted from a grid of tall
+            112px colored cards to a quieter, uniform "More tools" shelf
+            (design/redesign/Main.dc.html). Purely a visual restyle: every
+            tile below, its cfg.key gating, and its onClick/nav target are
+            UNCHANGED — see the per-tile comments (kept in place) for why each
+            gate exists and, for the last tile, why it can't be removed. */}
+        <h2 style={css("margin:0 0 12px;font:700 20px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>More tools</h2>
         <div style={css("display:grid;grid-template-columns:1fr 1fr;gap:10px")}>
           {/* The overtime-exemption self-check is wage-specific (it feeds the FLSA
               classification wizard) — Action-first and Plain mode already gate their
@@ -3107,40 +3210,40 @@ function App(){
               harassment/discrimination/termination/document/general case is never
               offered a tool that answers a question it didn't ask. */}
           {cfg.key === 'wage' &&
-            <button onClick={nav('wizard')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
-              <span aria-hidden="true"><Icon name="rights" size={24} /></span>
-              <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Am I exempt from overtime?</span>
+            <button onClick={nav('wizard')} className="surfacefx" style={css("text-align:left;padding:14px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:44px")}>
+              <span aria-hidden="true"><Icon name="rights" size={20} /></span>
+              <span style={css("font:700 15px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Am I exempt from overtime?</span>
             </button>
           }
           {/* Harassment/discrimination identifiers — same tile, gated to their own
               issue the same way the overtime self-check is gated to cfg.key === 'wage'. */}
           {cfg.key === 'harassment' &&
-            <button onClick={nav('wizard')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
-              <span aria-hidden="true"><Icon name="rights" size={24} /></span>
-              <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Is this harassment?</span>
+            <button onClick={nav('wizard')} className="surfacefx" style={css("text-align:left;padding:14px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:44px")}>
+              <span aria-hidden="true"><Icon name="rights" size={20} /></span>
+              <span style={css("font:700 15px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Is this harassment?</span>
             </button>
           }
           {cfg.key === 'discrimination' &&
-            <button onClick={nav('wizard')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
-              <span aria-hidden="true"><Icon name="rights" size={24} /></span>
-              <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Is this discrimination?</span>
+            <button onClick={nav('wizard')} className="surfacefx" style={css("text-align:left;padding:14px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:44px")}>
+              <span aria-hidden="true"><Icon name="rights" size={20} /></span>
+              <span style={css("font:700 15px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Is this discrimination?</span>
             </button>
           }
-          <button onClick={() => { setLogKind(defaultLogKindForIssueKey(cfg.key)); setScreen('log'); }} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#F1EAFB;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
-            <span aria-hidden="true"><Icon name="log" size={24} /></span>
-            <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Log an incident or hours</span>
+          <button onClick={() => { setLogKind(defaultLogKindForIssueKey(cfg.key)); setScreen('log'); }} className="surfacefx" style={css("text-align:left;padding:14px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:44px")}>
+            <span aria-hidden="true"><Icon name="log" size={20} /></span>
+            <span style={css("font:700 15px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Log an incident or hours</span>
           </button>
-          <button onClick={nav('doc')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#EEF1FF;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
-            <span aria-hidden="true"><Icon name="document" size={24} /></span>
-            <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Review a document</span>
+          <button onClick={nav('doc')} className="surfacefx" style={css("text-align:left;padding:14px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:44px")}>
+            <span aria-hidden="true"><Icon name="document" size={20} /></span>
+            <span style={css("font:700 15px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Review a document</span>
           </button>
           {/* Non-compete enforceability checker — document-issue-specific tool,
               gated the same way the overtime/harassment/discrimination self-checks
               above are gated to their own issue. */}
           {cfg.key === 'document' &&
-            <button onClick={nav('noncompete')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#FFE7EC;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
-              <span aria-hidden="true"><Icon name="rights" size={24} /></span>
-              <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Is my non-compete enforceable?</span>
+            <button onClick={nav('noncompete')} className="surfacefx" style={css("text-align:left;padding:14px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:44px")}>
+              <span aria-hidden="true"><Icon name="rights" size={20} /></span>
+              <span style={css("font:700 15px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Is my non-compete enforceable?</span>
             </button>
           }
           {/* Damages/back-pay estimator — gated to the non-wage issues that have
@@ -3148,17 +3251,17 @@ function App(){
               computeOwedBreakdown), same cfg.key-guard pattern as the tiles
               above. See DamagesEstimator. */}
           {(cfg.key === 'termination' || cfg.key === 'harassment' || cfg.key === 'discrimination') &&
-            <button onClick={nav('damages')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
-              <span aria-hidden="true"><Icon name="rights" size={24} /></span>
-              <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Estimate possible damages</span>
+            <button onClick={nav('damages')} className="surfacefx" style={css("text-align:left;padding:14px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:44px")}>
+              <span aria-hidden="true"><Icon name="rights" size={20} /></span>
+              <span style={css("font:700 15px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Estimate possible damages</span>
             </button>
           }
           {/* Records-request follow-through tracker — gated to termination, same
               cfg.key-guard pattern as the tiles above. See RecordsRequestTracker. */}
           {cfg.key === 'termination' &&
-            <button onClick={nav('recordsRequest')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#FFE7EC;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
-              <span aria-hidden="true"><Icon name="document" size={24} /></span>
-              <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Track my records request</span>
+            <button onClick={nav('recordsRequest')} className="surfacefx" style={css("text-align:left;padding:14px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:44px")}>
+              <span aria-hidden="true"><Icon name="document" size={20} /></span>
+              <span style={css("font:700 15px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Track my records request</span>
             </button>
           }
           {/* ADA interactive-process tracker — gated to discrimination, same
@@ -3170,9 +3273,9 @@ function App(){
               profile.adaLog/letterType) since that would make it unreachable
               the first time a user actually needs it. */}
           {cfg.key === 'discrimination' &&
-            <button onClick={nav('adaProcess')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#F1EAFB;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
-              <span aria-hidden="true"><Icon name="log" size={24} /></span>
-              <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Track the ADA process — if you're requesting an accommodation</span>
+            <button onClick={nav('adaProcess')} className="surfacefx" style={css("text-align:left;padding:14px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:44px")}>
+              <span aria-hidden="true"><Icon name="log" size={20} /></span>
+              <span style={css("font:700 15px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Track the ADA process — if you're requesting an accommodation</span>
             </button>
           }
           {/* Wage is the only issue where this card is redundant: BOTH its letters
@@ -3185,9 +3288,9 @@ function App(){
               there would make that issue's letter unreachable from Home. Keep it,
               scoped to non-wage issues only. */}
           {cfg.key !== 'wage' &&
-            <button onClick={nav('letter')} className="surfacefx" style={css("text-align:left;padding:16px;border-radius:16px;border:2px solid #14181F;background:#E8F6EE;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:112px")}>
-              <span aria-hidden="true"><Icon name="pencil" size={24} /></span>
-              <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Draft a letter</span>
+            <button onClick={nav('letter')} className="surfacefx" style={css("text-align:left;padding:14px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:44px")}>
+              <span aria-hidden="true"><Icon name="pencil" size={20} /></span>
+              <span style={css("font:700 15px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Draft a letter</span>
             </button>
           }
         </div>
@@ -3208,7 +3311,8 @@ function App(){
         <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>Everything here explains the law that applies in {locationLabel}. It is not legal advice and WorkLaw is not your attorney.</p>
       </div>
     </div>
-  );
+    );
+  };
 
   // Home used to switch between three layouts (Standard/Action-first/Plain)
   // via homeMode + a ModeSwitch tab control. That control and the two
