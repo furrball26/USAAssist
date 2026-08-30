@@ -174,7 +174,11 @@ try {
   await openAllTools();
   await click(pg, 'Where to file a complaint');
   t = await bodyText(pg);
-  if (!t.includes('Where to file a complaint')) problems.push('agencies did not render from All tools');
+  // move 4 (235806c) retitled the Agencies screen "Take action" (PHASE 4 · ACT)
+  // as part of unifying it into the take-action hub; it no longer headlines
+  // "Where to file a complaint" verbatim, so assert on the new heading plus
+  // the still-present agency-links section instead.
+  if (!t.includes('Take action') || !t.includes('File directly with the enforcing agencies')) problems.push('agencies ("Take action" hub) did not render from All tools');
   await goHome();
 
   await openAllTools();

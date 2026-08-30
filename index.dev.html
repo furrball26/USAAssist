@@ -2052,11 +2052,15 @@ const DOC_TYPE_OPTIONS = ['Pay stub', 'Offer letter or contract', 'Write-up or d
 const ENTRY_PLACEHOLDER_BODY = 'No detail added yet — tap to edit while it is fresh.';
 
 // Quick-add kinds for the incident log (shared; optional hours capture for wage claims).
+// wl-design (move 3, "type-first" log) — bg is each kind's tinted-card
+// background for the selected state of the type-picker grid below (Log());
+// icon is drawn from the app's existing ICON_PATHS set only (no bespoke
+// per-kind glyphs), picked for the closest available match.
 const LOG_KINDS = [
-  { label:'+ Hours worked', title:'Unpaid or extra hours', body:'', color:'#EF7B22', tag:'Wage & hour', asksHours:true },
-  { label:'+ Something said', title:'Statement recorded', body:'', color:'#2B3AA8', tag:'Statement' },
-  { label:'+ A document',    title:'Document saved',     body:'', color:'#7A3AA8', tag:'Records' },
-  { label:'+ A witness',     title:'Witness noted',      body:'', color:'#1F8A4C', tag:'Witness' },
+  { label:'+ Hours worked', title:'Unpaid or extra hours', body:'', color:'#EF7B22', bg:'#FFF1E6', icon:'deadline-clock', tag:'Wage & hour', asksHours:true },
+  { label:'+ Something said', title:'Statement recorded', body:'', color:'#2B3AA8', bg:'#EAECF9', icon:'log', tag:'Statement' },
+  { label:'+ A document',    title:'Document saved',     body:'', color:'#7A3AA8', bg:'#F3EAF9', icon:'document', tag:'Records' },
+  { label:'+ A witness',     title:'Witness noted',      body:'', color:'#1F8A4C', bg:'#E8F6EE', icon:'rights', tag:'Witness' },
 ];
 
 // Optional causal-role classification for a log entry — "I did X protected thing,
@@ -3954,10 +3958,27 @@ function App(){
 
       <div style={css('padding:16px;border-radius:16px;border:2px solid #14181F;background:' + (editing ? '#F0EDE5' : '#fff') + ';display:flex;flex-direction:column;gap:12px')}>
         {editing && <p role="status" style={css("margin:0;font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Editing the entry from {entries[editingEntryIdx].date}</p>}
-        <div role="group" aria-label="Entry type" style={css("display:flex;gap:8px;flex-wrap:wrap")}>
-          {LOG_KINDS.map(k =>
-            <button key={k.tag} onClick={() => setLogKind(k.tag)} aria-pressed={logKind === k.tag} className="surfacefx" style={css('min-height:44px;padding:10px 13px;border-radius:999px;border:2px solid ' + (logKind === k.tag ? '#2B3AA8' : '#14181F') + ';background:' + (logKind === k.tag ? '#2B3AA8' : '#fff') + ';color:' + (logKind === k.tag ? '#fff' : '#14181F') + ";font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{k.label.replace('+ ','')}</button>
-          )}
+        {/* wl-design (move 3, "type-first" log) — the four entry kinds as a
+            prominent 2-col card grid, so "what are you recording?" is the
+            obvious first decision instead of a small pill row with a silently
+            preselected default. Presentation only: still real <button>s that
+            call setLogKind and carry aria-pressed, and each card's visible
+            text is exactly the label the log test suites click/read by
+            (icon glyphs are aria-hidden and contribute no text content). */}
+        <div role="group" aria-label="Entry type" style={css("display:grid;grid-template-columns:1fr 1fr;gap:10px")}>
+          {LOG_KINDS.map(k => {
+            const selected = logKind === k.tag;
+            const label = k.label.replace('+ ', '');
+            return (
+              <button key={k.tag} type="button" onClick={() => setLogKind(k.tag)} aria-pressed={selected} className="surfacefx"
+                style={css('display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-height:44px;padding:14px;border-radius:14px;border:2px solid ' + (selected ? k.color : '#14181F') + ';background:' + (selected ? k.bg : '#fff') + ';text-align:left;cursor:pointer')}>
+                <span aria-hidden="true" style={css('flex:none;width:34px;height:34px;border-radius:10px;background:' + k.color + ';display:flex;align-items:center;justify-content:center')}>
+                  <Icon name={k.icon} size={20} strokeWidth={2.2} style={{ color: '#fff' }} />
+                </span>
+                <span style={css("font:700 16px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{label}</span>
+              </button>
+            );
+          })}
         </div>
         {/* Timeline/causation — optional classification of this entry as protected
             activity or an adverse action, so retaliation timing can be surfaced
@@ -4982,9 +5003,48 @@ function App(){
 
   const Agencies = () => (
     <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
-      <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Where to file a complaint</h1>
-      <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Official agencies that enforce employment law in {stateLabel}, near {countyShort} — free to contact directly.</p>
-      {stateErr ? <p style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load {stateLabel} agency links. Check your connection and reopen — the federal option below is not the only one that may apply.</p> : null}
+      <div>
+        <span style={css("font:700 13px 'IBM Plex Mono',monospace;letter-spacing:.04em;color:#4A5162")}>PHASE 4 · ACT</span>
+        <h1 style={css("margin:6px 0 0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Take action</h1>
+      </div>
+      {/* wl-design move 4 — the recommended-letter card is the same demand/
+          request letter the app already routes to elsewhere (Home's step CTAs,
+          the chat's ADA reply), generated by the same buildLetter() the Letter
+          screen itself calls — never a second copy of that logic. Every issue
+          config carries a letterKind (see ISSUES), so this always has a real
+          letter to point at; wage is special-cased to its actual demand letter
+          ('wage-demand') rather than the preliminary classification-request
+          cfg.letterKind lists first (see letterKindsFor's kinds order). */}
+      {(() => {
+        const recKind = cfg.key === 'wage' ? 'wage-demand' : cfg.letterKind;
+        if (!recKind) return null;
+        const gen = buildLetter({
+          kind: recKind, issueKey: cfg.key, youName, employerName, stateSel: stateLabel,
+          unpaidHours, owedEstimate, rateNum, federal, stateData, entries, payType: profile.payType,
+          adaLog: profile.adaLog,
+        });
+        const letterName = gen.title.charAt(0).toLowerCase() + gen.title.slice(1);
+        const built = cfg.key === 'wage' && (evidenceCount > 0 || unpaidHours > 0)
+          ? 'Built from your log: ' + evidenceCount + ' ' + (evidenceCount === 1 ? 'entry' : 'entries') + (unpaidHours > 0 ? ', ' + unpaidHours + ' unpaid hours' : '') + '.'
+          : 'Built from your case details for ' + locationLabel + '.';
+        const preview = (() => {
+          const afterGreeting = gen.body.split('To whom it may concern:\n\n')[1] || gen.body;
+          const flat = afterGreeting.replace(/\s+/g, ' ').trim();
+          return flat.length > 170 ? flat.slice(0, 170).trim() + '…' : flat;
+        })();
+        return (
+          <div style={css("padding:20px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF;display:flex;flex-direction:column;gap:12px")}>
+            <span style={css("font:700 13px 'IBM Plex Mono',monospace;letter-spacing:.04em;color:#1B2778;display:inline-flex;align-items:center;gap:6px")}><Icon name="sparkle" size={14} /> RECOMMENDED</span>
+            <p style={css("margin:0;font:700 20px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{'Draft your ' + letterName}</p>
+            <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{built}</p>
+            <div style={css("padding:14px;border-radius:12px;background:#fff;border:2px solid #14181F;font:400 13px/1.5 'IBM Plex Mono',monospace;color:#3A4150")}>
+              <div>{'Re: ' + gen.subject}</div>
+              <div style={css("margin-top:6px")}>{preview}</div>
+            </div>
+            <button onClick={() => { setLetterType(recKind); setLetterEdit(null); setScreen('letter'); }} className="hoverfx" style={css("min-height:48px;padding:13px;border:none;border-radius:12px;background:#2B3AA8;color:#fff;font:700 16px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Open the letter</button>
+          </div>
+        );
+      })()}
       {(() => {
         const ag = (stateData && stateData.agencies) || {};
         const fedF = (federal && federal.facts) || [];
@@ -5021,8 +5081,12 @@ function App(){
         }
         return (
           <div style={css("padding:16px 18px;border-radius:14px;background:#E8F6EE;border:2px solid #14181F;display:flex;flex-direction:column;gap:8px")}>
-            <p style={css("margin:0;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>File directly with the enforcing agencies — free</p>
-            <p style={css("margin:0 0 2px;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#25302B")}>You can bring a complaint to the government agencies that enforce these laws in {stateLabel}, at no cost:</p>
+            <div style={css("display:flex;align-items:center;gap:10px")}>
+              <span style={css("flex:none;width:36px;height:36px;border-radius:10px;background:#fff;border:2px solid #14181F;display:flex;align-items:center;justify-content:center;color:#136B3C")}><Icon name="building" size={18} /></span>
+              <p style={css("margin:0;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>File directly with the enforcing agencies — free</p>
+            </div>
+            <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#25302B")}>Official agencies that enforce employment law in {stateLabel}, near {countyShort} — free to contact directly.</p>
+            {stateErr ? <p style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load {stateLabel} agency links. Check your connection and reopen — the federal option below is not the only one that may apply.</p> : null}
             {links.map(([label, url], i) => <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="hoverfx" style={css("display:flex;align-items:center;min-height:44px;padding:0 4px;border-radius:8px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#136B3C;text-decoration:underline")}>{label} ↗</a>)}
           </div>
         );
@@ -5042,6 +5106,10 @@ function App(){
         );
       })()}
       <div style={css("padding:16px;border-radius:14px;background:#E8F6EE;border:2px solid #14181F;display:flex;flex-direction:column;gap:10px")}>
+        <div style={css("display:flex;align-items:center;gap:10px")}>
+          <span style={css("flex:none;width:36px;height:36px;border-radius:10px;background:#fff;border:2px solid #14181F;display:flex;align-items:center;justify-content:center;color:#14181F")}><Icon name="document" size={18} /></span>
+          <p style={css("margin:0;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Export your full case file</p>
+        </div>
         <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#25302B")}>Your case file — timeline, documents, and the exemption analysis — exports as one PDF you control, to bring to whichever agency (or attorney) you contact.</p>
         <button onClick={() => {
           // Same state-wins-ties deadline fact the Home/Agencies Deadline Watch
@@ -5066,8 +5134,12 @@ function App(){
           </p>
         }
       </div>
-      <div style={css("padding:16px;border-radius:14px;background:#F0EDE5;border:2px solid #14181F")}>
-        <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>You may also want to consult an employment attorney licensed in {stateLabel}. WorkLaw does not operate a referral service or recommend specific firms — your state or local bar association's lawyer-referral service is a reliable place to start.</p>
+      <div style={css("display:flex;gap:14px;padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff")}>
+        <span style={css("flex:none;width:44px;height:44px;border-radius:12px;background:#EEF1FF;border:2px solid #14181F;display:flex;align-items:center;justify-content:center;color:#2B3AA8")}><Icon name="rights" size={22} /></span>
+        <div style={css("display:flex;flex-direction:column;gap:6px")}>
+          <p style={css("margin:0;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Find an employment lawyer</p>
+          <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>You may also want to consult an employment attorney licensed in {stateLabel}. WorkLaw does not operate a referral service or recommend specific firms — your state or local bar association's lawyer-referral service is a reliable place to start.</p>
+        </div>
       </div>
       {/* wl-security/usertest — "Delete my case" previously lived only in the Home
           footer. Also reachable from here, since Agencies is the natural "I'm done,
