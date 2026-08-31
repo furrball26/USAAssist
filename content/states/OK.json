@@ -6,7 +6,7 @@
   "facts": [
     {
       "topic": "minimumWage.hourly",
-      "value": "follows federal $7.25",
+      "value": 7.25,
       "summary": "Oklahoma's minimum wage is tied to the current federal minimum wage, so it is $7.25 per hour.",
       "citation": "40 O.S. § 197.2",
       "sourceUrl": "https://www.oklegislature.gov/OK_Statutes/CompleteTitles/os40.pdf#page=267",

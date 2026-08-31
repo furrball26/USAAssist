@@ -18,7 +18,7 @@
     },
     {
       "topic": "minimumWage.hourly",
-      "value": "follows federal $7.25",
+      "value": 7.25,
       "summary": "Kansas's minimum wage is $7.25 per hour, the same as the federal rate, unchanged since 2009.",
       "citation": "K.S.A. 44-1203",
       "sourceUrl": "https://www.dol.ks.gov/employers/workplace-laws",
