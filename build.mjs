@@ -88,7 +88,25 @@ let newHtml = html.slice(0, aStart) + '<script>' + compiled.trim() + '</script>'
 // rather than weakened with 'unsafe-inline'. Recomputed fresh on every build so a
 // changed inline script always gets a matching, correct hash (never a stale one).
 // Strip any previously-injected CSP meta first so re-running build.mjs stays idempotent.
-newHtml = newHtml.replace(/<meta http-equiv="Content-Security-Policy"[^>]*>\n/, '');
+// Precondition: index.html (a generated artifact) must carry at most one CSP meta
+// going in. More than one is not a state build.mjs should ever "fix" for you — it
+// means the artifact wasn't in the shape this splice-over-existing-file approach
+// assumes, most likely a hand/merge-resolved conflict in index.html itself that kept
+// both sides (index.html must never be hand-edited or hand-merged; see CONTRIBUTING.md
+// — resolve index.dev.html instead and rebuild). Silently normalising down to one
+// would hide that the artifact is untrustworthy and may carry other unresolved
+// conflict damage beyond just this tag. Fail loudly instead. (The /g flag below is
+// belt-and-suspenders for the single-meta case this check allows through.)
+const existingCspMetas = newHtml.match(/<meta http-equiv="Content-Security-Policy"[^>]*>\n?/g) || [];
+if (existingCspMetas.length > 1) {
+  throw new Error(
+    `index.html: found ${existingCspMetas.length} CSP <meta> tags before build — expected 0 or 1. ` +
+    'This generated artifact is not in the shape build.mjs expects (likely a merge conflict ' +
+    'resolved by keeping both sides in index.html directly). Do not hand-fix index.html: ' +
+    'discard it, resolve the conflict in index.dev.html instead, then run `node build.mjs` again.'
+  );
+}
+newHtml = newHtml.replace(/<meta http-equiv="Content-Security-Policy"[^>]*>\n/g, '');
 
 const scriptHashes = [...newHtml.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(
   (m) => 'sha256-' + createHash('sha256').update(m[1], 'utf8').digest('base64')
