@@ -6,7 +6,7 @@
   "facts": [
     {
       "topic": "minimumWage.hourly",
-      "value": "follows federal $7.25",
+      "value": 7.25,
       "summary": "Louisiana has no state minimum wage law, so the federal FLSA rate of $7.25/hour applies, and state law bars local governments from setting a higher rate.",
       "citation": "La. R.S. 23:642",
       "sourceUrl": "https://legis.la.gov/Legis/Law.aspx?d=83958",

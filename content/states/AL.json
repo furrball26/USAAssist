@@ -18,7 +18,7 @@
     },
     {
       "topic": "minimumWage.hourly",
-      "value": "follows federal $7.25",
+      "value": 7.25,
       "summary": "Alabama has not enacted a state minimum wage, so the federal minimum wage of $7.25/hour applies statewide.",
       "citation": "No Alabama minimum wage statute; FLSA 29 U.S.C. 206 applies",
       "sourceUrl": "https://labor.alabama.gov",

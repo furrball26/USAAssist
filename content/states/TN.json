@@ -18,7 +18,7 @@
     },
     {
       "topic": "minimumWage.hourly",
-      "value": "follows federal $7.25",
+      "value": 7.25,
       "summary": "Tennessee has no state minimum-wage statute, so the federal minimum wage of $7.25/hour applies.",
       "citation": "No TN minimum-wage statute",
       "sourceUrl": "https://www.tn.gov/workforce/employees/labor-laws.html",
