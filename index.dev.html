@@ -2398,6 +2398,14 @@ function App(){
     setLetterEdit(null); setLetterType(null); setDocName(''); setDocText(''); setCaseFileDownloaded(false); setExportPath('');
     setWizNode('start'); setWizPath([]);
     setCaseOpened(new Date().toISOString());
+    // FIND — profile.adaLog / profile.recordsRequest are prior-CASE trackers
+    // (an ADA interactive-process log, a personnel-records-request log), not
+    // durable profile facts like name/employer/state. buildLetter() and
+    // buildCaseFile() read them unconditionally, so leaving them set here would
+    // let a "fresh" case silently render a stale ADA denial or records-request
+    // status left over from the case this button says it clears. Every other
+    // profile field (name, employer, state-specific pay figures, etc.) stays.
+    setProfile(p => Object.assign({}, p, { adaLog: [], recordsRequest: null }));
   }, [issue]);
 
   const send = (text) => {
@@ -2947,7 +2955,17 @@ function App(){
             // Commit the staged draft to the live case in one shot — this is the
             // only moment an edit via the ◉ pill actually changes anything.
             setStateSel(editDraft.stateSel); setCounty(editDraft.county);
-            setIssue(editDraft.issue); setProfile(editDraft.profile);
+            setIssue(editDraft.issue);
+            // FIND — editDraft.profile is a shallow copy of the OLD profile (see
+            // openEditFlow), so on an issue change it still carries the prior
+            // issue's profile.adaLog / profile.recordsRequest trackers. Those feed
+            // straight into buildLetter()/buildCaseFile() unconditionally, so
+            // without this a new-issue case could render a stale ADA denial or
+            // records-request status from the issue just left behind. Only these
+            // two case-instance logs reset — name/employer/state/etc. carry over.
+            setProfile(issueChanged
+              ? Object.assign({}, editDraft.profile, { adaLog: [], recordsRequest: null })
+              : editDraft.profile);
             if (issueChanged) setEntries([]);
             setEditDraft(null); setScreen('home');
           } else { setOnboarded(true); setScreen('home'); }
