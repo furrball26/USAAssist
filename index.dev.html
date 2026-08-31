@@ -2245,6 +2245,8 @@ function App(){
   const [docText, setDocText] = useState(() => saved.docText || ''); // pasted document text for the local rules-based clause scan
   const [caseFileDownloaded, setCaseFileDownloaded] = useState(false);
   const [exportPath, setExportPath] = useState(''); // 'tab' | 'download' | 'failed' — actual path printLetter() took, for accurate confirmation copy
+  const [letterExported, setLetterExported] = useState(false);
+  const [letterExportPath, setLetterExportPath] = useState(''); // 'tab' | 'download' | 'failed' — same pattern as exportPath/caseFileDownloaded above, for the Letter screen's own export button
   const [wizNode, setWizNode] = useState(() => saved.wizNode || 'start');
   const [wizPath, setWizPath] = useState(() => saved.wizPath || []);
   const [messages, setMessages] = useState(() =>
@@ -4611,7 +4613,7 @@ function App(){
         <div style={css("padding:22px;border-radius:12px;background:#fff;border:2px solid #14181F;font:400 15px/1.65 'Atkinson Hyperlegible',sans-serif;color:#14181F;white-space:pre-wrap;overflow-wrap:anywhere")}>{text}</div>
       }
       <div style={css("display:flex;gap:10px;flex-wrap:wrap")}>
-        <button onClick={() => printLetter(gen.subject, text)} style={css("flex:1;min-width:130px;padding:17px;border-radius:14px;border:none;background:#2B3AA8;color:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Export / print PDF</button>
+        <button onClick={() => { const path = printLetter(gen.subject, text); setLetterExportPath(path); setLetterExported(true); }} style={css("flex:1;min-width:130px;padding:17px;border-radius:14px;border:none;background:#2B3AA8;color:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Export / print PDF</button>
         {editing ?
           <>
             <button onClick={() => setLetterEdit(null)} style={css("flex:1;min-width:110px;padding:17px;border-radius:14px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 17px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Done</button>
@@ -4621,6 +4623,13 @@ function App(){
           <button onClick={() => setLetterEdit(gen.body)} style={css("flex:1;min-width:110px;padding:17px;border-radius:14px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 17px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Edit text</button>
         }
       </div>
+      {letterExported &&
+        <p style={css('margin:0;font:400 14px/1.45 \'Atkinson Hyperlegible\',sans-serif;color:' + (letterExportPath === 'failed' ? '#B3264F' : '#136B3C'))}>
+          {letterExportPath === 'download' ? 'Your letter downloaded as a .txt file (your browser blocked the new-tab preview).'
+            : letterExportPath === 'failed' ? 'Export did not work in this browser — copy the text above manually.'
+            : 'Your letter opened in a new tab — save it as PDF.'}
+        </p>
+      }
       <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>A template you send yourself. WorkLaw does not represent you and cannot send this on your behalf.</p>
     </div>
     );
