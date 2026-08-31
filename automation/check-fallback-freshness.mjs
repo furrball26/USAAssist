@@ -108,6 +108,13 @@ function main() {
     warn('   A user on the degraded-network fallback path could be served stale law data.');
     warn(`   Fix: wl-builder bumps CONTENT_FALLBACK_BASE in index.dev.html to a recent commit SHA (e.g. ${targetSha}), rebuilds, and commits.`);
     warn('   (Non-blocking: this check always exits 0 — see README.md "Maintenance".)');
+  } else if (daysOld === null && commitsBehind === null) {
+    // Neither signal resolved (typical in a shallow clone, incl. this repo's own checkout
+    // and CI's actions/checkout@v4 depth-1 default): freshness was NOT verified, it's
+    // unknown. Reporting the same "no action needed" line as an actual clean check would
+    // be a false positive — say plainly that nothing was confirmed.
+    warn('check-fallback-freshness: could not determine pin freshness (shallow clone — no commit ' +
+      'history for the pinned SHA); run with more history to actually verify.');
   } else {
     console.log('✅ check-fallback-freshness: pin is within freshness thresholds — no action needed');
   }
