@@ -3311,15 +3311,23 @@ function App(){
               <span style={css("font:700 15px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Track my records request</span>
             </button>
           }
-          {/* ADA interactive-process tracker — gated to discrimination, same
-              cfg.key-guard pattern as the tiles above. See AdaProcessTracker.
-              flow audit: this used to imply every discrimination case (even
-              race/age/sex, no accommodation involved) is mid-ADA-process. The
-              label now reads as self-selecting instead of assumed-relevant;
-              kept reachable for every discrimination case (not gated on
-              profile.adaLog/letterType) since that would make it unreachable
-              the first time a user actually needs it. */}
-          {cfg.key === 'discrimination' &&
+          {/* ADA interactive-process tracker — gated to discrimination AND
+              harassment, same cfg.key-guard pattern as the tiles above. See
+              AdaProcessTracker. flow audit: this used to imply every
+              discrimination case (even race/age/sex, no accommodation
+              involved) is mid-ADA-process. The label now reads as
+              self-selecting instead of assumed-relevant; kept reachable for
+              every discrimination case (not gated on profile.adaLog/
+              letterType) since that would make it unreachable the first time
+              a user actually needs it. Harassment is included too: letterKindsFor
+              grants harassment cases the same accommodation-request Letter tab
+              as discrimination (ADA/disability accommodation questions come up
+              under either bucket — see letterKindsFor), so a harassment case
+              needs this same Home entry point to log a request/denial that its
+              accommodation-request letter can reference; without it that tab
+              was reachable but nothing on Home could feed it real logged
+              entries for a harassment case. */}
+          {(cfg.key === 'discrimination' || cfg.key === 'harassment') &&
             <button onClick={nav('adaProcess')} className="surfacefx" style={css("text-align:left;padding:14px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:44px")}>
               <span aria-hidden="true"><Icon name="log" size={20} /></span>
               <span style={css("font:700 15px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Track the ADA process — if you're requesting an accommodation</span>
