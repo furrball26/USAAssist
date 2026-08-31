@@ -100,6 +100,7 @@ function main() {
 
   const staleByDays = daysOld !== null && daysOld > MAX_DAYS;
   const staleByCommits = commitsBehind !== null && commitsBehind > MAX_COMMITS;
+  const freshnessUnknown = daysOld === null && commitsBehind === null;
 
   if (staleByDays || staleByCommits) {
     warn(`STALE FALLBACK: index.dev.html's CONTENT_FALLBACK_BASE is pinned to a commit that is ` +
@@ -108,13 +109,15 @@ function main() {
     warn('   A user on the degraded-network fallback path could be served stale law data.');
     warn(`   Fix: wl-builder bumps CONTENT_FALLBACK_BASE in index.dev.html to a recent commit SHA (e.g. ${targetSha}), rebuilds, and commits.`);
     warn('   (Non-blocking: this check always exits 0 — see README.md "Maintenance".)');
-  } else if (daysOld === null && commitsBehind === null) {
+  } else if (freshnessUnknown) {
     // Neither signal resolved (typical in a shallow clone, incl. this repo's own checkout
     // and CI's actions/checkout@v4 depth-1 default): freshness was NOT verified, it's
     // unknown. Reporting the same "no action needed" line as an actual clean check would
     // be a false positive — say plainly that nothing was confirmed.
-    warn('check-fallback-freshness: could not determine pin freshness (shallow clone — no commit ' +
-      'history for the pinned SHA); run with more history to actually verify.');
+    warn('cannot determine fallback pin freshness (shallow clone / pin not in local history) — ' +
+      'neither commit age nor commit-distance could be computed, so this is NOT a confirmed-fresh ' +
+      'result, just an unknown one. Deepen the clone (e.g. `git fetch --unshallow` or fetch enough ' +
+      'history to include the pinned commit) to actually check.');
   } else {
     console.log('✅ check-fallback-freshness: pin is within freshness thresholds — no action needed');
   }

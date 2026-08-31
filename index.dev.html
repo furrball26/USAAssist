@@ -2149,6 +2149,104 @@ function defaultLogKindForIssueKey(key){
   return 'Statement'; // harassment, discrimination, termination, general
 }
 
+// All-tools screen (see TOOL_CATALOGUE below) — the plain-language case title
+// for an issue KEY (not the issue NAME ISSUES is keyed by), used to explain a
+// mismatched self-check without hardcoding the copy twice.
+function caseTitleForKey(key){
+  const found = Object.values(ISSUES).find(i => i.key === key);
+  return found ? found.caseTitle : 'your workplace case';
+}
+
+// wl-builder — All-tools catalogue (fanout fix). Home's "More tools" shelf
+// gates each tile to the ONE issue it was built for (cfg.key === 'wage' /
+// 'harassment' / 'discrimination' / 'document' / 'termination' — see the
+// per-tile comments on that shelf below), so a case filed under a different
+// issue could never reach the non-compete checker, the damages estimator,
+// the records-request tracker or the ADA process tracker AT ALL — four
+// fully-built, tested tools with zero path to them from most cases. This
+// catalogue lists every one of the app's 13 tools, grouped by intent rather
+// than by issue, for the new "All tools" screen (nav('allTools')) below. The
+// per-issue gates on the Home shelf are UNCHANGED — that shelf still shows
+// only what's issue-relevant — here the same mapping becomes `suggestedFor`,
+// a SUGGESTED-chip hint, never a lock; every row always renders.
+//
+// Group names — Understand / Build / Act, exactly matching Home's phase
+// spine (HOME_PHASES) — were originally "Work out what happened" / "Build
+// your record" / "Take action", written before that spine existed. Once
+// HOME_PHASES shipped (move 1) and Agencies was retitled "Take action" under
+// a "PHASE 4 · ACT" kicker (move 4), the catalogue's own group names became a
+// second, competing vocabulary for the same three ideas — a user had no way
+// to tell "Build your record" here from "Build" on the spine, or "Take
+// action" here from the "Take action" screen, were the same concept. Renamed
+// to read as the same system, not a parallel one; TOOL_CATALOGUE_GROUPS below
+// carries a one-line description of what each phase means, reworded to
+// explain the phase rather than restate the old heading text.
+//
+// The three self-checks (overtime exemption, harassment identifier,
+// discrimination identifier) are a special case, called out where handled
+// in AllTools below: they are not independent screens, they share ONE
+// stateful Q&A engine (Wizard) keyed to cfg.key, whose in-progress/completed
+// answer (wizNode/wizPath) IS the case's own real self-check progress (read
+// by isStepDone, "Understand your case", and the exported case file).
+// Letting a tap here drive that SAME shared state into a different issue's
+// tree would silently overwrite a user's already-answered self-check the
+// moment they went exploring a different one — so `type:'selfcheck'` opens
+// the live wizard only when `key` matches the case's actual issue, and
+// otherwise shows an explanation in place, never touching wizNode/wizPath.
+const TOOL_CATALOGUE = [
+  { id:'exempt-check', group:'Understand', label:'Am I exempt from overtime?', icon:'rights',
+    desc:"A short Q&A on federal (and your state's) overtime rules for your specific job.",
+    suggestedFor:['wage'], action:{ type:'selfcheck', key:'wage' } },
+  { id:'harassment-id', group:'Understand', label:'Is this harassment?', icon:'rights',
+    desc:'Checks what you describe against the legal standard for a hostile work environment.',
+    suggestedFor:['harassment'], action:{ type:'selfcheck', key:'harassment' } },
+  { id:'discrimination-id', group:'Understand', label:'Is this discrimination?', icon:'rights',
+    desc:'Checks what you describe against the legal elements of a discrimination claim.',
+    suggestedFor:['discrimination'], action:{ type:'selfcheck', key:'discrimination' } },
+  { id:'doc-review', group:'Understand', label:'Review a document', icon:'document',
+    desc:'Scan an offer letter, write-up, severance agreement or other document for notable clauses.',
+    suggestedFor:null, action:{ type:'nav', screen:'doc' } },
+  { id:'noncompete', group:'Understand', label:'Is my non-compete enforceable?', icon:'rights',
+    desc:'See how your state treats non-compete agreements, with the sourced rule behind it.',
+    suggestedFor:['document'], action:{ type:'nav', screen:'noncompete' } },
+
+  { id:'log', group:'Build', label:'Log an incident or hours', icon:'log',
+    desc:"Keep a dated record of what happened, or the hours and pay you're tracking.",
+    suggestedFor:null, action:{ type:'log' } },
+  { id:'strength', group:'Build', label:'Understand your case', icon:'rights',
+    desc:'See how strong your case looks so far, and what would help most next.',
+    suggestedFor:null, action:{ type:'nav', screen:'strength' } },
+  { id:'records-request', group:'Build', label:'Track my records request', icon:'document',
+    desc:'Follow through on a personnel/pay-file request — what you sent, what came back.',
+    suggestedFor:['termination'], action:{ type:'nav', screen:'recordsRequest' } },
+  { id:'ada-process', group:'Build', label:'Track the ADA process', icon:'log',
+    desc:"Log each back-and-forth if you're requesting a workplace accommodation.",
+    suggestedFor:['discrimination'], action:{ type:'nav', screen:'adaProcess' } },
+
+  { id:'letter', group:'Act', label:'Draft a letter', icon:'pencil',
+    desc:'Generate a letter to your employer — a demand, request, or complaint.',
+    suggestedFor:null, action:{ type:'nav', screen:'letter' } },
+  { id:'damages', group:'Act', label:'Estimate possible damages', icon:'rights',
+    desc:'Educational, hypothetical figures for what a claim like yours might include.',
+    suggestedFor:['termination','harassment','discrimination'], action:{ type:'nav', screen:'damages' } },
+  { id:'agencies', group:'Act', label:'Where to file a complaint', icon:'building',
+    desc:'Free government agencies that handle claims like yours, near you.',
+    suggestedFor:null, action:{ type:'nav', screen:'agencies' } },
+  { id:'chat', group:'Act', label:'Ask a question', icon:'sparkle',
+    desc:'Ask the AI assistant about your specific situation.',
+    suggestedFor:null, action:{ type:'nav', screen:'chat' } },
+];
+// Same three phase names as HOME_PHASES ("Set up" is done by the time a case
+// can even reach this screen, so it has no catalogue group of its own) —
+// each with a one-line description of what the phase MEANS, not a restated
+// heading, so "All tools" reads as the spine's own vocabulary rather than a
+// second taxonomy next to it.
+const TOOL_CATALOGUE_GROUPS = [
+  { name:'Understand', desc:"Make sense of what happened and how the law treats it." },
+  { name:'Build', desc:'Turn what happened into a dated record you can point to.' },
+  { name:'Act', desc:"Use what you've built to reach out, file, or ask for help." },
+];
+
 /* ── App ──────────────────────────────────────────────────────────── */
 
 function App(){
@@ -2180,7 +2278,13 @@ function App(){
     if (typeof histScreen === 'string' && saved.onboarded && histScreen !== 'onboarding') return histScreen;
     return saved.onboarded ? 'home' : 'onboarding';
   });
-  const [onbStep, setOnbStep] = useState(1);
+  // Restored from the saved case the same way wizNode/wizPath are — so a
+  // reload mid-onboarding (after picking state/county/issue but before
+  // finishing) resumes at the step the user was actually on, instead of
+  // always dropping back to step 1 even though those picks already
+  // pre-fill correctly. clearCase() and the edit-flow openers below still
+  // explicitly reset this to 1 (or 4) for their own flows.
+  const [onbStep, setOnbStep] = useState(() => saved.onbStep || 1);
   // Non-null only while re-entering the location/profile flow to EDIT an existing
   // case (via the ◉ pill) — holds a staged copy so state/county/issue/profile
   // selects don't silently commit to the live case (re-citing law, blanking the
@@ -2249,6 +2353,10 @@ function App(){
   const [letterExportPath, setLetterExportPath] = useState(''); // 'tab' | 'download' | 'failed' — same pattern as exportPath/caseFileDownloaded above, for the Letter screen's own export button
   const [wizNode, setWizNode] = useState(() => saved.wizNode || 'start');
   const [wizPath, setWizPath] = useState(() => saved.wizPath || []);
+  // All-tools screen (fanout fix) — which mismatched self-check "why isn't
+  // this mine" explanations are expanded. Purely transient UI state, not
+  // persisted, the same as the log/ADA form fields above.
+  const [allToolsWhyOpen, setAllToolsWhyOpen] = useState({});
   const [messages, setMessages] = useState(() =>
     (saved.messages && saved.messages.length) ? saved.messages : [{ role:'ai', text: issueCfg(saved.issue).chatSeed }]
   );
@@ -2307,13 +2415,13 @@ function App(){
   // classification-wizard position, or noted document name previously vanished
   // on reload because they weren't in this list.
   useEffect(() => {
-    const result = saveCase({ onboarded, stateSel, county, issue, profile, caseOpened, homeMode, done, messages, entries,
+    const result = saveCase({ onboarded, onbStep, stateSel, county, issue, profile, caseOpened, homeMode, done, messages, entries,
       letterEdit, letterType, wizNode, wizPath, docName, docText, privacyNoteSeen });
     // R12 — surface a real "wasn't saved" warning instead of pretending the
     // save succeeded; clears itself the moment a save actually goes through
     // again (e.g. after the user frees up space or exports and starts fresh).
     setStorageWarning(!result.ok);
-  }, [onboarded, stateSel, county, issue, profile, caseOpened, homeMode, done, messages, entries,
+  }, [onboarded, onbStep, stateSel, county, issue, profile, caseOpened, homeMode, done, messages, entries,
       letterEdit, letterType, wizNode, wizPath, docName, docText, privacyNoteSeen]);
 
   // Load the source-cited legal-content dataset (federal once; state on selection change).
@@ -2399,15 +2507,22 @@ function App(){
     setMessages([{ role:'ai', text: issueCfg(issue).chatSeed }]);
     setLetterEdit(null); setLetterType(null); setDocName(''); setDocText(''); setCaseFileDownloaded(false); setExportPath('');
     setWizNode('start'); setWizPath([]);
+    // Case-instance fields nested under profile — same class of data as
+    // entries/done above, just stored on a different piece of state. Left
+    // untouched, a prior case's ADA interactive-process log, records-request
+    // tracker, and damages-estimator figures would silently bleed into the new
+    // case — including into its exported case file, since buildLetter() and
+    // buildCaseFile() read adaLog/recordsRequest unconditionally. name/
+    // employer/payType/rate/salary/eventDate stay, per the confirm dialog
+    // above — those describe the person/employer, not this particular case.
+    // adaLog/recordsRequest reset to the explicit empty shape every other
+    // reader here already expects ([]/null); the damages-estimator fields
+    // reset to '' to match the fresh-profile initializer.
+    setProfile(p => Object.assign({}, p, {
+      adaLog: [], recordsRequest: null,
+      weeksOut:'', stillUnemployed:'', oopJobSearch:'', oopTherapy:'', oopMedical:'', oopOther:''
+    }));
     setCaseOpened(new Date().toISOString());
-    // FIND — profile.adaLog / profile.recordsRequest are prior-CASE trackers
-    // (an ADA interactive-process log, a personnel-records-request log), not
-    // durable profile facts like name/employer/state. buildLetter() and
-    // buildCaseFile() read them unconditionally, so leaving them set here would
-    // let a "fresh" case silently render a stale ADA denial or records-request
-    // status left over from the case this button says it clears. Every other
-    // profile field (name, employer, state-specific pay figures, etc.) stays.
-    setProfile(p => Object.assign({}, p, { adaLog: [], recordsRequest: null }));
   }, [issue]);
 
   const send = (text) => {
@@ -3019,9 +3134,11 @@ function App(){
   );
 
   // R12 — surfaces the "last save failed" state (see storageWarning above) so it's
-  // not silently swallowed. Shared across every home mode (Standard/Action/Plain)
-  // and the Log screen — the two places data loss matters most — using the same
-  // red alert styling as other genuine errors in the app (e.g. logAttachmentError).
+  // not silently swallowed. Shared across Home, the Log screen, and the
+  // records-request/ADA process trackers — the places a quiet save failure would
+  // otherwise cost a user their case data with zero indication anything went
+  // wrong — using the same red alert styling as other genuine errors in the app
+  // (e.g. logAttachmentError).
   const StorageWarningBanner = () => (
     storageWarning ? (
       <div role="alert" style={css("padding:12px 15px;border-radius:12px;background:#FFE7EC;border:2px solid #B3264F")}>
@@ -3351,6 +3468,16 @@ function App(){
             </button>
           }
         </div>
+        {/* Fanout fix — this shelf only ever shows the tools gated to THIS
+            issue (see the per-tile cfg.key comments above), so a wage case
+            (for example) has no path from here to the non-compete checker,
+            damages estimator, records-request tracker or ADA process
+            tracker. This row is the one addition: a full-width link to the
+            new All-tools screen, which lists every tool the app has. */}
+        <button onClick={nav('allTools')} className="hoverfx" style={css("margin-top:10px;width:100%;box-sizing:border-box;text-align:left;padding:14px 16px;border-radius:14px;border:2px solid #14181F;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px")}>
+          <span style={css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>See all {TOOL_CATALOGUE.length} tools</span>
+          <Icon name="chevron-forward" size={16} style={{ color: '#14181F' }} />
+        </button>
       </div>
 
       {/* Flow audit finding #6 — the document-review issue's Agencies screen shows
@@ -3630,6 +3757,78 @@ function App(){
           </div>
         }
       </div>
+    );
+  };
+
+  // "All tools" screen (fanout fix — see TOOL_CATALOGUE above for why this
+  // exists). Every tool the app has, grouped by intent, with a SUGGESTED
+  // chip marking whatever the (unchanged) per-issue gates on Home's "More
+  // tools" shelf already say is relevant to THIS case — never hiding the
+  // rest, so a wage case (for example) can still reach the non-compete
+  // checker, damages estimator, records-request tracker and ADA process
+  // tracker that shelf never shows it.
+  const AllTools = () => {
+    const isSuggested = tool => Array.isArray(tool.suggestedFor) && tool.suggestedFor.indexOf(cfg.key) >= 0;
+    const runTool = tool => {
+      if (tool.action.type === 'nav') { setScreen(tool.action.screen); return; }
+      if (tool.action.type === 'log') { setLogKind(defaultLogKindForIssueKey(cfg.key)); setScreen('log'); return; }
+      if (tool.action.type === 'selfcheck') {
+        if (tool.action.key === cfg.key) { setScreen('wizard'); return; }
+        // Mismatched — see TOOL_CATALOGUE's block comment: never drive the
+        // shared wizNode/wizPath into a different issue's tree. Toggle the
+        // explanation in place instead of navigating.
+        setAllToolsWhyOpen(p => Object.assign({}, p, { [tool.id]: !p[tool.id] }));
+      }
+    };
+    return (
+    <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:20px")}>
+      <button onClick={nav('home')} style={css("align-self:flex-start;display:flex;align-items:center;gap:4px;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}><Icon name="back" size={18} /> Dashboard</button>
+      <div>
+        <h1 style={css("margin:0 0 6px;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>All tools</h1>
+        <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Every tool in WorkLaw, not just the ones picked for {cfg.caseTitle.toLowerCase()}. SUGGESTED marks what's most relevant to your case right now.</p>
+      </div>
+      {TOOL_CATALOGUE_GROUPS.map(group => (
+        <div key={group.name} style={css("display:flex;flex-direction:column;gap:10px")}>
+          <div>
+            <h2 style={css("margin:0;font:700 18px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{group.name}</h2>
+            <p style={css("margin:2px 0 0;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{group.desc}</p>
+          </div>
+          <div style={css("display:flex;flex-direction:column;gap:10px")}>
+            {TOOL_CATALOGUE.filter(t => t.group === group.name).map(tool => {
+              const suggested = isSuggested(tool);
+              const isMismatchedSelfCheck = tool.action.type === 'selfcheck' && tool.action.key !== cfg.key;
+              const whyOpen = !!allToolsWhyOpen[tool.id];
+              return (
+                <div key={tool.id}>
+                  <button onClick={() => runTool(tool)} aria-expanded={isMismatchedSelfCheck ? whyOpen : undefined}
+                    className="surfacefx" style={css("width:100%;box-sizing:border-box;text-align:left;padding:16px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;align-items:flex-start;gap:12px;min-height:44px")}>
+                    <span aria-hidden="true" style={css("flex:none;margin-top:2px")}><Icon name={tool.icon} size={20} /></span>
+                    <span style={css("display:flex;flex-direction:column;gap:4px;flex:1;min-width:0")}>
+                      <span style={css("display:flex;align-items:center;gap:8px;flex-wrap:wrap")}>
+                        <span style={css("font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{tool.label}</span>
+                        {suggested &&
+                          <span style={css("padding:3px 8px;border-radius:999px;background:#FFF4D6;border:2px solid #14181F;font:700 11px 'IBM Plex Mono',monospace;letter-spacing:.04em;color:#6B4B00")}>SUGGESTED</span>
+                        }
+                      </span>
+                      <span style={css("font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{tool.desc}</span>
+                    </span>
+                  </button>
+                  {isMismatchedSelfCheck && whyOpen &&
+                    <div role="note" style={css("margin-top:6px;padding:14px 16px;border-radius:12px;border:2px solid rgba(20,24,31,.25);background:#fff;display:flex;flex-direction:column;gap:10px")}>
+                      <p style={css("margin:0;font:400 14px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>This self-check is built for a case filed as "{caseTitleForKey(tool.action.key)}" — yours is filed as "{cfg.caseTitle}". Answering it here would overwrite your case's own saved self-check, so WorkLaw keeps this one closed instead of mixing the two up.</p>
+                      <button onClick={nav('chat')} className="hoverfx" style={css("align-self:flex-start;min-height:44px;padding:10px 16px;border-radius:10px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 14px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Ask the AI about your situation</button>
+                    </div>
+                  }
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+      <div style={css("padding:16px;border-radius:14px;background:#F0EDE5;border:2px solid #14181F")}>
+        <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Everything here explains the law that applies in {locationLabel}. It is not legal advice and WorkLaw is not your attorney.</p>
+      </div>
+    </div>
     );
   };
 
@@ -4323,7 +4522,7 @@ function App(){
         </>
       ) : (
         <>
-          <p style={css("margin:0;font:400 16px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>This is educational information about the CATEGORIES of damages a {K === 'harassment' ? 'harassment' : 'discrimination'} claim may include — not a valuation of your case, and not a promise any of these apply to you.</p>
+          <p style={css("margin:0;font:400 16px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>This is educational information about the CATEGORIES of damages a {K === 'harassment' ? 'harassment' : K === 'discrimination' ? 'discrimination' : K === 'wage' ? 'wage' : 'employment'} claim may include — not a valuation of your case, and not a promise any of these apply to you.</p>
 
           <div style={css("display:flex;flex-direction:column;gap:10px")}>
             {DAMAGE_CATEGORIES.map(dc => (
@@ -4395,8 +4594,10 @@ function App(){
     return (
     <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
       <button onClick={nav('home')} style={css("align-self:flex-start;display:flex;align-items:center;gap:4px;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}><Icon name="back" size={18} /> Dashboard</button>
+      <StorageWarningBanner />
       <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Track your records request</h1>
       <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>A records request is a process, not a one-time letter. Keep track of when you sent it and what came back — this stays on this device and is not legal advice.</p>
+      <p style={css("margin:0;font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>There's no separate save step — every field below saves automatically as you fill it in.</p>
 
       {statusLine &&
         <div role="status" style={css("padding:14px 16px;border-radius:14px;background:#EEF1FF;border:2px solid #2B3AA8")}>
@@ -4486,6 +4687,7 @@ function App(){
     return (
     <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
       <button onClick={nav('home')} style={css("align-self:flex-start;display:flex;align-items:center;gap:4px;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}><Icon name="back" size={18} /> Dashboard</button>
+      <StorageWarningBanner />
       <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Track the interactive process</h1>
       <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{ADA_PROCESS_GOOD_FAITH_NOTE}</p>
 
@@ -5036,7 +5238,7 @@ function App(){
   const SCREENS = {
     onboarding: Onboarding, home: HomeScreen, chat: Chat, wizard: Wizard, log: Log,
     doc: Doc, noncompete: NonCompeteChecker, damages: DamagesEstimator, letter: Letter, strength: Strength, rights: RightsLib, agencies: Agencies,
-    recordsRequest: RecordsRequestTracker, adaProcess: AdaProcessTracker
+    recordsRequest: RecordsRequestTracker, adaProcess: AdaProcessTracker, allTools: AllTools
   };
   const Current = SCREENS[screen] || HomeScreen;
 
