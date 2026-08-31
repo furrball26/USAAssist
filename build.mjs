@@ -9,7 +9,7 @@
  *
  * Run:  node build.mjs
  */
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, renameSync, unlinkSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { transformSync } from 'esbuild';
 
@@ -114,10 +114,47 @@ const cspMeta = `<meta http-equiv="Content-Security-Policy" content="${csp}">\n`
 newHtml = newHtml.replace('<meta charset="utf-8">\n', (m) => m + cspMeta);
 if (!newHtml.includes(cspMeta)) throw new Error('index.html: could not inject CSP <meta> after <meta charset="utf-8">');
 
-writeFileSync(ROOT + 'index.html', newHtml);
+// 5. Write the generated artifacts. Both are written to temp files first and only
+// swapped into place (via rename, effectively atomic on the same filesystem) once BOTH
+// have been written successfully — so a failure partway through (assets/ missing, disk
+// full, permissions) never leaves index.html rewritten while assets/app.js is stale or
+// missing (or vice versa). Without this, a failed write used to still leave the *other*
+// artifact updated, and check-artifacts-fresh.mjs would only catch the drift on a later
+// run. Renamed in assets/app.js -> index.html order so if only one rename can land,
+// index.html (which nothing else in this build depends on) never gets ahead of
+// assets/app.js (which the Vercel shell loads by URL).
+const indexPath = ROOT + 'index.html';
+const appJsPath = ROOT + 'assets/app.js';
+const indexTmp = `${indexPath}.tmp-${process.pid}`;
+const appJsTmp = `${appJsPath}.tmp-${process.pid}`;
+const appJsContent = minified.trim() + '\n';
 
-// 5. Write assets/app.js.
-writeFileSync(ROOT + 'assets/app.js', minified.trim() + '\n');
+const cleanupTmp = () => {
+  for (const p of [indexTmp, appJsTmp]) {
+    try { unlinkSync(p); } catch { /* best-effort; may not exist */ }
+  }
+};
+
+try {
+  writeFileSync(appJsTmp, appJsContent);
+  writeFileSync(indexTmp, newHtml);
+} catch (err) {
+  cleanupTmp();
+  console.error('❌ build failed while writing generated artifacts — neither index.html nor assets/app.js was touched.');
+  console.error(`   ${err.message}`);
+  process.exit(1);
+}
+
+try {
+  renameSync(appJsTmp, appJsPath);
+  renameSync(indexTmp, indexPath);
+} catch (err) {
+  cleanupTmp();
+  console.error('❌ build failed while finalizing generated artifacts — index.html and/or assets/app.js may now be out of sync.');
+  console.error(`   ${err.message}`);
+  console.error('   Re-run `node build.mjs` before committing.');
+  process.exit(1);
+}
 
 console.log('build ok');
 console.log('  index.html  app block:', compiled.length, 'chars');
