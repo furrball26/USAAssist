@@ -846,13 +846,13 @@ const ISSUE_LIST = [
 // signed yet.
 // FIND-05 (docs/audit-2026-08-29.md) established the rule these three new chips
 // follow: a seeded button must actually route to a real answer, not a guess or
-// the fallback. Each is worded to reach its CHAT_TOPICS entry (minimumWage/
-// finalPay/discriminationDeadline above) rather than an earlier, broader bucket —
-// e.g. 'minimum hourly pay' instead of 'minimum wage', since the bare word
-// "wage" is already claimed by the existing isOvertime bucket. See CHAT_TOPICS'
-// own comment for why that overlap exists and is left as-is.
+// the fallback. Each is worded the way a person actually asks it — "what's the
+// minimum wage" — because the router (see the `send` precedence comment near
+// isOvertime below) now checks the minimumWage/wageClaimDeadline CHAT_TOPICS
+// entries BEFORE the bare "wage(s)" stem in isOvertime, so natural phrasing
+// reaches the correct topic instead of being swallowed by the overtime bucket.
 const PROMPT_TEXTS_BY_ISSUE = {
-  wage: ['Can my boss refuse to pay overtime?', 'What counts as retaliation?', "What's the minimum hourly pay allowed here?"],
+  wage: ['Can my boss refuse to pay overtime?', 'What counts as retaliation?', "What's the minimum wage here?"],
   harassment: ['What counts as harassment?', 'What counts as retaliation?', 'How do I ask for an ADA accommodation?', 'How long do I have to file an EEOC charge?'],
   discrimination: ['What counts as discrimination?', 'What counts as retaliation?', 'How do I ask for an ADA accommodation?', 'How long do I have to file an EEOC charge?'],
   termination: ['Is this a wrongful termination?', 'What counts as retaliation?', 'When do I get my last paycheck?'],
@@ -909,18 +909,21 @@ const WRONGFUL_TERMINATION_REPLY = { text:'Most states follow "at-will" employme
 // Match patterns are deliberately worded to avoid the trigger words the six
 // buckets above already claim (accommodat/ada/disab, wrongful+terminat/discharg/
 // fired, retaliat/fired/terminat/pushed out/let go, severance/release agreement/
-// release of claims, discriminat/harass/hostile work.../quid pro quo/unwelcome,
-// overtime/unpaid/off-the-clock/wage(s)) — a message containing any of those
-// words is claimed by that earlier, more specific bucket first, per the existing
-// router precedence (isAda → isWrongfulTermination → isRetaliation →
-// isDiscrimination → isSeverance → isOvertime), which this table never overrides.
-// Practical effect: a question that happens to use the bare word "wage" (e.g.
-// "what's the minimum wage") still hits the existing isOvertime bucket, not
-// minimumWage below — an inherent tension between "never regress the six
-// existing replies/precedence" and "reach these new topics," resolved here in
-// favor of the existing reviewed replies per the task's explicit instruction.
-// Seeded quick-reply chips for these topics are worded to avoid that overlap
-// (see PROMPT_TEXTS_BY_ISSUE) so the visible buttons always reach a real answer.
+// release of claims, discriminat/harass/hostile work.../quid pro quo/unwelcome)
+// — a message containing any of those words is claimed by that earlier, more
+// specific bucket first.
+// isOvertime is the ONE exception: its bare `\bwages?\b` stem would otherwise
+// swallow the two topics below whose natural phrasing contains the word "wage"
+// — minimumWage ("what's the minimum wage") and wageClaimDeadline ("file a
+// wage claim") — the same FIND-05 failure mode as the wrongful-termination/
+// retaliation stem collision (see the isWrongfulTermination comment in `send`).
+// So `send` checks THOSE TWO CHAT_TOPICS entries specifically BEFORE isOvertime,
+// and only falls through to isOvertime — then the remaining CHAT_TOPICS entries
+// — once neither has matched. The other four topics here (finalPay,
+// discriminationDeadline, nonCompete, mealBreak) don't share a trigger word with
+// any of the six buckets, so their position after isOvertime is unaffected.
+// Seeded quick-reply chips are worded the way a person actually asks (see
+// PROMPT_TEXTS_BY_ISSUE) — natural phrasing now reaches the right topic.
 const CHAT_TOPICS = [
   { id:'finalPay',
     match: lower => /\b(final|last)\s+pay\s*check\b/.test(lower) || /\bfinal\s+pay\b/.test(lower) || /\blast\s+paycheck\b/.test(lower) || /\bwhen\s+(do|will|does)\s+i\s+(get|receive)\s+(my\s+)?(final|last)\s+(pay|paycheck|check)\b/.test(lower),
@@ -2647,6 +2650,14 @@ function App(){
     const isClassificationQuestion = hasWord(/\b(1099|independent contractor|misclassif\w*|self-employed|gig work\w*|freelanc\w*)\b/)
       && (hasWord(/\bcovered\b/) || hasWord(/\bw-?2\b/) || hasWord(/\bemployee\b/));
     const isOvertime = !isClassificationQuestion && (hasWord(/\bovertime\b/) || hasWord(/\bunpaid\b/) || hasWord(/\boff[\s-]the[\s-]clock\b/) || hasWord(/\bwages?\b/));
+    // isOvertime's bare "wage(s)" stem would otherwise swallow the two
+    // CHAT_TOPICS entries whose natural phrasing contains that word —
+    // minimumWage ("what's the minimum wage") and wageClaimDeadline ("file a
+    // wage claim") — the same stem-collision failure FIND-05 already fixed for
+    // wrongful-termination/retaliation above. `contentTopic` (computed below,
+    // before this check is used) is looked up early so those two topics can be
+    // checked ahead of isOvertime in the final precedence, without touching
+    // isOvertime's own match rule or any of the five other buckets.
     // Discrimination/harassment — "discriminat*"/"harass*" and the standard legal
     // terms of art (hostile work environment, quid pro quo, unwelcome conduct) are
     // specific enough to fire on their own. A bare protected-characteristic word
@@ -2696,14 +2707,27 @@ function App(){
       text: "I can only give sample answers on a few topics: unpaid overtime and wages, discrimination and harassment, termination and retaliation, and severance or documents you've been asked to sign. Try rephrasing toward one of those. For anything else, your state labor agency or a local attorney (see Agencies) is the best next step.",
       cites: []
     };
-    // CHAT_TOPICS — checked LAST, only for a message none of the six reviewed
-    // buckets above matched, so the existing precedence (isAda → isWrongfulTermination
-    // → isRetaliation → isDiscrimination → isSeverance → isOvertime) never changes.
+    // CHAT_TOPICS — resolved here so minimumWage/wageClaimDeadline (whose natural
+    // phrasing contains isOvertime's bare "wage(s)" stem — see the isOvertime
+    // comment above) can be checked BEFORE isOvertime in the precedence below.
+    // Every other CHAT_TOPICS entry is still checked LAST, only for a message
+    // none of the six reviewed buckets matched, so the existing precedence
+    // (isAda → isWrongfulTermination → isRetaliation → isDiscrimination →
+    // isSeverance → isOvertime) is unchanged for every other bucket/topic.
     // See CHAT_TOPICS/chatTopicReply for why this never authors legal text.
     const fedFacts = (federal && federal.facts) || [];
     const stFileReviewed = !!(stateData && stateData.reviewed === true);
     const contentTopic = CHAT_TOPICS.find(t => t.match(lower));
-    const matched = isAda ? adaReply : isWrongfulTermination ? WRONGFUL_TERMINATION_REPLY : isRetaliation ? repliesResolved[1] : isDiscrimination ? discriminationReply : isSeverance ? repliesResolved[2] : isOvertime ? repliesResolved[0] : contentTopic ? chatTopicReply(contentTopic, stFacts, fedFacts, stateLabel, stFileReviewed) : null;
+    const wageStemTopic = contentTopic && (contentTopic.id === 'minimumWage' || contentTopic.id === 'wageClaimDeadline') ? contentTopic : null;
+    const matched = isAda ? adaReply
+      : isWrongfulTermination ? WRONGFUL_TERMINATION_REPLY
+      : isRetaliation ? repliesResolved[1]
+      : isDiscrimination ? discriminationReply
+      : isSeverance ? repliesResolved[2]
+      : wageStemTopic ? chatTopicReply(wageStemTopic, stFacts, fedFacts, stateLabel, stFileReviewed)
+      : isOvertime ? repliesResolved[0]
+      : contentTopic ? chatTopicReply(contentTopic, stFacts, fedFacts, stateLabel, stFileReviewed)
+      : null;
     setMessages(prev => {
       const next = prev.concat([{ role:'user', text }]);
       clearTimeout(timer.current);

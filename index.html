@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-3Brx6smtF0UOms+6fcrJ4IKAVXzRMyTiEC4q1/uu0P0='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-1/s/zReTpDfvD52yMc8pEwLSk8TQO5Ry6GsdyRYQzvA='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14181F">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232B3AA8'/%3E%3Ctext x='32' y='47' font-size='42' text-anchor='middle' fill='white' font-family='Georgia,serif'%3E%C2%A7%3C/text%3E%3C/svg%3E">
@@ -1111,7 +1111,7 @@ const ISSUE_LIST = [
   ["A document to review", "Offer, contract, NDA, severance, PIP, non-compete"]
 ];
 const PROMPT_TEXTS_BY_ISSUE = {
-  wage: ["Can my boss refuse to pay overtime?", "What counts as retaliation?", "What's the minimum hourly pay allowed here?"],
+  wage: ["Can my boss refuse to pay overtime?", "What counts as retaliation?", "What's the minimum wage here?"],
   harassment: ["What counts as harassment?", "What counts as retaliation?", "How do I ask for an ADA accommodation?", "How long do I have to file an EEOC charge?"],
   discrimination: ["What counts as discrimination?", "What counts as retaliation?", "How do I ask for an ADA accommodation?", "How long do I have to file an EEOC charge?"],
   termination: ["Is this a wrongful termination?", "What counts as retaliation?", "When do I get my last paycheck?"],
@@ -2516,7 +2516,8 @@ function App() {
     const fedFacts = federal && federal.facts || [];
     const stFileReviewed = !!(stateData && stateData.reviewed === true);
     const contentTopic = CHAT_TOPICS.find((t) => t.match(lower));
-    const matched = isAda ? adaReply : isWrongfulTermination ? WRONGFUL_TERMINATION_REPLY : isRetaliation ? repliesResolved[1] : isDiscrimination ? discriminationReply : isSeverance ? repliesResolved[2] : isOvertime ? repliesResolved[0] : contentTopic ? chatTopicReply(contentTopic, stFacts, fedFacts, stateLabel, stFileReviewed) : null;
+    const wageStemTopic = contentTopic && (contentTopic.id === "minimumWage" || contentTopic.id === "wageClaimDeadline") ? contentTopic : null;
+    const matched = isAda ? adaReply : isWrongfulTermination ? WRONGFUL_TERMINATION_REPLY : isRetaliation ? repliesResolved[1] : isDiscrimination ? discriminationReply : isSeverance ? repliesResolved[2] : wageStemTopic ? chatTopicReply(wageStemTopic, stFacts, fedFacts, stateLabel, stFileReviewed) : isOvertime ? repliesResolved[0] : contentTopic ? chatTopicReply(contentTopic, stFacts, fedFacts, stateLabel, stFileReviewed) : null;
     setMessages((prev) => {
       const next = prev.concat([{ role: "user", text }]);
       clearTimeout(timer.current);

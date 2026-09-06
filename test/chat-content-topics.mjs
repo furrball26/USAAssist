@@ -71,9 +71,9 @@ const CASES = [
   { label:'TX EEOC-charge deadline — state fact, state citation',
     state:'Texas', issue:'Discrimination', q:'How long do I have to file an EEOC charge?',
     expectSnippet:'TCHRA', expectCite:'Tex. Labor Code § 21.202(a), (a-1)', expectNotCite:'42 U.S.C. § 2000e-5(e)(1)' },
-  { label:'AL minimum hourly pay — state fact, state citation',
-    state:'Alabama', issue:'Unpaid overtime or wages', q:"What's the minimum hourly pay allowed here?",
-    expectSnippet:'Alabama has not enacted a state minimum wage', expectCite:'29 U.S.C. 206' },
+  { label:'AL minimum wage — state fact, state citation, NOT the overtime reply',
+    state:'Alabama', issue:'Unpaid overtime or wages', q:"What's the minimum wage in Alabama?",
+    expectSnippet:'Alabama has not enacted a state minimum wage', expectCite:'29 U.S.C. 206', expectNotSnippet:'Not approved' },
 
   // ── Per-topic gap, not a state-wide failure: Florida has no final-pay fact
   //    but DOES have a non-compete fact and a minimum-wage fact ──
@@ -83,9 +83,12 @@ const CASES = [
   { label:'FL non-compete — real state answer (same state, different topic)',
     state:'Florida', issue:'A document to review', q:'Is my non-compete enforceable here?',
     expectSnippet:'Florida enforces reasonable non-compete', expectCite:'Fla. Stat. § 542.335' },
-  { label:'FL minimum hourly pay — real state answer (same state, different topic)',
-    state:'Florida', issue:'Unpaid overtime or wages', q:"What's the minimum hourly pay allowed here?",
-    expectSnippet:"Florida's minimum wage", expectCite:'Fla. Const. art. X' },
+  { label:'FL minimum wage — real state answer (same state, different topic), NOT the overtime reply',
+    state:'Florida', issue:'Unpaid overtime or wages', q:"What's the minimum wage in Florida?",
+    expectSnippet:"Florida's minimum wage", expectCite:'Fla. Const. art. X', expectNotSnippet:'Not approved' },
+  { label:'TX wage-claim deadline — natural phrasing, state fact, NOT the overtime reply',
+    state:'Texas', issue:'Unpaid overtime or wages', q:'How long do I have to file a wage claim?',
+    expectSnippet:'Texas Workforce Commission', expectCite:'Tex. Labor Code § 61.051(c)', expectNotSnippet:'Not approved' },
 
   // ── Sparse-content topic: non-compete is only sourced for 10 states ──
   { label:'AL non-compete — honest no-answer (sparse topic, this state has none)',
@@ -108,8 +111,8 @@ const CASES = [
   { label:'No state + EEOC charge deadline — federal fallback, clearly labeled',
     state:'', issue:'Discrimination', q:'How long do I have to file an EEOC charge?',
     expectSnippet:'FEDERAL', expectCite:'42 U.S.C. § 2000e-5(e)(1)' },
-  { label:'No state + minimum hourly pay — federal fallback, clearly labeled',
-    state:'', issue:'Unpaid overtime or wages', q:"What's the minimum hourly pay allowed here?",
+  { label:'No state + minimum wage — federal fallback, clearly labeled',
+    state:'', issue:'Unpaid overtime or wages', q:"What's the minimum wage here?",
     expectSnippet:'FEDERAL', expectCite:'29 U.S.C. § 206(a)(1)' },
   // Final pay has NO federal equivalent (FLSA sets no final-paycheck deadline) —
   // even with nothing state-specific to fall back from, this must stay an
@@ -130,8 +133,11 @@ const CASES = [
     expectFallback:true },
 
   // ── Seeded quick-reply chips actually route to a real answer (FIND-05) ──
-  { label:'seeded chip: minimum hourly pay (wage issue)',
-    state:'Texas', issue:'Unpaid overtime or wages', chip:"What's the minimum hourly pay allowed here?",
+  // Worded the way a person actually asks it — "what's the minimum wage" —
+  // now that minimumWage/wageClaimDeadline are checked BEFORE isOvertime's
+  // bare "wage(s)" stem in the router precedence (see send() in index.dev.html).
+  { label:'seeded chip: minimum wage (wage issue)',
+    state:'Texas', issue:'Unpaid overtime or wages', chip:"What's the minimum wage here?",
     expectSnippet:'Texas sets its state minimum wage', expectCite:'Tex. Labor Code § 62.051' },
   { label:'seeded chip: last paycheck (termination issue)',
     state:'Texas', issue:'Fired or pushed out', chip:'When do I get my last paycheck?',
@@ -204,6 +210,7 @@ for (const c of CASES) {
       if (sourceHref) problems.push('no-answer reply wrongly carries a source link: ' + sourceHref);
     }
     if (c.expectSnippet && !last.includes(c.expectSnippet)) problems.push('expected reply to include ' + JSON.stringify(c.expectSnippet) + ', got: ' + JSON.stringify(last));
+    if (c.expectNotSnippet && last.includes(c.expectNotSnippet)) problems.push('reply wrongly includes ' + JSON.stringify(c.expectNotSnippet) + ': ' + JSON.stringify(last));
     if (c.expectCite && !last.includes(c.expectCite)) problems.push('expected citation ' + JSON.stringify(c.expectCite) + ' missing from: ' + JSON.stringify(last));
     if (c.expectNotCite && last.includes(c.expectNotCite)) problems.push('reply wrongly includes a DIFFERENT jurisdiction\'s citation ' + JSON.stringify(c.expectNotCite) + ': ' + JSON.stringify(last));
   }
