@@ -17,7 +17,7 @@
     },
     {
       "topic": "minimumWage.hourly",
-      "value": "follows federal $7.25",
+      "value": 7.25,
       "summary": "Wyoming's statutory minimum wage is $5.15, but the federal $7.25 applies to employees covered by the FLSA, so $7.25 is effective for most workers.",
       "citation": "Wyo. Stat. § 27-4-202; 29 U.S.C. § 206",
       "sourceUrl": "https://www.dol.gov/agencies/whd/minimum-wage/state",

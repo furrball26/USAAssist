@@ -30,7 +30,12 @@
  *   - Puppeteer `TimeoutError` / any "timeout" message (already retried), and
  *   - `LifecycleWatcher`-originated navigation races: "Navigating frame was
  *     detached" and "LifecycleWatcher disposed"/"terminated", checked on
- *     both the error's own message and its `.cause`.
+ *     both the error's own message and its `.cause`, and
+ *   - the same detached-frame race raised from a different guard —
+ *     puppeteer-core's `CdpFrame` decorator throws "Attempted to use
+ *     detached Frame '...'" (see `decorators.js`) instead of going through
+ *     `LifecycleWatcher.dispose()` — observed under the same launch
+ *     contention and retried for the same reason.
  * It deliberately does NOT match broader "closed"/"detached" phrasing such
  * as "Session closed", "Protocol error", or "Target closed" — those
  * indicate the browser/page itself died and are real failures that must
@@ -51,7 +56,8 @@ function isLifecycleWatcherRace(e) {
   return (
     /navigating frame was detached/i.test(msg) ||
     /lifecyclewatcher (disposed|terminated)/i.test(msg) ||
-    /lifecyclewatcher (disposed|terminated)/i.test(causeMsg)
+    /lifecyclewatcher (disposed|terminated)/i.test(causeMsg) ||
+    /attempted to use detached frame/i.test(msg)
   );
 }
 

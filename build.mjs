@@ -9,7 +9,7 @@
  *
  * Run:  node build.mjs
  */
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, renameSync, unlinkSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { transformSync } from 'esbuild';
 
@@ -88,7 +88,25 @@ let newHtml = html.slice(0, aStart) + '<script>' + compiled.trim() + '</script>'
 // rather than weakened with 'unsafe-inline'. Recomputed fresh on every build so a
 // changed inline script always gets a matching, correct hash (never a stale one).
 // Strip any previously-injected CSP meta first so re-running build.mjs stays idempotent.
-newHtml = newHtml.replace(/<meta http-equiv="Content-Security-Policy"[^>]*>\n/, '');
+// Precondition: index.html (a generated artifact) must carry at most one CSP meta
+// going in. More than one is not a state build.mjs should ever "fix" for you — it
+// means the artifact wasn't in the shape this splice-over-existing-file approach
+// assumes, most likely a hand/merge-resolved conflict in index.html itself that kept
+// both sides (index.html must never be hand-edited or hand-merged; see CONTRIBUTING.md
+// — resolve index.dev.html instead and rebuild). Silently normalising down to one
+// would hide that the artifact is untrustworthy and may carry other unresolved
+// conflict damage beyond just this tag. Fail loudly instead. (The /g flag below is
+// belt-and-suspenders for the single-meta case this check allows through.)
+const existingCspMetas = newHtml.match(/<meta http-equiv="Content-Security-Policy"[^>]*>\n?/g) || [];
+if (existingCspMetas.length > 1) {
+  throw new Error(
+    `index.html: found ${existingCspMetas.length} CSP <meta> tags before build — expected 0 or 1. ` +
+    'This generated artifact is not in the shape build.mjs expects (likely a merge conflict ' +
+    'resolved by keeping both sides in index.html directly). Do not hand-fix index.html: ' +
+    'discard it, resolve the conflict in index.dev.html instead, then run `node build.mjs` again.'
+  );
+}
+newHtml = newHtml.replace(/<meta http-equiv="Content-Security-Policy"[^>]*>\n/g, '');
 
 const scriptHashes = [...newHtml.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(
   (m) => 'sha256-' + createHash('sha256').update(m[1], 'utf8').digest('base64')
@@ -114,10 +132,47 @@ const cspMeta = `<meta http-equiv="Content-Security-Policy" content="${csp}">\n`
 newHtml = newHtml.replace('<meta charset="utf-8">\n', (m) => m + cspMeta);
 if (!newHtml.includes(cspMeta)) throw new Error('index.html: could not inject CSP <meta> after <meta charset="utf-8">');
 
-writeFileSync(ROOT + 'index.html', newHtml);
+// 5. Write the generated artifacts. Both are written to temp files first and only
+// swapped into place (via rename, effectively atomic on the same filesystem) once BOTH
+// have been written successfully — so a failure partway through (assets/ missing, disk
+// full, permissions) never leaves index.html rewritten while assets/app.js is stale or
+// missing (or vice versa). Without this, a failed write used to still leave the *other*
+// artifact updated, and check-artifacts-fresh.mjs would only catch the drift on a later
+// run. Renamed in assets/app.js -> index.html order so if only one rename can land,
+// index.html (which nothing else in this build depends on) never gets ahead of
+// assets/app.js (which the Vercel shell loads by URL).
+const indexPath = ROOT + 'index.html';
+const appJsPath = ROOT + 'assets/app.js';
+const indexTmp = `${indexPath}.tmp-${process.pid}`;
+const appJsTmp = `${appJsPath}.tmp-${process.pid}`;
+const appJsContent = minified.trim() + '\n';
 
-// 5. Write assets/app.js.
-writeFileSync(ROOT + 'assets/app.js', minified.trim() + '\n');
+const cleanupTmp = () => {
+  for (const p of [indexTmp, appJsTmp]) {
+    try { unlinkSync(p); } catch { /* best-effort; may not exist */ }
+  }
+};
+
+try {
+  writeFileSync(appJsTmp, appJsContent);
+  writeFileSync(indexTmp, newHtml);
+} catch (err) {
+  cleanupTmp();
+  console.error('❌ build failed while writing generated artifacts — neither index.html nor assets/app.js was touched.');
+  console.error(`   ${err.message}`);
+  process.exit(1);
+}
+
+try {
+  renameSync(appJsTmp, appJsPath);
+  renameSync(indexTmp, indexPath);
+} catch (err) {
+  cleanupTmp();
+  console.error('❌ build failed while finalizing generated artifacts — index.html and/or assets/app.js may now be out of sync.');
+  console.error(`   ${err.message}`);
+  console.error('   Re-run `node build.mjs` before committing.');
+  process.exit(1);
+}
 
 console.log('build ok');
 console.log('  index.html  app block:', compiled.length, 'chars');

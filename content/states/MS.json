@@ -6,7 +6,7 @@
   "facts": [
     {
       "topic": "minimumWage.hourly",
-      "value": "follows federal $7.25",
+      "value": 7.25,
       "summary": "Mississippi has no state minimum wage statute; the Legislature's stated intent is to implement the federal minimum wage, so the applicable rate is the federal $7.25 per hour.",
       "citation": "Miss. Code Ann. § 25-3-40",
       "sourceUrl": "https://www.sos.ms.gov/publications-external-affairs/mississippi-law",

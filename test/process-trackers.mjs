@@ -12,12 +12,15 @@
  *      termination) — persists profile.recordsRequest, renders a status line
  *      ("Request sent ... — no response yet"), survives reload, and appears
  *      in the exported case file's RECORDS REQUEST section.
- *   2. AdaProcessTracker ("Track the ADA process", gated to discrimination)
- *      — persists profile.adaLog as an ordered array, renders entries in the
- *      order they were logged, survives reload, and appears in the exported
- *      case file's ADA INTERACTIVE PROCESS section, in order.
+ *   2. AdaProcessTracker ("Track the ADA process", gated to discrimination
+ *      AND harassment — letterKindsFor grants both issues the same
+ *      accommodation-request Letter tab, so both need a way to log a real
+ *      request/denial for that letter to reference) — persists profile.adaLog
+ *      as an ordered array, renders entries in the order they were logged,
+ *      survives reload, and appears in the exported case file's ADA
+ *      INTERACTIVE PROCESS section, in order.
  *
- * Also guards that each tile is gated to its own issue only (not offered on
+ * Also guards that each tile is gated to its own issue(s) only (not offered on
  * a wage/other-issue dashboard, and not offered for the other tracker).
  *
  * Run: node test/process-trackers.mjs
@@ -235,7 +238,64 @@ try {
   await pg.close();
 }
 
-// 3. Neither tracker tile leaks onto an unrelated (wage) dashboard.
+// 3. ADA interactive-process tracker is ALSO reachable for a harassment case
+//    (letterKindsFor grants harassment the same accommodation-request Letter
+//    tab as discrimination — see the comment there — so harassment needs the
+//    same Home entry point to log a request/denial). Keep this scoped to just
+//    confirming the tile appears and the tracker persists/exports for
+//    harassment too; the full multi-entry/ordering/reload behavior is already
+//    covered by case 2 above using the same tracker component.
+{
+  const { pg, errs } = await newPage();
+  const seed = {
+    onboarded:true, stateSel:'California', county:'Los Angeles County', issue:'Harassment or a hostile workplace',
+    profile:{ name:'Jordan Lee', employer:'Acme Co', payType:'Hourly', rate:'20' },
+    caseOpened:new Date().toISOString(), homeMode:'standard', done:{}, messages:[], entries:[],
+  };
+  await pg.evaluateOnNewDocument((s) => { localStorage.clear(); localStorage.setItem('worklaw.case.v2', JSON.stringify(s)); }, seed);
+  await armExportCapture(pg);
+  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`);
+  await new Promise(r => setTimeout(r, 700));
+
+  const problems = [];
+  const homeText = await bodyText(pg);
+  if (!homeText.includes('Track the ADA process')) problems.push('harassment dashboard is missing the ADA process tracker tile');
+  if (homeText.includes('Track my records request')) problems.push('harassment dashboard wrongly offers the records-request tracker tile');
+
+  await click(pg, 'Track the ADA process');
+  await new Promise(r => setTimeout(r, 300));
+
+  await typeIntoField(pg, '#ada-date', '02092026');
+  await click(pg, 'Accommodation denied');
+  await pg.evaluate(() => { document.querySelector('#ada-notes').focus(); });
+  await pg.keyboard.type('HR denied the accommodation in writing', { delay: 5 });
+  await click(pg, 'Add to the process log');
+  await new Promise(r => setTimeout(r, 200));
+
+  const trackerText = await bodyText(pg);
+  if (!trackerText.includes('HR denied the accommodation in writing')) problems.push('ADA log entry note is not rendered for a harassment case');
+
+  const stored = await pg.evaluate(() => (JSON.parse(localStorage.getItem('worklaw.case.v2') || '{}').profile || {}));
+  if (!Array.isArray(stored.adaLog) || stored.adaLog.length !== 1 || stored.adaLog[0].date !== '2026-02-09' || stored.adaLog[0].what !== 'denied') {
+    problems.push('ADA log did not persist to profile.adaLog for a harassment case: ' + JSON.stringify(stored.adaLog));
+  }
+
+  // Appears in the exported case file, same as the discrimination case.
+  const doc = await captureExport(pg);
+  if (!doc) problems.push('case-file export never fired');
+  else {
+    if (!doc.includes('== ADA INTERACTIVE PROCESS ==')) problems.push('export is missing the ADA INTERACTIVE PROCESS section for a harassment case');
+    if (!doc.includes('HR denied the accommodation in writing')) problems.push('export ADA entry is missing its note for a harassment case');
+  }
+  errs.forEach(e => problems.push(e));
+
+  const ok = problems.length === 0;
+  if (!ok) fails++;
+  console.log((ok ? '✅' : '❌') + ' ADA interactive-process tracker is also reachable and works for a harassment case' + (ok ? '' : '\n   ' + problems.join('\n   ')));
+  await pg.close();
+}
+
+// 4. Neither tracker tile leaks onto an unrelated (wage) dashboard.
 {
   const { pg, errs } = await newPage();
   const seed = {
