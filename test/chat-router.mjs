@@ -18,6 +18,17 @@
  * person might sign — and a 1099/independent-contractor coverage question must
  * NOT get the overtime reply, which presupposes employee status and never
  * addresses the actual question asked.
+ *
+ * A third regression this file guards: isOvertime's own bare `\bwages?\b` stem
+ * previously swallowed the two CHAT_TOPICS entries whose natural phrasing
+ * contains that word — minimumWage ("what's the minimum wage") and
+ * wageClaimDeadline ("file a wage claim") — the single most common questions
+ * the CHAT_TOPICS expansion was built to answer. "what's the minimum wage in
+ * Texas" was returning the OVERTIME reply, carrying an FLSA overtime citation,
+ * instead of the state's own minimum-wage fact. `send()` now checks those two
+ * CHAT_TOPICS entries BEFORE isOvertime, without touching isOvertime's own
+ * match rule, so a genuine overtime question (several natural phrasings below)
+ * is provably unaffected.
  * Run: node test/chat-router.mjs
  */
 import { createServer } from 'node:http';
@@ -75,6 +86,18 @@ const CASES = [
   // "fired" — must still route to the retaliation reply, not the wrongful-
   // termination one, since the phrase "wrongful" never appears.
   { q:'I was fired right after I filed a complaint, is that retaliation?', expectSnippet:'Retaliation means' },
+  // isOvertime's bare "wage(s)" stem must NOT swallow the minimumWage/
+  // wageClaimDeadline CHAT_TOPICS entries — natural phrasing must reach the
+  // state's own fact, never the overtime reply's FLSA-overtime citation.
+  { q:"What's the minimum wage in Texas?", expectSnippet:'Texas sets its state minimum wage', expectCite:'Tex. Labor Code § 62.051', expectNotSnippet:'Not approved' },
+  { q:'How long do I have to file a wage claim?', expectSnippet:'Texas Workforce Commission', expectCite:'Tex. Labor Code § 61.051(c)', expectNotSnippet:'Not approved' },
+  // A genuine overtime question — several natural phrasings, including one
+  // that itself contains the bare word "wages" — must still reach the
+  // existing, unaffected overtime reply.
+  { q:'Am I owed overtime for last week?', expectSnippet:'Not approved' },
+  { q:'I worked unpaid hours this month, what can I do?', expectSnippet:'Not approved' },
+  { q:'My employer had me clock out but keep working off the clock.', expectSnippet:'Not approved' },
+  { q:"He didn't pay my wages for two weeks.", expectSnippet:'Not approved' },
 ];
 
 const b = await puppeteer.launch({ executablePath: chrome, headless: true, args: ['--no-sandbox'] });

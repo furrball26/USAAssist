@@ -844,14 +844,21 @@ const ISSUE_LIST = [
 // relevant; document review swaps it for a second severance-specific prompt
 // since "retaliation" is not the live question for a document someone hasn't
 // signed yet.
+// FIND-05 (docs/audit-2026-08-29.md) established the rule these three new chips
+// follow: a seeded button must actually route to a real answer, not a guess or
+// the fallback. Each is worded the way a person actually asks it — "what's the
+// minimum wage" — because the router (see the `send` precedence comment near
+// isOvertime below) now checks the minimumWage/wageClaimDeadline CHAT_TOPICS
+// entries BEFORE the bare "wage(s)" stem in isOvertime, so natural phrasing
+// reaches the correct topic instead of being swallowed by the overtime bucket.
 const PROMPT_TEXTS_BY_ISSUE = {
-  wage: ['Can my boss refuse to pay overtime?', 'What counts as retaliation?'],
-  harassment: ['What counts as harassment?', 'What counts as retaliation?', 'How do I ask for an ADA accommodation?'],
-  discrimination: ['What counts as discrimination?', 'What counts as retaliation?', 'How do I ask for an ADA accommodation?'],
-  termination: ['Is this a wrongful termination?', 'What counts as retaliation?'],
+  wage: ['Can my boss refuse to pay overtime?', 'What counts as retaliation?', "What's the minimum wage here?"],
+  harassment: ['What counts as harassment?', 'What counts as retaliation?', 'How do I ask for an ADA accommodation?', 'How long do I have to file an EEOC charge?'],
+  discrimination: ['What counts as discrimination?', 'What counts as retaliation?', 'How do I ask for an ADA accommodation?', 'How long do I have to file an EEOC charge?'],
+  termination: ['Is this a wrongful termination?', 'What counts as retaliation?', 'When do I get my last paycheck?'],
   document: ['Should I sign this severance?', 'What am I signing?'],
 };
-const PROMPT_TEXTS_GENERAL = ['Can my boss refuse to pay overtime?', 'How do I ask for an ADA accommodation?', 'What counts as retaliation?', 'Should I sign this severance?'];
+const PROMPT_TEXTS_GENERAL = ['Can my boss refuse to pay overtime?', 'How do I ask for an ADA accommodation?', 'What counts as retaliation?', 'Should I sign this severance?', 'When do I get my last paycheck?'];
 function promptTextsFor(issueKey){ return PROMPT_TEXTS_BY_ISSUE[issueKey] || PROMPT_TEXTS_GENERAL; }
 
 const TAB_DEFS = [['home','home','Home'],['chat','sparkle','Ask AI'],['log','log','Log'],['rights','rights','Rights'],['agencies','building','Agencies']];
@@ -883,6 +890,105 @@ const DISCRIMINATION_REPLY = { text:'Discrimination is adverse treatment — not
 // given state actually recognizes (and how) varies widely and is not modeled as a
 // single consistent content fact across states.
 const WRONGFUL_TERMINATION_REPLY = { text:'Most states follow "at-will" employment: either side can end the job at any time, for any reason or no reason — but not for an ILLEGAL one. The main exceptions courts generally recognize are (1) discriminatory discharge — firing because of a protected characteristic like race, sex, age 40+ or disability; (2) retaliatory discharge — firing for doing something legally protected, like reporting harassment or filing a wage claim; and, in many but not all states, (3) a public-policy exception (for example, firing you for refusing to break the law or for exercising a legal right) or (4) an implied-contract exception, where a handbook or specific promises undercut at-will status. Which of these applies depends on your state and your facts — log the stated reason, any change in that reason over time, and what you were doing right before you were let go.', cites:[] };
+
+// CHAT_TOPICS — routes a question that missed all six reviewed reply buckets
+// above onto the SAME sourced content dataset Rights/the wage estimator/the
+// wizards already read (content/_federal.json + content/states/*.json), instead
+// of the topic-neutral fallback. Modeled directly on stateFactFor/
+// pickDeadlineFactAcross: `stateTopics` lists the fact's possible topic KEYS in
+// priority order (a state file's own naming for the same concept varies — see
+// deadlineKeywordsFor above), tried against the ACTIVE state's own facts only;
+// `fedTopics` is tried against federal facts ONLY when it is genuinely the same
+// concept under federal law's own name (e.g. a state's "deadlines.wageClaim" and
+// the federal "deadlines.flsaWageClaim" are the same wage-claim-deadline concept
+// — a state's non-compete ENFORCEABILITY test is not the same concept as the
+// federal FTC rule's STATUS, so nonCompete below has no fedTopics fallback).
+// This router NEVER authors legal text: every substantive word in the reply is
+// the matched fact's own `summary`, its own `citation`, and its own `sourceUrl`
+// — see chatTopicReply. `frame` is a purely navigational lead-in sentence.
+// Match patterns are deliberately worded to avoid the trigger words the six
+// buckets above already claim (accommodat/ada/disab, wrongful+terminat/discharg/
+// fired, retaliat/fired/terminat/pushed out/let go, severance/release agreement/
+// release of claims, discriminat/harass/hostile work.../quid pro quo/unwelcome)
+// — a message containing any of those words is claimed by that earlier, more
+// specific bucket first.
+// isOvertime is the ONE exception: its bare `\bwages?\b` stem would otherwise
+// swallow the two topics below whose natural phrasing contains the word "wage"
+// — minimumWage ("what's the minimum wage") and wageClaimDeadline ("file a
+// wage claim") — the same FIND-05 failure mode as the wrongful-termination/
+// retaliation stem collision (see the isWrongfulTermination comment in `send`).
+// So `send` checks THOSE TWO CHAT_TOPICS entries specifically BEFORE isOvertime,
+// and only falls through to isOvertime — then the remaining CHAT_TOPICS entries
+// — once neither has matched. The other four topics here (finalPay,
+// discriminationDeadline, nonCompete, mealBreak) don't share a trigger word with
+// any of the six buckets, so their position after isOvertime is unaffected.
+// Seeded quick-reply chips are worded the way a person actually asks (see
+// PROMPT_TEXTS_BY_ISSUE) — natural phrasing now reaches the right topic.
+const CHAT_TOPICS = [
+  { id:'finalPay',
+    match: lower => /\b(final|last)\s+pay\s*check\b/.test(lower) || /\bfinal\s+pay\b/.test(lower) || /\blast\s+paycheck\b/.test(lower) || /\bwhen\s+(do|will|does)\s+i\s+(get|receive)\s+(my\s+)?(final|last)\s+(pay|paycheck|check)\b/.test(lower),
+    stateTopics:['final-pay', 'final-pay.timing', 'final-pay.wageClaim'],
+    fedTopics:[], // the FLSA sets no deadline for issuing a final paycheck — this is a state-only concept, so no federal fallback
+    frame: name => `Here's the rule on file for ${name} on your final paycheck:` },
+  { id:'minimumWage',
+    match: lower => /\bminimum\s+(hourly\s+)?(wage|pay|rate)\b/.test(lower) || /\blowest\s+(hourly\s+)?(pay|wage|rate)\b/.test(lower),
+    stateTopics:['minimumWage.hourly'],
+    fedTopics:['minimumWage.hourly'], // same concept, same topic name in both files
+    frame: name => `Here's the minimum-wage rule on file for ${name}:` },
+  { id:'wageClaimDeadline',
+    match: lower => /\bwage\s+claim\b/.test(lower) || (/\bunderpaid\b/.test(lower) && /\b(deadline|how long|statute of limitations|file)\b/.test(lower)) || /\blabor\s+(board|department|commissioner)\b.*\b(deadline|how long|file)\b/.test(lower),
+    stateTopics:['deadlines.wageClaim'],
+    fedTopics:['deadlines.flsaWageClaim'], // same wage-claim-deadline concept, federal file's own name for it
+    frame: name => `Here's the filing deadline on file for ${name} on unpaid wages:` },
+  { id:'discriminationDeadline',
+    match: lower => /\beeoc\s+charge\b/.test(lower) || /\bcharge\s+with\s+(the\s+)?eeoc\b/.test(lower) || /\bfile\s+(a\s+|an\s+)?charge\b/.test(lower),
+    stateTopics:['deadlines.discriminationComplaint', 'deadlines.fehaComplaint'],
+    fedTopics:['deadlines.eeocCharge'], // same discrimination-charge-deadline concept, federal file's own name
+    frame: name => `Here's the filing deadline on file for ${name} on a discrimination charge:` },
+  { id:'nonCompete',
+    match: lower => /\bnon-?compete\b/.test(lower),
+    stateTopics:['nonCompete.enforceability'],
+    fedTopics:[], // the federal fact here is the FTC RULE'S STATUS, a different question from a state's own enforceability test — not the same concept, so no fallback
+    frame: name => `Here's the non-compete rule on file for ${name}:` },
+  { id:'mealBreak',
+    match: lower => /\bmeal\s+break\b/.test(lower) || /\blunch\s+break\b/.test(lower) || /\brest\s+break\b/.test(lower),
+    stateTopics:['mealBreak'],
+    fedTopics:[], // the FLSA does not require meal or rest breaks — state-only concept
+    frame: name => `Here's the meal/rest-break rule on file for ${name}:` },
+];
+// Resolve one CHAT_TOPICS entry against the caller's OWN loaded state facts, then
+// (only for topics with a genuine federal equivalent) the federal facts, clearly
+// labeled FEDERAL — never a different state's facts, never a federal fact
+// presented as if it were state-specific. The reply text is always the fact's own
+// `summary` (plus, for a state fact from an unreviewed file, the same "(DRAFT —
+// pending attorney review)" note Rights/the wizards already show — see stRev
+// elsewhere); a topic with neither a state nor a federal fact on file gets an
+// honest no-answer, never a guess and never a citation.
+function chatTopicReply(topic, stFacts, fedFacts, stName, stFileReviewed){
+  const stFact = stateFactFor(stFacts, topic.stateTopics);
+  if (stFact) {
+    return {
+      text: topic.frame(stName) + ' ' + stFact.summary + (stFileReviewed ? '' : ' (DRAFT — pending attorney review)'),
+      cites: stFact.citation ? [stFact.citation] : [],
+      source: safeUrl(stFact.sourceUrl) ? { url: safeUrl(stFact.sourceUrl), label: stFact.citation || topic.id } : null,
+    };
+  }
+  const fedFact = topic.fedTopics.length ? stateFactFor(fedFacts, topic.fedTopics) : null;
+  if (fedFact) {
+    const noStateNote = stName === 'your state' ? 'No state-specific rule is on file for that' : `No ${stName}-specific rule is on file for that`;
+    return {
+      text: `${noStateNote} — here's the FEDERAL rule: ` + fedFact.summary,
+      cites: fedFact.citation ? [fedFact.citation] : [],
+      source: safeUrl(fedFact.sourceUrl) ? { url: safeUrl(fedFact.sourceUrl), label: fedFact.citation || topic.id } : null,
+    };
+  }
+  return {
+    text: `I don't have a sourced answer for ${stName} on that yet. Check Rights for what is on file, or Agencies for where to ask directly.`,
+    cites: [],
+    source: null,
+    cta: { label:'Open Rights', screen:'rights' },
+  };
+}
 
 /* ── Dynamic case model ───────────────────────────────────────────── */
 
@@ -2567,6 +2673,14 @@ function App(){
     const isClassificationQuestion = hasWord(/\b(1099|independent contractor|misclassif\w*|self-employed|gig work\w*|freelanc\w*)\b/)
       && (hasWord(/\bcovered\b/) || hasWord(/\bw-?2\b/) || hasWord(/\bemployee\b/));
     const isOvertime = !isClassificationQuestion && (hasWord(/\bovertime\b/) || hasWord(/\bunpaid\b/) || hasWord(/\boff[\s-]the[\s-]clock\b/) || hasWord(/\bwages?\b/));
+    // isOvertime's bare "wage(s)" stem would otherwise swallow the two
+    // CHAT_TOPICS entries whose natural phrasing contains that word —
+    // minimumWage ("what's the minimum wage") and wageClaimDeadline ("file a
+    // wage claim") — the same stem-collision failure FIND-05 already fixed for
+    // wrongful-termination/retaliation above. `contentTopic` (computed below,
+    // before this check is used) is looked up early so those two topics can be
+    // checked ahead of isOvertime in the final precedence, without touching
+    // isOvertime's own match rule or any of the five other buckets.
     // Discrimination/harassment — "discriminat*"/"harass*" and the standard legal
     // terms of art (hostile work environment, quid pro quo, unwelcome conduct) are
     // specific enough to fire on their own. A bare protected-characteristic word
@@ -2616,7 +2730,27 @@ function App(){
       text: "I can only give sample answers on a few topics: unpaid overtime and wages, discrimination and harassment, termination and retaliation, and severance or documents you've been asked to sign. Try rephrasing toward one of those. For anything else, your state labor agency or a local attorney (see Agencies) is the best next step.",
       cites: []
     };
-    const matched = isAda ? adaReply : isWrongfulTermination ? WRONGFUL_TERMINATION_REPLY : isRetaliation ? repliesResolved[1] : isDiscrimination ? discriminationReply : isSeverance ? repliesResolved[2] : isOvertime ? repliesResolved[0] : null;
+    // CHAT_TOPICS — resolved here so minimumWage/wageClaimDeadline (whose natural
+    // phrasing contains isOvertime's bare "wage(s)" stem — see the isOvertime
+    // comment above) can be checked BEFORE isOvertime in the precedence below.
+    // Every other CHAT_TOPICS entry is still checked LAST, only for a message
+    // none of the six reviewed buckets matched, so the existing precedence
+    // (isAda → isWrongfulTermination → isRetaliation → isDiscrimination →
+    // isSeverance → isOvertime) is unchanged for every other bucket/topic.
+    // See CHAT_TOPICS/chatTopicReply for why this never authors legal text.
+    const fedFacts = (federal && federal.facts) || [];
+    const stFileReviewed = !!(stateData && stateData.reviewed === true);
+    const contentTopic = CHAT_TOPICS.find(t => t.match(lower));
+    const wageStemTopic = contentTopic && (contentTopic.id === 'minimumWage' || contentTopic.id === 'wageClaimDeadline') ? contentTopic : null;
+    const matched = isAda ? adaReply
+      : isWrongfulTermination ? WRONGFUL_TERMINATION_REPLY
+      : isRetaliation ? repliesResolved[1]
+      : isDiscrimination ? discriminationReply
+      : isSeverance ? repliesResolved[2]
+      : wageStemTopic ? chatTopicReply(wageStemTopic, stFacts, fedFacts, stateLabel, stFileReviewed)
+      : isOvertime ? repliesResolved[0]
+      : contentTopic ? chatTopicReply(contentTopic, stFacts, fedFacts, stateLabel, stFileReviewed)
+      : null;
     setMessages(prev => {
       const next = prev.concat([{ role:'user', text }]);
       clearTimeout(timer.current);
@@ -3519,17 +3653,25 @@ function App(){
           return (
             <div key={idx} style={css('display:flex;flex-direction:column;gap:8px;align-items:' + (m.role === 'ai' ? 'flex-start' : 'flex-end') + ';animation:popin .22s ease both')}>
               <div style={css('max-width:300px;padding:15px 17px;border-radius:' + (m.role === 'ai' ? '18px 18px 18px 4px' : '18px 18px 4px 18px') + ';background:' + (m.role === 'ai' ? '#F0EDE5' : '#2B3AA8') + ';color:' + (m.role === 'ai' ? '#14181F' : '#fff') + ';border:2px solid ' + (m.role === 'ai' ? 'rgba(20,24,31,.14)' : '#2B3AA8') + ";font:400 17px/1.45 'Atkinson Hyperlegible',sans-serif")}>{m.text}</div>
-              {cites.length > 0 &&
+              {(cites.length > 0 || (m.source && safeUrl(m.source.url))) &&
                 <div style={css("display:flex;flex-wrap:wrap;gap:7px;max-width:300px")}>
                   {cites.map((c, ci) => <span key={ci} style={css("padding:7px 11px;border-radius:8px;background:#EEF1FF;border:2px solid #2B3AA8;font:600 13px 'IBM Plex Mono',monospace;color:#1B2778")}>{c}</span>)}
+                  {/* CHAT_TOPICS replies carry the matched fact's own sourceUrl, run
+                      through the same safeUrl() gate every other on-screen source
+                      link uses (never render a non-https:// scheme from content data). */}
+                  {m.source && safeUrl(m.source.url) &&
+                    <a href={safeUrl(m.source.url)} target="_blank" rel="noopener noreferrer" className="hoverfx" aria-label={'Official source for ' + (m.source.label || 'this answer')} style={css("display:inline-flex;align-items:center;min-height:44px;padding:7px 11px;border-radius:8px;background:#fff;border:2px solid #2B3AA8;font:600 13px 'IBM Plex Mono',monospace;color:#2B3AA8;text-decoration:none")}>Source ↗</a>
+                  }
                 </div>
               }
-              {/* Deep-links straight to the Letter screen with the CTA's letterType
-                  explicitly set — real for every issue, not just the ones whose
-                  Letter screen lists that kind as a tab (see letterKindsFor /
-                  Letter's activeKind). */}
+              {/* letterType CTAs deep-link straight to the Letter screen (real for
+                  every issue, not just the ones whose Letter screen lists that kind
+                  as a tab — see letterKindsFor/Letter's activeKind); `screen` CTAs
+                  (the CHAT_TOPICS honest-no-answer reply) just navigate the tab bar —
+                  used to route a topic with no sourced fact on file to Rights/Agencies
+                  instead of a guess. */}
               {m.cta &&
-                <button onClick={() => { setLetterType(m.cta.letterType); setLetterEdit(null); setScreen('letter'); }} className="hoverfx" style={css("min-height:44px;padding:11px 16px;border-radius:12px;border:2px solid #2B3AA8;background:#2B3AA8;color:#fff;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{m.cta.label}</button>
+                <button onClick={() => { if (m.cta.screen) { setScreen(m.cta.screen); } else { setLetterType(m.cta.letterType); setLetterEdit(null); setScreen('letter'); } }} className="hoverfx" style={css("min-height:44px;padding:11px 16px;border-radius:12px;border:2px solid #2B3AA8;background:#2B3AA8;color:#fff;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{m.cta.label}</button>
               }
             </div>
           );

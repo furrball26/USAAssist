@@ -14,6 +14,29 @@ on:
     # own documented flow with no pre-merge CI at all.
     branches: [main, auto/agents]
 
+# A PR from a claude/** branch into main/auto/agents matches BOTH triggers above for
+# the SAME commit (push, because claude/** is gated; pull_request, because it targets
+# main/auto/agents) — doubling CI time on every push. Key the concurrency group on the
+# actual commit being verified so both runs collapse into one instead of removing
+# either trigger's coverage.
+#
+# `github.sha` is NOT that commit for a pull_request event — GitHub sets it to the
+# ephemeral merge commit on refs/pull/N/merge, which differs from the push event's
+# `github.sha` for the identical head commit and would defeat the dedup. Use the PR's
+# actual head SHA when present (pull_request) and fall back to `github.sha` otherwise
+# (push, where it already IS the commit being verified).
+#
+# Grouping is per-commit, so this can only ever collapse runs that are verifying the
+# EXACT same commit (this push+pull_request duplicate, or the fast-forward main==
+# auto/agents deploy pushing the same SHA to two branches — also a legitimate
+# duplicate, since re-verifying identical content is redundant regardless of which
+# ref it landed on). It can never cancel a run for a genuinely different commit —
+# a different SHA always produces a different group — so an in-progress push run for
+# an earlier, distinct main/auto/agents commit is never at risk here.
+concurrency:
+  group: verify-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
 jobs:
   verify:
     runs-on: ubuntu-latest
