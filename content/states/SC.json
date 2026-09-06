@@ -6,7 +6,7 @@
   "facts": [
     {
       "topic": "minimumWage.hourly",
-      "value": "follows federal $7.25",
+      "value": 7.25,
       "summary": "South Carolina has no state minimum wage statute, so the federal minimum wage of $7.25 per hour applies to covered employers.",
       "citation": "No SC statute (federal FLSA, 29 U.S.C. § 206 controls)",
       "sourceUrl": "https://llr.sc.gov/wage/",

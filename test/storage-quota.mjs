@@ -115,6 +115,57 @@ for (const homeMode of ['standard', 'action', 'plain']) {
   await pg.close();
 }
 
+// Case 2b/2c: the warning is also reachable on the records-request and ADA
+// process trackers — both write meaningful, exported case data (see
+// process-trackers.mjs) but previously rendered no StorageWarningBanner at
+// all, so a quota-full save there failed with zero on-screen indication.
+{
+  const s = seed('standard');
+  s.stateSel = 'Texas'; s.county = 'Travis County'; s.issue = 'Fired or pushed out';
+  const pg = await pageWithFailingStorage(s);
+  const errs = [];
+  pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
+
+  await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('Track my records request')); if (btn) btn.click(); });
+  await new Promise(r => setTimeout(r, 400));
+
+  const alertText = await pg.evaluate(() => {
+    const el = [...document.querySelectorAll('[role="alert"]')].find(e => /couldn.t be saved/i.test(e.textContent));
+    return el ? el.textContent : null;
+  });
+  const problems = [];
+  if (!alertText || !WARNING_RE.test(alertText)) problems.push('no role="alert" storage warning found on the records-request tracker');
+  errs.forEach(e => problems.push(e));
+
+  const ok = problems.length === 0;
+  if (!ok) fails++;
+  console.log((ok ? '✅' : '❌') + ' a failed save surfaces a visible alert on the records-request tracker' + (ok ? '' : '\n   ' + problems.join('\n   ')));
+  await pg.close();
+}
+{
+  const s = seed('standard');
+  s.stateSel = 'California'; s.county = 'Los Angeles County'; s.issue = 'Discrimination';
+  const pg = await pageWithFailingStorage(s);
+  const errs = [];
+  pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
+
+  await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('Track the ADA process')); if (btn) btn.click(); });
+  await new Promise(r => setTimeout(r, 400));
+
+  const alertText = await pg.evaluate(() => {
+    const el = [...document.querySelectorAll('[role="alert"]')].find(e => /couldn.t be saved/i.test(e.textContent));
+    return el ? el.textContent : null;
+  });
+  const problems = [];
+  if (!alertText || !WARNING_RE.test(alertText)) problems.push('no role="alert" storage warning found on the ADA process tracker');
+  errs.forEach(e => problems.push(e));
+
+  const ok = problems.length === 0;
+  if (!ok) fails++;
+  console.log((ok ? '✅' : '❌') + ' a failed save surfaces a visible alert on the ADA process tracker' + (ok ? '' : '\n   ' + problems.join('\n   ')));
+  await pg.close();
+}
+
 // Case 3: a normal (non-failing) save shows no warning at all — the banner
 // must not be a false positive on every load.
 {

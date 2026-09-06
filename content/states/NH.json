@@ -18,7 +18,7 @@
     },
     {
       "topic": "minimumWage.hourly",
-      "value": "follows federal $7.25",
+      "value": 7.25,
       "summary": "New Hampshire pegs its minimum wage to the federal minimum wage, so the 2026 rate is $7.25 per hour.",
       "citation": "RSA 279:21",
       "sourceUrl": "https://gc.nh.gov/rsa/html/XXIII/279/279-21.htm",
