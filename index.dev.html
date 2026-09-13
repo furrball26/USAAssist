@@ -53,6 +53,32 @@
   label.fileInputCard:focus-within{ outline:3px solid #fff; outline-offset:2px; box-shadow:0 0 0 5px #14181F; }
   @keyframes popin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   @keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
+  /* Welcome illustration (WorkerArt / UsaTileMap). Lives here rather than in
+     the component because automation/render-shell.mjs injects THIS style block
+     verbatim into the Vercel shell — a keyframe defined anywhere else would
+     animate on Pages and sit dead on worklaw.app. */
+  @keyframes wlPop{0%{opacity:0;transform:scale(.5)}65%{transform:scale(1.1)}100%{opacity:1;transform:scale(1)}}
+  @keyframes wlRise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+  @keyframes wlSway{0%,100%{transform:translateY(0)}50%{transform:translateY(-2.5px)}}
+  .wlTile{opacity:0;animation:wlPop .34s cubic-bezier(.34,1.56,.64,1) forwards;transform-origin:center}
+  .wlWorker{opacity:0;animation:wlRise .55s ease-out forwards}
+  .wlWorker .wlBob{animation:wlSway 3.4s ease-in-out infinite;transform-origin:center bottom}
+  /* The intro is decoration on a screen people reach while stressed; motion is
+     never load-bearing. Reduced-motion users get the finished frame instantly,
+     not a slower version of the same thing. */
+  @media (prefers-reduced-motion:reduce){
+    .wlTile,.wlWorker,.wlWorker .wlBob{animation:none!important;opacity:1!important;transform:none!important}
+  }
+  /* State picker. Real <button>s in a CSS grid rather than SVG shapes: native
+     focus, native keyboard activation, and aria-pressed announce correctly
+     with no SVG accessibility workarounds. The app's global :focus-visible
+     halo ring applies to them unchanged. */
+  .wlStateGrid{display:grid;grid-template-columns:repeat(11,1fr);gap:3px;width:100%}
+  .wlStateBtn{aspect-ratio:1/1;min-width:0;padding:0;border:2px solid #14181F;border-radius:7px;
+    background:#fff;color:#14181F;font:600 clamp(9px,2.4vw,11px)/1 'IBM Plex Mono',monospace;
+    cursor:pointer;transition:background .12s ease}
+  .wlStateBtn:hover{background:#EEF1FF}
+  .wlStateBtn[aria-pressed="true"]{background:#2B3AA8;color:#fff}
 
   /* Device / app shell */
   #root{min-height:100%;display:flex;align-items:center;justify-content:center;padding:24px}
@@ -191,6 +217,61 @@ function topicKicker(topic){
     wages:'WAGES', termination:'TERMINATION', compensation:'COMPENSATION', nonCompete:'NON-COMPETE' };
   return m[p] || p.replace(/([A-Z])/g, ' $1').replace(/^./, c => c.toUpperCase()).toUpperCase();
 }
+/* ── Law categories ─────────────────────────────────────────────────
+   Plain-language groupings for browsing the dataset, named the way someone
+   with a problem would describe it ("Pay & overtime", "Leaving a job") rather
+   than the way the data is keyed.
+
+   Mapped by TOPIC PREFIX and curated deliberately, because the prefixes alone
+   do not group correctly: age discrimination is spelled four different ways
+   across state files (discrimination.age, .ageDiscrimination,
+   .protectedClasses.age, .ageCoverage) and tipped minimum wage three
+   (minimumWage.tipped, .tippedCash, .tippedCashWage). All of those share a
+   prefix, which is why prefix-level grouping is safe here — but anything
+   finer would have to reconcile the spellings first, and that is wl-content's
+   call, not a rendering decision.
+
+   Every prefix in content/ is claimed by exactly one category (asserted by
+   test/law-categories.mjs, which fails if a new prefix ships unmapped or two
+   categories claim the same one). Counts today: 492 facts across all eight. */
+const LAW_CATEGORIES = [
+  { key:'pay',      label:'Pay & overtime',
+    blurb:'Minimum wage, overtime, tips, equal pay, and when you must be paid.',
+    prefixes:['minimumWage','overtime','wagePayment','equalPay'] },
+  { key:'discrim',    label:'Discrimination & harassment',
+    blurb:'Who is protected, what counts, and what an employer must do about it.',
+    prefixes:['discrimination','harassment'] },
+  { key:'disability',       label:'Disability & accommodations',
+    blurb:'Reasonable accommodations and the interactive process.',
+    prefixes:['disability'] },
+  { key:'retaliation',    label:'Retaliation & speaking up',
+    blurb:'Being punished for complaining, whistleblowing, or discussing pay.',
+    prefixes:['retaliation','whistleblower','payDiscussion'] },
+  { key:'timeoff',     label:'Time off & breaks',
+    blurb:'Family and medical leave, sick time, and meal breaks.',
+    prefixes:['leave','mealBreak'] },
+  { key:'leaving',       label:'Leaving a job',
+    blurb:'Final paycheck timing, severance agreements, and non-competes.',
+    prefixes:['final-pay','severance','nonCompete'] },
+  { key:'deadlines',     label:'Deadlines to act',
+    blurb:'How long you have before a claim expires. These are unforgiving.',
+    prefixes:['deadlines'] },
+  { key:'remedies',   label:'What you can recover',
+    blurb:'Back pay, damages, attorney’s fees, and where to file.',
+    prefixes:['remedies','enforcement'] },
+];
+// prefix -> category key, built once.
+const TOPIC_PREFIX_CATEGORY = (() => {
+  const m = {};
+  LAW_CATEGORIES.forEach(c => c.prefixes.forEach(p => { m[p] = c.key; }));
+  return m;
+})();
+function topicPrefix(topic){ return String(topic || '').split('.')[0]; }
+function categoryOfTopic(topic){ return TOPIC_PREFIX_CATEGORY[topicPrefix(topic)] || null; }
+function factsInCategory(facts, catKey){
+  return (facts || []).filter(f => categoryOfTopic(f.topic) === catKey);
+}
+
 // Only ever render an https:// URL as an href — guards against a malformed/malicious
 // javascript:, data:, or other scheme reaching an <a href> from content data.
 function safeUrl(u){ return (typeof u === 'string' && /^https:\/\//i.test(u)) ? u : null; }
@@ -618,6 +699,189 @@ function Icon({ name, size = 22, strokeWidth = 2, style }) {
   );
 }
 
+/* ── US tile-grid map ───────────────────────────────────────────────
+   The 50 states + DC + PR laid out as a uniform grid cartogram rather than
+   true geographic boundaries. Two reasons, both about this app's users:
+
+   (a) ACCESSIBILITY / TAP TARGETS. A geographic map makes Rhode Island a
+       ~4px target next to a huge Texas. Every tile here is the same 30×30
+       (44px+ at render scale), so the picker works one-handed on a phone
+       and for anyone with a motor impairment — which matters more than
+       usual in an app whose own content is largely about disability
+       accommodation and who can't be excluded from work.
+   (b) NO BOUNDARY DATA. Real state/county geometry would have to come from
+       Census cartographic files on a .gov host; this repo has county NAMES
+       (national_county.txt) and no shapes at all. A hand-drawn silhouette
+       would be worse than an honest cartogram.
+
+   The map is ALWAYS paired with the plain <select> (see Onboarding) — it is
+   an enhancement over that control, never the only way to pick a state.
+   Grid is [abbr, column, row]; 11 columns × 8 rows. */
+const US_TILE_GRID = [
+  ['ME',10,0],['VT',9,1],['NH',10,1],
+  ['AK',0,2],['WI',5,2],['MI',6,2],['NY',8,2],['MA',9,2],['RI',10,2],
+  ['WA',0,3],['ID',1,3],['MT',2,3],['ND',3,3],['MN',4,3],['IL',5,3],['IN',6,3],['OH',7,3],['PA',8,3],['NJ',9,3],['CT',10,3],
+  ['OR',0,4],['NV',1,4],['WY',2,4],['SD',3,4],['IA',4,4],['MO',5,4],['KY',6,4],['WV',7,4],['VA',8,4],['MD',9,4],['DE',10,4],
+  ['CA',0,5],['UT',1,5],['CO',2,5],['NE',3,5],['KS',4,5],['AR',5,5],['TN',6,5],['NC',7,5],['SC',8,5],['DC',9,5],
+  ['AZ',1,6],['NM',2,6],['OK',3,6],['LA',4,6],['MS',5,6],['AL',6,6],['GA',7,6],
+  ['HI',0,7],['TX',3,7],['FL',7,7],['PR',10,7],
+];
+const TILE_S = 30, TILE_G = 3;
+const TILE_W = 11 * (TILE_S + TILE_G) - TILE_G;
+const TILE_H = 8 * (TILE_S + TILE_G) - TILE_G;
+
+/* Decorative-only tile USA for the welcome illustration — no controls, no
+   labels, aria-hidden (the parent <svg> carries the description). */
+function UsaTileDecor() {
+  return (
+    <g aria-hidden="true">
+      {US_TILE_GRID.map(([abbr, c, r], i) => (
+        <g key={abbr} className="wlTile" style={{ animationDelay: (0.035 * i).toFixed(2) + 's' }}>
+          <rect x={c * (TILE_S + TILE_G)} y={r * (TILE_S + TILE_G)} width={TILE_S} height={TILE_S}
+            rx="7" fill={WELCOME_TINT[abbr] || '#fff'} stroke="#14181F" strokeWidth="3" />
+        </g>
+      ))}
+    </g>
+  );
+}
+/* A handful of tiles tinted so the map reads as a populated country rather
+   than an empty grid. Purely decorative — carries no data meaning. */
+const WELCOME_TINT = { CA:'#EEF1FF', TX:'#EEF1FF', NY:'#EEF1FF', FL:'#EEF1FF', IL:'#EEF1FF', WA:'#EEF1FF', GA:'#EEF1FF' };
+
+/* Interactive state picker. Renders only the tiles the app has content for
+   (US_STATES — 50 today, no DC/PR yet; content/states/ has no file for either),
+   so there is never a tile that selects nothing. When DC or PR content lands,
+   adding the name to US_STATES lights its tile up with no change here. */
+function UsaStatePicker({ value, onPick }) {
+  const byAbbr = {};
+  US_STATES.forEach(n => { byAbbr[US_STATE_ABBR[n]] = n; });
+  return (
+    <div className="wlStateGrid" role="group" aria-label="Pick your state from the map">
+      {US_TILE_GRID.map(([abbr, c, r]) => {
+        const name = byAbbr[abbr];
+        if (!name) return null;
+        const on = value === name;
+        return (
+          <button key={abbr} type="button" className="wlStateBtn" aria-pressed={on}
+            aria-label={name} onClick={() => onPick(name)}
+            style={{ gridColumn: c + 1, gridRow: r + 1 }}>{abbr}</button>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ── Welcome illustration ───────────────────────────────────────────
+   Six workers under the tile map. The cast is deliberate, not decorative:
+   this app's content is about who employment law protects, so the people it
+   pictures include a wheelchair user (ADA), a visibly older worker (ADEA),
+   and a worker in hijab (Title VII religion) alongside the construction,
+   food-service and warehouse jobs where wage theft actually concentrates.
+
+   Drawn in local coordinates with FEET AT y=0 and the head at y=-62, so each
+   figure is positioned by a single translate() onto the shared ground line.
+   Flat fills with 2.5px ink outlines — the same border language as .device /
+   .screen and the fact cards. */
+const WL_SKIN = { l:'#FFDBB4', lm:'#F2C9A0', m:'#E0A97C', mt:'#C68642', md:'#8D5524', d:'#5C3317' };
+const WL_INK = '#14181F';
+
+/* Shared body: legs, arms (drawn under the torso so only the outer arm and
+   hand read), torso, head. */
+function wlBase(skin, shirt, w) {
+  const sx = (w || 23) / 2, top = -49, ay = top + 7;
+  return (
+    <>
+      <rect x="-8" y="-19" width="7" height="19" rx="2" fill="#3A4150" stroke={WL_INK} strokeWidth="2" />
+      <rect x="1" y="-19" width="7" height="19" rx="2" fill="#3A4150" stroke={WL_INK} strokeWidth="2" />
+      <path d={`M${-sx + 1} ${ay}L${-sx - 6} ${ay + 20}M${sx - 1} ${ay}L${sx + 6} ${ay + 20}`} stroke={WL_INK} strokeWidth="6.5" strokeLinecap="round" />
+      <path d={`M${-sx + 1} ${ay}L${-sx - 6} ${ay + 20}M${sx - 1} ${ay}L${sx + 6} ${ay + 20}`} stroke={shirt} strokeWidth="3" strokeLinecap="round" />
+      <circle cx={-sx - 6} cy={ay + 22} r="3.3" fill={skin} stroke={WL_INK} strokeWidth="2" />
+      <circle cx={sx + 6} cy={ay + 22} r="3.3" fill={skin} stroke={WL_INK} strokeWidth="2" />
+      <path d={`M${-sx} ${top}h${w || 23}a4 4 0 0 1 4 4v${-top - 23}a4 4 0 0 1-4 4h${-(w || 23)}a4 4 0 0 1-4-4v${top + 23}a4 4 0 0 1 4-4Z`} fill={shirt} stroke={WL_INK} strokeWidth="2.5" />
+      <circle cx="0" cy="-62" r="11" fill={skin} stroke={WL_INK} strokeWidth="2.5" />
+    </>
+  );
+}
+function wlFace(hy) {
+  const y = hy || -62;
+  return (
+    <>
+      <circle cx="-3.8" cy={y + 1} r="1.6" fill={WL_INK} />
+      <circle cx="3.8" cy={y + 1} r="1.6" fill={WL_INK} />
+      <path d={`M-3 ${y + 5.5}q3 2.6 6 0`} stroke={WL_INK} strokeWidth="1.8" fill="none" strokeLinecap="round" />
+    </>
+  );
+}
+function wlHair(color, hy) {
+  const y = hy || -62;
+  return <path d={`M-11 ${y - 4}q11-11 22 0q-1-10-11-10t-11 10`} fill={color} />;
+}
+
+const WL_WORKERS = [
+  // Construction — hard hat
+  <>{wlBase(WL_SKIN.md, '#2B3AA8')}
+    <path d="M-12 -66a12 12 0 0 1 24 0z" fill="#FFC83D" stroke={WL_INK} strokeWidth="2.5" strokeLinejoin="round" />
+    <path d="M-15.5 -66h31" stroke={WL_INK} strokeWidth="2.5" strokeLinecap="round" />
+    {wlFace()}</>,
+  // Healthcare — hijab
+  <>{wlBase(WL_SKIN.mt, '#136B3C')}
+    <path d="M-13.5 -62a13.5 13.5 0 0 1 27 0v6q0 8-5 8h-17q-5 0-5-8z" fill="#B3264F" stroke={WL_INK} strokeWidth="2.5" />
+    <circle cx="0" cy="-61" r="9.5" fill={WL_SKIN.mt} stroke={WL_INK} strokeWidth="2.5" />
+    {wlFace(-61)}</>,
+  // Office — wheelchair user (seated: its own build, not wlBase)
+  <><circle cx="-4" cy="-13" r="13" fill="#FFFDF8" stroke={WL_INK} strokeWidth="2.5" />
+    <circle cx="-4" cy="-13" r="2.8" fill={WL_INK} />
+    <path d="M-4 -26v26M-17 -13h26M-13.2 -22.2l18.4 18.4M-13.2 -3.8l18.4-18.4" stroke={WL_INK} strokeWidth="1.3" />
+    <circle cx="14" cy="-4" r="4.2" fill="#FFFDF8" stroke={WL_INK} strokeWidth="2" />
+    <path d="M-13 -26v-12" stroke={WL_INK} strokeWidth="2.5" strokeLinecap="round" />
+    <path d="M-9 -24h17l5 9h-22z" fill="#4A5162" stroke={WL_INK} strokeWidth="2.5" strokeLinejoin="round" />
+    <path d="M10 -40l8 14" stroke={WL_INK} strokeWidth="6.5" strokeLinecap="round" />
+    <path d="M10 -40l8 14" stroke="#B3264F" strokeWidth="3" strokeLinecap="round" />
+    <circle cx="18" cy="-24" r="3.3" fill={WL_SKIN.d} stroke={WL_INK} strokeWidth="2" />
+    <path d="M-11.5 -47h23a4 4 0 0 1 4 4v19h-31v-19a4 4 0 0 1 4-4Z" fill="#B3264F" stroke={WL_INK} strokeWidth="2.5" />
+    <circle cx="0" cy="-60" r="11" fill={WL_SKIN.d} stroke={WL_INK} strokeWidth="2.5" />
+    {wlHair(WL_INK, -60)}{wlFace(-60)}</>,
+  // Food service — apron
+  <>{wlBase(WL_SKIN.lm, '#FFF4D6')}
+    <path d="M-6.5 -45h13v26h-13z" fill="#C9553D" stroke={WL_INK} strokeWidth="2" />
+    <path d="M-4.5 -45l4.5-4 4.5 4" fill="none" stroke={WL_INK} strokeWidth="2" strokeLinecap="round" />
+    {wlHair('#C9553D')}{wlFace()}</>,
+  // Warehouse — hi-vis vest
+  <>{wlBase(WL_SKIN.m, '#FFC83D')}
+    <path d="M-5 -47v28M5 -47v28" stroke="#FFFDF8" strokeWidth="3.2" />
+    <path d="M-11.5 -30h23" stroke="#FFFDF8" strokeWidth="3.2" />
+    {wlHair('#8C6239')}{wlFace()}</>,
+  // Older office worker — glasses + cane
+  <>{wlBase(WL_SKIN.l, '#1B2778')}
+    <path d="M0 -49v30" stroke="#FFFDF8" strokeWidth="2" />
+    <path d="M20 -20v20" stroke={WL_INK} strokeWidth="2.5" strokeLinecap="round" />
+    <path d="M20 -20q-5 0-5 4" fill="none" stroke={WL_INK} strokeWidth="2.5" strokeLinecap="round" />
+    {wlHair('#9AA0A8')}
+    <circle cx="-4.4" cy="-61" r="3.7" fill="none" stroke={WL_INK} strokeWidth="1.7" />
+    <circle cx="4.4" cy="-61" r="3.7" fill="none" stroke={WL_INK} strokeWidth="1.7" />
+    <path d="M-0.7 -61h1.4" stroke={WL_INK} strokeWidth="1.7" />
+    <path d="M-3 -55.5q3 2.6 6 0" stroke={WL_INK} strokeWidth="1.8" fill="none" strokeLinecap="round" /></>,
+];
+const WL_WORKER_X = [44, 101, 158, 216, 273, 328];
+
+/* One <svg> with a single role="img" + aria-label: a screen-reader user gets
+   one short description, not 52 tiles and six figures announced individually. */
+function WelcomeArt() {
+  return (
+    <svg viewBox="0 0 360 284" width="100%" role="img"
+      aria-label="Illustration: workers of different jobs, ages and abilities standing below a map of the United States"
+      style={{ display: 'block', maxWidth: '420px', margin: '0 auto' }}>
+      <g transform="translate(84,4) scale(.55)"><UsaTileDecor /></g>
+      <path d="M14 252h332" stroke="#14181F" strokeWidth="2" strokeLinecap="round" opacity=".18" />
+      {WL_WORKERS.map((w, i) => (
+        <g key={i} className="wlWorker" style={{ animationDelay: (1.0 + i * 0.1).toFixed(2) + 's' }}>
+          <g className="wlBob"><g transform={`translate(${WL_WORKER_X[i]},250)`}>{w}</g></g>
+        </g>
+      ))}
+    </svg>
+  );
+}
+
 /* ── Static content (ported verbatim from the design) ─────────────── */
 
 const RESULTS_WAGE = {
@@ -1040,6 +1304,19 @@ function isQuotaExceededError(e){
 function saveCase(obj){
   try { localStorage.setItem(STORE_KEY, JSON.stringify(obj)); return { ok:true, quotaExceeded:false }; }
   catch(e){ return { ok:false, quotaExceeded: isQuotaExceededError(e) }; }
+}
+// Whether this device has already seen the welcome illustration. Deliberately
+// NOT part of the case blob: clearing a case must not replay the intro (see
+// the initial-screen comment in App), and a failed/blocked localStorage read
+// should land someone in the app rather than trap them on a splash screen —
+// so every failure path here returns "already seen".
+const SEEN_WELCOME_KEY = 'worklaw.seenWelcome.v1';
+function hasSeenWelcome(){
+  try { return localStorage.getItem(SEEN_WELCOME_KEY) === '1'; }
+  catch(e){ return true; }
+}
+function markWelcomeSeen(){
+  try { localStorage.setItem(SEEN_WELCOME_KEY, '1'); } catch(e){ /* best-effort; a repeat intro is harmless */ }
 }
 function daysAgo(iso){
   if(!iso) return 0;
@@ -2382,7 +2659,13 @@ function App(){
     // the live case with no confirmation. Only honor a stale history screen
     // for an onboarded case when it names a real in-app screen.
     if (typeof histScreen === 'string' && saved.onboarded && histScreen !== 'onboarding') return histScreen;
-    return saved.onboarded ? 'home' : 'onboarding';
+    if (saved.onboarded) return 'home';
+    // First-ever visit gets the welcome illustration before the form. Gated on
+    // its own device-level key rather than on `onboarded`, so "Delete my case
+    // & start over" drops someone back into onboarding without replaying an
+    // orientation they have already seen — that button is for an existing user
+    // starting a second case, not a new visitor.
+    return hasSeenWelcome() ? 'onboarding' : 'welcome';
   });
   // Restored from the saved case the same way wizNode/wizPath are — so a
   // reload mid-onboarding (after picking state/county/issue but before
@@ -2467,6 +2750,10 @@ function App(){
     (saved.messages && saved.messages.length) ? saved.messages : [{ role:'ai', text: issueCfg(saved.issue).chatSeed }]
   );
   const [entries, setEntries] = useState(() => saved.entries || []);
+  // Which law category the Rights library is showing (null = the index).
+  // Screen-local browse state, deliberately NOT persisted into the case blob:
+  // where someone was reading is not part of their case.
+  const [rightsCat, setRightsCat] = useState(null);
   const [storageWarning, setStorageWarning] = useState(false); // R12 — true when the last save to localStorage failed (quota full)
 
   const timer = useRef(null);
@@ -2768,7 +3055,7 @@ function App(){
   const stateLabel = stateSel || 'your state'; // fall back when onboarding was skipped without a state
   const locationLabel = county ? county + (stateAbbr ? ', ' + stateAbbr : '') : (stateSel || 'your location');
   const countyShort = county ? county.replace(/\s+(County|Parish|Borough|Census Area|Municipio|Municipality|city)$/i, '') : (stateSel || 'your area');
-  const showTabs = screen !== 'onboarding';
+  const showTabs = screen !== 'onboarding' && screen !== 'welcome';
 
   // ── Derived, input-driven case values (no hardcoded persona) ──
   const cfg = issueCfg(issue);
@@ -2998,6 +3285,35 @@ function App(){
 
   /* ── Screen renderers ──────────────────────────────────────────── */
 
+  /* First-run welcome. Deliberately ONE screen with one action — someone who
+     opens this app may have been fired yesterday, so the intro is warm but
+     brief, and it never sits between them and the content: Skip is a real
+     control, and the illustration's motion is decorative (see the
+     prefers-reduced-motion block in the style sheet). */
+  const Welcome = () => {
+    const enter = () => { markWelcomeSeen(); setScreen('onboarding'); };
+    return (
+      <div style={css("padding:14px 24px 40px;display:flex;flex-direction:column;gap:18px;min-height:100%")}>
+        <WelcomeArt />
+        <h1 style={css("margin:0;font:700 30px/1.12 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>Know your rights at work</h1>
+        <p style={css("margin:0;font:400 18px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty")}>
+          Plain-English employment law for every state — what you’re owed, what counts as discrimination, and how long you have to act.
+        </p>
+        <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>
+          Free, and private by design: everything you enter stays on this device. This is legal information, not legal advice.
+        </p>
+        <button onClick={enter} className="surfacefx"
+          style={css("min-height:52px;padding:14px 18px;border-radius:14px;border:2px solid #14181F;background:#2B3AA8;color:#fff;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>
+          Find my state’s rules
+        </button>
+        <button onClick={enter}
+          style={css("align-self:center;min-height:44px;padding:10px 14px;background:none;border:none;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;text-decoration:underline;cursor:pointer")}>
+          Skip
+        </button>
+      </div>
+    );
+  };
+
   const Onboarding = () => {
     // Re-entering this flow to EDIT an existing case (via the ◉ pill) stages
     // changes in editDraft — nothing here touches the live case (stateSel/county/
@@ -3040,6 +3356,13 @@ function App(){
 
       {onbStep === 1 &&
         <div style={css("display:flex;flex-direction:column;gap:14px")}>
+          {/* Map first because it's the faster path for most people, but the
+              <select> below is NOT a fallback — it stays the labelled, fully
+              conventional control. Anyone who can't or won't use a grid of
+              2-letter tiles (screen magnifier, tremor, unfamiliar abbreviations,
+              "is my state MI or MN?") loses nothing by ignoring the map. Both
+              write the same state, so they can't disagree. */}
+          <UsaStatePicker value={dStateSel} onPick={setDStateSel} />
           <label htmlFor="onb-state" style={css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em")}>STATE</label>
           <select id="onb-state" value={dStateSel} onChange={e => setDStateSel(e.target.value)} style={css("width:100%;padding:15px;border-radius:12px;border:2px solid #14181F;background:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer;appearance:menulist;-webkit-appearance:menulist")}>
             <option value="">Select your state…</option>
@@ -5169,17 +5492,45 @@ function App(){
     );
   };
 
-  const factCard = (f, i, scopeLabel, scopeTone) => (
-    <div key={scopeLabel + i} style={css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff")}>
-      <p style={css("margin:0 0 6px;font:600 13px 'IBM Plex Mono',monospace;color:#4A5162;letter-spacing:.04em")}>{topicKicker(f.topic)}</p>
-      <p style={css("margin:0 0 12px;font:400 16px/1.5 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{f.summary}</p>
-      <div style={css("display:flex;gap:8px;flex-wrap:wrap;align-items:center")}>
-        <span style={css('padding:7px 11px;border-radius:8px;background:' + scopeTone + ";border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace;color:#14181F")}>{scopeLabel}</span>
-        {f.citation ? <span style={css("padding:7px 11px;border-radius:8px;background:#EEF1FF;font:600 13px 'IBM Plex Mono',monospace;color:#1B2778")}>{f.citation}</span> : null}
-        {safeUrl(f.sourceUrl) ? <a href={safeUrl(f.sourceUrl)} target="_blank" rel="noopener noreferrer" className="hoverfx" aria-label={'Official source for ' + (f.citation || f.topic)} style={css("display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:7px 11px;border-radius:8px;background:#fff;border:2px solid #2B3AA8;font:600 13px 'IBM Plex Mono',monospace;color:#2B3AA8;text-decoration:none")}>Source ↗</a> : null}
+  /* Two-layer fact card: what it means for you, then the law it comes from.
+     The plain-English `summary` leads at reading size; the citation, the
+     operative value and the official source sit in a visually distinct block
+     beneath it under a "THE LAW" heading, so the two are never confused for
+     each other.
+
+     `value` is shown as the operative figure ONLY when it adds something the
+     summary doesn't already say in words — a bare numeric ($16.50, 684) is
+     worth surfacing as the number to quote, while a prose value ("1.5x after
+     40 hrs/week") would just restate the sentence directly above it.
+
+     What this block deliberately does NOT contain is statutory text. The
+     dataset carries citations and source URLs, not the words of the statute;
+     fetching them is blocked (see docs/content-fetcher-architecture.md) and
+     writing them would be authoring legal content, which AUTONOMY.md forbids.
+     So the block cites and links, and says plainly that the source is where
+     the actual text lives. */
+  const factCard = (f, i, scopeLabel, scopeTone) => {
+    const val = factValStr(f.value);
+    const showVal = val && typeof f.value === 'number';
+    return (
+      <div key={scopeLabel + i} style={css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff")}>
+        <p style={css("margin:0 0 6px;font:600 13px 'IBM Plex Mono',monospace;color:#4A5162;letter-spacing:.04em")}>{topicKicker(f.topic)}</p>
+        <p style={css("margin:0 0 14px;font:400 17px/1.55 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{f.summary}</p>
+        <div style={css("padding:13px 14px;border-radius:12px;background:#F0EDE5;border:2px solid rgba(20,24,31,.14)")}>
+          <p style={css("margin:0 0 8px;font:700 12px 'IBM Plex Mono',monospace;color:#4A5162;letter-spacing:.06em")}>THE LAW</p>
+          {showVal ? <p style={css("margin:0 0 8px;font:700 19px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{val}</p> : null}
+          {f.citation ? <p style={css("margin:0 0 4px;font:600 14px/1.45 'IBM Plex Mono',monospace;color:#1B2778;overflow-wrap:anywhere")}>{f.citation}</p> : null}
+          {f.sourceAgency ? <p style={css("margin:0;font:400 13px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{f.sourceAgency}</p> : null}
+          <div style={css("display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px")}>
+            <span style={css('padding:7px 11px;border-radius:8px;background:' + scopeTone + ";border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace;color:#14181F")}>{scopeLabel}</span>
+            {safeUrl(f.sourceUrl)
+              ? <a href={safeUrl(f.sourceUrl)} target="_blank" rel="noopener noreferrer" className="hoverfx" aria-label={'Read the official text of ' + (f.citation || f.topic) + ' (opens in a new tab)'} style={css("display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:7px 11px;border-radius:8px;background:#fff;border:2px solid #2B3AA8;font:600 13px 'IBM Plex Mono',monospace;color:#2B3AA8;text-decoration:none")}>Read the official text ↗</a>
+              : null}
+          </div>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const RightsLib = () => {
     const stName = stateSel || 'your state';
@@ -5196,25 +5547,73 @@ function App(){
         {!federal && !contentErr ? <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Loading…</p> : null}
 
         {stateData && !stReviewed ?
-          <DraftStateNotice stName={stName} extra={fedFacts.length ? 'The federal protections below apply nationwide.' : ''} /> : null}
+          <DraftStateNotice stName={stName} extra={fedFacts.length ? 'Federal protections apply nationwide — browse them by category below.' : ''} /> : null}
         {stateData === undefined ? <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Loading {stName} rules…</p> : null}
         {/* If the FEDERAL fetch also failed (contentErr), fedFacts is empty and the
             block below never renders — so don't promise "the federal protections
             below" when there's nothing below. That promise only holds when the
             federal facts actually loaded. */}
-        {stateErr ? <p style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load {stName} rules. Check your connection and reopen — this is not a confirmation that no extra state protections apply.{fedFacts.length ? ' The federal protections below still apply nationwide.' : ' Federal protections could not be loaded either — try again once you have a connection.'}</p> : null}
+        {stateErr ? <p style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load {stName} rules. Check your connection and reopen — this is not a confirmation that no extra state protections apply.{fedFacts.length ? ' Federal protections still apply nationwide — browse them by category below.' : ' Federal protections could not be loaded either — try again once you have a connection.'}</p> : null}
 
-        {stFacts.length ?
-          <div style={css("display:flex;flex-direction:column;gap:12px")}>
-            <p style={css("margin:2px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em")}>{stName.toUpperCase()}{stReviewed ? '' : ' (DRAFT)'}</p>
-            {stFacts.map((f, i) => factCard(f, i, stAbbr || stName.toUpperCase(), '#EEF1FF'))}
+        {/* Category index. Browsing 492 facts as one flat list was the old
+            behaviour and gave no way in; these are the eight plain-language
+            groupings (LAW_CATEGORIES), each showing how many rules actually
+            exist for THIS user — state plus federal — so nobody opens an
+            empty drawer. A category with nothing is still listed, greyed and
+            unclickable, because hiding it would imply the subject doesn't
+            exist rather than that we haven't recorded it yet. */}
+        {!rightsCat && (federal || stateData) ?
+          <div style={css("display:flex;flex-direction:column;gap:10px")}>
+            {LAW_CATEGORIES.map(cat => {
+              const n = factsInCategory(stFacts, cat.key).length + factsInCategory(fedFacts, cat.key).length;
+              if (!n) return (
+                <div key={cat.key} style={css("padding:16px 18px;border-radius:14px;border:2px dashed rgba(20,24,31,.22);background:transparent")}>
+                  <p style={css("margin:0;font:700 18px/1.25 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{cat.label}</p>
+                  <p style={css("margin:4px 0 0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Nothing recorded yet for {stName}. That doesn’t mean no rule applies — ask a lawyer or the agency before assuming.</p>
+                </div>
+              );
+              return (
+                <button key={cat.key} onClick={() => setRightsCat(cat.key)} className="hoverfx"
+                  style={css("text-align:left;padding:16px 18px;border-radius:14px;border:2px solid #14181F;background:#fff;cursor:pointer;display:flex;flex-direction:column;gap:4px;min-height:44px")}>
+                  <span style={css("display:flex;align-items:baseline;justify-content:space-between;gap:10px")}>
+                    <span style={css("font:700 19px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{cat.label}</span>
+                    <span style={css("flex:none;font:600 13px 'IBM Plex Mono',monospace;color:#4A5162")}>{n}</span>
+                  </span>
+                  <span style={css("font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{cat.blurb}</span>
+                </button>
+              );
+            })}
           </div> : null}
 
-        {fedFacts.length ?
-          <div style={css("display:flex;flex-direction:column;gap:12px")}>
-            <p style={css("margin:6px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em")}>FEDERAL — APPLIES NATIONWIDE</p>
-            {fedFacts.map((f, i) => factCard(f, i, 'FEDERAL', '#F0EDE5'))}
-          </div> : null}
+        {/* One category, state rules first (they're what differs from the
+            federal floor most people half-know), then federal. */}
+        {rightsCat ? (() => {
+          const cat = LAW_CATEGORIES.find(c => c.key === rightsCat);
+          if (!cat) return null;
+          const st = factsInCategory(stFacts, cat.key);
+          const fed = factsInCategory(fedFacts, cat.key);
+          return (
+            <div style={css("display:flex;flex-direction:column;gap:14px")}>
+              <button onClick={() => setRightsCat(null)} aria-label="Back to all categories"
+                style={css("align-self:flex-start;display:flex;align-items:center;gap:4px;min-height:44px;padding:10px 12px;margin:-8px 0 -10px -10px;background:none;border:none;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}>
+                <Icon name="back" size={18} /> All categories
+              </button>
+              <h2 style={css("margin:0;font:700 24px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{cat.label}</h2>
+              {st.length ?
+                <div style={css("display:flex;flex-direction:column;gap:12px")}>
+                  <p style={css("margin:2px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em")}>{stName.toUpperCase()}{stReviewed ? '' : ' (DRAFT)'}</p>
+                  {st.map((f, i) => factCard(f, i, stAbbr || stName.toUpperCase(), '#EEF1FF'))}
+                </div> : null}
+              {fed.length ?
+                <div style={css("display:flex;flex-direction:column;gap:12px")}>
+                  <p style={css("margin:6px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em")}>FEDERAL — APPLIES NATIONWIDE</p>
+                  {fed.map((f, i) => factCard(f, i, 'FEDERAL', '#F0EDE5'))}
+                </div> : null}
+              {!st.length && !fed.length ?
+                <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Nothing recorded here yet for {stName}. That is a gap in our data, not a statement that no rule applies.</p> : null}
+            </div>
+          );
+        })() : null}
         <p style={css("margin:4px 0 0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>This is legal information for {stName}, not legal advice, and laws change. Confirm anything important with an attorney.</p>
       </div>
     );
@@ -5378,7 +5777,7 @@ function App(){
   );
 
   const SCREENS = {
-    onboarding: Onboarding, home: HomeScreen, chat: Chat, wizard: Wizard, log: Log,
+    welcome: Welcome, onboarding: Onboarding, home: HomeScreen, chat: Chat, wizard: Wizard, log: Log,
     doc: Doc, noncompete: NonCompeteChecker, damages: DamagesEstimator, letter: Letter, strength: Strength, rights: RightsLib, agencies: Agencies,
     recordsRequest: RecordsRequestTracker, adaProcess: AdaProcessTracker, allTools: AllTools
   };
