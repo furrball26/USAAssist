@@ -107,7 +107,24 @@ try {
   const problems = [];
   if (!/Couldn.t load California rules/.test(bodyText)) problems.push('expected the state-fetch error banner, got: ' + JSON.stringify(bodyText.slice(0, 300)));
   if (!/federal protections (below )?(still )?appl(y|ies) nationwide/i.test(bodyText)) problems.push('federal facts DID load but the banner dropped the (now-true) "federal protections below" line: ' + JSON.stringify(bodyText.slice(0, 500)));
-  if (!/FEDERAL — APPLIES NATIONWIDE/.test(bodyText)) problems.push('federal facts section did not actually render');
+  // The Rights library now opens on the category index (LAW_CATEGORIES), so
+  // federal facts are one click down rather than directly beneath the banner.
+  // What still has to hold is that the banner's promise is REACHABLE and not a
+  // pointer into nothing: at least one category must offer facts, and opening
+  // it must actually produce the federal section. That is a stronger check
+  // than the old string match, which only proved a heading existed somewhere
+  // on the page.
+  const opened = await pg.evaluate(() => {
+    const btn = [...document.querySelectorAll('button')]
+      .find(b => /Discrimination & harassment|Pay & overtime|Deadlines to act/.test(b.textContent));
+    if (!btn) return false;
+    btn.click();
+    return true;
+  });
+  if (!opened) problems.push('the banner promised federal protections but no category was offered to reach them');
+  await new Promise(r => setTimeout(r, 400));
+  const catText = await pg.evaluate(() => document.body.innerText);
+  if (opened && !/FEDERAL — APPLIES NATIONWIDE/.test(catText)) problems.push('opening a category did not render the federal facts the banner promised');
   errs.forEach(e => problems.push(e));
 
   const ok = problems.length === 0;
