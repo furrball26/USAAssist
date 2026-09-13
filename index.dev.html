@@ -217,6 +217,61 @@ function topicKicker(topic){
     wages:'WAGES', termination:'TERMINATION', compensation:'COMPENSATION', nonCompete:'NON-COMPETE' };
   return m[p] || p.replace(/([A-Z])/g, ' $1').replace(/^./, c => c.toUpperCase()).toUpperCase();
 }
+/* ── Law categories ─────────────────────────────────────────────────
+   Plain-language groupings for browsing the dataset, named the way someone
+   with a problem would describe it ("Pay & overtime", "Leaving a job") rather
+   than the way the data is keyed.
+
+   Mapped by TOPIC PREFIX and curated deliberately, because the prefixes alone
+   do not group correctly: age discrimination is spelled four different ways
+   across state files (discrimination.age, .ageDiscrimination,
+   .protectedClasses.age, .ageCoverage) and tipped minimum wage three
+   (minimumWage.tipped, .tippedCash, .tippedCashWage). All of those share a
+   prefix, which is why prefix-level grouping is safe here — but anything
+   finer would have to reconcile the spellings first, and that is wl-content's
+   call, not a rendering decision.
+
+   Every prefix in content/ is claimed by exactly one category (asserted by
+   test/law-categories.mjs, which fails if a new prefix ships unmapped or two
+   categories claim the same one). Counts today: 492 facts across all eight. */
+const LAW_CATEGORIES = [
+  { key:'pay',      label:'Pay & overtime',
+    blurb:'Minimum wage, overtime, tips, equal pay, and when you must be paid.',
+    prefixes:['minimumWage','overtime','wagePayment','equalPay'] },
+  { key:'discrim',    label:'Discrimination & harassment',
+    blurb:'Who is protected, what counts, and what an employer must do about it.',
+    prefixes:['discrimination','harassment'] },
+  { key:'disability',       label:'Disability & accommodations',
+    blurb:'Reasonable accommodations and the interactive process.',
+    prefixes:['disability'] },
+  { key:'retaliation',    label:'Retaliation & speaking up',
+    blurb:'Being punished for complaining, whistleblowing, or discussing pay.',
+    prefixes:['retaliation','whistleblower','payDiscussion'] },
+  { key:'timeoff',     label:'Time off & breaks',
+    blurb:'Family and medical leave, sick time, and meal breaks.',
+    prefixes:['leave','mealBreak'] },
+  { key:'leaving',       label:'Leaving a job',
+    blurb:'Final paycheck timing, severance agreements, and non-competes.',
+    prefixes:['final-pay','severance','nonCompete'] },
+  { key:'deadlines',     label:'Deadlines to act',
+    blurb:'How long you have before a claim expires. These are unforgiving.',
+    prefixes:['deadlines'] },
+  { key:'remedies',   label:'What you can recover',
+    blurb:'Back pay, damages, attorney’s fees, and where to file.',
+    prefixes:['remedies','enforcement'] },
+];
+// prefix -> category key, built once.
+const TOPIC_PREFIX_CATEGORY = (() => {
+  const m = {};
+  LAW_CATEGORIES.forEach(c => c.prefixes.forEach(p => { m[p] = c.key; }));
+  return m;
+})();
+function topicPrefix(topic){ return String(topic || '').split('.')[0]; }
+function categoryOfTopic(topic){ return TOPIC_PREFIX_CATEGORY[topicPrefix(topic)] || null; }
+function factsInCategory(facts, catKey){
+  return (facts || []).filter(f => categoryOfTopic(f.topic) === catKey);
+}
+
 // Only ever render an https:// URL as an href — guards against a malformed/malicious
 // javascript:, data:, or other scheme reaching an <a href> from content data.
 function safeUrl(u){ return (typeof u === 'string' && /^https:\/\//i.test(u)) ? u : null; }
@@ -2695,6 +2750,10 @@ function App(){
     (saved.messages && saved.messages.length) ? saved.messages : [{ role:'ai', text: issueCfg(saved.issue).chatSeed }]
   );
   const [entries, setEntries] = useState(() => saved.entries || []);
+  // Which law category the Rights library is showing (null = the index).
+  // Screen-local browse state, deliberately NOT persisted into the case blob:
+  // where someone was reading is not part of their case.
+  const [rightsCat, setRightsCat] = useState(null);
   const [storageWarning, setStorageWarning] = useState(false); // R12 — true when the last save to localStorage failed (quota full)
 
   const timer = useRef(null);
@@ -5433,17 +5492,45 @@ function App(){
     );
   };
 
-  const factCard = (f, i, scopeLabel, scopeTone) => (
-    <div key={scopeLabel + i} style={css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff")}>
-      <p style={css("margin:0 0 6px;font:600 13px 'IBM Plex Mono',monospace;color:#4A5162;letter-spacing:.04em")}>{topicKicker(f.topic)}</p>
-      <p style={css("margin:0 0 12px;font:400 16px/1.5 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{f.summary}</p>
-      <div style={css("display:flex;gap:8px;flex-wrap:wrap;align-items:center")}>
-        <span style={css('padding:7px 11px;border-radius:8px;background:' + scopeTone + ";border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace;color:#14181F")}>{scopeLabel}</span>
-        {f.citation ? <span style={css("padding:7px 11px;border-radius:8px;background:#EEF1FF;font:600 13px 'IBM Plex Mono',monospace;color:#1B2778")}>{f.citation}</span> : null}
-        {safeUrl(f.sourceUrl) ? <a href={safeUrl(f.sourceUrl)} target="_blank" rel="noopener noreferrer" className="hoverfx" aria-label={'Official source for ' + (f.citation || f.topic)} style={css("display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:7px 11px;border-radius:8px;background:#fff;border:2px solid #2B3AA8;font:600 13px 'IBM Plex Mono',monospace;color:#2B3AA8;text-decoration:none")}>Source ↗</a> : null}
+  /* Two-layer fact card: what it means for you, then the law it comes from.
+     The plain-English `summary` leads at reading size; the citation, the
+     operative value and the official source sit in a visually distinct block
+     beneath it under a "THE LAW" heading, so the two are never confused for
+     each other.
+
+     `value` is shown as the operative figure ONLY when it adds something the
+     summary doesn't already say in words — a bare numeric ($16.50, 684) is
+     worth surfacing as the number to quote, while a prose value ("1.5x after
+     40 hrs/week") would just restate the sentence directly above it.
+
+     What this block deliberately does NOT contain is statutory text. The
+     dataset carries citations and source URLs, not the words of the statute;
+     fetching them is blocked (see docs/content-fetcher-architecture.md) and
+     writing them would be authoring legal content, which AUTONOMY.md forbids.
+     So the block cites and links, and says plainly that the source is where
+     the actual text lives. */
+  const factCard = (f, i, scopeLabel, scopeTone) => {
+    const val = factValStr(f.value);
+    const showVal = val && typeof f.value === 'number';
+    return (
+      <div key={scopeLabel + i} style={css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff")}>
+        <p style={css("margin:0 0 6px;font:600 13px 'IBM Plex Mono',monospace;color:#4A5162;letter-spacing:.04em")}>{topicKicker(f.topic)}</p>
+        <p style={css("margin:0 0 14px;font:400 17px/1.55 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{f.summary}</p>
+        <div style={css("padding:13px 14px;border-radius:12px;background:#F0EDE5;border:2px solid rgba(20,24,31,.14)")}>
+          <p style={css("margin:0 0 8px;font:700 12px 'IBM Plex Mono',monospace;color:#4A5162;letter-spacing:.06em")}>THE LAW</p>
+          {showVal ? <p style={css("margin:0 0 8px;font:700 19px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{val}</p> : null}
+          {f.citation ? <p style={css("margin:0 0 4px;font:600 14px/1.45 'IBM Plex Mono',monospace;color:#1B2778;overflow-wrap:anywhere")}>{f.citation}</p> : null}
+          {f.sourceAgency ? <p style={css("margin:0;font:400 13px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{f.sourceAgency}</p> : null}
+          <div style={css("display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px")}>
+            <span style={css('padding:7px 11px;border-radius:8px;background:' + scopeTone + ";border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace;color:#14181F")}>{scopeLabel}</span>
+            {safeUrl(f.sourceUrl)
+              ? <a href={safeUrl(f.sourceUrl)} target="_blank" rel="noopener noreferrer" className="hoverfx" aria-label={'Read the official text of ' + (f.citation || f.topic) + ' (opens in a new tab)'} style={css("display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:7px 11px;border-radius:8px;background:#fff;border:2px solid #2B3AA8;font:600 13px 'IBM Plex Mono',monospace;color:#2B3AA8;text-decoration:none")}>Read the official text ↗</a>
+              : null}
+          </div>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const RightsLib = () => {
     const stName = stateSel || 'your state';
@@ -5460,25 +5547,73 @@ function App(){
         {!federal && !contentErr ? <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Loading…</p> : null}
 
         {stateData && !stReviewed ?
-          <DraftStateNotice stName={stName} extra={fedFacts.length ? 'The federal protections below apply nationwide.' : ''} /> : null}
+          <DraftStateNotice stName={stName} extra={fedFacts.length ? 'Federal protections apply nationwide — browse them by category below.' : ''} /> : null}
         {stateData === undefined ? <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Loading {stName} rules…</p> : null}
         {/* If the FEDERAL fetch also failed (contentErr), fedFacts is empty and the
             block below never renders — so don't promise "the federal protections
             below" when there's nothing below. That promise only holds when the
             federal facts actually loaded. */}
-        {stateErr ? <p style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load {stName} rules. Check your connection and reopen — this is not a confirmation that no extra state protections apply.{fedFacts.length ? ' The federal protections below still apply nationwide.' : ' Federal protections could not be loaded either — try again once you have a connection.'}</p> : null}
+        {stateErr ? <p style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load {stName} rules. Check your connection and reopen — this is not a confirmation that no extra state protections apply.{fedFacts.length ? ' Federal protections still apply nationwide — browse them by category below.' : ' Federal protections could not be loaded either — try again once you have a connection.'}</p> : null}
 
-        {stFacts.length ?
-          <div style={css("display:flex;flex-direction:column;gap:12px")}>
-            <p style={css("margin:2px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em")}>{stName.toUpperCase()}{stReviewed ? '' : ' (DRAFT)'}</p>
-            {stFacts.map((f, i) => factCard(f, i, stAbbr || stName.toUpperCase(), '#EEF1FF'))}
+        {/* Category index. Browsing 492 facts as one flat list was the old
+            behaviour and gave no way in; these are the eight plain-language
+            groupings (LAW_CATEGORIES), each showing how many rules actually
+            exist for THIS user — state plus federal — so nobody opens an
+            empty drawer. A category with nothing is still listed, greyed and
+            unclickable, because hiding it would imply the subject doesn't
+            exist rather than that we haven't recorded it yet. */}
+        {!rightsCat && (federal || stateData) ?
+          <div style={css("display:flex;flex-direction:column;gap:10px")}>
+            {LAW_CATEGORIES.map(cat => {
+              const n = factsInCategory(stFacts, cat.key).length + factsInCategory(fedFacts, cat.key).length;
+              if (!n) return (
+                <div key={cat.key} style={css("padding:16px 18px;border-radius:14px;border:2px dashed rgba(20,24,31,.22);background:transparent")}>
+                  <p style={css("margin:0;font:700 18px/1.25 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{cat.label}</p>
+                  <p style={css("margin:4px 0 0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Nothing recorded yet for {stName}. That doesn’t mean no rule applies — ask a lawyer or the agency before assuming.</p>
+                </div>
+              );
+              return (
+                <button key={cat.key} onClick={() => setRightsCat(cat.key)} className="hoverfx"
+                  style={css("text-align:left;padding:16px 18px;border-radius:14px;border:2px solid #14181F;background:#fff;cursor:pointer;display:flex;flex-direction:column;gap:4px;min-height:44px")}>
+                  <span style={css("display:flex;align-items:baseline;justify-content:space-between;gap:10px")}>
+                    <span style={css("font:700 19px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{cat.label}</span>
+                    <span style={css("flex:none;font:600 13px 'IBM Plex Mono',monospace;color:#4A5162")}>{n}</span>
+                  </span>
+                  <span style={css("font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{cat.blurb}</span>
+                </button>
+              );
+            })}
           </div> : null}
 
-        {fedFacts.length ?
-          <div style={css("display:flex;flex-direction:column;gap:12px")}>
-            <p style={css("margin:6px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em")}>FEDERAL — APPLIES NATIONWIDE</p>
-            {fedFacts.map((f, i) => factCard(f, i, 'FEDERAL', '#F0EDE5'))}
-          </div> : null}
+        {/* One category, state rules first (they're what differs from the
+            federal floor most people half-know), then federal. */}
+        {rightsCat ? (() => {
+          const cat = LAW_CATEGORIES.find(c => c.key === rightsCat);
+          if (!cat) return null;
+          const st = factsInCategory(stFacts, cat.key);
+          const fed = factsInCategory(fedFacts, cat.key);
+          return (
+            <div style={css("display:flex;flex-direction:column;gap:14px")}>
+              <button onClick={() => setRightsCat(null)} aria-label="Back to all categories"
+                style={css("align-self:flex-start;display:flex;align-items:center;gap:4px;min-height:44px;padding:10px 12px;margin:-8px 0 -10px -10px;background:none;border:none;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}>
+                <Icon name="back" size={18} /> All categories
+              </button>
+              <h2 style={css("margin:0;font:700 24px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{cat.label}</h2>
+              {st.length ?
+                <div style={css("display:flex;flex-direction:column;gap:12px")}>
+                  <p style={css("margin:2px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em")}>{stName.toUpperCase()}{stReviewed ? '' : ' (DRAFT)'}</p>
+                  {st.map((f, i) => factCard(f, i, stAbbr || stName.toUpperCase(), '#EEF1FF'))}
+                </div> : null}
+              {fed.length ?
+                <div style={css("display:flex;flex-direction:column;gap:12px")}>
+                  <p style={css("margin:6px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em")}>FEDERAL — APPLIES NATIONWIDE</p>
+                  {fed.map((f, i) => factCard(f, i, 'FEDERAL', '#F0EDE5'))}
+                </div> : null}
+              {!st.length && !fed.length ?
+                <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Nothing recorded here yet for {stName}. That is a gap in our data, not a statement that no rule applies.</p> : null}
+            </div>
+          );
+        })() : null}
         <p style={css("margin:4px 0 0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>This is legal information for {stName}, not legal advice, and laws change. Confirm anything important with an attorney.</p>
       </div>
     );

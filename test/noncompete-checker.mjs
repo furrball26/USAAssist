@@ -6,7 +6,7 @@
  *
  *   1. For a state WITH a sourced nonCompete.enforceability fact (e.g. California —
  *      see content/states/CA.json), the checker shows the enforceability stance
- *      (value + summary), its citation, a "Source ↗" link, and the federal
+ *      (value + summary), its citation, a link to the official source, and the federal
  *      nonCompete.ftcRuleStatus note — all pulled live via factByTopic, never
  *      hardcoded.
  *   2. For a state WITH NO nonCompete.enforceability fact (e.g. Alabama), the
@@ -71,15 +71,21 @@ try {
   await click(pg, TOOL_LABEL);
   await new Promise(r => setTimeout(r, 300));
   const text = await bodyText(pg);
+  // Matched on the link's PURPOSE, not its wording. This screen renders the
+  // shared factCard(), whose outbound label is a presentation detail that has
+  // already changed once ("Source ↗" -> "Read the official text ↗"); what must
+  // hold is that the sourced stance carries an https:// link to the official
+  // source, which is what makes it sourced at all.
   const sourceHref = await pg.evaluate(() => {
-    const a = [...document.querySelectorAll('a')].find(el => el.textContent.includes('Source'));
+    const a = [...document.querySelectorAll('a')].find(el =>
+      /source|official text/i.test((el.textContent || '') + ' ' + (el.getAttribute('aria-label') || '')));
     return a ? a.getAttribute('href') : null;
   });
 
   const problems = [];
   if (!/void|banned|voidable/i.test(text)) problems.push('missing the California enforceability stance (banned/voidable), got: ' + JSON.stringify(text.slice(0, 800)));
   if (!/16600/.test(text)) problems.push('missing the Cal. Bus. & Prof. Code § 16600 citation');
-  if (!sourceHref || !/^https:\/\//.test(sourceHref)) problems.push('missing a "Source ↗" link with an https:// href, got: ' + sourceHref);
+  if (!sourceHref || !/^https:\/\//.test(sourceHref)) problems.push('missing an https:// link to the official source, got: ' + sourceHref);
   if (!/FTC/i.test(text)) problems.push('missing the federal FTC rule-status note');
   if (!/state law/i.test(text)) problems.push('FTC note should explain enforceability is governed by state law');
   if (!/not legal advice/i.test(text)) problems.push('missing the not-legal-advice framing');

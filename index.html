@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-Kcupm/nPIrsTuxm3ooUv6UC+wWsSgrSpYzDNsHmVBPA='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-tBB0CxjLKp+ACW8VgCi+kciAg2c2ATlDrLF7IucQU4k='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14181F">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232B3AA8'/%3E%3Ctext x='32' y='47' font-size='42' text-anchor='middle' fill='white' font-family='Georgia,serif'%3E%C2%A7%3C/text%3E%3C/svg%3E">
@@ -651,6 +651,72 @@ function topicKicker(topic) {
     nonCompete: "NON-COMPETE"
   };
   return m[p] || p.replace(/([A-Z])/g, " $1").replace(/^./, (c) => c.toUpperCase()).toUpperCase();
+}
+const LAW_CATEGORIES = [
+  {
+    key: "pay",
+    label: "Pay & overtime",
+    blurb: "Minimum wage, overtime, tips, equal pay, and when you must be paid.",
+    prefixes: ["minimumWage", "overtime", "wagePayment", "equalPay"]
+  },
+  {
+    key: "discrim",
+    label: "Discrimination & harassment",
+    blurb: "Who is protected, what counts, and what an employer must do about it.",
+    prefixes: ["discrimination", "harassment"]
+  },
+  {
+    key: "disability",
+    label: "Disability & accommodations",
+    blurb: "Reasonable accommodations and the interactive process.",
+    prefixes: ["disability"]
+  },
+  {
+    key: "retaliation",
+    label: "Retaliation & speaking up",
+    blurb: "Being punished for complaining, whistleblowing, or discussing pay.",
+    prefixes: ["retaliation", "whistleblower", "payDiscussion"]
+  },
+  {
+    key: "timeoff",
+    label: "Time off & breaks",
+    blurb: "Family and medical leave, sick time, and meal breaks.",
+    prefixes: ["leave", "mealBreak"]
+  },
+  {
+    key: "leaving",
+    label: "Leaving a job",
+    blurb: "Final paycheck timing, severance agreements, and non-competes.",
+    prefixes: ["final-pay", "severance", "nonCompete"]
+  },
+  {
+    key: "deadlines",
+    label: "Deadlines to act",
+    blurb: "How long you have before a claim expires. These are unforgiving.",
+    prefixes: ["deadlines"]
+  },
+  {
+    key: "remedies",
+    label: "What you can recover",
+    blurb: "Back pay, damages, attorney\u2019s fees, and where to file.",
+    prefixes: ["remedies", "enforcement"]
+  }
+];
+const TOPIC_PREFIX_CATEGORY = (() => {
+  const m = {};
+  LAW_CATEGORIES.forEach((c) => c.prefixes.forEach((p) => {
+    m[p] = c.key;
+  }));
+  return m;
+})();
+function topicPrefix(topic) {
+  return String(topic || "").split(".")[0];
+}
+function categoryOfTopic(topic) {
+  return TOPIC_PREFIX_CATEGORY[topicPrefix(topic)] || null;
+}
+function factsInCategory(facts, catKey) {
+  return (facts || []).filter((f) => categoryOfTopic(f.topic) === catKey);
 }
 function safeUrl(u) {
   return typeof u === "string" && /^https:\/\//i.test(u) ? u : null;
@@ -2480,6 +2546,7 @@ function App() {
     () => saved.messages && saved.messages.length ? saved.messages : [{ role: "ai", text: issueCfg(saved.issue).chatSeed }]
   );
   const [entries, setEntries] = useState(() => saved.entries || []);
+  const [rightsCat, setRightsCat] = useState(null);
   const [storageWarning, setStorageWarning] = useState(false);
   const timer = useRef(null);
   const chatEnd = useRef(null);
@@ -3461,14 +3528,47 @@ function App() {
       setScreen("log");
     }, className: "hoverfx", style: css("width:100%;padding:18px;border:none;border-radius:16px;background:#2B3AA8;color:#fff;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px") }, "Start building your evidence", /* @__PURE__ */ React.createElement(Icon, { name: "chevron-forward", size: 18, style: { color: "#fff" } })));
   };
-  const factCard = (f, i, scopeLabel, scopeTone) => /* @__PURE__ */ React.createElement("div", { key: scopeLabel + i, style: css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 6px;font:600 13px 'IBM Plex Mono',monospace;color:#4A5162;letter-spacing:.04em") }, topicKicker(f.topic)), /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 12px;font:400 16px/1.5 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, f.summary), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;gap:8px;flex-wrap:wrap;align-items:center") }, /* @__PURE__ */ React.createElement("span", { style: css("padding:7px 11px;border-radius:8px;background:" + scopeTone + ";border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace;color:#14181F") }, scopeLabel), f.citation ? /* @__PURE__ */ React.createElement("span", { style: css("padding:7px 11px;border-radius:8px;background:#EEF1FF;font:600 13px 'IBM Plex Mono',monospace;color:#1B2778") }, f.citation) : null, safeUrl(f.sourceUrl) ? /* @__PURE__ */ React.createElement("a", { href: safeUrl(f.sourceUrl), target: "_blank", rel: "noopener noreferrer", className: "hoverfx", "aria-label": "Official source for " + (f.citation || f.topic), style: css("display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:7px 11px;border-radius:8px;background:#fff;border:2px solid #2B3AA8;font:600 13px 'IBM Plex Mono',monospace;color:#2B3AA8;text-decoration:none") }, "Source \u2197") : null));
+  const factCard = (f, i, scopeLabel, scopeTone) => {
+    const val = factValStr(f.value);
+    const showVal = val && typeof f.value === "number";
+    return /* @__PURE__ */ React.createElement("div", { key: scopeLabel + i, style: css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 6px;font:600 13px 'IBM Plex Mono',monospace;color:#4A5162;letter-spacing:.04em") }, topicKicker(f.topic)), /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 14px;font:400 17px/1.55 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, f.summary), /* @__PURE__ */ React.createElement("div", { style: css("padding:13px 14px;border-radius:12px;background:#F0EDE5;border:2px solid rgba(20,24,31,.14)") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 8px;font:700 12px 'IBM Plex Mono',monospace;color:#4A5162;letter-spacing:.06em") }, "THE LAW"), showVal ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 8px;font:700 19px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, val) : null, f.citation ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 4px;font:600 14px/1.45 'IBM Plex Mono',monospace;color:#1B2778;overflow-wrap:anywhere") }, f.citation) : null, f.sourceAgency ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 13px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, f.sourceAgency) : null, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px") }, /* @__PURE__ */ React.createElement("span", { style: css("padding:7px 11px;border-radius:8px;background:" + scopeTone + ";border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace;color:#14181F") }, scopeLabel), safeUrl(f.sourceUrl) ? /* @__PURE__ */ React.createElement("a", { href: safeUrl(f.sourceUrl), target: "_blank", rel: "noopener noreferrer", className: "hoverfx", "aria-label": "Read the official text of " + (f.citation || f.topic) + " (opens in a new tab)", style: css("display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:7px 11px;border-radius:8px;background:#fff;border:2px solid #2B3AA8;font:600 13px 'IBM Plex Mono',monospace;color:#2B3AA8;text-decoration:none") }, "Read the official text \u2197") : null)));
+  };
   const RightsLib = () => {
     const stName = stateSel || "your state";
     const stAbbr = US_STATE_ABBR[stName] || "";
     const fedFacts = federal && federal.facts || [];
     const stFacts = stateData && stateData.facts || [];
     const stReviewed = !!(stateData && stateData.reviewed === true);
-    return /* @__PURE__ */ React.createElement("div", { style: css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px") }, /* @__PURE__ */ React.createElement("h1", { style: css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Rights library"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Federal protections apply everywhere; ", stName, " rules are layered on top. Each item links to its official source."), contentErr ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F") }, "Couldn\u2019t load the rights dataset. Check your connection and reopen.") : null, !federal && !contentErr ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Loading\u2026") : null, stateData && !stReviewed ? /* @__PURE__ */ React.createElement(DraftStateNotice, { stName, extra: fedFacts.length ? "The federal protections below apply nationwide." : "" }) : null, stateData === void 0 ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Loading ", stName, " rules\u2026") : null, stateErr ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F") }, "Couldn\u2019t load ", stName, " rules. Check your connection and reopen \u2014 this is not a confirmation that no extra state protections apply.", fedFacts.length ? " The federal protections below still apply nationwide." : " Federal protections could not be loaded either \u2014 try again once you have a connection.") : null, stFacts.length ? /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:12px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:2px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em") }, stName.toUpperCase(), stReviewed ? "" : " (DRAFT)"), stFacts.map((f, i) => factCard(f, i, stAbbr || stName.toUpperCase(), "#EEF1FF"))) : null, fedFacts.length ? /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:12px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:6px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em") }, "FEDERAL \u2014 APPLIES NATIONWIDE"), fedFacts.map((f, i) => factCard(f, i, "FEDERAL", "#F0EDE5"))) : null, /* @__PURE__ */ React.createElement("p", { style: css("margin:4px 0 0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "This is legal information for ", stName, ", not legal advice, and laws change. Confirm anything important with an attorney."));
+    return /* @__PURE__ */ React.createElement("div", { style: css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px") }, /* @__PURE__ */ React.createElement("h1", { style: css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Rights library"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Federal protections apply everywhere; ", stName, " rules are layered on top. Each item links to its official source."), contentErr ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F") }, "Couldn\u2019t load the rights dataset. Check your connection and reopen.") : null, !federal && !contentErr ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Loading\u2026") : null, stateData && !stReviewed ? /* @__PURE__ */ React.createElement(DraftStateNotice, { stName, extra: fedFacts.length ? "Federal protections apply nationwide \u2014 browse them by category below." : "" }) : null, stateData === void 0 ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Loading ", stName, " rules\u2026") : null, stateErr ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F") }, "Couldn\u2019t load ", stName, " rules. Check your connection and reopen \u2014 this is not a confirmation that no extra state protections apply.", fedFacts.length ? " Federal protections still apply nationwide \u2014 browse them by category below." : " Federal protections could not be loaded either \u2014 try again once you have a connection.") : null, !rightsCat && (federal || stateData) ? /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:10px") }, LAW_CATEGORIES.map((cat) => {
+      const n = factsInCategory(stFacts, cat.key).length + factsInCategory(fedFacts, cat.key).length;
+      if (!n) return /* @__PURE__ */ React.createElement("div", { key: cat.key, style: css("padding:16px 18px;border-radius:14px;border:2px dashed rgba(20,24,31,.22);background:transparent") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 18px/1.25 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, cat.label), /* @__PURE__ */ React.createElement("p", { style: css("margin:4px 0 0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Nothing recorded yet for ", stName, ". That doesn\u2019t mean no rule applies \u2014 ask a lawyer or the agency before assuming."));
+      return /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          key: cat.key,
+          onClick: () => setRightsCat(cat.key),
+          className: "hoverfx",
+          style: css("text-align:left;padding:16px 18px;border-radius:14px;border:2px solid #14181F;background:#fff;cursor:pointer;display:flex;flex-direction:column;gap:4px;min-height:44px")
+        },
+        /* @__PURE__ */ React.createElement("span", { style: css("display:flex;align-items:baseline;justify-content:space-between;gap:10px") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 19px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, cat.label), /* @__PURE__ */ React.createElement("span", { style: css("flex:none;font:600 13px 'IBM Plex Mono',monospace;color:#4A5162") }, n)),
+        /* @__PURE__ */ React.createElement("span", { style: css("font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, cat.blurb)
+      );
+    })) : null, rightsCat ? (() => {
+      const cat = LAW_CATEGORIES.find((c) => c.key === rightsCat);
+      if (!cat) return null;
+      const st = factsInCategory(stFacts, cat.key);
+      const fed = factsInCategory(fedFacts, cat.key);
+      return /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:14px") }, /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: () => setRightsCat(null),
+          "aria-label": "Back to all categories",
+          style: css("align-self:flex-start;display:flex;align-items:center;gap:4px;min-height:44px;padding:10px 12px;margin:-8px 0 -10px -10px;background:none;border:none;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")
+        },
+        /* @__PURE__ */ React.createElement(Icon, { name: "back", size: 18 }),
+        " All categories"
+      ), /* @__PURE__ */ React.createElement("h2", { style: css("margin:0;font:700 24px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, cat.label), st.length ? /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:12px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:2px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em") }, stName.toUpperCase(), stReviewed ? "" : " (DRAFT)"), st.map((f, i) => factCard(f, i, stAbbr || stName.toUpperCase(), "#EEF1FF"))) : null, fed.length ? /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:12px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:6px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em") }, "FEDERAL \u2014 APPLIES NATIONWIDE"), fed.map((f, i) => factCard(f, i, "FEDERAL", "#F0EDE5"))) : null, !st.length && !fed.length ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Nothing recorded here yet for ", stName, ". That is a gap in our data, not a statement that no rule applies.") : null);
+    })() : null, /* @__PURE__ */ React.createElement("p", { style: css("margin:4px 0 0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "This is legal information for ", stName, ", not legal advice, and laws change. Confirm anything important with an attorney."));
   };
   const Agencies = () => /* @__PURE__ */ React.createElement("div", { style: css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px") }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { style: css("font:700 13px 'IBM Plex Mono',monospace;letter-spacing:.04em;color:#4A5162") }, "PHASE 4 \xB7 ACT"), /* @__PURE__ */ React.createElement("h1", { style: css("margin:6px 0 0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Take action")), (() => {
     const recKind = cfg.key === "wage" ? "wage-demand" : cfg.letterKind;
