@@ -1,30 +1,27 @@
 #!/usr/bin/env node
 /*
- * Corrupted-localStorage recovery regression test (Aug 2026 automated-review
- * Critical finding).
+ * Corrupted-localStorage recovery regression test.
  *
- * loadCase() used a bare `JSON.parse(...) || {}` with no shape validation before
- * the parsed object flowed into App()'s useState initializers and then into
- * computeOwedBreakdown/caseStrength on every render. A malformed-but-truthy field
- * (e.g. `entries` persisted as an object instead of an array — reachable from a
- * future schema change, a browser extension touching localStorage, or manual
- * tampering) threw on the very first render. With no React error boundary
- * anywhere in the app, that took #root to a permanently blank page — the in-tree
- * "Delete my case" self-heal button included, since it lives inside the tree that
- * never mounted — and reloading did not fix it, since the corrupted blob was
+ * The app reads one persisted value on mount — the state and county the reader
+ * picked — and feeds it straight into US_STATE_ABBR lookups, the content fetch
+ * and the geo fetch. A malformed-but-truthy field (a stateSel persisted as an
+ * object rather than a string — reachable from a future schema change, a
+ * browser extension, or devtools tampering) must not take the whole app to a
+ * permanently blank #root, which reload would not fix since the bad value is
  * never rewritten.
  *
- * Guards both halves of the fix: loadCase()/sanitizeCase() coercing a malformed
- * `entries` (and other fields) back to a safe shape, AND the ErrorBoundary
- * fallback UI (with a real "clear my data" recovery action) for whatever a future
- * bug lets through anyway. Run: node test/corrupted-case-recovery.mjs
+ * Guards both halves: loadPrefs()/sanitizePrefs() coercing a malformed value
+ * back to a safe shape, AND the ErrorBoundary catching anything that throws
+ * anyway and offering a recovery that actually works.
+ *
+ * Run: node test/corrupted-case-recovery.mjs
  */
 import { createServer } from 'node:http';
 import { readFileSync, existsSync, statSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
 import { resolveChromePath } from './lib/chrome.mjs';
 import puppeteer from 'puppeteer-core';
-import { gotoApp } from './lib/nav.mjs';
+import { gotoApp, reloadApp } from './lib/nav.mjs';
 
 const ROOT = new URL('..', import.meta.url).pathname;
 const TYPES = { '.html':'text/html', '.js':'text/javascript', '.json':'application/json', '.svg':'image/svg+xml' };
@@ -43,121 +40,105 @@ let fails = 0;
 
 try {
 
-// 1. The exact repro from the review: `entries` persisted as a truthy
-//    non-array object. Must not white-screen — the app must still mount and
-//    render a real screen (the home dashboard, since `onboarded` is true).
-{
-  const pg = await b.newPage();
-  const errs = [];
-  pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
-  const seed = {
-    onboarded:true, stateSel:'Texas', county:'Travis County', issue:'Unpaid overtime or wages',
-    profile:{ name:'Pat Vega', employer:'Northgate Co', payType:'Hourly', rate:'20' },
-    caseOpened:new Date().toISOString(), homeMode:'standard', done:{}, messages:[],
-    entries: { foo:'bar' }, // malformed: truthy non-array — the exact repro
-  };
-  await pg.evaluateOnNewDocument(s => localStorage.setItem('worklaw.case.v2', JSON.stringify(s)), seed);
-  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`);
-  await new Promise(r => setTimeout(r, 700));
+const PLACE_KEY = 'worklaw.place.v1';
+const WELCOME_KEY = 'worklaw.seenWelcome.v1';
 
-  const rootChildCount = await pg.evaluate(() => document.getElementById('root').childElementCount);
-  const bodyText = await pg.evaluate(() => document.body.innerText);
-  const problems = [];
-  if (rootChildCount === 0) problems.push('#root never mounted (blank page) on malformed entries');
-  if (!/Travis County|Home|Ask AI/i.test(bodyText)) problems.push('app did not render the expected home screen: ' + JSON.stringify(bodyText.slice(0, 200)));
-  if (/Something went wrong/.test(bodyText)) problems.push('sanitizeCase did not prevent the crash — fell through to the ErrorBoundary fallback instead of rendering normally');
-  errs.forEach(e => problems.push(e));
+// Seed a raw (possibly malformed) value under the place key, bypassing the
+// gotoApp helper's well-formed seeding.
+const seedRaw = (pg, raw) => pg.evaluateOnNewDocument((pk, wk, v) => {
+  try { localStorage.setItem(wk, '1'); localStorage.setItem(pk, v); } catch (e) {}
+}, PLACE_KEY, WELCOME_KEY, raw);
 
-  const ok = problems.length === 0;
-  if (!ok) fails++;
-  console.log((ok ? '✅' : '❌') + ' malformed `entries` (truthy non-array) does not white-screen the app' + (ok ? '' : '\n   ' + problems.join('\n   ')));
-  await pg.close();
-}
-
-// 2. A handful of other malformed-but-truthy shapes must all be sanitized the
-//    same way, not just the one field that happened to crash first.
+// 1. Every malformed-but-truthy shape must be sanitized rather than crash.
 {
   const cases = [
-    { label:'`done` as a non-array array-like', done:[1,2,3] },
-    { label:'`messages` as a plain object', messages:{ 0:{ role:'ai', text:'x' } } },
-    { label:'`profile` as a string', profile:'not an object' },
-    { label:'`wizPath` as a plain object', wizPath:{ a:1 } },
+    { label: '`stateSel` as a plain object', raw: JSON.stringify({ stateSel: { nested: 'object' }, county: 'Travis County' }) },
+    { label: '`county` as a number',         raw: JSON.stringify({ stateSel: 'Texas', county: 42 }) },
+    { label: 'the whole blob as an array',   raw: JSON.stringify([1, 2, 3]) },
+    { label: 'the whole blob as a string',   raw: JSON.stringify('Texas') },
+    { label: 'unparsable JSON',              raw: '{not json at all' },
+    { label: '`stateSel` naming no real state', raw: JSON.stringify({ stateSel: 'Atlantis', county: 'Nowhere' }) },
   ];
   for (const c of cases) {
-    const label = c.label;
-    const override = Object.assign({}, c);
-    delete override.label;
     const pg = await b.newPage();
     const errs = [];
     pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
-    const seed = Object.assign({
-      onboarded:true, stateSel:'Texas', county:'Travis County', issue:'Unpaid overtime or wages',
-      profile:{ name:'Pat Vega', employer:'Northgate Co', payType:'Hourly', rate:'20' },
-      caseOpened:new Date().toISOString(), homeMode:'standard', done:{}, messages:[], entries:[],
-    }, override);
-    await pg.evaluateOnNewDocument(s => localStorage.setItem('worklaw.case.v2', JSON.stringify(s)), seed);
-    await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`);
-    await new Promise(r => setTimeout(r, 700));
+    pg.on('console', m => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errs.push('CONSOLE ' + m.text()); });
+    await seedRaw(pg, c.raw);
+    await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`, { freshVisitor: true });
+    await new Promise(r => setTimeout(r, 900));
 
     const rootChildCount = await pg.evaluate(() => document.getElementById('root').childElementCount);
     const bodyText = await pg.evaluate(() => document.body.innerText);
     const problems = [];
     if (rootChildCount === 0) problems.push('#root never mounted (blank page)');
-    if (/Something went wrong/.test(bodyText)) problems.push('fell through to the ErrorBoundary fallback instead of rendering normally');
+    if (/Something went wrong/.test(bodyText)) problems.push('sanitizePrefs did not prevent the crash — fell through to the ErrorBoundary instead of rendering normally');
     errs.forEach(e => problems.push(e));
+    await pg.close();
 
     const ok = problems.length === 0;
     if (!ok) fails++;
-    console.log((ok ? '✅' : '❌') + ' malformed ' + label + ' does not white-screen the app' + (ok ? '' : '\n   ' + problems.join('\n   ')));
-    await pg.close();
+    console.log((ok ? '✅' : '❌') + ' malformed ' + c.label + ' does not white-screen the app' + (ok ? '' : '\n   ' + problems.join('\n   ')));
   }
 }
 
-// 3. Defense in depth: if something throws anyway, the ErrorBoundary fallback
-//    must render (not a truly blank #root) and its "Clear my saved case" button
-//    must actually clear localStorage and recover the app to onboarding.
+// 2. Defense in depth: if something throws anyway, the ErrorBoundary fallback
+//    must render (not a truly blank #root) and its reset button must actually
+//    clear the stored place and return the app to the map.
 {
   const pg = await b.newPage();
+  // Deliberately NOT seeded via evaluateOnNewDocument: that hook re-runs on
+  // every navigation, so it would re-write the place during the very reload
+  // this case is checking clears it. Set the place by using the app instead.
   await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`);
-  await new Promise(r => setTimeout(r, 400));
+  // localStorage is per-origin: the cases above left a place behind in this
+  // same browser. Drop it with a one-shot evaluate (not a persistent hook) so
+  // this page starts at the map.
+  await pg.evaluate(k => { try { localStorage.removeItem(k); } catch (e) {} }, PLACE_KEY);
+  await reloadApp(pg);
+  await new Promise(r => setTimeout(r, 1200));
+  await pg.select('#onb-state', 'Texas');
+  await new Promise(r => setTimeout(r, 800));
+  await pg.select('#onb-county', 'Travis County');
+  await new Promise(r => setTimeout(r, 800));
 
-  // Force the boundary by seeding a case, then injecting a genuinely-broken
-  // shape only the boundary (not sanitizeCase) is expected to catch: `profile`
-  // present but `rate` as a circular-ish object that breaks Number() math deep
-  // in a render path is hard to construct via JSON; instead exercise the
-  // boundary directly by making App() throw via a corrupted `issue` whose
-  // shape downstream code assumes is a string key into a lookup table.
-  const seed = {
-    onboarded:true, stateSel:'Texas', county:'Travis County',
-    issue:{ nested:'object where a string key is required' },
-    profile:{ name:'Pat Vega', employer:'Northgate Co', payType:'Hourly', rate:'20' },
-    caseOpened:new Date().toISOString(), homeMode:'standard', done:{}, messages:[], entries:[],
-  };
-  await pg.evaluateOnNewDocument(s => localStorage.setItem('worklaw.case.v2', JSON.stringify(s)), seed);
-  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`);
-  await new Promise(r => setTimeout(r, 700));
+  // Make the next render throw from inside the tree, which is the only thing
+  // an ErrorBoundary can catch — a corrupted stored value alone is sanitized
+  // before it ever reaches a render, which is the point of case 1.
+  await pg.evaluate(() => {
+    const orig = Array.prototype.map;
+    // eslint-disable-next-line no-extend-native
+    Array.prototype.map = function () { throw new Error('injected render failure'); };
+    window.__restoreMap = () => { Array.prototype.map = orig; };
+    // Force a re-render by navigating.
+    const btn = [...document.querySelectorAll('.tabbar button')].find(b => /All rights/.test(b.textContent));
+    btn && btn.click();
+  });
+  await new Promise(r => setTimeout(r, 600));
 
   const bodyText = await pg.evaluate(() => document.body.innerText);
   const problems = [];
-  // This case may or may not actually throw (issueCfg may tolerate an object
-  // key gracefully) — only assert the recovery UI works IF the boundary fired;
-  // otherwise this is a no-op confirming normal rendering, which is also fine.
-  if (/Something went wrong/.test(bodyText)) {
+  const rootChildCount = await pg.evaluate(() => document.getElementById('root').childElementCount);
+  if (rootChildCount === 0) problems.push('#root went blank instead of rendering the ErrorBoundary fallback');
+  if (!/Something went wrong/.test(bodyText)) {
+    problems.push('the ErrorBoundary did not render its fallback after an injected render failure: ' + JSON.stringify(bodyText.slice(0, 200)));
+  } else {
+    await pg.evaluate(() => window.__restoreMap && window.__restoreMap());
     const clicked = await pg.evaluate(() => {
-      const btn = [...document.querySelectorAll('button')].find(b => /Clear my saved case/i.test(b.textContent));
+      const btn = [...document.querySelectorAll('button')].find(b => /Reset and start over/i.test(b.textContent));
       if (btn) { btn.click(); return true; }
       return false;
     });
-    if (!clicked) problems.push('ErrorBoundary rendered but no "Clear my saved case" recovery button was found');
-    await new Promise(r => setTimeout(r, 700));
-    const stored = await pg.evaluate(() => localStorage.getItem('worklaw.case.v2'));
+    if (!clicked) problems.push('ErrorBoundary rendered but no reset button was found');
+    await new Promise(r => setTimeout(r, 900));
+    const stored = await pg.evaluate(k => localStorage.getItem(k), PLACE_KEY);
     const afterText = await pg.evaluate(() => document.body.innerText);
-    if (stored !== null) problems.push('recovery button did not clear localStorage');
-    if (!/Where do you work|Employment law changes by state/i.test(afterText)) problems.push('recovery did not return the app to onboarding: ' + JSON.stringify(afterText.slice(0, 200)));
+    if (stored !== null) problems.push('the reset button did not clear the stored place');
+    if (!/Where do you work/i.test(afterText)) problems.push('recovery did not return the app to the map: ' + JSON.stringify(afterText.slice(0, 200)));
   }
   const ok = problems.length === 0;
   if (!ok) fails++;
-  console.log((ok ? '✅' : '❌') + ' ErrorBoundary fallback (when it fires) offers a working recovery path' + (ok ? '' : '\n   ' + problems.join('\n   ')));
+  console.log((ok ? '✅' : '❌') + ' ErrorBoundary fallback offers a working recovery path' + (ok ? '' : '\n   ' + problems.join('\n   ')));
   await pg.close();
 }
 

@@ -1,15 +1,32 @@
 #!/usr/bin/env node
 /*
- * Privacy regression test: the "Delete my case & start over" control must erase
- * the sensitive case (employer, name, pay, incident log, chat) from localStorage
- * and return the app to onboarding. Guards the clearCase fix. Run: node test/privacy.mjs
+ * Privacy regression test.
+ *
+ * This site used to hold a case: a name, an employer, pay figures, dated
+ * incident notes, drafted letters and a chat transcript, all in plaintext in
+ * localStorage. It holds none of that now — the only thing persisted is which
+ * state and county the reader picked, so the law shown is theirs.
+ *
+ * That is a promise the app makes in its own words ("nothing about you is
+ * stored"), so it needs a test that would fail the moment it stops being true:
+ *
+ *   1. After a full walk through the site, the ONLY app keys in localStorage
+ *      are the remembered place and the seen-welcome flag.
+ *   2. The stored place contains a state and a county and nothing else — no
+ *      free text, no identifiers.
+ *   3. A leftover case blob from the old app is deleted on first load rather
+ *      than left sitting on the device.
+ *   4. Nothing leaves the device: no network request goes anywhere but our own
+ *      origin.
+ *
+ * Run: node test/privacy.mjs
  */
 import { createServer } from 'node:http';
 import { readFileSync, existsSync, statSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
 import { resolveChromePath } from './lib/chrome.mjs';
 import puppeteer from 'puppeteer-core';
-import { gotoApp } from './lib/nav.mjs';
+import { gotoApp, reloadApp } from './lib/nav.mjs';
 
 const ROOT = new URL('..', import.meta.url).pathname;
 const TYPES = { '.html':'text/html', '.js':'text/javascript', '.json':'application/json', '.svg':'image/svg+xml' };
@@ -21,40 +38,88 @@ const server = createServer((req, res) => {
 });
 await new Promise(r => server.listen(0, r));
 const PORT = server.address().port;
-const chrome = resolveChromePath();
+const ORIGIN = `http://127.0.0.1:${PORT}`;
 
-const SECRETS = /secret incident|Acme Freight|my private note|Jordan Lee/;
+let fails = 0;
+const ok = (cond, msg) => { if (!cond) fails++; console.log((cond ? '✅ ' : '❌ ') + msg); };
 
-const b = await puppeteer.launch({ executablePath: chrome, headless: true, args: ['--no-sandbox'] });
-let problems = ['harness did not run'];
+const LEGACY_CASE_KEY = 'worklaw.case.v2';
+const PLACE_KEY = 'worklaw.place.v1';
+const WELCOME_KEY = 'worklaw.seenWelcome.v1';
+
+const b = await puppeteer.launch({ executablePath: resolveChromePath(), headless: true, args: ['--no-sandbox'] });
 try {
-const pg = await b.newPage();
-pg.on('dialog', d => d.accept());
-const seed = {
-  onboarded:true, stateSel:'Texas', county:'Travis County', issue:'Unpaid overtime or wages',
-  profile:{ name:'Jordan Lee', employer:'Acme Freight LLC', payType:'Hourly', rate:'20' },
-  homeMode:'standard', entries:[{ date:'X', title:'t', body:'secret incident', hours:5 }],
-  messages:[{ role:'user', text:'my private note' }], done:{}, caseOpened:new Date().toISOString(),
-};
-await pg.evaluateOnNewDocument(s => localStorage.setItem('worklaw.case.v2', JSON.stringify(s)), seed);
-await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`);
-await new Promise(r => setTimeout(r, 600));
+  const pg = await b.newPage();
 
-const before = await pg.evaluate(() => localStorage.getItem('worklaw.case.v2'));
-const clicked = await pg.evaluate(() => { const el = [...document.querySelectorAll('button')].find(b => /Delete my case/i.test(b.textContent)); if (el) { el.click(); return true; } return false; });
-await new Promise(r => setTimeout(r, 600));
-const after = await pg.evaluate(() => localStorage.getItem('worklaw.case.v2'));
-const onOnboarding = await pg.evaluate(() => /Where do you work|Employment law changes by state/i.test(document.body.innerText));
+  // Anything the page tries to fetch off our own origin is a leak.
+  const offOrigin = [];
+  pg.on('request', r => { if (!r.url().startsWith(ORIGIN) && !r.url().startsWith('data:')) offOrigin.push(r.url()); });
 
-problems = [];
-if (!SECRETS.test(before || '')) problems.push('seed did not contain expected sensitive data (test setup broken)');
-if (!clicked) problems.push('"Delete my case" control not found on the dashboard');
-if (SECRETS.test(after || '')) problems.push('sensitive data still present in localStorage after delete');
-if (!onOnboarding) problems.push('app did not return to onboarding after delete');
+  // Seed a case blob exactly as the old app would have left it — this is the
+  // upgrade path a real user is on.
+  await pg.evaluateOnNewDocument((key, blob) => {
+    try { localStorage.setItem(key, blob); } catch (e) {}
+  }, LEGACY_CASE_KEY, JSON.stringify({
+    onboarded: true, stateSel: 'California', county: 'Alameda County',
+    issue: 'Unpaid overtime or wages',
+    profile: { name: 'Pat Vega', employer: 'Northgate Co', payType: 'Hourly', rate: '20' },
+    entries: [{ title: 'Statement recorded', body: 'Manager said we do not pay overtime here.', iso: new Date().toISOString() }],
+    messages: [{ role: 'user', text: 'I think my employer is stealing my wages' }],
+  }));
+
+  await gotoApp(pg, ORIGIN + '/index.html', { place: { state: 'California', county: 'Alameda County' } });
+  await new Promise(r => setTimeout(r, 900));
+
+  // ── 3 · the old blob is gone, not merely unread ──
+  const legacy = await pg.evaluate(k => localStorage.getItem(k), LEGACY_CASE_KEY);
+  ok(legacy === null, 'a leftover case blob from the old app is deleted from the device on load');
+
+  // Walk the whole site, so anything that writes on navigation gets a chance to.
+  const click = async (t) => {
+    await pg.evaluate((t) => {
+      const el = [...document.querySelectorAll('button,a')].find(b => (b.innerText || '').trim().includes(t));
+      el && el.click();
+    }, t);
+    await new Promise(r => setTimeout(r, 450));
+  };
+  await click('Pay & overtime');
+  await click('Am I exempt from overtime?');
+  await click('Hourly');
+  await click('No');
+  await click('All rights');
+  await click('Agencies');
+  await click('Laws');
+  await reloadApp(pg);
+  await new Promise(r => setTimeout(r, 700));
+
+  // ── 1 · only two keys, both ours, both innocuous ──
+  const keys = await pg.evaluate(() => Object.keys(localStorage).sort());
+  const unexpected = keys.filter(k => k !== PLACE_KEY && k !== WELCOME_KEY);
+  ok(unexpected.length === 0,
+     'localStorage holds only the remembered place and the seen-welcome flag' +
+     (unexpected.length ? ' — also found: ' + unexpected.join(', ') : ''));
+
+  // ── 2 · the place is a place, nothing more ──
+  const place = await pg.evaluate(k => JSON.parse(localStorage.getItem(k) || '{}'), PLACE_KEY);
+  const fields = Object.keys(place).sort();
+  ok(fields.join(',') === 'county,stateSel',
+     `the stored place carries exactly a state and a county (got: ${fields.join(', ') || 'nothing'})`);
+  ok(place.stateSel === 'California' && place.county === 'Alameda County',
+     'the stored place is the one the reader actually picked');
+  const blob = JSON.stringify(place);
+  for (const leaked of ['Pat Vega', 'Northgate', 'overtime', 'Manager said']) {
+    ok(!blob.includes(leaked), `the stored place carries no trace of case data ("${leaked}")`);
+  }
+
+  // ── 4 · nothing leaves the device ──
+  ok(offOrigin.length === 0,
+     'the site makes no request off its own origin' + (offOrigin.length ? ': ' + offOrigin.slice(0, 3).join(', ') : ''));
+
+  await pg.close();
 } finally {
   await b.close();
   server.close();
 }
-if (problems.length) { console.log('❌ PRIVACY FAILED\n   ' + problems.join('\n   ')); process.exit(1); }
-console.log('✅ PRIVACY PASSED — case data cleared and app reset to onboarding');
-process.exit(0);
+
+console.log(fails === 0 ? '\n✅ PRIVACY PASSED' : `\n❌ PRIVACY FAILED (${fails})`);
+process.exit(fails === 0 ? 0 : 1);

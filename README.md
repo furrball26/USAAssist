@@ -1,43 +1,61 @@
 # WorkLaw — know your rights at work
 
-An employee-side, US state- and county-aware workplace-rights app. It explains the
-layered federal → state → local law that applies to the user's location and helps
-them organize facts — positioned throughout as **legal information, not legal advice**.
+A US employment-law reference for employees. It explains the layered federal →
+state → local law that applies where someone works, in plain English, with the
+citation and official source behind every statement — positioned throughout as
+**legal information, not legal advice**.
 
-Implemented from the Claude Design handoff *Stand — Workplace Rights App*
-(`Workplace Rights App.dc.html` + `support.js`), screen **1a** (the full interactive
-prototype), plus the two alternate homes (**1b** action-first, **1c** plain-language)
-wired in as switchable display modes.
+The site is a reference, not a dashboard. It asks for nothing about the reader
+except where they work, and stores nothing else.
 
 ## Screens
 
-Onboarding (state → county → issue → case details) · Dashboard · AI consult chat ·
-Overtime-exemption wizard (FLSA §541 decision tree) · Incident log · Document
-review · Wage-demand letter · Case strength · Rights library · Attorney referrals.
-Five-tab bottom navigation; home has Standard / Action-first / Plain modes.
+Welcome · **Laws** (US map → state map → county → topic → the law) ·
+**All rights** (the same rules as raw citations, no explanation) ·
+**Agencies** (who enforces what, free to contact) · four self-checks opened from
+the topic they belong to (overtime exemption, harassment, discrimination,
+non-compete). Three-tab navigation.
 
-## Your case (input-driven, persisted)
+## How someone uses it
 
-There is **no hardcoded persona** — the whole app is generated from what the user enters:
+1. **Pick a state** on a map of the United States, or from the labelled
+   `<select>` beside it. Both are always present: the map is faster and needs no
+   English, the select is the one that always works.
+2. **Pick a county** the same way, on that state's own map. Optional — we hold
+   no county or city ordinances yet, and the county step says so rather than
+   implying an empty local layer.
+3. **Pick a topic** from eight plain-language groupings (pay & overtime,
+   discrimination & harassment, disability, retaliation, time off, leaving a
+   job, deadlines, what you can recover).
+4. **Read the law**: the plain-English summary leads at reading size, and the
+   rule it comes from — citation, operative figure, issuing agency, a link to
+   the official text — sits in a visually distinct block beneath it, so the two
+   are never confused for each other.
 
-- **Onboarding** captures location, the chosen issue, and optional case details (name,
-  employer, pay type/rate). The **issue** drives the dashboard title, next-steps checklist,
-  action-mode flow, plain-mode framing, chat opener, and letter type.
-- **Incident log** starts empty; entries (with optional unpaid-hours) are the source of
-  truth. **Case strength** is computed from the evidence actually logged.
-- **Wage-demand letter** is generated from the profile + logged hours + the state/federal
-  overtime citations in `content/` (e.g. a Texas case cites Tex. Labor Code, not California).
-  It is editable and exports via a print window (Save as PDF) with a `.txt` fallback.
-- **Referrals** "Export case file" builds a portable case-file summary from the real inputs.
-- The case is persisted to `localStorage` (`worklaw.case.v1`), so it survives reload.
+The **All rights** tab inverts that: citation and figure first, no explanation,
+grouped by the dataset's own topic keys. It is for checking our work, quoting a
+rule to an employer, or handing something to a lawyer.
+
+## What is stored
+
+One key, `worklaw.place.v1`, holding the state and county picked on the map —
+nothing else, and nothing at all until a state is picked. There is no account,
+no upload, and no request off the site's own origin (`test/privacy.mjs` fails
+the build if any of that changes).
+
+An earlier version of this app kept a case: a name, an employer, pay figures,
+dated incident notes, drafted letters and a chat transcript, all in plaintext
+under `worklaw.case.v2`. Nothing reads that key now, and the app deletes it from
+the device on first load.
 
 ## State-aware content
 
-Onboarding covers the **50 states** (dropdowns; county list includes parishes/boroughs).
+The map and select cover the **50 states** (the county list includes parishes and boroughs).
 The app fetches the source-cited dataset in [`content/`](content/) at runtime and renders
-jurisdiction-specific guidance on the **Rights library** (federal + state facts with official
-Source links), the **overtime wizard** ("What applies in {state}"), the **Deadline watch**
-(statute-of-limitations), and **Referrals** (official state wage/discrimination agencies + EEOC/DOL).
+jurisdiction-specific guidance on the **Laws** tab (federal + state facts with official
+source links), the **All rights** listing, the **overtime self-check**
+("What applies in {state}"), and **Agencies** (official state wage/discrimination
+agencies plus the EEOC, DOL, OSHA and NLRB).
 
 Every state datum is `reviewed: false` until counsel signs off, so state guidance renders behind a
 **"pending attorney review"** draft banner that auto-clears when a state's file is marked
@@ -62,14 +80,13 @@ A single self-contained React app. `index.html` runs with **zero network request
 
 The build regenerates the two artifacts from `index.dev.html` (JSX → `React.createElement`
 via esbuild) and splices the app block into `index.html` — the React/font inlining is left
-untouched. A headless smoke test and a multi-state persona test guard against regressions.
+untouched. A headless Puppeteer suite guards against regressions.
 
 ```sh
 npm ci             # esbuild + puppeteer-core (dev-only; see package.json), from the committed lockfile
 npm run build      # index.dev.html → index.html + assets/app.js
-npm test           # headless smoke test (all screens, home modes, persistence)
-node test/persona.mjs   # multi-state / multi-issue consistency + no-leakage check
-npm run verify     # build + smoke in one step
+npm test           # headless smoke test (welcome → map → county → topic → law, all three tabs)
+npm run verify     # freshness checks + build + content validators + the full suite
 ```
 
 ## Deployment
@@ -162,10 +179,13 @@ interactive cards for non-color affordance; 44px+ hit targets.
 
 ## Notes
 
-- Case data is real and user-driven (persisted locally). The **chat AI responses** are
-  still canned sample answers, and **attorney listings are labeled samples** — production
-  would wire a real AI backend and a licensed-attorney directory. State legal content stays
-  behind the `reviewed: false` draft banner until counsel signs off.
-- Document review shows a clearly-labeled **example** clause analysis; automated parsing of
-  an uploaded file is not available in this build.
-- Icons are unicode glyphs from the prototype; swap for a matched icon set in production.
+- State legal content stays behind the `reviewed: false` draft banner until counsel
+  signs off. Federal content is sourced the same way.
+- **No county or city ordinances are on file.** The county step is offered and
+  remembered, but `content/local/` does not exist, so a county pick does not yet
+  change what is shown. The UI says so in as many words rather than implying an
+  empty local layer.
+- The AI chat, incident log, document review, letter drafting, damages estimate
+  and case-strength tools were removed when the site became a reference rather
+  than a dashboard. Their test suites went with them; see the git history if any
+  of it needs to come back.

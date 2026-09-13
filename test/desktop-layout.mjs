@@ -36,21 +36,24 @@ let fails = 0;
 
 try {
 
-async function openHome(pg, homeMode = 'standard') {
-  const seed = {
-    onboarded:true, stateSel:'Texas', county:'Travis County', issue:'Unpaid overtime or wages',
-    profile:{ name:'Pat Vega', employer:'Northgate Co', payType:'Salary', rate:'50000' },
-    caseOpened:new Date().toISOString(), homeMode, entries:[], done:{}, messages:[],
-  };
-  await pg.evaluateOnNewDocument((s) => { localStorage.clear(); localStorage.setItem('worklaw.case.v2', JSON.stringify(s)); }, seed);
-  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`);
-  await new Promise(r => setTimeout(r, 700));
+async function openHome(pg) {
+  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`,
+    { place: { state: 'Texas', county: 'Travis County' } });
+  await new Promise(r => setTimeout(r, 800));
 }
 
-async function openOnboarding(pg) {
-  await pg.evaluateOnNewDocument(() => localStorage.clear());
-  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`);
-  await new Promise(r => setTimeout(r, 500));
+// The welcome illustration is the one screen with no tab bar — everything
+// else in the app is a destination inside it.
+async function openWelcome(pg) {
+  // localStorage is per-ORIGIN, not per-page: an earlier case in this same
+  // browser has already set the seen-welcome flag, so `freshVisitor` alone
+  // (which only declines to seed it) would not produce a fresh visitor. Drop
+  // both keys on this document before the app's own script runs.
+  await pg.evaluateOnNewDocument(() => {
+    try { localStorage.removeItem('worklaw.seenWelcome.v1'); localStorage.removeItem('worklaw.place.v1'); } catch (e) {}
+  });
+  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`, { freshVisitor: true });
+  await new Promise(r => setTimeout(r, 600));
 }
 
 const deviceBox = (pg) => pg.evaluate(() => {
@@ -87,7 +90,7 @@ const deviceBox = (pg) => pg.evaluate(() => {
   pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
   pg.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
   await pg.setViewport({ width:390, height:844, deviceScaleFactor:1 });
-  await openHome(pg, 'standard');
+  await openHome(pg);
 
   const box = await deviceBox(pg);
   const problems = [];
@@ -108,7 +111,7 @@ const deviceBox = (pg) => pg.evaluate(() => {
   pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
   pg.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
   await pg.setViewport({ width:700, height:900, deviceScaleFactor:1 });
-  await openHome(pg, 'standard');
+  await openHome(pg);
 
   const box = await deviceBox(pg);
   const problems = [];
@@ -129,7 +132,7 @@ const deviceBox = (pg) => pg.evaluate(() => {
   pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
   pg.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
   await pg.setViewport({ width:900, height:900, deviceScaleFactor:1 });
-  await openHome(pg, 'standard');
+  await openHome(pg);
 
   const box = await deviceBox(pg);
   const problems = [];
@@ -185,29 +188,29 @@ for (const [width, mode] of [[1280, 'standard'], [1280, 'action'], [1280, 'plain
   await pg.close();
 }
 
-// Case 5: onboarding (no tab bar) at >=1024px must not reserve rail space —
-// .screen.no-tabbar collapses the grid to a single column.
+// Case 5: the welcome screen (no tab bar) at >=1024px must not reserve rail
+// space — .screen.no-tabbar collapses the grid to a single column.
 {
   const pg = await b.newPage();
   const errs = [];
   pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
   pg.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
   await pg.setViewport({ width:1280, height:900, deviceScaleFactor:1 });
-  await openOnboarding(pg);
+  await openWelcome(pg);
 
   const hasNoTabbarClass = await pg.evaluate(() => document.querySelector('.screen').classList.contains('no-tabbar'));
   const gridCols = await pg.evaluate(() => getComputedStyle(document.querySelector('.screen')).gridTemplateColumns);
   const railPresent = await pg.evaluate(() => !!document.querySelector('.tabbar'));
   const problems = [];
-  if (!hasNoTabbarClass) problems.push('onboarding .screen is missing the no-tabbar modifier class');
-  if (railPresent) problems.push('onboarding should render no rail nav at all (no tab bar on this screen)');
+  if (!hasNoTabbarClass) problems.push('the welcome .screen is missing the no-tabbar modifier class');
+  if (railPresent) problems.push('the welcome screen should render no rail nav at all');
   // A single-column grid should not reserve the 104px rail track.
-  if (/^104px/.test(gridCols.trim())) problems.push('onboarding still reserves the 104px rail column at 1280px: ' + gridCols);
+  if (/^104px/.test(gridCols.trim())) problems.push('the welcome screen still reserves the 104px rail column at 1280px: ' + gridCols);
   errs.forEach(e => problems.push(e));
 
   const ok = problems.length === 0;
   if (!ok) fails++;
-  console.log((ok ? '✅' : '❌') + ' onboarding at desktop tier: no rail, no reserved 104px column' + (ok ? '' : '\n   ' + problems.join('\n   ')));
+  console.log((ok ? '✅' : '❌') + ' welcome at desktop tier: no rail, no reserved 104px column' + (ok ? '' : '\n   ' + problems.join('\n   ')));
   await pg.close();
 }
 
@@ -222,7 +225,7 @@ for (const [width, mode] of [[1280, 'standard'], [1280, 'action'], [1280, 'plain
   pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
   pg.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
   await pg.setViewport({ width:1280, height:900, deviceScaleFactor:1 });
-  await openHome(pg, 'standard');
+  await openHome(pg);
 
   const click = async (t) => {
     await pg.evaluate((text) => {
@@ -234,18 +237,14 @@ for (const [width, mode] of [[1280, 'standard'], [1280, 'action'], [1280, 'plain
   const noHorizontalScroll = () => pg.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
 
   const screens = [
-    { label:'Ask AI (chat)', open: () => click('Ask AI') },
-    { label:'Log', open: () => click('Log') },
-    { label:'Rights', open: () => click('Rights') },
+    { label:'Laws — topic grid', open: async () => { await click('Laws'); } },
+    { label:'Laws — one topic', open: async () => { await click('Laws'); await click('Pay & overtime'); } },
+    { label:'Self-check (wizard)', open: async () => { await click('Laws'); await click('Pay & overtime'); await click('Am I exempt'); } },
+    { label:'Non-compete checker', open: async () => { await click('Laws'); await click('All topics'); await click('Leaving a job'); await click('Is my non-compete'); } },
+    { label:'All rights', open: () => click('All rights') },
     { label:'Agencies', open: () => click('Agencies') },
-    // "Draft a letter" is only shown for non-wage issues now (redundant for
-    // wage — both letters are reachable via the step list); use the
-    // classification step, which lands on the same Letter screen.
-    { label:'Letter (via classification step)', open: async () => { await click('Home'); await click('Ask HR, in writing, for your overtime'); } },
-    { label:'Am I exempt (wizard)', open: async () => { await click('Home'); await click('Am I exempt'); } },
-    { label:'Review a document (doc)', open: async () => { await click('Home'); await click('Review a document'); } },
-    { label:'Case Strength', open: async () => { await click('Home'); await click('CASE STRENGTH'); } },
   ];
+
 
   for (const s of screens) {
     const errsBefore = errs.length;

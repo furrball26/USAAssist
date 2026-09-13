@@ -51,79 +51,86 @@ const bodyText = () => page.evaluate(() => document.body.innerText);
 const assert = (cond, msg) => { if (!cond) errors.push('ASSERT: ' + msg); };
 
 try {
-  await gotoApp(page, BASE + '/index.html');
+  // ── 1 · a first-ever visitor lands on the welcome, then the map ──
+  await gotoApp(page, BASE + '/index.html', { freshVisitor: true });
   await new Promise(r => setTimeout(r, 500));
-
-  // root populated
   const rootKids = await page.evaluate(() => document.getElementById('root')?.childElementCount || 0);
   assert(rootKids > 0, '#root did not render');
-
-  // onboarding visible
+  assert(/Know your rights at work/i.test(await bodyText()), 'welcome screen did not render for a fresh visitor');
+  await clickText("Find my state");
   let txt = await bodyText();
-  assert(/Where do you work/i.test(txt), 'onboarding title missing');
+  assert(/Where do you work/i.test(txt), 'the map step did not render after the welcome');
 
-  // go to dashboard
-  await clickText('Skip to dashboard');
+  // Both ways in, always: the map for people who can point at where they live,
+  // the labelled <select> for everyone the map fails.
+  assert(await page.$('#onb-state') !== null, 'the labelled state <select> is missing beside the map');
+  const stateShapes = await page.$$eval('.wlUsMap path[role="button"]', els => els.length);
+  assert(stateShapes === 50, `expected 50 selectable state shapes, found ${stateShapes}`);
+
+  // ── 2 · state → county → topics ──
+  await page.select('#onb-state', 'California');
+  await new Promise(r => setTimeout(r, 500));
   txt = await bodyText();
-  assert(/Tools|next steps|CASE #|evidence/i.test(txt), 'dashboard did not render after skip');
+  assert(/Where in California/i.test(txt), 'picking a state did not advance to the county step');
+  assert(await page.$('#onb-county') !== null, 'the labelled county <select> is missing beside the county map');
+  // We hold no local ordinances; the county step has to say so rather than
+  // implying an empty local layer.
+  assert(/don.t hold county or city ordinances/i.test(txt), 'the county step does not disclose that no local ordinances are on file');
 
-  // Home is a single Standard layout now — the Standard/Action-first/Plain
-  // mode tabs (ModeSwitch) are gone entirely; confirm none of them render.
-  const modeTabsGone = await page.evaluate(() => !document.querySelector('[role="group"][aria-label="Dashboard view"]'));
-  assert(modeTabsGone, 'Standard/Action-first/Plain mode tabs still render on Home');
+  await page.select('#onb-county', 'Alameda County');
+  await new Promise(r => setTimeout(r, 600));
+  txt = await bodyText();
+  assert(/Your rights in California/i.test(txt), 'picking a county did not reach the topic grid');
+  assert(/Pay & overtime/i.test(txt), 'the topic grid did not render its categories');
 
-  // visit every tab + tool screen
-  const stops = ['Ask AI', 'Log', 'Rights', 'Agencies', 'Home'];
-  for (const s of stops) { const ok = await clickText(s); assert(ok, `tab "${s}" not found`); }
-  // tools from home. "Am I exempt from overtime?" is wage-issue-only (see
-  // per-issue flow fix) — "Skip to dashboard" leaves no issue selected (the
-  // generic issue), so it correctly does NOT appear here; covered separately
-  // below for a wage case, and asserted absent for a harassment case further
-  // down in the full onboarding walk.
-  await clickText('Home');
-  for (const s of ['Log an incident', 'Review a document', 'Draft a letter']) {
-    await clickText('Home');
-    const ok = await clickText(s);
-    assert(ok, `tool "${s}" not found`);
-    await new Promise(r => setTimeout(r, 250));
+  // ── 3 · a topic opens the law, plain English above the citation ──
+  assert(await clickText('Pay & overtime'), 'the Pay & overtime topic was not clickable');
+  txt = await bodyText();
+  assert(/THE LAW/i.test(txt), 'the category view did not render a THE LAW block');
+  assert(/Cal\. Lab\. Code/i.test(txt), 'the category view did not render a California citation');
+
+  // ── 4 · the three tabs, and only three ──
+  const tabs = await page.$$eval('.tabbar button', els => els.map(e => e.innerText.trim()));
+  assert(tabs.length === 3, `expected 3 tabs, found ${tabs.length}: ${tabs.join(', ')}`);
+  for (const t of ['Laws', 'All rights', 'Agencies']) {
+    assert(tabs.some(x => x.includes(t)), `tab "${t}" missing`);
+  }
+  // The removed features must be gone from the chrome, not merely unreachable.
+  for (const gone of ['Ask AI', 'Log']) {
+    assert(!tabs.some(x => x === gone), `retired tab "${gone}" still renders`);
   }
 
-  // reload → case should persist. Browser History integration (F-history) now
-  // also carries the current in-app screen across a reload via the History
-  // API's per-entry state (browsers preserve pushState/replaceState `state`
-  // across F5, even though React state itself resets) — so a reload restores
-  // whatever screen the user was actually on, not unconditionally the
-  // dashboard. Land on Log (an unambiguous, stable screen) before reloading.
-  await clickText('Log');
-  await new Promise(r => setTimeout(r, 250));
-  await reloadApp(page);
-  await new Promise(r => setTimeout(r, 400));
+  assert(await clickText('All rights'), 'All rights tab not found');
   txt = await bodyText();
-  assert(!/Where do you work/i.test(txt), 'persistence: reload returned to onboarding');
-  assert(/Incident log|Your log is empty/i.test(txt), 'persistence: reload did not restore the screen the user was actually on (Log)');
+  assert(/Every rule, as written/i.test(txt), 'the raw rights listing did not render');
+  assert(await clickText('Agencies'), 'Agencies tab not found');
+  txt = await bodyText();
+  assert(/Who enforces this/i.test(txt), 'the agencies directory did not render');
+  assert(/Equal Employment Opportunity Commission/i.test(txt), 'the federal agency list is missing the EEOC');
 
-  // fresh full onboarding walk (clear storage, click Continue through all 4 steps)
-  await page.evaluate(() => localStorage.clear());
-  await gotoApp(page, BASE + '/index.html');
-  await new Promise(r => setTimeout(r, 400));
-  assert(/Where do you work/i.test(await bodyText()), 'fresh load did not show onboarding');
-  // step 1 now requires an explicit state selection (no demo default)
-  await page.select('#onb-state', 'California');
-  await new Promise(r => setTimeout(r, 150));
-  await clickText('Continue');                 // step 1 → 2 (state selected)
-  await page.select('#onb-county', (await page.$$eval('#onb-county option', o => o.map(x => x.value).filter(Boolean)))[0]);
-  await new Promise(r => setTimeout(r, 150));
-  await clickText('Continue');                 // step 2 → 3 (county selected)
-  assert(await clickText('Harassment or a hostile workplace'), 'issue option not found on step 3');
-  await clickText('Continue');                 // step 3 → 4 (issue now selected)
-  assert(/case details/i.test(await bodyText()), 'step 4 (case details) not reached');
-  await clickText('Open my dashboard');        // step 4 → home
-  assert(/CASE #|evidence|Tools/i.test(await bodyText()), 'full onboarding walk did not reach dashboard');
-  // per-issue flow fix — the overtime-exemption self-check tool is wage-specific
-  // and must not be offered on a harassment case's Tools grid.
-  assert(!/Am I exempt from overtime/i.test(await bodyText()), 'exemption self-check tool shown on a harassment case (wage-only tool)');
+  // ── 5 · a self-check runs off a topic, with no case behind it ──
+  assert(await clickText('Laws'), 'Laws tab not found');
+  await clickText('Pay & overtime');
+  assert(await clickText('Am I exempt from overtime?'), 'the overtime self-check is not reachable from the pay topic');
+  txt = await bodyText();
+  assert(/How are you paid/i.test(txt), 'the self-check did not render its first question');
+  assert(await clickText('Hourly'), 'the self-check did not accept an answer');
+  // Hourly branches once more (the computer-employee carve-out) before a verdict.
+  assert(await clickText('No'), 'the self-check did not accept the second answer');
+  txt = await bodyText();
+  assert(/non-exempt/i.test(txt), 'answering Hourly then No did not reach a non-exempt verdict');
+  assert(/29 C\.F\.R/i.test(txt), 'the verdict did not cite the regulation behind it');
 
-  console.log(errors.length ? '❌ SMOKE FAILED' : '✅ SMOKE PASSED');
+  // ── 6 · the place survives a reload; nothing else is kept ──
+  await reloadApp(page);
+  await new Promise(r => setTimeout(r, 700));
+  txt = await bodyText();
+  assert(!/Know your rights at work[\s\S]*Find my state/i.test(txt), 'reload replayed the welcome screen');
+  const stored = await page.evaluate(() => Object.keys(localStorage).sort());
+  assert(!stored.includes('worklaw.case.v2'), 'the retired case blob is still being written');
+  const place = await page.evaluate(() => JSON.parse(localStorage.getItem('worklaw.place.v1') || '{}'));
+  assert(place.stateSel === 'California', `reload lost the remembered state (got ${JSON.stringify(place)})`);
+
   if (errors.length) { errors.slice(0, 20).forEach(e => console.log('  ' + e)); }
 } catch (e) {
   console.log('❌ SMOKE CRASHED:', e.message);

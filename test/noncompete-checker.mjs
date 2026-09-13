@@ -12,7 +12,7 @@
  *   2. For a state WITH NO nonCompete.enforceability fact (e.g. Alabama), the
  *      checker shows the honest "we don't have a sourced answer" copy and does
  *      NOT fabricate or leak a stance/citation from another state.
- *   3. The tool ("Is my non-compete enforceable?") is gated to the document-review
+ *   3. The tool ("Is my non-compete enforceable?") is gated to the Leaving a job
  *      issue — absent on a wage case's dashboard, present on a document case's —
  *      same gating pattern as the wage/harassment/discrimination self-checks.
  *
@@ -41,14 +41,15 @@ const b = await puppeteer.launch({ executablePath: chrome, headless: true, args:
 let fails = 0;
 const click = async (pg, t) => { await pg.evaluate((x) => { const e = [...document.querySelectorAll('button,a')].find(el => el.textContent.includes(x)); e && e.click(); }, t); await new Promise(r => setTimeout(r, 300)); };
 const bodyText = async (pg) => await pg.evaluate(() => document.body.innerText);
-const seedFor = (issueName, stateSel, homeMode) => ({
-  onboarded:true, stateSel, county: stateSel === 'California' ? 'Los Angeles County' : 'Jefferson County',
-  issue:issueName,
-  profile:{ name:'Pat Vega', employer:'Northgate Co', payType:'Hourly', rate:'20' },
-  caseOpened:new Date().toISOString(), homeMode:homeMode || 'standard', done:{}, messages:[], entries:[],
-});
-const DOC_ISSUE = 'A document to review';
+// The check hangs off the law topic it belongs to now, not a case's issue.
 const TOOL_LABEL = 'Is my non-compete enforceable?';
+// The check hangs off the law topic it belongs to now, not a case's issue.
+const openCheck = async (pg) => {
+  await click(pg, 'Leaving a job');
+  await new Promise(r => setTimeout(r, 350));
+  await click(pg, TOOL_LABEL);
+  await new Promise(r => setTimeout(r, 400));
+};
 
 const newPage = async () => {
   const pg = await b.newPage();
@@ -64,11 +65,10 @@ try {
 //    the federal FTC-rule-status note.
 {
   const { pg, errs } = await newPage();
-  await pg.evaluateOnNewDocument((s) => { localStorage.clear(); localStorage.setItem('worklaw.case.v2', JSON.stringify(s)); }, seedFor(DOC_ISSUE, 'California'));
-  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`);
+  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`, { place: { state: 'California', county: '' } });
   await new Promise(r => setTimeout(r, 700));
 
-  await click(pg, TOOL_LABEL);
+  await openCheck(pg);
   await new Promise(r => setTimeout(r, 300));
   const text = await bodyText(pg);
   // Matched on the link's PURPOSE, not its wording. This screen renders the
@@ -102,11 +102,10 @@ try {
 //    "no sourced answer" copy, never a fabricated/leaked stance.
 {
   const { pg, errs } = await newPage();
-  await pg.evaluateOnNewDocument((s) => { localStorage.clear(); localStorage.setItem('worklaw.case.v2', JSON.stringify(s)); }, seedFor(DOC_ISSUE, 'Alabama'));
-  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`);
+  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`, { place: { state: 'Alabama', county: '' } });
   await new Promise(r => setTimeout(r, 700));
 
-  await click(pg, TOOL_LABEL);
+  await openCheck(pg);
   await new Promise(r => setTimeout(r, 300));
   const text = await bodyText(pg);
 
@@ -125,70 +124,37 @@ try {
   await pg.close();
 }
 
-// 3. Tool is gated to the document-review issue — absent on a wage dashboard,
-//    present on a document dashboard (Standard mode Tools grid).
-{
-  const { pg: pgWage, errs: errsWage } = await newPage();
-  await pgWage.evaluateOnNewDocument((s) => { localStorage.clear(); localStorage.setItem('worklaw.case.v2', JSON.stringify(s)); }, seedFor('Unpaid overtime or wages', 'Texas'));
-  await gotoApp(pgWage, `http://127.0.0.1:${PORT}/index.html`);
-  await new Promise(r => setTimeout(r, 700));
-  const wageHome = await bodyText(pgWage);
-  await pgWage.close();
-
-  const { pg: pgDoc, errs: errsDoc } = await newPage();
-  await pgDoc.evaluateOnNewDocument((s) => { localStorage.clear(); localStorage.setItem('worklaw.case.v2', JSON.stringify(s)); }, seedFor(DOC_ISSUE, 'Texas'));
-  await gotoApp(pgDoc, `http://127.0.0.1:${PORT}/index.html`);
-  await new Promise(r => setTimeout(r, 700));
-  const docHome = await bodyText(pgDoc);
-  await pgDoc.close();
-
-  const problems = [];
-  if (wageHome.includes(TOOL_LABEL)) problems.push('wage dashboard wrongly offers the non-compete checker tool');
-  if (!docHome.includes(TOOL_LABEL)) problems.push('document-review dashboard is missing the non-compete checker tool');
-  errsWage.forEach(e => problems.push('wage: ' + e));
-  errsDoc.forEach(e => problems.push('doc: ' + e));
-
-  const ok = problems.length === 0;
-  if (!ok) fails++;
-  console.log((ok ? '✅' : '❌') + ' "Is my non-compete enforceable?" tool is gated to the document-review issue' + (ok ? '' : '\n   ' + problems.join('\n   ')));
-}
-
-// 4. The doc-review clause scanner's flagged non-compete clause links straight
-//    into the checker.
+// 3. The check lives under Leaving a job, and nowhere else.
 {
   const { pg, errs } = await newPage();
-  await pg.evaluateOnNewDocument((s) => { localStorage.clear(); localStorage.setItem('worklaw.case.v2', JSON.stringify(s)); }, seedFor(DOC_ISSUE, 'California'));
-  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`);
-  await new Promise(r => setTimeout(r, 700));
+  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`, { place: { state: 'Texas', county: '' } });
+  await new Promise(r => setTimeout(r, 800));
+  const grid = await bodyText(pg);
 
-  await click(pg, 'Review a document');
-  await new Promise(r => setTimeout(r, 300));
-  await pg.evaluate(() => {
-    const ta = document.getElementById('doc-text');
-    const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
-    setter.call(ta, 'Employee agrees not to compete with the Company or work for a competitor for 12 months after termination.');
-    ta.dispatchEvent(new Event('input', { bubbles: true }));
-  });
-  await new Promise(r => setTimeout(r, 300));
-
-  const textAfterScan = await bodyText(pg);
-  const hasLink = textAfterScan.includes('Is my non-compete enforceable?');
-
-  await click(pg, 'Is my non-compete enforceable?');
-  await new Promise(r => setTimeout(r, 300));
-  const textAfterClick = await bodyText(pg);
+  await click(pg, 'Pay & overtime');
+  await new Promise(r => setTimeout(r, 400));
+  const payTopic = await bodyText(pg);
+  await click(pg, 'All topics');
+  await new Promise(r => setTimeout(r, 400));
+  await click(pg, 'Leaving a job');
+  await new Promise(r => setTimeout(r, 400));
+  const leavingTopic = await bodyText(pg);
+  await pg.close();
 
   const problems = [];
-  if (!/Non-compete \/ restrictive covenant/.test(textAfterScan)) problems.push('pasted non-compete text was not flagged by the scanner, got: ' + JSON.stringify(textAfterScan.slice(0, 600)));
-  if (!hasLink) problems.push('flagged non-compete clause is missing the CTA into the checker');
-  if (!/what courts generally weigh/i.test(textAfterClick)) problems.push('clicking the CTA did not land on the checker screen');
+  if (grid.includes(TOOL_LABEL)) problems.push('the topic grid itself offers the non-compete check, before any topic is opened');
+  if (payTopic.includes(TOOL_LABEL)) problems.push('the pay topic wrongly offers the non-compete check');
+  if (!leavingTopic.includes(TOOL_LABEL)) problems.push('the Leaving a job topic is missing the non-compete check');
   errs.forEach(e => problems.push(e));
 
   const ok = problems.length === 0;
   if (!ok) fails++;
-  console.log((ok ? '✅' : '❌') + ' flagged non-compete clause links into the enforceability checker' + (ok ? '' : '\n   ' + problems.join('\n   ')));
-  await pg.close();
+  console.log((ok ? '✅' : '❌') + ' "' + TOOL_LABEL + '" lives under Leaving a job only' + (ok ? '' : '\n   ' + problems.join('\n   ')));
 }
+
+// (The fourth case here used to walk from the document-review clause scanner
+// into this checker. Document review is gone, so that path no longer exists;
+// the checker is reached from the Leaving a job topic, covered by case 3.)
 
 } finally {
   await b.close();

@@ -81,6 +81,32 @@ ok(collisions.length === 0,
   'no two shapes in a state share a name (Virginia\'s Fairfax county vs Fairfax city stay distinct)' +
   (collisions.length ? ': ' + collisions.join(', ') : ''));
 
+// Drawn labels must not overlap each other. The build (chooseLabels in
+// automation/build-county-geo.mjs) rejects colliding labels; without that pass
+// Texas stacked Jack over Wise, King over Knox and Lamb over Hale. Recompute
+// the boxes here from the shipped data so a regression in that pass fails
+// rather than silently producing unreadable maps.
+const LABEL_FS = 14, CHAR_W = 0.62, PAD_X = 6, PAD_Y = 4;
+const STRIP = /\s+(County|Parish|Borough|Census Area|Municipio|Municipality|City and Borough)$/i;
+let drawn = 0;
+const overlaps = [];
+for (const abbr of Object.values(ABBR)) {
+  const f = join(ROOT, 'content/geo', abbr + '.json');
+  if (!existsSync(f)) continue;
+  const boxes = [];
+  for (const c of JSON.parse(readFileSync(f, 'utf8')).counties) {
+    if (!c.lab) continue;
+    drawn++;
+    const w = c.name.replace(STRIP, '').length * LABEL_FS * CHAR_W;
+    const box = { n: c.name, x0: c.lx - w / 2 - PAD_X, x1: c.lx + w / 2 + PAD_X,
+      y0: c.ly - LABEL_FS / 2 - PAD_Y, y1: c.ly + LABEL_FS / 2 + PAD_Y };
+    const hit = boxes.find(b => box.x0 < b.x1 && box.x1 > b.x0 && box.y0 < b.y1 && box.y1 > b.y0);
+    if (hit) overlaps.push(`${abbr}: "${box.n}" over "${hit.n}"`);
+    boxes.push(box);
+  }
+}
+ok(drawn > 0, `counties carry drawn name labels (${drawn} of ${shapes})`);
+ok(overlaps.length === 0, 'no two drawn county labels overlap' + (overlaps.length ? `: ${overlaps.slice(0, 5).join(', ')}` : ''));
 // Geometry files are fetched per state, so size is a user-facing cost.
 const sizes = readdirSync(join(ROOT, 'content/geo'))
   .map(f => statSync(join(ROOT, 'content/geo', f)).size);
@@ -106,25 +132,28 @@ try {
   await gotoApp(pg, `http://127.0.0.1:${server.address().port}/index.html`);
   await new Promise(r => setTimeout(r, 400));
 
-  // Step 1: pick California off the state map, then continue to counties.
+  // Pick California off the state map; that alone advances to its counties.
+  await new Promise(r => setTimeout(r, 1200));   // national map is fetched
   await pg.evaluate(() => {
-    const t = [...document.querySelectorAll('.wlStateBtn')].find(x => x.textContent.trim() === 'CA');
-    t && t.click();
-  });
-  await new Promise(r => setTimeout(r, 250));
-  await pg.evaluate(() => {
-    const t = [...document.querySelectorAll('button')].find(x => x.textContent.trim() === 'Continue');
-    t && t.click();
+    const t = [...document.querySelectorAll('.wlUsMap path[role="button"]')]
+      .find(x => x.getAttribute('aria-label') === 'California');
+    t && t.dispatchEvent(new MouseEvent('click', { bubbles: true }));
   });
   await new Promise(r => setTimeout(r, 1500));
 
-  const paths = await pg.evaluate(() => document.querySelectorAll('.wlCountyMap path').length);
+  const paths = await pg.evaluate(() => document.querySelectorAll('.wlCountyMap path[role="button"]').length);
   ok(paths === 58, `California's 58 counties render as selectable shapes (got ${paths})`);
 
   ok(await pg.$('#onb-county') !== null, 'the searchable county <select> is still present alongside the map');
+  // Neither control may reach a county the other cannot.
+  const opts = await pg.$$eval('#onb-county option', els => els.map(e => e.value).filter(Boolean));
+  const labels = await pg.$$eval('.wlCountyMap path[role="button"]', els => els.map(e => e.getAttribute('aria-label')));
+  ok(opts.length === 58, `the county select offers all 58 (got ${opts.length})`);
+  ok(labels.every(l => opts.includes(l)), 'every county on the map is also in the select');
+  ok(opts.every(v => labels.includes(v)), 'every county in the select also has a shape on the map');
 
   const a11y = await pg.evaluate(() => {
-    const p = document.querySelector('.wlCountyMap path');
+    const p = document.querySelector('.wlCountyMap path[role="button"]');
     return p ? { label: p.getAttribute('aria-label'), role: p.getAttribute('role'), tab: p.getAttribute('tabindex') } : null;
   });
   ok(a11y && a11y.role === 'button' && a11y.tab === '0' && /County$/.test(a11y.label || ''),
@@ -132,18 +161,20 @@ try {
 
   // A click must write exactly what the dropdown holds.
   const picked = await pg.evaluate(() => {
-    const t = [...document.querySelectorAll('.wlCountyMap path')]
+    const t = [...document.querySelectorAll('.wlCountyMap path[role="button"]')]
       .find(p => p.getAttribute('aria-label') === 'Los Angeles County');
     if (!t) return null;
     t.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     return true;
   });
-  await new Promise(r => setTimeout(r, 350));
-  const sel = await pg.$eval('#onb-county', el => el.value);
-  ok(picked && sel === 'Los Angeles County', `clicking a county drives the same value as the select (got "${sel}")`);
-  const pressed = await pg.evaluate(() =>
-    document.querySelector('.wlCountyMap path[aria-pressed="true"]')?.getAttribute('aria-label'));
-  ok(pressed === 'Los Angeles County', 'the chosen county reports aria-pressed="true"');
+  await new Promise(r => setTimeout(r, 700));
+  ok(picked, 'Los Angeles County has a shape on the map');
+  const after = await pg.evaluate(() => document.body.innerText);
+  ok(/Your rights in California/i.test(after), 'clicking a county goes straight to the law for that place');
+  ok(/Los Angeles County, California/i.test(after), 'the picked county is named on the screen it leads to');
+  const stored = await pg.evaluate(() => JSON.parse(localStorage.getItem('worklaw.place.v1') || '{}'));
+  ok(stored.county === 'Los Angeles County',
+     `clicking a county stores the same value the select offers (got "${stored.county}")`);
   ok(errs.length === 0, 'no console/page errors using the county map' + (errs.length ? ': ' + errs[0] : ''));
   await pg.close();
 } finally {

@@ -35,6 +35,7 @@ import { join } from 'node:path';
 const ROOT = new URL('..', import.meta.url).pathname;
 const OUT = join(ROOT, 'content/geo');
 const SRC = join(ROOT, 'node_modules/us-atlas/counties-albers-10m.json');
+const SRC_STATES = join(ROOT, 'node_modules/us-atlas/states-albers-10m.json');
 
 // Emitted viewBox width; height follows the state's real aspect ratio so no
 // state is stretched. Coordinates are rounded to 1dp, which is well under a
@@ -42,34 +43,104 @@ const SRC = join(ROOT, 'node_modules/us-atlas/counties-albers-10m.json');
 const VB_W = 1000;
 const PRECISION = 1;
 
-const topo = JSON.parse(readFileSync(SRC, 'utf8'));
-const { scale, translate } = topo.transform;
+/* Decoder bound to one topology. Both files (counties and states) are the same
+   format, so this is built once per source rather than duplicated. */
+function decoder(topo) {
+  const { scale, translate } = topo.transform;
+  const cache = new Map();
+  /* Dequantize + delta-decode one arc into absolute [x,y] points. */
+  const arc = (i) => {
+    if (cache.has(i)) return cache.get(i);
+    let x = 0, y = 0;
+    const out = topo.arcs[i].map(([dx, dy]) => {
+      x += dx; y += dy;
+      return [x * scale[0] + translate[0], y * scale[1] + translate[1]];
+    });
+    cache.set(i, out);
+    return out;
+  };
+  /* A negative index means "this arc, reversed" and encodes as ~i. */
+  const arcRef = (i) => (i < 0 ? arc(~i).slice().reverse() : arc(i));
+  /* Stitch a ring's arcs, dropping each arc's first point (it repeats the
+     previous arc's last) so the ring has no duplicated vertices. */
+  const ring = (indices) => {
+    const pts = [];
+    indices.forEach((i, n) => { const a = arcRef(i); pts.push(...(n ? a.slice(1) : a)); });
+    return pts;
+  };
+  return (geom) => {
+    if (geom.type === 'Polygon') return geom.arcs.map(ring);
+    if (geom.type === 'MultiPolygon') return geom.arcs.flat().map(ring);
+    return [];
+  };
+}
 
-/* Dequantize + delta-decode one arc into absolute [x,y] points. */
-const arcCache = new Map();
-function arc(i) {
-  if (arcCache.has(i)) return arcCache.get(i);
-  let x = 0, y = 0;
-  const out = topo.arcs[i].map(([dx, dy]) => {
-    x += dx; y += dy;
-    return [x * scale[0] + translate[0], y * scale[1] + translate[1]];
-  });
-  arcCache.set(i, out);
-  return out;
+const topo = JSON.parse(readFileSync(SRC, 'utf8'));
+const rings = decoder(topo);
+
+/* ── Label placement ─────────────────────────────────────────────────
+ * Where to put a shape's name, and whether it will even fit.
+ *
+ * A polygon CENTROID is the obvious choice and the wrong one: for concave
+ * shapes it lands outside the shape entirely. Florida's centroid sits in the
+ * Gulf, Michigan's in Lake Michigan, Louisiana's offshore. Labels would float
+ * on water next to the state they name.
+ *
+ * Instead this finds the largest circle that fits inside the shape (the "pole
+ * of inaccessibility") by grid search with refinement. That gives two things:
+ * a point guaranteed to be inside, and its RADIUS — a direct measure of how
+ * much room there is, which is what decides whether a name can be drawn at all.
+ * Rhode Island and Bristol County get no label because they genuinely cannot
+ * hold one; pretending otherwise would just produce overlapping text.
+ */
+function pointInRings(px, py, rings) {
+  let inside = false;
+  for (const r of rings) {
+    for (let i = 0, j = r.length - 1; i < r.length; j = i++) {
+      const [xi, yi] = r[i], [xj, yj] = r[j];
+      if ((yi > py) !== (yj > py) && px < ((xj - xi) * (py - yi)) / (yj - yi) + xi) inside = !inside;
+    }
+  }
+  return inside;
 }
-/* A negative index means "this arc, reversed" and encodes as ~i. */
-function arcRef(i) { return i < 0 ? arc(~i).slice().reverse() : arc(i); }
-/* Stitch a ring's arcs, dropping each arc's first point (it repeats the
-   previous arc's last) so the ring has no duplicated vertices. */
-function ring(indices) {
-  const pts = [];
-  indices.forEach((i, n) => { const a = arcRef(i); pts.push(...(n ? a.slice(1) : a)); });
-  return pts;
+function distToEdges(px, py, rings) {
+  let best = Infinity;
+  for (const r of rings) {
+    for (let i = 0, j = r.length - 1; i < r.length; j = i++) {
+      const [xi, yi] = r[i], [xj, yj] = r[j];
+      const dx = xj - xi, dy = yj - yi;
+      const len2 = dx * dx + dy * dy;
+      let t = len2 ? ((px - xi) * dx + (py - yi) * dy) / len2 : 0;
+      t = t < 0 ? 0 : t > 1 ? 1 : t;
+      const ex = px - (xi + t * dx), ey = py - (yi + t * dy);
+      const d = Math.sqrt(ex * ex + ey * ey);
+      if (d < best) best = d;
+    }
+  }
+  return best;
 }
-function rings(geom) {
-  if (geom.type === 'Polygon') return geom.arcs.map(ring);
-  if (geom.type === 'MultiPolygon') return geom.arcs.flat().map(ring);
-  return [];
+/* Grid search, then two refinement passes around the winner. Cheap and ample
+   for shapes this simple; a full polylabel priority queue buys nothing here. */
+function labelPoint(rings) {
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const r of rings) for (const [x, y] of r) {
+    if (x < x0) x0 = x; if (x > x1) x1 = x;
+    if (y < y0) y0 = y; if (y > y1) y1 = y;
+  }
+  let bx = (x0 + x1) / 2, by = (y0 + y1) / 2, br = -1;
+  let sx = x0, sy = y0, ex = x1, ey = y1, steps = 16;
+  for (let pass = 0; pass < 3; pass++) {
+    const gx = (ex - sx) / steps, gy = (ey - sy) / steps;
+    for (let i = 0; i <= steps; i++) for (let j = 0; j <= steps; j++) {
+      const px = sx + i * gx, py = sy + j * gy;
+      if (!pointInRings(px, py, rings)) continue;
+      const d = distToEdges(px, py, rings);
+      if (d > br) { br = d; bx = px; by = py; }
+    }
+    // Zoom in around the current best for the next pass.
+    sx = bx - gx; ex = bx + gx; sy = by - gy; ey = by + gy;
+  }
+  return { x: bx, y: by, r: Math.max(br, 0) };
 }
 
 /* Reconcile Census names to the app's own county strings HERE, at build time,
@@ -104,6 +175,41 @@ function resolveName(geoName, fips, appCounties) {
   return null;
 }
 
+/* ── Which labels actually get drawn ──────────────────────────────────
+ * Fitting a name inside its own county is necessary but not sufficient: two
+ * adjacent counties can each have room and still collide, because each label
+ * is placed relative to its own shape with no knowledge of its neighbours.
+ * Texas showed exactly that — Jack over Wise, King over Knox, Lamb over Hale.
+ *
+ * Greedy pass, roomiest first: a label is kept only if it fits its own shape
+ * AND its box clears every label already accepted. Decided here rather than at
+ * render time so the result is deterministic and costs the browser nothing.
+ */
+const LABEL_FS = 14;             // must match .wlCountyLabel in index.dev.html
+const CHAR_W = 0.62;             // average advance for Atkinson Hyperlegible, rounded up
+const LABEL_PAD_X = 6;           // breathing room so neighbours don't touch
+const LABEL_PAD_Y = 4;
+const SUFFIX_FOR_LABEL = /\s+(County|Parish|Borough|Census Area|Municipio|Municipality|City and Borough)$/i;
+
+function chooseLabels(items) {
+  const boxes = [];
+  const scored = items
+    .map((it, i) => ({ i, it, w: it.short.length * LABEL_FS * CHAR_W }))
+    .sort((a, b) => b.it.lr - a.it.lr);
+  const keep = new Set();
+  for (const { i, it, w } of scored) {
+    if (it.lr * 2 < w) continue;                      // won't fit its own shape
+    const box = {
+      x0: it.lx - w / 2 - LABEL_PAD_X, x1: it.lx + w / 2 + LABEL_PAD_X,
+      y0: it.ly - LABEL_FS * 0.5 - LABEL_PAD_Y, y1: it.ly + LABEL_FS * 0.5 + LABEL_PAD_Y,
+    };
+    if (boxes.some(b => box.x0 < b.x1 && box.x1 > b.x0 && box.y0 < b.y1 && box.y1 > b.y0)) continue;
+    boxes.push(box);
+    keep.add(i);
+  }
+  return keep;
+}
+
 // FIPS -> postal abbr. Derived from the topology's own `states` object so the
 // mapping can't drift from the geometry it labels.
 const STATE_NAMES = {};
@@ -128,7 +234,7 @@ const shipped = new Set(readdirSync(join(ROOT, 'content/states'))
   .filter(f => f.endsWith('.json') && f !== '_TEMPLATE.json')
   .map(f => f.replace('.json', '')));
 
-let files = 0, counties = 0, bytes = 0;
+let files = 0, counties = 0, bytes = 0, labelled = 0;
 for (const [sf, geoms] of byState) {
   const name = STATE_NAMES[sf];
   const abbr = ABBR[name];
@@ -159,14 +265,73 @@ for (const [sf, geoms] of byState) {
   const out = {
     state: name, abbr, viewBox: `0 0 ${VB_W} ${vbH}`,
     source: 'us-atlas 3.0.1 (US Census Bureau, Albers)',
-    counties: decoded.map(c => ({
-      fips: c.fips, name: c.name,
-      d: c.rings.map(r => 'M' + r.map(([x, y]) => `${fx(x)} ${fy(y)}`).join('L') + 'Z').join(''),
-    })).sort((a, b) => a.name.localeCompare(b.name)),
+    counties: (() => {
+      const rows = decoded.map(c => {
+        const lp = labelPoint(c.rings);
+        return {
+          fips: c.fips, name: c.name,
+          short: c.name.replace(SUFFIX_FOR_LABEL, ''),
+          d: c.rings.map(r => 'M' + r.map(([x, y]) => `${fx(x)} ${fy(y)}`).join('L') + 'Z').join(''),
+          lx: +fx(lp.x), ly: +fy(lp.y), lr: +(lp.r * k).toFixed(1),
+        };
+      });
+      const keep = chooseLabels(rows);
+      labelled += keep.size;
+      return rows.map((r, i) => ({
+        fips: r.fips, name: r.name, d: r.d,
+        lx: r.lx, ly: r.ly,
+        lab: keep.has(i) ? 1 : 0,   // 1 = draw the name; 0 = hover/list only
+      })).sort((a, b) => a.name.localeCompare(b.name));
+    })(),
   };
   const json = JSON.stringify(out);
   writeFileSync(join(OUT, abbr + '.json'), json);
   files++; counties += out.counties.length; bytes += json.length;
+}
+
+/* ── National map: the 50 states as one shared picture ────────────────
+ * All states share ONE bounding box (unlike the county files, which each fit
+ * their own) so they assemble into the United States. us-atlas's Albers
+ * projection already places Alaska and Hawaii in the conventional insets at
+ * the lower left, so the result reads as the map people expect.
+ *
+ * Coordinates round to whole units here rather than 1dp: this renders around
+ * 360px wide inside a 1000-unit viewBox, so a whole unit is ~0.36px — below
+ * what anyone can see, and it cuts the file by roughly a third.
+ */
+{
+  const st = JSON.parse(readFileSync(SRC_STATES, 'utf8'));
+  const stRings = decoder(st);
+  const rows = [];
+  for (const g of st.objects.states.geometries) {
+    const abbr = ABBR[g.properties.name];
+    if (!abbr || !shipped.has(abbr)) continue;   // same rule as the picker: no tile without content
+    const r = stRings(g);
+    if (r.length) rows.push({ abbr, name: g.properties.name, rings: r });
+  }
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const s of rows) for (const r of s.rings) for (const [x, y] of r) {
+    if (x < x0) x0 = x; if (x > x1) x1 = x;
+    if (y < y0) y0 = y; if (y > y1) y1 = y;
+  }
+  const k = VB_W / (x1 - x0);
+  const out = {
+    viewBox: `0 0 ${VB_W} ${Math.round((y1 - y0) * k)}`,
+    source: 'us-atlas 3.0.1 (US Census Bureau, Albers)',
+    states: rows.map(s => {
+      const lp = labelPoint(s.rings);
+      return {
+        abbr: s.abbr, name: s.name,
+        d: s.rings.map(r => 'M' + r.map(([x, y]) =>
+          `${Math.round((x - x0) * k)} ${Math.round((y - y0) * k)}`).join('L') + 'Z').join(''),
+        lx: Math.round((lp.x - x0) * k), ly: Math.round((lp.y - y0) * k),
+        lr: +(lp.r * k).toFixed(1),
+      };
+    }).sort((a, b) => a.abbr.localeCompare(b.abbr)),
+  };
+  const json = JSON.stringify(out);
+  writeFileSync(join(OUT, '_states.json'), json);
+  console.log(`✅ wrote _states.json — ${out.states.length} states, ${(json.length / 1024).toFixed(0)}KB`);
 }
 
 if (unresolved.length) {
@@ -177,3 +342,4 @@ if (unresolved.length) {
 }
 console.log(`✅ wrote ${files} state files, ${counties} counties, ${(bytes / 1024).toFixed(0)}KB total`);
 console.log(`   avg ${(bytes / files / 1024).toFixed(1)}KB per state -> content/geo/`);
+console.log(`   ${labelled} of ${counties} counties carry a drawn label (the rest are hover + list only)`);

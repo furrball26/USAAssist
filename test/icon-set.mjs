@@ -2,12 +2,15 @@
 /*
  * Custom icon set regression test (design-desktop-icons.md, Part 1).
  *
- * The app used to render 11 bare Unicode glyphs (⌂ ✦ ◷ § ⚖ ◉ ⏱ ▤ ✎ ‹ ✓) plus a
- * 12th "← Dashboard" arrow as plain text spans. All twelve were replaced with
- * the shared <Icon name=".." /> inline-SVG component. This guards against a
- * regression back to bare glyph text, and confirms every call site actually
- * renders a real <svg> (an unknown/typo'd icon name silently renders nothing,
- * per Icon()'s own contract, so "no bare glyph" alone isn't enough).
+ * The app used to render bare Unicode glyphs (⌂ ✦ ◷ ⚖ ◉ ⏱ ▤ ✎ ‹ ✓ ←) as plain
+ * text spans. All were replaced with the shared <Icon name=".." /> inline-SVG
+ * component. This guards against a regression back to bare glyph text, and
+ * confirms every call site actually renders a real <svg> — an unknown or
+ * typo'd icon name silently renders nothing, per Icon()'s own contract, so
+ * "no bare glyph" alone is not enough.
+ *
+ * Each law topic also carries its own icon; a missing one is exactly the kind
+ * of silent nothing this guards against, so the topic grid is counted too.
  *
  * Run: node test/icon-set.mjs
  */
@@ -45,183 +48,74 @@ try {
 // assertions below already cover.
 const BANNED_GLYPHS = ['⌂', '✦', '◷', '⚖', '◉', '⏱', '▤', '✎', '‹', '✓', '←', '⚠'];
 
-async function seedAndOpen(pg, extra = {}) {
-  const seed = Object.assign({
-    onboarded:true, stateSel:'Texas', county:'Travis County', issue:'Unpaid overtime or wages',
-    profile:{ name:'Pat Vega', employer:'Northgate Co', payType:'Salary', rate:'50000' },
-    caseOpened:new Date().toISOString(), homeMode:'standard',
-    entries:[{ date:'Jan 1, 2026', iso:new Date().toISOString(), title:'Hours', tag:'Wage & hour', color:'#EF7B22', body:'Worked unpaid overtime.' }],
-    done:{}, messages:[],
-  }, extra);
-  await pg.evaluateOnNewDocument((s) => { localStorage.clear(); localStorage.setItem('worklaw.case.v2', JSON.stringify(s)); }, seed);
-  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`);
-  await new Promise(r => setTimeout(r, 700));
-}
+const PLACE = { state: 'Texas', county: 'Travis County' };
 
+async function open(pg, place = PLACE) {
+  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`, { place });
+  await new Promise(r => setTimeout(r, 800));
+}
 const rootText = (pg) => pg.evaluate(() => document.getElementById('root').textContent);
 const svgCount = (pg) => pg.evaluate(() => document.querySelectorAll('#root svg').length);
-
-// Case 1: Home (Standard) — tab bar (5 icons), Tools grid (4 icons), Deadline
-// Watch badge, ◉ location pill, next-step checkbox all render real <svg>s and
-// no bare glyph text leaks into the page.
-{
+const click = async (pg, t) => {
+  await pg.evaluate((x) => { const e = [...document.querySelectorAll('button,a')].find(el => el.textContent.includes(x)); e && e.click(); }, t);
+  await new Promise(r => setTimeout(r, 450));
+};
+const newPage = async () => {
   const pg = await b.newPage();
   const errs = [];
   pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
   pg.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
-  await seedAndOpen(pg, { homeMode:'standard' });
+  return { pg, errs };
+};
 
+async function check(label, minSvgs, walk, place) {
+  const { pg, errs } = await newPage();
+  await open(pg, place);
+  await walk(pg);
   const text = await rootText(pg);
   const svgs = await svgCount(pg);
   const problems = [];
-  BANNED_GLYPHS.forEach(g => { if (text.includes(g)) problems.push('bare glyph "' + g + '" still present as visible text on Home (standard)'); });
-  if (svgs < 10) problems.push('expected at least 10 <svg> icons on Home (standard) (tab bar x5 + tools grid x4 + deadline/pill), found ' + svgs);
+  BANNED_GLYPHS.forEach(g => { if (text.includes(g)) problems.push('bare glyph "' + g + '" still present as visible text on ' + label); });
+  if (svgs < minSvgs) problems.push('expected at least ' + minSvgs + ' <svg> icons on ' + label + ', found ' + svgs);
   errs.forEach(e => problems.push(e));
-
+  await pg.close();
   const ok = problems.length === 0;
   if (!ok) fails++;
-  console.log((ok ? '✅' : '❌') + ' Home (standard): icon set renders, no bare glyphs' + (ok ? '' : '\n   ' + problems.join('\n   ')));
-  await pg.close();
+  console.log((ok ? '✅' : '❌') + ' ' + label + ': icon set renders, no bare glyphs' + (ok ? '' : '\n   ' + problems.join('\n   ')));
 }
 
-// Case 2: Home (Action-first) and Home (Plain) — same check, different theme
-// variant, to cover the dark/Action-first Deadline Watch badge specifically.
-for (const mode of ['action', 'plain']) {
-  const pg = await b.newPage();
-  const errs = [];
-  pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
-  pg.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
-  await seedAndOpen(pg, { homeMode: mode });
+// Tab bar (3) + location pill (1) + one icon per law topic (8).
+await check('Laws (topic grid)', 12, async () => {});
+await check('Laws (one topic)', 4, async (pg) => { await click(pg, 'Pay & overtime'); });
+await check('Self-check', 4, async (pg) => {
+  await click(pg, 'Pay & overtime');
+  await click(pg, 'Am I exempt from overtime?');
+});
+await check('All rights', 3, async (pg) => { await click(pg, 'All rights'); });
+await check('Agencies', 4, async (pg) => { await click(pg, 'Agencies'); });
 
-  const text = await rootText(pg);
-  const svgs = await svgCount(pg);
-  const problems = [];
-  BANNED_GLYPHS.forEach(g => { if (text.includes(g)) problems.push('bare glyph "' + g + '" still present as visible text on Home (' + mode + ')'); });
-  if (svgs < 5) problems.push('expected at least 5 <svg> icons on Home (' + mode + '), found ' + svgs);
-  errs.forEach(e => problems.push(e));
+// The two map steps, which is where the back chevrons live.
+await check('State map', 3, async () => {}, { state: '', county: '' });
+await check('County map', 4, async (pg) => { await click(pg, 'Texas'); }, { state: '', county: '' });
 
-  const ok = problems.length === 0;
-  if (!ok) fails++;
-  console.log((ok ? '✅' : '❌') + ' Home (' + mode + '): icon set renders, no bare glyphs' + (ok ? '' : '\n   ' + problems.join('\n   ')));
-  await pg.close();
-}
-
-// Case 3: Log screen (a primary tab, no "← Dashboard" link of its own) —
-// attachment fallback icon (document glyph).
+// Every topic must actually resolve an icon — Icon() renders nothing at all
+// for a name that isn't in ICON_PATHS, which is invisible in a glyph check.
 {
-  const pg = await b.newPage();
-  const errs = [];
-  pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
-  pg.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
-  await seedAndOpen(pg, {
-    entries:[{ date:'Jan 1, 2026', iso:new Date().toISOString(), title:'Note', tag:'Statement', color:'#2B3AA8', body:'Filed a note.',
-      attachment:{ name:'notes.pdf', type:'application/pdf', dataUrl:'data:application/pdf;base64,JVBERi0=' } }],
-  });
-  await pg.evaluate(() => { const btn = [...document.querySelectorAll('nav button')].find(b => /Log/.test(b.textContent)); if (btn) btn.click(); });
-  await new Promise(r => setTimeout(r, 300));
-
-  const text = await rootText(pg);
-  const svgs = await svgCount(pg);
+  const { pg, errs } = await newPage();
+  await open(pg);
+  const withoutIcon = await pg.evaluate(() =>
+    [...document.querySelectorAll('.catgrid button')]
+      .filter(b => !b.querySelector('svg'))
+      .map(b => (b.innerText || '').split('\n')[0]));
+  const cards = await pg.evaluate(() => document.querySelectorAll('.catgrid button').length);
+  await pg.close();
   const problems = [];
-  BANNED_GLYPHS.forEach(g => { if (text.includes(g)) problems.push('bare glyph "' + g + '" still present as visible text on Log'); });
-  if (svgs < 6) problems.push('expected at least 6 <svg> icons on Log (tab bar x5 + attachment), found ' + svgs);
+  if (cards === 0) problems.push('no topic cards rendered at all');
+  if (withoutIcon.length) problems.push('topic card(s) with no icon: ' + withoutIcon.join(', '));
   errs.forEach(e => problems.push(e));
-
   const ok = problems.length === 0;
   if (!ok) fails++;
-  console.log((ok ? '✅' : '❌') + ' Log: attachment icon renders, no bare glyphs' + (ok ? '' : '\n   ' + problems.join('\n   ')));
-  await pg.close();
-}
-
-// Case 3b: any tool screen reached from Home (e.g. the classification-request
-// letter step) shows the iconized "Dashboard" back link — the 12th glyph
-// flagged for consistency in spec Part 1 ("← Dashboard" plain-arrow links, out
-// of the original 11 but swapped to <Icon name="back"> anyway).
-{
-  const pg = await b.newPage();
-  const errs = [];
-  pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
-  pg.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
-  await seedAndOpen(pg);
-  // "Draft a letter" is only shown for non-wage issues now (redundant for
-  // wage — both letters are reachable via the step list); use the
-  // classification step, which lands on the same Letter screen.
-  await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => /Ask HR, in writing, for your overtime/.test(b.textContent)); if (btn) btn.click(); });
-  await new Promise(r => setTimeout(r, 300));
-
-  const text = await rootText(pg);
-  const dashboardHasIcon = await pg.evaluate(() => {
-    const btn = [...document.querySelectorAll('button')].find(b => /Dashboard/.test(b.textContent));
-    return !!(btn && btn.querySelector('svg'));
-  });
-  const problems = [];
-  BANNED_GLYPHS.forEach(g => { if (text.includes(g)) problems.push('bare glyph "' + g + '" still present as visible text on Letter'); });
-  if (!dashboardHasIcon) problems.push('"← Dashboard" back link has no <Icon name="back"> — the 12th glyph flagged in spec Part 1 not applied');
-  errs.forEach(e => problems.push(e));
-
-  const ok = problems.length === 0;
-  if (!ok) fails++;
-  console.log((ok ? '✅' : '❌') + ' Letter: iconized "Dashboard" back link, no bare glyphs' + (ok ? '' : '\n   ' + problems.join('\n   ')));
-  await pg.close();
-}
-
-// Case 4: onboarding step 2+ — iconized "Back" control (no longer "‹ Back").
-{
-  const pg = await b.newPage();
-  const errs = [];
-  pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
-  pg.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
-  await pg.evaluateOnNewDocument(() => localStorage.clear());
-  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`);
-  await new Promise(r => setTimeout(r, 500));
-  await pg.evaluate(() => { const sel = document.querySelector('#onb-state'); sel.value = 'Texas'; sel.dispatchEvent(new Event('change', { bubbles:true })); });
-  await new Promise(r => setTimeout(r, 150));
-  await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Continue'); if (btn) btn.click(); });
-  await new Promise(r => setTimeout(r, 250));
-
-  const text = await rootText(pg);
-  const backHasIcon = await pg.evaluate(() => {
-    const btn = [...document.querySelectorAll('button')].find(b => b.getAttribute('aria-label') === 'Back to the previous step');
-    return !!(btn && btn.querySelector('svg'));
-  });
-  const problems = [];
-  BANNED_GLYPHS.forEach(g => { if (text.includes(g)) problems.push('bare glyph "' + g + '" still present as visible text on onboarding step 2'); });
-  if (!backHasIcon) problems.push('onboarding Back control has no <Icon name="back">');
-  errs.forEach(e => problems.push(e));
-
-  const ok = problems.length === 0;
-  if (!ok) fails++;
-  console.log((ok ? '✅' : '❌') + ' Onboarding: iconized Back control, no bare glyphs' + (ok ? '' : '\n   ' + problems.join('\n   ')));
-  await pg.close();
-}
-
-// Case 5 (R7, docs/review-2-report.md) — the Agencies tab ("Where to file a
-// complaint") used to reuse a scales/justice glyph, which reads as
-// "lawyer/court" rather than "free government office you can file with
-// directly". It must now render the distinct "building" icon.
-{
-  const pg = await b.newPage();
-  const errs = [];
-  pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
-  pg.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
-  await seedAndOpen(pg);
-
-  const agenciesIconHtml = await pg.evaluate(() => {
-    const btn = [...document.querySelectorAll('nav button')].find(b => /Agencies/.test(b.textContent));
-    const svg = btn && btn.querySelector('svg');
-    return svg ? svg.innerHTML : null;
-  });
-  const problems = [];
-  if (!agenciesIconHtml) problems.push('no <svg> found in the Agencies tab button');
-  // "M3 21h18" is the building icon's ground line, not present in any other
-  // icon; a scales/justice glyph would instead contain "M12 3v17".
-  else if (!agenciesIconHtml.includes('M3 21h18')) problems.push('Agencies tab icon is not the "building" glyph: ' + agenciesIconHtml);
-  errs.forEach(e => problems.push(e));
-
-  const ok = problems.length === 0;
-  if (!ok) fails++;
-  console.log((ok ? '✅' : '❌') + ' Agencies tab uses the "building" icon, not scales/justice' + (ok ? '' : '\n   ' + problems.join('\n   ')));
-  await pg.close();
+  console.log((ok ? '✅' : '❌') + ' every law topic resolves a real icon' + (ok ? '' : '\n   ' + problems.join('\n   ')));
 }
 
 } finally {

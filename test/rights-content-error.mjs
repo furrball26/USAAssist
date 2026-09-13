@@ -56,26 +56,19 @@ try {
     else req.continue();
   });
 
-  const seed = {
-    onboarded:true, stateSel:'California', county:'Los Angeles County', issue:'Discrimination',
-    profile:{ name:'', employer:'', payType:'', rate:'' },
-    caseOpened:new Date().toISOString(), homeMode:'standard', done:{}, messages:[], entries:[],
-  };
-  await pg.evaluateOnNewDocument(s => localStorage.setItem('worklaw.case.v2', JSON.stringify(s)), seed);
-  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`);
-  await new Promise(r => setTimeout(r, 500));
-  await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Rights'); if (btn) btn.click(); });
-  await new Promise(r => setTimeout(r, 900)); // allow both fetches (+ fallback attempt) to settle
+  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`,
+    { place: { state: 'California', county: 'Los Angeles County' } });
+  await new Promise(r => setTimeout(r, 1400)); // allow both fetches (+ fallback attempt) to settle
 
   const bodyText = await pg.evaluate(() => document.body.innerText);
   const problems = [];
   if (!/Couldn.t load/.test(bodyText)) problems.push('expected a content-fetch error banner, got: ' + JSON.stringify(bodyText.slice(0, 300)));
-  if (/federal protections (below )?(still )?appl(y|ies) nationwide/i.test(bodyText)) problems.push('Rights screen still promises "federal protections below" while federal facts failed to load too: ' + JSON.stringify(bodyText.slice(0, 500)));
+  if (/federal law still applies nationwide/i.test(bodyText)) problems.push('the Laws tab still promises federal law while the federal facts failed to load too: ' + JSON.stringify(bodyText.slice(0, 500)));
   errs.forEach(e => problems.push(e));
 
   const ok = problems.length === 0;
   if (!ok) fails++;
-  console.log((ok ? '✅' : '❌') + ' Rights error copy does not promise federal facts that failed to load' + (ok ? '' : '\n   ' + problems.join('\n   ')));
+  console.log((ok ? '✅' : '❌') + ' the error copy does not promise federal facts that failed to load' + (ok ? '' : '\n   ' + problems.join('\n   ')));
   await pg.close();
 }
 
@@ -92,22 +85,15 @@ try {
     else req.continue();
   });
 
-  const seed = {
-    onboarded:true, stateSel:'California', county:'Los Angeles County', issue:'Discrimination',
-    profile:{ name:'', employer:'', payType:'', rate:'' },
-    caseOpened:new Date().toISOString(), homeMode:'standard', done:{}, messages:[], entries:[],
-  };
-  await pg.evaluateOnNewDocument(s => localStorage.setItem('worklaw.case.v2', JSON.stringify(s)), seed);
-  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`);
-  await new Promise(r => setTimeout(r, 500));
-  await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Rights'); if (btn) btn.click(); });
-  await new Promise(r => setTimeout(r, 900));
+  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`,
+    { place: { state: 'California', county: 'Los Angeles County' } });
+  await new Promise(r => setTimeout(r, 1400));
 
   const bodyText = await pg.evaluate(() => document.body.innerText);
   const problems = [];
   if (!/Couldn.t load California rules/.test(bodyText)) problems.push('expected the state-fetch error banner, got: ' + JSON.stringify(bodyText.slice(0, 300)));
-  if (!/federal protections (below )?(still )?appl(y|ies) nationwide/i.test(bodyText)) problems.push('federal facts DID load but the banner dropped the (now-true) "federal protections below" line: ' + JSON.stringify(bodyText.slice(0, 500)));
-  // The Rights library now opens on the category index (LAW_CATEGORIES), so
+  if (!/federal law still applies nationwide/i.test(bodyText)) problems.push('federal facts DID load but the banner dropped the (now-true) federal-law line: ' + JSON.stringify(bodyText.slice(0, 500)));
+  // The Laws tab opens on the topic grid (LAW_CATEGORIES), so
   // federal facts are one click down rather than directly beneath the banner.
   // What still has to hold is that the banner's promise is REACHABLE and not a
   // pointer into nothing: at least one category must offer facts, and opening
@@ -129,7 +115,7 @@ try {
 
   const ok = problems.length === 0;
   if (!ok) fails++;
-  console.log((ok ? '✅' : '❌') + ' Rights error copy still promises federal facts when they DID load' + (ok ? '' : '\n   ' + problems.join('\n   ')));
+  console.log((ok ? '✅' : '❌') + ' the error copy still promises federal facts when they DID load' + (ok ? '' : '\n   ' + problems.join('\n   ')));
   await pg.close();
 }
 
