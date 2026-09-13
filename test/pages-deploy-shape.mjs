@@ -60,10 +60,31 @@ const makeServer = (jekyll) => createServer((req, res) => {
   res.end(readFileSync(f));
 });
 
-const drive = async (browser, base) => {
+/*
+ * `offline` cuts the app off from CONTENT_FALLBACK_BASE (raw.githubusercontent.com).
+ *
+ * Without this the Jekyll case below is not a test of our code at all, it is a test of
+ * whether the runner has internet: CI has it, so the fallback fetch succeeded, the map
+ * rendered anyway, and the assertion failed. The sandbox this was written in blocks that
+ * host, so it passed locally for an environmental reason. Blocking it explicitly makes
+ * the case deterministic in both places — and narrows it to the thing actually under
+ * test, which is what the app does when it cannot get the data at all.
+ *
+ * (That the fallback DID rescue the map in CI is worth keeping in mind: with the pin
+ * repointed at a commit carrying content/geo/, it is now a genuine second line of
+ * defence rather than a dead one.)
+ */
+const drive = async (browser, base, { offline = false } = {}) => {
   const pg = await browser.newPage();
   const errs = [];
   pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
+  if (offline) {
+    await pg.setRequestInterception(true);
+    pg.on('request', (r) => {
+      if (/raw\.githubusercontent\.com|cdn\.jsdelivr\.net/.test(r.url())) r.abort().catch(() => {});
+      else r.continue().catch(() => {});
+    });
+  }
   await pg.evaluateOnNewDocument(() => { try { localStorage.setItem('worklaw.seenWelcome.v1', '1'); } catch (e) {} });
   await pg.goto(base, { waitUntil: 'networkidle0', timeout: 40000 });
   await new Promise(r => setTimeout(r, 2200));
@@ -94,13 +115,61 @@ try {
   {
     const s = makeServer(true);
     await new Promise(r => s.listen(0, r));
-    const r = await drive(browser, `http://127.0.0.1:${s.address().port}${PREFIX}/`);
+    const r = await drive(browser, `http://127.0.0.1:${s.address().port}${PREFIX}/`, { offline: true });
     s.close();
-    ok(r.shapes === 0, 'with _-paths excluded the map genuinely cannot render (reproduces the live failure)');
+    ok(r.shapes === 0, 'with _-paths excluded and no fallback reachable, the map genuinely cannot render (reproduces the live failure)');
     ok(/couldn.t load/i.test(r.text),
        'a map that fails to load says so out loud instead of silently rendering nothing');
     ok(r.hasSelect, 'the select still works as the fallback when the map is unavailable');
   }
+  // (c) The same Jekyll breakage, but with CONTENT_FALLBACK_BASE answering, must recover.
+  //
+  //     The fallback is FULFILLED FROM LOCAL DISK rather than fetched for real. Probing
+  //     the live host first was the obvious approach and was wrong twice over: Node's
+  //     fetch and Chrome's take different network paths here, so the probe said
+  //     "reachable" while the browser's request failed. What is worth asserting is the
+  //     app's retry logic — that fetchContentJson falls back and the app recovers — and
+  //     that is testable without any network at all.
+  {
+    const s = makeServer(true);   // Jekyll still dropping every _-prefixed path
+    await new Promise(r => s.listen(0, r));
+    const pg = await browser.newPage();
+    const served = [];
+    await pg.setRequestInterception(true);
+    pg.on('request', (r) => {
+      const m = r.url().match(/raw\.githubusercontent\.com\/furrball26\/USAAssist\/[0-9a-f]{40}\/(.+)$/);
+      if (m) {
+        const f = normalize(join(ROOT, m[1]));
+        if (f.startsWith(ROOT) && existsSync(f)) {
+          served.push(m[1]);
+          // Access-Control-Allow-Origin is required: this stands in for a cross-origin
+          // host, and without it the browser blocks the response and the retry looks
+          // like it failed — which is what the real raw.githubusercontent.com sends.
+          r.respond({
+            status: 200,
+            contentType: 'application/json',
+            headers: { 'Access-Control-Allow-Origin': '*' },
+            body: readFileSync(f),
+          }).catch(() => {});
+          return;
+        }
+        r.abort().catch(() => {});
+        return;
+      }
+      r.continue().catch(() => {});
+    });
+    await pg.evaluateOnNewDocument(() => { try { localStorage.setItem('worklaw.seenWelcome.v1', '1'); } catch (e) {} });
+    await pg.goto(`http://127.0.0.1:${s.address().port}${PREFIX}/`, { waitUntil: 'networkidle0', timeout: 40000 });
+    await new Promise(r => setTimeout(r, 2200));
+    const shapes = await pg.evaluate(() => document.querySelectorAll('.wlUsMap path[role="button"]').length);
+    await pg.close();
+    s.close();
+    ok(served.includes('content/geo/_states.json'),
+       'a 404 on the primary path actually triggers the CONTENT_FALLBACK_BASE retry');
+    ok(shapes === 50,
+       'the fallback recovers the map — so the pin must point at a commit that has content/geo/ (the old one did not)');
+  }
+
 } finally {
   await browser.close();
 }
