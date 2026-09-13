@@ -133,8 +133,8 @@ try {
   await pg.evaluate(() => { try { localStorage.removeItem('worklaw.place.v1'); } catch (e) {} });
   await reloadApp(pg);
   const t = await pg.evaluate(() => document.body.innerText);
-  ok(!/Find my state.s rules/i.test(t), 'forgetting the remembered place replays the welcome');
-  ok(await pg.$('#onb-state') !== null, 'forgetting the remembered place does not return to the state map');
+  ok(!/Find my state.s rules/i.test(t), 'forgetting the remembered place does not replay the welcome');
+  ok(await pg.$('#onb-state') !== null, 'forgetting the remembered place returns to the state map');
   await pg.close();
 }
 
@@ -169,7 +169,7 @@ try {
   });
   await new Promise(r => setTimeout(r, 600));
   ok(/Where in California/i.test(await pg.evaluate(() => document.body.innerText)),
-     'clicking a state on the map does not advance to that state’s counties');
+     'clicking a state on the map advances to that state’s counties');
   ok(errs.length === 0, 'no console/page errors using the map' + (errs.length ? ': ' + errs[0] : ''));
   await pg.close();
 }

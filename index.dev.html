@@ -621,9 +621,9 @@ const ICON_PATHS = {
     <path d="M7 10a6 6 0 1 0 7.5 8.5"/>
   </>,
   megaphone: <>
-    <path d="M4 11a8 8 0 0 1 16 0v5a3 3 0 0 1-3 3h-2"/>
-    <rect x="3" y="10" width="4" height="7" rx="1.5"/>
-    <rect x="17" y="10" width="4" height="7" rx="1.5"/>
+    <path d="M4 9.5v5a1.5 1.5 0 0 0 1.5 1.5H8l9 4.5V5L8 9.5H5.5A1.5 1.5 0 0 0 4 11Z"/>
+    <path d="M8 16v3.5a1.5 1.5 0 0 0 3 0V17.5"/>
+    <path d="M20 10.5a3 3 0 0 1 0 3"/>
   </>,
   clock: <>
     <circle cx="12" cy="12" r="9"/>
@@ -1268,6 +1268,9 @@ function savePrefs(obj){
   try { localStorage.setItem(STORE_KEY, JSON.stringify(obj)); return true; }
   catch(e){ return false; }
 }
+function forgetPlace(){
+  try { localStorage.removeItem(STORE_KEY); } catch(e){}
+}
 // Best-effort one-time cleanup: the old case blob could hold a name, an
 // employer, pay figures and dated incident notes. Nothing reads it now, so
 // leaving it sitting in localStorage would keep that data on the device for no
@@ -1770,7 +1773,13 @@ function App(){
   const [wizPath, setWizPath] = useState([]);
   const [wizKey, setWizKey] = useState(null);
   // Which law category the Laws tab is showing (null = the topic grid).
-  const [lawCat, setLawCat] = useState(null);
+  // Restored from the history entry for the same reason `screen` is: browsers
+  // keep pushState/replaceState `state` across a reload even though React
+  // state resets, so a reload returns to the topic being read.
+  const [lawCat, setLawCat] = useState(() => {
+    const h = typeof window !== 'undefined' && window.history.state && window.history.state.lawCat;
+    return typeof h === 'string' ? h : null;
+  });
   const [countyQuery, setCountyQuery] = useState(''); // text filter over the county <select>
 
   const mainRef = useRef(null);
@@ -1784,25 +1793,29 @@ function App(){
     if (el) { el.scrollTop = 0; el.focus({ preventScroll: true }); }
   }, [screen]);
 
-  // F-history — wire in-app screen navigation to the browser History API so
-  // Back/Forward step through screens instead of leaving the app on the very
-  // first press. Same URL
-  // throughout (no hash/query routing) — only the pushState `state` object
-  // changes, which is enough for popstate to tell us which screen to restore.
-  const skipNextPush = useRef(true); // the first [screen] effect run just mirrors the mount-time replaceState below — don't double it into a push
-  const fromPopState = useRef(false); // true while applying a Back/Forward-driven setScreen, so that change doesn't itself push a new (redundant) entry
+  // F-history — wire in-app navigation to the browser History API so
+  // Back/Forward step through the site instead of leaving it on the very first
+  // press. Same URL throughout (no hash/query routing) — only the pushState
+  // `state` object changes, which is enough for popstate to restore a position.
+  //
+  // `lawCat` rides along with `screen`. On a browse-first site, opening a topic
+  // is a navigation in every sense that matters to a reader: drilling into
+  // "Leaving a job" and pressing Back has to return to the topic grid, not
+  // leave the site. It is not a screen change (the Laws tab renders both), so
+  // without this the topic would be invisible to history.
+  const skipNextPush = useRef(true); // the first effect run just mirrors the mount-time replaceState below — don't double it into a push
+  const fromPopState = useRef(false); // true while applying a Back/Forward-driven set*, so that change doesn't itself push a new (redundant) entry
   useEffect(() => {
-    // Stamp the CURRENT history entry with the screen we're actually
-    // rendering (mount-time restore above already picked it, if any) so a
-    // subsequent Back from here — with nothing of ours pushed below it —
+    // Stamp the CURRENT history entry with the position we're actually
+    // rendering (mount-time restore above already picked the screen, if any)
+    // so a subsequent Back from here — with nothing of ours pushed below it —
     // leaves the app normally instead of trapping the user in a loop.
-    window.history.replaceState({ screen }, '');
+    window.history.replaceState({ screen, lawCat }, '');
     const onPop = (e) => {
+      if (!e.state || typeof e.state.screen !== 'string') return; // an entry from before this app existed — let the browser's own navigation stand
       fromPopState.current = true;
-      if (e.state && typeof e.state.screen === 'string') setScreen(e.state.screen);
-      // No app state on the entry we landed on (e.g. genuinely before this
-      // app existed in history) — nothing to restore; let the browser's own
-      // navigation stand.
+      setScreen(e.state.screen);
+      setLawCat(typeof e.state.lawCat === 'string' ? e.state.lawCat : null);
     };
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
@@ -1810,11 +1823,16 @@ function App(){
   useEffect(() => {
     if (skipNextPush.current) { skipNextPush.current = false; return; }
     if (fromPopState.current) { fromPopState.current = false; return; }
-    window.history.pushState({ screen }, '');
-  }, [screen]);
+    window.history.pushState({ screen, lawCat }, '');
+  }, [screen, lawCat]);
 
-  // Remember the place, and nothing else.
-  useEffect(() => { savePrefs({ stateSel, county }); }, [stateSel, county]);
+  // Remember the place, and nothing else — and only once there is a place to
+  // remember. A visitor who never picks a state leaves nothing behind at all,
+  // rather than an empty record announcing they were here.
+  useEffect(() => {
+    if (stateSel) savePrefs({ stateSel, county });
+    else forgetPlace();
+  }, [stateSel, county]);
   // Clear the old case blob once, on first mount. See dropLegacyCase.
   useEffect(() => { dropLegacyCase(); }, []);
 
@@ -1847,33 +1865,21 @@ function App(){
   // orientation before the app, not a destination inside it.
   const showTabs = screen !== 'welcome';
 
-  // wl-ux HIGH #7 — the state claim deadline shown in a Deadline Watch card and
-  // this federal FLSA lawsuit statute of limitations are two DIFFERENT clocks.
-  // Previously the SOL note was appended as a plain inline span right after the
-  // state value with no visual break, so "This 2–3 year deadline" read as a
-  // restatement of the value just above it. This renders it as its own bordered,
-  // labeled sub-block — same pattern as OshaWatch's distinct card — everywhere
-  // FLSA_SOL_TIMING_NOTE is shown for a wage case.
-  const FlsaSolNote = ({ dark }) => (
-    <div style={css((dark
-      ? "padding:10px 12px;border-radius:0 8px 8px 0;border:none;border-left:4px solid rgba(255,227,166,.7);background:#626DBF"
-      : "padding:10px 12px;border-radius:0 8px 8px 0;border:none;border-left:4px solid #14181F;background:#FFF4D6") + ";display:flex;flex-direction:column;gap:3px")}>
-      <span style={css("font:700 12px 'IBM Plex Mono',monospace;color:" + (dark ? '#FFFEF0' : '#8A5A00') + ";letter-spacing:.04em")}>SEPARATE CLOCK · FEDERAL LAWSUIT DEADLINE</span>
-      {/* FIND-09 (docs/audit-2026-08-29.md) — the previous "wl-ux contrast fix" comment here
-          assumed a SINGLE rgba(255,255,255,.14) composite (~rgb(73,86,180)). Wrong: in
-          Action-first mode this note renders INSIDE the Deadline Watch surfacefx button,
-          which is ITSELF rgba(255,255,255,.14) over the #2B3AA8 screen — so this dark
-          variant's old rgba(255,255,255,.14) background was a SECOND translucent layer
-          stacking on the first, actually compositing to rgb(98,109,191). #FFE3A6/#FFF4D6
-          against that real value measured 3.76:1 / 4.29:1 — both under the 4.5:1 AA floor
-          for 12px/14px bold text (bold text needs ~18.66px to count as "large"). Fixed by
-          baking the composite in as an OPAQUE #626DBF background (no more stacked alpha to
-          drift), and using #FFFEF0 for both label and body, which measures 4.64:1 against
-          #626DBF — verified with a walk-the-ancestor-chain script, see
-          test/nested-translucency-contrast.mjs. */}
-      <span style={css("font:700 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:" + (dark ? '#FFFEF0' : '#6B4B00'))}>{FLSA_SOL_TIMING_NOTE}</span>
+  // The state claim deadline shown elsewhere and this federal FLSA lawsuit
+  // statute of limitations are two DIFFERENT clocks. Rendered as its own
+  // bordered, labelled block so it never reads as a restatement of the
+  // deadline above it.
+  //
+  // This used to carry a second, dark variant for the retired Action-first
+  // home, which composited two translucent layers and needed its own contrast
+  // test. There is one surface now, and it is light.
+  const FlsaSolNote = () => (
+    <div style={css("padding:10px 12px;border-radius:0 8px 8px 0;border:none;border-left:4px solid #14181F;background:#FFF4D6;display:flex;flex-direction:column;gap:3px")}>
+      <span style={css("font:700 12px 'IBM Plex Mono',monospace;color:#8A5A00;letter-spacing:.04em")}>SEPARATE CLOCK · FEDERAL LAWSUIT DEADLINE</span>
+      <span style={css("font:700 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#6B4B00")}>{FLSA_SOL_TIMING_NOTE}</span>
     </div>
   );
+
   const Welcome = () => {
     const enter = () => { markWelcomeSeen(); setScreen('home'); };
     return (
@@ -2089,18 +2095,28 @@ function App(){
             {LAW_CATEGORIES.map(cat => {
               const n = factsInCategory(stFacts, cat.key).length + factsInCategory(fedFacts, cat.key).length;
               if (!n) return (
-                <div key={cat.key} style={css("padding:18px;border-radius:16px;border:2px dashed rgba(20,24,31,.22);background:transparent;display:flex;flex-direction:column;gap:6px")}>
-                  <span style={css("font:700 19px/1.2 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{cat.label}</span>
+                <div key={cat.key} style={css("padding:15px 16px;border-radius:16px;border:2px dashed rgba(20,24,31,.22);background:transparent;display:flex;flex-direction:column;gap:6px")}>
+                  <span style={css("display:flex;align-items:center;gap:10px;color:#4A5162")}>
+                    <Icon name={cat.icon} size={24} />
+                    <span style={css("font:700 18px/1.2 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{cat.label}</span>
+                  </span>
                   <span style={css("font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Nothing recorded yet for {stName}. That doesn’t mean no rule applies.</span>
                 </div>
               );
               return (
                 <button key={cat.key} onClick={() => setLawCat(cat.key)} className="hoverfx"
-                  style={css('text-align:left;padding:18px;border-radius:16px;border:2px solid #14181F;background:' + cat.tint + ';cursor:pointer;display:flex;flex-direction:column;gap:8px;min-height:132px')}>
-                  <Icon name={cat.icon} size={28} />
-                  <span style={css("font:700 19px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{cat.label}</span>
+                  style={css('text-align:left;padding:15px 16px;border-radius:16px;border:2px solid #14181F;background:' + cat.tint + ';cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:44px')}>
+                  {/* Icon beside the title, not above it: eight stacked cards
+                      with a 28px icon on its own line put two and a half
+                      topics on a phone screen. The icon never stands alone —
+                      a pictogram is not universal, and this site is meant to
+                      be read in languages none of these were drawn for. */}
+                  <span style={css("display:flex;align-items:center;gap:10px")}>
+                    <Icon name={cat.icon} size={24} />
+                    <span style={css("font:700 18px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{cat.label}</span>
+                  </span>
                   <span style={css("font:400 15px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{cat.blurb}</span>
-                  <span style={css("margin-top:auto;font:600 12px 'IBM Plex Mono',monospace;letter-spacing:.04em;color:#4A5162")}>{n} {n === 1 ? 'RULE' : 'RULES'}</span>
+                  <span style={css("font:600 12px 'IBM Plex Mono',monospace;letter-spacing:.04em;color:#4A5162")}>{n} {n === 1 ? 'RULE' : 'RULES'}</span>
                 </button>
               );
             })}
@@ -2289,7 +2305,7 @@ function App(){
             {/* G1/G2/G3 (docs/flsa-process-gap.md) — a non-exempt result is exactly the
                 moment a user needs the SOL timing warning and the WHD-vs-lawsuit trade-off,
                 before they act on "you're owed overtime". */}
-            {result.v === 'non' && wkey === 'wage' && <FlsaSolNote dark={false} />}
+            {result.v === 'non' && wkey === 'wage' && <FlsaSolNote />}
             {/* Where the old CTAs drafted a letter or opened the log, they now send
                 the reader back into the law this check was run against, and on to
                 the agency that enforces it — this site explains rights, it no
@@ -2307,6 +2323,7 @@ function App(){
   };
   const NonCompeteChecker = () => {
     const stName = stateSel || 'your state';
+    const stateAbbr = US_STATE_ABBR[stateSel] || '';
     const fedF = (federal && federal.facts) || [];
     const stF = (stateData && stateData.facts) || [];
     const stReviewed = !!(stateData && stateData.reviewed === true);
@@ -2315,7 +2332,7 @@ function App(){
     const src = f => { const u = f && safeUrl(f.sourceUrl); return u ? <a href={u} target="_blank" rel="noopener noreferrer" className="hoverfx" style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null; };
     return (
     <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
-      <button onClick={nav('doc')} style={css("align-self:flex-start;display:flex;align-items:center;gap:4px;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}><Icon name="back" size={18} /> Document review</button>
+      <button onClick={() => { setLawCat('leaving'); setScreen('home'); }} style={css("align-self:flex-start;display:flex;align-items:center;gap:4px;min-height:44px;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}><Icon name="back" size={18} /> Leaving a job</button>
       <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Is my non-compete enforceable?</h1>
       <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Non-compete law varies a lot by state, and several states have changed their rules recently. This is general information for {stName}, not an opinion on your specific agreement — only an attorney can tell you that.</p>
 

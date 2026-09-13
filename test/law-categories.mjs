@@ -77,19 +77,15 @@ try {
   const errs = [];
   pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
   pg.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
-  await pg.evaluateOnNewDocument(s => localStorage.setItem('worklaw.case.v2', JSON.stringify(s)), {
-    onboarded:true, stateSel:'California', county:'Los Angeles County', issue:'Unpaid overtime or wages',
-    profile:{ name:'', employer:'', payType:'', rate:'' },
-    caseOpened:new Date().toISOString(), homeMode:'standard', done:{}, messages:[], entries:[],
-  });
-  await gotoApp(pg, `http://127.0.0.1:${server.address().port}/index.html`);
-  await new Promise(r => setTimeout(r, 500));
-  await pg.evaluate(() => { const t = [...document.querySelectorAll('button')].find(x => x.textContent.trim() === 'Rights'); t && t.click(); });
+  // The browse layer is the Laws tab now, reached by having a place already
+  // picked — the category grid IS the landing screen once located.
+  await gotoApp(pg, `http://127.0.0.1:${server.address().port}/index.html`,
+    { place: { state: 'California', county: 'Los Angeles County' } });
   await new Promise(r => setTimeout(r, 900));
 
   const idx = await pg.evaluate(() => document.body.innerText);
-  ok(/Pay & overtime/.test(idx) && /Deadlines to act/.test(idx), 'the library opens on the category index');
-  ok(!/THE LAW/.test(idx), 'the index shows categories, not a flat wall of facts');
+  ok(/Pay & overtime/.test(idx) && /Deadlines to act/.test(idx), 'the Laws tab opens on the topic grid');
+  ok(!/THE LAW/.test(idx), 'the grid shows topics, not a flat wall of facts');
 
   // Opening a category shows its facts, state before federal.
   await pg.evaluate(() => {
@@ -116,12 +112,12 @@ try {
 
   // Back returns to the index.
   await pg.evaluate(() => {
-    const btn = [...document.querySelectorAll('button')].find(x => /All categories/.test(x.textContent));
+    const btn = [...document.querySelectorAll('button')].find(x => /All topics/.test(x.textContent));
     btn && btn.click();
   });
   await new Promise(r => setTimeout(r, 400));
   const back = await pg.evaluate(() => document.body.innerText);
-  ok(/Pay & overtime/.test(back) && !/THE LAW/.test(back), 'Back returns to the category index');
+  ok(/Pay & overtime/.test(back) && !/THE LAW/.test(back), 'Back returns to the topic grid');
   ok(errs.length === 0, 'no console/page errors browsing the library' + (errs.length ? ': ' + errs[0] : ''));
   await pg.close();
 } finally {

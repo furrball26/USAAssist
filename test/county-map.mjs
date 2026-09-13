@@ -132,17 +132,12 @@ try {
   await gotoApp(pg, `http://127.0.0.1:${server.address().port}/index.html`);
   await new Promise(r => setTimeout(r, 400));
 
-  // Step 1: pick California off the state map, then continue to counties.
+  // Pick California off the state map; that alone advances to its counties.
   await new Promise(r => setTimeout(r, 1200));   // national map is fetched
   await pg.evaluate(() => {
     const t = [...document.querySelectorAll('.wlUsMap path[role="button"]')]
       .find(x => x.getAttribute('aria-label') === 'California');
     t && t.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-  });
-  await new Promise(r => setTimeout(r, 300));
-  await pg.evaluate(() => {
-    const t = [...document.querySelectorAll('button')].find(x => x.textContent.trim() === 'Continue');
-    t && t.click();
   });
   await new Promise(r => setTimeout(r, 1500));
 
@@ -150,6 +145,12 @@ try {
   ok(paths === 58, `California's 58 counties render as selectable shapes (got ${paths})`);
 
   ok(await pg.$('#onb-county') !== null, 'the searchable county <select> is still present alongside the map');
+  // Neither control may reach a county the other cannot.
+  const opts = await pg.$$eval('#onb-county option', els => els.map(e => e.value).filter(Boolean));
+  const labels = await pg.$$eval('.wlCountyMap path[role="button"]', els => els.map(e => e.getAttribute('aria-label')));
+  ok(opts.length === 58, `the county select offers all 58 (got ${opts.length})`);
+  ok(labels.every(l => opts.includes(l)), 'every county on the map is also in the select');
+  ok(opts.every(v => labels.includes(v)), 'every county in the select also has a shape on the map');
 
   const a11y = await pg.evaluate(() => {
     const p = document.querySelector('.wlCountyMap path[role="button"]');
@@ -166,12 +167,14 @@ try {
     t.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     return true;
   });
-  await new Promise(r => setTimeout(r, 350));
-  const sel = await pg.$eval('#onb-county', el => el.value);
-  ok(picked && sel === 'Los Angeles County', `clicking a county drives the same value as the select (got "${sel}")`);
-  const pressed = await pg.evaluate(() =>
-    document.querySelector('.wlCountyMap path[aria-pressed="true"]')?.getAttribute('aria-label'));
-  ok(pressed === 'Los Angeles County', 'the chosen county reports aria-pressed="true"');
+  await new Promise(r => setTimeout(r, 700));
+  ok(picked, 'Los Angeles County has a shape on the map');
+  const after = await pg.evaluate(() => document.body.innerText);
+  ok(/Your rights in California/i.test(after), 'clicking a county goes straight to the law for that place');
+  ok(/Los Angeles County, California/i.test(after), 'the picked county is named on the screen it leads to');
+  const stored = await pg.evaluate(() => JSON.parse(localStorage.getItem('worklaw.place.v1') || '{}'));
+  ok(stored.county === 'Los Angeles County',
+     `clicking a county stores the same value the select offers (got "${stored.county}")`);
   ok(errs.length === 0, 'no console/page errors using the county map' + (errs.length ? ': ' + errs[0] : ''));
   await pg.close();
 } finally {

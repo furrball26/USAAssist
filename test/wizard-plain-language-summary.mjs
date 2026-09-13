@@ -41,6 +41,12 @@ const b = await puppeteer.launch({ executablePath: chrome, headless: true, args:
 let fails = 0;
 const click = async (pg, t) => { await pg.evaluate((x) => { const e = [...document.querySelectorAll('button,a')].find(el => el.textContent.trim() === x); e && e.click(); }, t); await new Promise(r => setTimeout(r, 250)); };
 const bodyText = async (pg) => await pg.evaluate(() => document.body.innerText);
+// `click` matches an exact label, which the wizard's own option buttons have.
+// Topic cards and explainer cards carry a blurb too, so they need a substring.
+const clickish = async (pg, t) => {
+  await pg.evaluate((x) => { const e = [...document.querySelectorAll('button,a')].find(el => el.textContent.includes(x)); e && e.click(); }, t);
+  await new Promise(r => setTimeout(r, 400));
+};
 
 // The exact terse/code-like tags the audit quoted (FIND-18) — none of these
 // should ever appear on the rendered page again.
@@ -53,16 +59,13 @@ const errs = [];
 pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
 pg.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
 
-const seed = {
-  onboarded: true, stateSel: 'Texas', county: 'Travis County', issue: 'Unpaid overtime or wages',
-  profile: { name: 'Pat Vega', employer: 'Northgate Co', payType: 'Salary', rate: '' },
-  caseOpened: new Date().toISOString(), homeMode: 'standard', done: {}, messages: [], entries: [],
-};
-await pg.evaluateOnNewDocument((s) => { localStorage.clear(); localStorage.setItem('worklaw.case.v2', JSON.stringify(s)); }, seed);
-await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`);
-await new Promise(r => setTimeout(r, 700));
+await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`,
+  { place: { state: 'Texas', county: 'Travis County' } });
+await new Promise(r => setTimeout(r, 900));
 
-await click(pg, 'Am I exempt from overtime?');
+// The self-check hangs off the pay topic now, not a case's declared issue.
+await clickish(pg, 'Pay & overtime');
+await clickish(pg, 'Am I exempt from overtime?');
 await click(pg, 'A fixed salary every period');
 await click(pg, 'Yes, $684/week or more');
 await click(pg, 'Yes, $107,432/year or more');

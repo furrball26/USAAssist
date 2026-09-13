@@ -40,14 +40,9 @@ let fails = 0;
 try {
 
 async function openCase(pg) {
-  const seed = {
-    onboarded:true, stateSel:'Texas', county:'Travis County', issue:'Unpaid overtime or wages',
-    profile:{ name:'Pat Vega', employer:'Northgate Co', payType:'Salary', rate:'50000' },
-    caseOpened:new Date().toISOString(), homeMode:'standard', entries:[], done:{}, messages:[],
-  };
-  await pg.evaluateOnNewDocument((s) => { localStorage.clear(); localStorage.setItem('worklaw.case.v2', JSON.stringify(s)); }, seed);
-  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`);
-  await new Promise(r => setTimeout(r, 700));
+  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`,
+    { place: { state: 'Texas', county: 'Travis County' } });
+  await new Promise(r => setTimeout(r, 900));
 }
 
 const clickNavTab = (pg, label) => pg.evaluate((t) => {
@@ -57,10 +52,10 @@ const clickNavTab = (pg, label) => pg.evaluate((t) => {
 }, label);
 
 const bodyText = (pg) => pg.evaluate(() => document.body.innerText);
-const onOnboarding = (pg) => pg.evaluate(() => !!document.querySelector('#onb-state'));
+const onMap = (pg) => pg.evaluate(() => !!document.querySelector('#onb-state'));
 
-// Case 1: Dashboard -> Log -> Rights, then Back twice returns to Log then
-// Dashboard, and Forward twice replays Log then Rights.
+// Case 1: Laws -> All rights -> Agencies, then Back twice returns to All
+// rights then Laws, and Forward twice replays them.
 {
   const pg = await b.newPage();
   const errs = [];
@@ -69,10 +64,10 @@ const onOnboarding = (pg) => pg.evaluate(() => !!document.querySelector('#onb-st
   await openCase(pg);
 
   const dashboardText = await bodyText(pg);
-  await clickNavTab(pg, 'Log');
-  await new Promise(r => setTimeout(r, 300));
+  await clickNavTab(pg, 'All rights');
+  await new Promise(r => setTimeout(r, 400));
   const logText = await bodyText(pg);
-  await clickNavTab(pg, 'Rights');
+  await clickNavTab(pg, 'Agencies');
   await new Promise(r => setTimeout(r, 300));
   const rightsText = await bodyText(pg);
 
@@ -93,19 +88,19 @@ const onOnboarding = (pg) => pg.evaluate(() => !!document.querySelector('#onb-st
   const fwdToRights = await bodyText(pg);
 
   const problems = [];
-  if (backToLog !== logText) problems.push('first Back did not land back on Log');
-  if (backToDashboard !== dashboardText) problems.push('second Back did not land back on the Dashboard');
-  if (fwdToLog !== logText) problems.push('first Forward did not replay Log');
-  if (fwdToRights !== rightsText) problems.push('second Forward did not replay Rights');
+  if (backToLog !== logText) problems.push('first Back did not land back on All rights');
+  if (backToDashboard !== dashboardText) problems.push('second Back did not land back on Laws');
+  if (fwdToLog !== logText) problems.push('first Forward did not replay All rights');
+  if (fwdToRights !== rightsText) problems.push('second Forward did not replay Agencies');
   errs.forEach(e => problems.push(e));
 
   const ok = problems.length === 0;
   if (!ok) fails++;
-  console.log((ok ? '✅' : '❌') + ' Back/Forward step through Dashboard -> Log -> Rights and back' + (ok ? '' : '\n   ' + problems.join('\n   ')));
+  console.log((ok ? '✅' : '❌') + ' Back/Forward step through Laws -> All rights -> Agencies and back' + (ok ? '' : '\n   ' + problems.join('\n   ')));
   await pg.close();
 }
 
-// Case 2: from the Dashboard (nothing of ours pushed below it), the very
+// Case 2: from the Laws tab (nothing of ours pushed below it), the very
 // next Back leaves the app entirely — no trap.
 {
   const pg = await b.newPage();
@@ -120,18 +115,17 @@ const onOnboarding = (pg) => pg.evaluate(() => !!document.querySelector('#onb-st
   const urlAfter = pg.url();
 
   const problems = [];
-  if (urlAfter === urlBefore) problems.push('Back from the Dashboard was swallowed by the app instead of leaving it — user is trapped');
+  if (urlAfter === urlBefore) problems.push('Back from the Laws tab was swallowed by the app instead of leaving it — user is trapped');
   errs.filter(e => !e.includes('SecurityError')).forEach(e => problems.push(e)); // about:blank denies localStorage access — expected, not a real app error
 
   const ok = problems.length === 0;
   if (!ok) fails++;
-  console.log((ok ? '✅' : '❌') + ' Back from the Dashboard leaves the app (not trapped)' + (ok ? '' : '\n   ' + problems.join('\n   ')));
+  console.log((ok ? '✅' : '❌') + ' Back from the Laws tab leaves the app (not trapped)' + (ok ? '' : '\n   ' + problems.join('\n   ')));
   await pg.close();
 }
 
-// Case 3: navigating to a tool screen (via the Tools grid, not just tabs)
-// then Back returns to the Dashboard — the exact "Letter -> Dashboard" case
-// called out in spec.
+// Case 3: navigating to a tool screen (opened from inside a law topic, not a
+// tab) then Back returns to where it was opened from.
 {
   const pg = await b.newPage();
   const errs = [];
@@ -139,28 +133,43 @@ const onOnboarding = (pg) => pg.evaluate(() => !!document.querySelector('#onb-st
   pg.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
   await openCase(pg);
 
-  const dashboardText = await bodyText(pg);
-  await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => /Review a document/.test(b.textContent)); if (btn) btn.click(); });
-  await new Promise(r => setTimeout(r, 300));
-  const onDocScreen = await pg.evaluate(() => /Review a document/i.test(document.body.innerText));
+  await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => /Leaving a job/.test(b.textContent)); if (btn) btn.click(); });
+  await new Promise(r => setTimeout(r, 500));
+  const topicText = await bodyText(pg);
+  await pg.evaluate(() => { const btn = [...document.querySelectorAll('button')].find(b => /Is my non-compete/.test(b.textContent)); if (btn) btn.click(); });
+  await new Promise(r => setTimeout(r, 500));
+  const onToolScreen = await pg.evaluate(() => /what courts generally weigh/i.test(document.body.innerText));
 
   await pg.goBack();
-  await new Promise(r => setTimeout(r, 300));
+  await new Promise(r => setTimeout(r, 400));
   const afterBack = await bodyText(pg);
 
   const problems = [];
-  if (!onDocScreen) problems.push('did not navigate to the "Review a document" tool screen');
-  if (afterBack !== dashboardText) problems.push('Back from a tool screen did not return to the Dashboard');
+  if (!onToolScreen) problems.push('did not navigate to the non-compete checker screen');
+  if (afterBack !== topicText) problems.push('Back from a tool screen did not return to the topic it was opened from');
+
+  // And one more Back returns to the topic grid rather than leaving the site —
+  // opening a topic is a navigation a reader expects to be able to undo.
+  await pg.goBack();
+  await new Promise(r => setTimeout(r, 900));
+  // Checked structurally, not by text: the grid lists every topic WITH its
+  // blurb, so "the Leaving a job blurb is on screen" is true of the grid too
+  // and cannot tell the two apart.
+  const gridCards = await pg.evaluate(() => document.querySelectorAll('.catgrid button').length);
+  if (gridCards === 0) {
+    problems.push('Back from a topic did not return to the topic grid — got: ' +
+      JSON.stringify((await bodyText(pg)).slice(0, 140)));
+  }
   errs.forEach(e => problems.push(e));
 
   const ok = problems.length === 0;
   if (!ok) fails++;
-  console.log((ok ? '✅' : '❌') + ' Back from a Tools-grid screen returns to the Dashboard' + (ok ? '' : '\n   ' + problems.join('\n   ')));
+  console.log((ok ? '✅' : '❌') + ' Back from a tool opened inside a topic returns to the Laws tab' + (ok ? '' : '\n   ' + problems.join('\n   ')));
   await pg.close();
 }
 
 // Case 4: reload after navigating restores the screen actually visited, not
-// unconditionally the Dashboard (the new intended behavior — see smoke.mjs).
+// unconditionally the Laws tab (see smoke.mjs).
 {
   const pg = await b.newPage();
   const errs = [];
@@ -168,110 +177,78 @@ const onOnboarding = (pg) => pg.evaluate(() => !!document.querySelector('#onb-st
   pg.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
   await openCase(pg);
 
-  await clickNavTab(pg, 'Log');
-  await new Promise(r => setTimeout(r, 300));
+  await clickNavTab(pg, 'All rights');
+  await new Promise(r => setTimeout(r, 400));
   await reloadApp(pg);
-  await new Promise(r => setTimeout(r, 500));
+  await new Promise(r => setTimeout(r, 900));
   const text = await bodyText(pg);
 
   const problems = [];
-  if (!/Incident log/i.test(text)) problems.push('reload did not restore the Log screen the user was actually on — got: ' + JSON.stringify(text.slice(0, 80)));
+  if (!/Every rule, as written/i.test(text)) problems.push('reload did not restore the All rights screen the user was actually on — got: ' + JSON.stringify(text.slice(0, 120)));
   errs.forEach(e => problems.push(e));
 
   const ok = problems.length === 0;
   if (!ok) fails++;
-  console.log((ok ? '✅' : '❌') + ' reload restores the screen the user was actually on (not always the Dashboard)' + (ok ? '' : '\n   ' + problems.join('\n   ')));
+  console.log((ok ? '✅' : '❌') + ' reload restores the screen the user was actually on (not always the Laws tab)' + (ok ? '' : '\n   ' + problems.join('\n   ')));
   await pg.close();
 }
 
-// Case 5: a stale history entry pointing at a tool screen must never skip
-// the onboarding gate once the underlying case is gone (e.g. "Delete my
-// case & start over", or simply a fresh/never-onboarded visit).
+// Case 5: a history entry naming a screen this app no longer has (an old tab
+// left open on 'log', 'chat', 'letter' or 'doc' before those were removed)
+// must fall back to the Laws tab, not white-screen. SCREENS[screen] is
+// undefined for every one of those names.
+{
+  for (const stale of ['log', 'chat', 'letter', 'doc', 'strength', 'adaProcess']) {
+    const pg = await b.newPage();
+    const errs = [];
+    pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
+    pg.on('console', m => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errs.push('CONSOLE ' + m.text()); });
+    await pg.evaluateOnNewDocument((screen) => { window.history.replaceState({ screen }, ''); }, stale);
+    await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`,
+      { place: { state: 'Texas', county: 'Travis County' } });
+    await new Promise(r => setTimeout(r, 900));
+
+    const text = await bodyText(pg);
+    const rootKids = await pg.evaluate(() => document.getElementById('root').childElementCount);
+    const problems = [];
+    if (rootKids === 0) problems.push('#root went blank');
+    if (/Something went wrong/.test(text)) problems.push('fell through to the ErrorBoundary');
+    if (!/Your rights in Texas/i.test(text)) problems.push('did not fall back to the Laws tab — got: ' + JSON.stringify(text.slice(0, 120)));
+    errs.forEach(e => problems.push(e));
+    await pg.close();
+
+    const ok = problems.length === 0;
+    if (!ok) fails++;
+    console.log((ok ? '✅' : '❌') + ' a history entry naming the retired "' + stale + '" screen falls back to the Laws tab' + (ok ? '' : '\n   ' + problems.join('\n   ')));
+  }
+}
+
+// Case 6: a visitor who has never picked a state must land on the map, whatever
+// a stale history entry claims — otherwise the law on screen belongs to nobody.
 {
   const pg = await b.newPage();
   const errs = [];
   pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
   pg.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
-  await openCase(pg);
-  await clickNavTab(pg, 'Log'); // stamps this session-history entry's state with {screen:'log'}
-  await new Promise(r => setTimeout(r, 300));
-
-  // Clear the case (simulating "Delete my case & start over" / a fresh
-  // browser profile) then reload — the history entry's `state` (still
-  // {screen:'log'} from the click above) survives the reload even though
-  // localStorage no longer has a case behind it. Registering a second
-  // evaluateOnNewDocument here (it runs AFTER openCase()'s seed script, in
-  // registration order, on every subsequent navigation including reload) is
-  // what actually keeps the case cleared across the reload — a plain
-  // `pg.evaluate(() => localStorage.clear())` gets silently undone by the
-  // still-registered seed script re-seeding on the reload's fresh document.
-  await pg.evaluateOnNewDocument(() => localStorage.clear());
-  await reloadApp(pg);
-  await new Promise(r => setTimeout(r, 500));
-
-  // What must hold is that the stale {screen:'log'} entry does not carry
-  // someone into a TOOL screen with no case behind it. Which pre-case gate
-  // they land on depends on what was cleared, and this clear() wipes
-  // everything:
-  //   - "Delete my case & start over" only removes STORE_KEY (see the
-  //     removeItem calls in index.dev.html), so the welcome flag survives and
-  //     the gate is onboarding — covered in test/welcome-first-run.mjs.
-  //   - A genuinely fresh browser profile (what clear() actually reproduces)
-  //     has no welcome flag either, and that visitor IS new, so the welcome
-  //     illustration is the correct gate.
-  // Asserting "onboarding" alone would fail the app for doing the right thing
-  // in the second case, so assert the gate holds and that the tool screen is
-  // specifically not reached.
-  const gate = await pg.evaluate(() => ({
-    onboarding: !!document.querySelector('#onb-state'),
-    welcome: /Know your rights at work/i.test(document.body.innerText),
-    log: /Incident log/i.test(document.body.innerText),
-  }));
-  const problems = [];
-  if (gate.log) problems.push('a stale "log" history entry reached the Log tool for a case that no longer exists');
-  if (!gate.onboarding && !gate.welcome) problems.push('a stale "log" history entry skipped the pre-case gate (neither welcome nor onboarding rendered)');
-  errs.forEach(e => problems.push(e));
-
-  const ok = problems.length === 0;
-  if (!ok) fails++;
-  console.log((ok ? '✅' : '❌') + ' a stale history entry never skips onboarding for a cleared case' + (ok ? '' : '\n   ' + problems.join('\n   ')));
-  await pg.close();
-}
-
-// Case 6: the opposite direction of Case 5 — a stale history entry claiming
-// `screen:'onboarding'` must never win over a REAL onboarded case already in
-// localStorage. Otherwise the app would mount the onboarding wizard on top
-// of a live case, and finishing that wizard writes straight over it with no
-// confirmation (silent data loss — see the initializer at ~index.dev.html:1956).
-{
-  const pg = await b.newPage();
-  const errs = [];
-  pg.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
-  pg.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
-
-  const seed = {
-    onboarded:true, stateSel:'Texas', county:'Travis County', issue:'Unpaid overtime or wages',
-    profile:{ name:'Pat Vega', employer:'Northgate Co', payType:'Salary', rate:'50000' },
-    caseOpened:new Date().toISOString(), homeMode:'standard', entries:[], done:{}, messages:[],
-  };
-  // Registration order matters: the case seed first, then a second script
-  // that stamps this fresh document's (still-empty, pre-app) history entry
-  // with {screen:'onboarding'} — simulating a tab that was left open on the
-  // onboarding wizard in a prior session before this real case existed.
-  await pg.evaluateOnNewDocument((s) => { localStorage.clear(); localStorage.setItem('worklaw.case.v2', JSON.stringify(s)); }, seed);
-  await pg.evaluateOnNewDocument(() => { window.history.replaceState({ screen: 'onboarding' }, ''); });
+  await pg.evaluateOnNewDocument(() => { window.history.replaceState({ screen: 'rights' }, ''); });
   await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`);
-  await new Promise(r => setTimeout(r, 700));
+  await pg.evaluate(() => { try { localStorage.removeItem('worklaw.place.v1'); } catch (e) {} });
+  await reloadApp(pg);
+  await new Promise(r => setTimeout(r, 900));
 
-  const isOnboarding = await onOnboarding(pg);
   const problems = [];
-  if (isOnboarding) problems.push('a stale "onboarding" history entry routed an already-onboarded case back into the onboarding wizard — the live case is at risk of being silently overwritten');
+  const text = await bodyText(pg);
+  // Landing on All rights with no state picked is allowed — it simply shows
+  // the federal floor. What must not happen is a crash, or a state being
+  // named that the reader never chose.
+  if (/Something went wrong/.test(text)) problems.push('a stale entry with no place stored crashed the app');
+  if (/Texas|California/.test(text)) problems.push('a state the reader never picked is named on screen: ' + JSON.stringify(text.slice(0, 160)));
   errs.forEach(e => problems.push(e));
+  await pg.close();
 
   const ok = problems.length === 0;
   if (!ok) fails++;
-  console.log((ok ? '✅' : '❌') + ' a stale "onboarding" history entry never overrides a real onboarded case' + (ok ? '' : '\n   ' + problems.join('\n   ')));
-  await pg.close();
+  console.log((ok ? '✅' : '❌') + ' with no place stored, no state is named and nothing crashes' + (ok ? '' : '\n   ' + problems.join('\n   ')));
 }
 
 } finally {
