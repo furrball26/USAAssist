@@ -75,9 +75,35 @@ async function withRetry(op) {
   }
 }
 
+/*
+ * First-run welcome screen (index.dev.html: `Welcome`, SEEN_WELCOME_KEY).
+ *
+ * A genuinely fresh visitor now lands on the welcome illustration, not on
+ * onboarding. Every existing suite is written against "cold launch → onboarding
+ * step 1", so gotoApp seeds the device-level seen flag BEFORE any app code
+ * runs, and those suites keep seeing exactly what they always saw.
+ *
+ * Seeded rather than clicked through on purpose: clicking Skip would push a
+ * history entry and change what test/onboarding-back.mjs and
+ * test/history-nav.mjs are asserting about the back stack. Seeding leaves the
+ * history stack identical to before the welcome screen existed.
+ *
+ * Pass { freshVisitor: true } to opt OUT and exercise the welcome screen
+ * itself (see test/welcome-first-run.mjs).
+ */
+export const SEEN_WELCOME_KEY = 'worklaw.seenWelcome.v1';
+
+async function seedWelcomeSeen(page) {
+  await page.evaluateOnNewDocument((key) => {
+    try { localStorage.setItem(key, '1'); } catch (e) { /* about:blank / blocked storage */ }
+  }, SEEN_WELCOME_KEY);
+}
+
 /** page.goto with a raised timeout + one retry-on-timeout. */
 export async function gotoApp(page, url, opts = {}) {
-  return withRetry((timeout) => page.goto(url, { waitUntil: 'networkidle0', timeout, ...opts }));
+  const { freshVisitor, ...gotoOpts } = opts;
+  if (!freshVisitor) await seedWelcomeSeen(page);
+  return withRetry((timeout) => page.goto(url, { waitUntil: 'networkidle0', timeout, ...gotoOpts }));
 }
 
 /** page.reload with a raised timeout + one retry-on-timeout. */
