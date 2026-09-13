@@ -237,7 +237,7 @@ const CONTENT_BASE = (typeof window !== 'undefined' && window.CONTENT_BASE)
 // SHA-pinned fallback source for the same content/ path, tried once if the primary
 // CONTENT_BASE fetch fails (network error or non-2xx) before surfacing the error state.
 // Bump this SHA as part of routine maintenance so it stays a recent known-good commit.
-const CONTENT_FALLBACK_BASE = 'https://raw.githubusercontent.com/furrball26/USAAssist/39d0a0b0a1f33bb31a88c71b341eaccb63f7161b/';
+const CONTENT_FALLBACK_BASE = 'https://raw.githubusercontent.com/furrball26/USAAssist/f1cfa3c82c2da27ea5099b397b7f7c7cff8e6b77/';
 function fetchContentJson(path){
   return fetch(CONTENT_BASE + path)
     .then(r => { if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
@@ -707,7 +707,17 @@ const LABEL_FIT_R = 15;          // inscribed radius (viewBox units) a 2-char la
 function UsaStatePicker({ value, onPick }) {
   const geo = useUsStates();
   const [hovered, setHovered] = useState(null);
-  if (geo === false) return null;      // select below still works
+  // A failed map used to `return null`, which rendered nothing at all — the screen
+  // then showed only the <select> below and looked like a deliberate design choice
+  // rather than a broken fetch. Say it plainly instead: the control that still works
+  // is right underneath, and a silent absence is indistinguishable from "there is no
+  // map", which is what made the GitHub Pages Jekyll failure (see .nojekyll) so hard
+  // to spot from the outside.
+  if (geo === false) return (
+    <div role="alert" style={css("padding:15px 17px;border-radius:14px;border:2px dashed rgba(20,24,31,.22)")}>
+      <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>The map of the United States couldn’t load. Pick your state from the list below instead — everything else works normally.</p>
+    </div>
+  );
   if (!geo) return <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Loading the map…</p>;
   const shown = hovered || value || '';
   const [, , vw, vh] = geo.viewBox.split(/\s+/).map(Number);
@@ -804,7 +814,14 @@ function StateCountyMap({ stateName, value, onPick }) {
     return () => { live = false; };
   }, [abbr]);
 
-  if (!abbr || failed) return null;
+  if (!abbr) return null;
+  // Same reasoning as the national map: a silent null here left the county <select>
+  // standing alone and looking intentional.
+  if (failed) return (
+    <div role="alert" style={css("padding:15px 17px;border-radius:14px;border:2px dashed rgba(20,24,31,.22)")}>
+      <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>The map of {stateName} couldn’t load. Pick your county from the list below instead — everything else works normally.</p>
+    </div>
+  );
   if (!geo) return (
     <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Loading the {stateName} map…</p>
   );
