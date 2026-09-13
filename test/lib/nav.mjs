@@ -99,10 +99,34 @@ async function seedWelcomeSeen(page) {
   }, SEEN_WELCOME_KEY);
 }
 
-/** page.goto with a raised timeout + one retry-on-timeout. */
+/*
+ * Where the reader said they work — the only thing the site persists now (see
+ * STORE_KEY in index.dev.html). Seeding it is how a suite skips the map and
+ * lands straight on the law for a given place; the map itself is exercised by
+ * test/welcome-first-run.mjs and test/county-map.mjs, which pass no `place`.
+ *
+ * `county` is a plain string and may be '—', which is what the app writes when
+ * someone skips the county step. Seeded, like the welcome flag, rather than
+ * clicked, so the history stack stays identical to a direct visit.
+ */
+export const PLACE_KEY = 'worklaw.place.v1';
+
+async function seedPlace(page, place) {
+  await page.evaluateOnNewDocument((key, value) => {
+    try { localStorage.setItem(key, value); } catch (e) { /* about:blank / blocked storage */ }
+  }, PLACE_KEY, JSON.stringify({ stateSel: place.state || '', county: place.county || '—' }));
+}
+
+/**
+ * page.goto with a raised timeout + one retry-on-timeout.
+ *
+ *   { freshVisitor: true }            — opt out of the seen-welcome flag
+ *   { place: { state, county } }      — start already located, on the topic grid
+ */
 export async function gotoApp(page, url, opts = {}) {
-  const { freshVisitor, ...gotoOpts } = opts;
+  const { freshVisitor, place, ...gotoOpts } = opts;
   if (!freshVisitor) await seedWelcomeSeen(page);
+  if (place) await seedPlace(page, place);
   return withRetry((timeout) => page.goto(url, { waitUntil: 'networkidle0', timeout, ...gotoOpts }));
 }
 

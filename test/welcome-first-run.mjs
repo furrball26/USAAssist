@@ -80,7 +80,7 @@ try {
   await gotoApp(pg, URL_, { freshVisitor: true });
   const t = await pg.evaluate(() => document.body.innerText);
   ok(/Know your rights at work/i.test(t), 'fresh visitor lands on the welcome screen');
-  ok(!/Where do you work/i.test(t), 'welcome is shown INSTEAD of onboarding step 1, not alongside it');
+  ok(!/Pick a topic|Where in /i.test(t), 'welcome is shown INSTEAD of the law itself, not alongside it');
 
   const art = await pg.evaluate(() => {
     const s = [...document.querySelectorAll('svg[role="img"]')]
@@ -105,7 +105,7 @@ try {
   await gotoApp(pg, URL_, { freshVisitor: true });
   await clickText(pg, 'Find my state’s rules');
   let t = await pg.evaluate(() => document.body.innerText);
-  ok(/Where do you work/i.test(t), 'primary button enters onboarding');
+  ok(await pg.$('#onb-state') !== null, 'primary button enters the state map');
 
   await reloadApp(pg);
   t = await pg.evaluate(() => document.body.innerText);
@@ -118,31 +118,30 @@ try {
   const { pg } = await freshPage();
   await gotoApp(pg, URL_, { freshVisitor: true });
   await clickText(pg, 'Skip');
-  const t = await pg.evaluate(() => document.body.innerText);
-  ok(/Where do you work/i.test(t), 'Skip leaves the welcome screen');
+  ok(await pg.$('#onb-state') !== null, 'Skip leaves the welcome screen for the state map');
   await pg.close();
 }
 
-// ── 4 · clearing the case must NOT replay the intro ──
-// The flag deliberately lives outside the case blob; if it ever moves into
-// saveCase(), an existing user who starts a fresh case gets the first-run
-// splash again. Simulate exactly that: case gone, welcome flag intact.
+// ── 4 · forgetting the remembered place must NOT replay the intro ──
+// The flag deliberately lives outside the stored place; if it ever moves into
+// savePrefs(), someone who changes state gets the first-run splash again.
+// Simulate exactly that: place gone, welcome flag intact.
 {
   const { pg } = await freshPage();
   await gotoApp(pg, URL_, { freshVisitor: true });
   await clickText(pg, 'Skip');
-  await pg.evaluate(() => { try { localStorage.removeItem('worklaw.case.v2'); } catch (e) {} });
+  await pg.evaluate(() => { try { localStorage.removeItem('worklaw.place.v1'); } catch (e) {} });
   await reloadApp(pg);
   const t = await pg.evaluate(() => document.body.innerText);
-  ok(!/Know your rights at work/i.test(t), 'clearing the case does not replay the welcome');
-  ok(/Where do you work/i.test(t), 'clearing the case still returns to onboarding');
+  ok(!/Find my state.s rules/i.test(t), 'forgetting the remembered place replays the welcome');
+  ok(await pg.$('#onb-state') !== null, 'forgetting the remembered place does not return to the state map');
   await pg.close();
 }
 
 // ── 5 · state map is an enhancement over the select, and has no dead shapes ──
 {
   const { pg, errs } = await freshPage();
-  await gotoApp(pg, URL_);           // seeded: straight to onboarding step 1
+  await gotoApp(pg, URL_);           // seeded: straight to the state map
   await new Promise(r => setTimeout(r, 1200));   // the map is fetched, not bundled
   const shapes = await pg.evaluate(() =>
     [...document.querySelectorAll('.wlUsMap path[role="button"]')].map(el => el.getAttribute('aria-label')));
@@ -154,18 +153,23 @@ try {
   // The labelled <select> must still be present — the map never replaces it.
   ok(await pg.$('#onb-state') !== null, 'the conventional labelled <select> is still present alongside the map');
 
-  // Picking on the map writes the same value the select reports.
+  // The select must offer exactly the states the map does — one control can
+  // never reach a state the other cannot.
+  const opts = await pg.$$eval('#onb-state option', els => els.map(e => e.value).filter(Boolean));
+  ok(opts.length === 50, `the state select offers 50 states (got ${opts.length})`);
+  ok(shapes.every(l => opts.includes(l)), 'every state on the map is also in the select');
+  ok(opts.every(v => shapes.includes(v)), 'every state in the select also has a shape on the map');
+
+  // Picking on the map takes you to the same place picking in the select does:
+  // that state's counties.
   await pg.evaluate(() => {
     const el = [...document.querySelectorAll('.wlUsMap path[role="button"]')]
       .find(e => e.getAttribute('aria-label') === 'California');
     el && el.dispatchEvent(new MouseEvent('click', { bubbles: true }));
   });
-  await new Promise(r => setTimeout(r, 300));
-  const sel = await pg.$eval('#onb-state', el => el.value);
-  ok(sel === 'California', `map selection drives the same state as the select (got "${sel}")`);
-  const pressed = await pg.evaluate(() =>
-    document.querySelector('.wlUsMap path[aria-pressed="true"]')?.getAttribute('aria-label'));
-  ok(pressed === 'California', 'the chosen state reports aria-pressed="true"');
+  await new Promise(r => setTimeout(r, 600));
+  ok(/Where in California/i.test(await pg.evaluate(() => document.body.innerText)),
+     'clicking a state on the map does not advance to that state’s counties');
   ok(errs.length === 0, 'no console/page errors using the map' + (errs.length ? ': ' + errs[0] : ''));
   await pg.close();
 }
