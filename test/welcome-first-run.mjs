@@ -11,13 +11,15 @@
  *      (SEEN_WELCOME_KEY), NOT the case blob — so it must survive a case
  *      being cleared, which is the whole reason it lives outside saveCase().
  *   2. It never traps anyone. Both the primary button and Skip leave.
- *   3. The illustration is announced as ONE image, not 52 tiles and six
- *      figures — a screen-reader user should hear a sentence, not a list.
- *   4. The state map and the <select> stay in agreement. The map is an
- *      ENHANCEMENT over the labelled select (index.dev.html: UsaStatePicker) —
- *      picking a state on the map must set the same value the select shows,
- *      and every rendered tile must correspond to a state the app has content
- *      for (no dead DC/PR tiles, since content/states/ has neither).
+ *   3. The illustration is announced as ONE image, not fifty state outlines
+ *      and six figures — a screen-reader user should hear a sentence, not a
+ *      list.
+ *   4. The state map and the <select> stay in agreement. The map is real
+ *      Census geography (content/geo/_states.json) and an ENHANCEMENT over the
+ *      labelled select (index.dev.html: UsaStatePicker) — picking a state on
+ *      the map must set the same value the select shows, and every rendered
+ *      shape must correspond to a state the app has content for (no dead
+ *      DC/PR shapes, since content/states/ has neither).
  *
  * Run: node test/welcome-first-run.mjs
  */
@@ -137,48 +139,50 @@ try {
   await pg.close();
 }
 
-// ── 5 · state map is an enhancement over the select, and has no dead tiles ──
+// ── 5 · state map is an enhancement over the select, and has no dead shapes ──
 {
   const { pg, errs } = await freshPage();
   await gotoApp(pg, URL_);           // seeded: straight to onboarding step 1
-  const tiles = await pg.evaluate(() =>
-    [...document.querySelectorAll('.wlStateBtn')].map(el => ({
-      abbr: el.textContent.trim(), label: el.getAttribute('aria-label'),
-    })));
-  ok(tiles.length === 50, `map renders one tile per supported state (got ${tiles.length}, expected 50)`);
-  ok(!tiles.some(t => t.abbr === 'DC' || t.abbr === 'PR'),
-    'no tile for DC/PR — the app has no content file for either, so the tile would select nothing');
-  ok(tiles.every(t => t.label && t.label.length > 2), 'every tile has a full state name as its accessible label');
+  await new Promise(r => setTimeout(r, 1200));   // the map is fetched, not bundled
+  const shapes = await pg.evaluate(() =>
+    [...document.querySelectorAll('.wlUsMap path[role="button"]')].map(el => el.getAttribute('aria-label')));
+  ok(shapes.length === 50, `map renders one shape per supported state (got ${shapes.length}, expected 50)`);
+  ok(!shapes.includes('District of Columbia') && !shapes.includes('Puerto Rico'),
+    'no shape for DC/PR — the app has no content file for either, so it would select nothing');
+  ok(shapes.every(l => l && l.length > 2), 'every shape has a full state name as its accessible label');
 
   // The labelled <select> must still be present — the map never replaces it.
   ok(await pg.$('#onb-state') !== null, 'the conventional labelled <select> is still present alongside the map');
 
   // Picking on the map writes the same value the select reports.
   await pg.evaluate(() => {
-    const el = [...document.querySelectorAll('.wlStateBtn')].find(e => e.textContent.trim() === 'CA');
-    el && el.click();
+    const el = [...document.querySelectorAll('.wlUsMap path[role="button"]')]
+      .find(e => e.getAttribute('aria-label') === 'California');
+    el && el.dispatchEvent(new MouseEvent('click', { bubbles: true }));
   });
-  await new Promise(r => setTimeout(r, 250));
+  await new Promise(r => setTimeout(r, 300));
   const sel = await pg.$eval('#onb-state', el => el.value);
   ok(sel === 'California', `map selection drives the same state as the select (got "${sel}")`);
   const pressed = await pg.evaluate(() =>
-    document.querySelector('.wlStateBtn[aria-pressed="true"]')?.textContent.trim());
-  ok(pressed === 'CA', 'the chosen tile reports aria-pressed="true"');
+    document.querySelector('.wlUsMap path[aria-pressed="true"]')?.getAttribute('aria-label'));
+  ok(pressed === 'California', 'the chosen state reports aria-pressed="true"');
   ok(errs.length === 0, 'no console/page errors using the map' + (errs.length ? ': ' + errs[0] : ''));
   await pg.close();
 }
 
-// ── 6 · the grid data itself matches what ships in content/states ──
-// Guards the inverse of test 5 at the source: if someone adds a state file
-// without a tile, the map silently omits a supported state.
+// ── 6 · the map data itself matches what ships in content/states ──
+// Guards the inverse of test 5 at the source: a state file with no shape would
+// silently drop a supported state off the map.
 {
-  const dev = readFileSync(join(ROOT, 'index.dev.html'), 'utf8');
-  const gridAbbrs = [...dev.matchAll(/\['([A-Z]{2})',\d+,\d+\]/g)].map(m => m[1]);
+  const geo = JSON.parse(readFileSync(join(ROOT, 'content/geo/_states.json'), 'utf8'));
+  const abbrs = geo.states.map(s => s.abbr);
   const shipped = readdirSync(join(ROOT, 'content/states'))
     .filter(f => f.endsWith('.json') && f !== '_TEMPLATE.json')
     .map(f => f.replace('.json', ''));
-  const missing = shipped.filter(a => !gridAbbrs.includes(a));
-  ok(missing.length === 0, 'every shipped state file has a tile in US_TILE_GRID' + (missing.length ? ': missing ' + missing.join(', ') : ''));
+  const missing = shipped.filter(a => !abbrs.includes(a));
+  const extra = abbrs.filter(a => !shipped.includes(a));
+  ok(missing.length === 0, 'every shipped state file has a shape on the national map' + (missing.length ? ': missing ' + missing.join(', ') : ''));
+  ok(extra.length === 0, 'the national map carries no shape without content behind it' + (extra.length ? ': ' + extra.join(', ') : ''));
 }
 
 } finally {
