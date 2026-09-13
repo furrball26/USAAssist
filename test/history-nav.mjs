@@ -209,9 +209,27 @@ const onOnboarding = (pg) => pg.evaluate(() => !!document.querySelector('#onb-st
   await reloadApp(pg);
   await new Promise(r => setTimeout(r, 500));
 
-  const isOnboarding = await onOnboarding(pg);
+  // What must hold is that the stale {screen:'log'} entry does not carry
+  // someone into a TOOL screen with no case behind it. Which pre-case gate
+  // they land on depends on what was cleared, and this clear() wipes
+  // everything:
+  //   - "Delete my case & start over" only removes STORE_KEY (see the
+  //     removeItem calls in index.dev.html), so the welcome flag survives and
+  //     the gate is onboarding — covered in test/welcome-first-run.mjs.
+  //   - A genuinely fresh browser profile (what clear() actually reproduces)
+  //     has no welcome flag either, and that visitor IS new, so the welcome
+  //     illustration is the correct gate.
+  // Asserting "onboarding" alone would fail the app for doing the right thing
+  // in the second case, so assert the gate holds and that the tool screen is
+  // specifically not reached.
+  const gate = await pg.evaluate(() => ({
+    onboarding: !!document.querySelector('#onb-state'),
+    welcome: /Know your rights at work/i.test(document.body.innerText),
+    log: /Incident log/i.test(document.body.innerText),
+  }));
   const problems = [];
-  if (!isOnboarding) problems.push('a stale "log" history entry skipped onboarding for a case that no longer exists');
+  if (gate.log) problems.push('a stale "log" history entry reached the Log tool for a case that no longer exists');
+  if (!gate.onboarding && !gate.welcome) problems.push('a stale "log" history entry skipped the pre-case gate (neither welcome nor onboarding rendered)');
   errs.forEach(e => problems.push(e));
 
   const ok = problems.length === 0;

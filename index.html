@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-JWwgagJrKu/HBRu0dSQ7bWc0nxFhXn0Nm+NSbJKTg+k='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-Kcupm/nPIrsTuxm3ooUv6UC+wWsSgrSpYzDNsHmVBPA='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14181F">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232B3AA8'/%3E%3Ctext x='32' y='47' font-size='42' text-anchor='middle' fill='white' font-family='Georgia,serif'%3E%C2%A7%3C/text%3E%3C/svg%3E">
@@ -193,6 +193,32 @@
   label.fileInputCard:focus-within{ outline:3px solid #fff; outline-offset:2px; box-shadow:0 0 0 5px #14181F; }
   @keyframes popin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   @keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
+  /* Welcome illustration (WorkerArt / UsaTileMap). Lives here rather than in
+     the component because automation/render-shell.mjs injects THIS style block
+     verbatim into the Vercel shell — a keyframe defined anywhere else would
+     animate on Pages and sit dead on worklaw.app. */
+  @keyframes wlPop{0%{opacity:0;transform:scale(.5)}65%{transform:scale(1.1)}100%{opacity:1;transform:scale(1)}}
+  @keyframes wlRise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+  @keyframes wlSway{0%,100%{transform:translateY(0)}50%{transform:translateY(-2.5px)}}
+  .wlTile{opacity:0;animation:wlPop .34s cubic-bezier(.34,1.56,.64,1) forwards;transform-origin:center}
+  .wlWorker{opacity:0;animation:wlRise .55s ease-out forwards}
+  .wlWorker .wlBob{animation:wlSway 3.4s ease-in-out infinite;transform-origin:center bottom}
+  /* The intro is decoration on a screen people reach while stressed; motion is
+     never load-bearing. Reduced-motion users get the finished frame instantly,
+     not a slower version of the same thing. */
+  @media (prefers-reduced-motion:reduce){
+    .wlTile,.wlWorker,.wlWorker .wlBob{animation:none!important;opacity:1!important;transform:none!important}
+  }
+  /* State picker. Real <button>s in a CSS grid rather than SVG shapes: native
+     focus, native keyboard activation, and aria-pressed announce correctly
+     with no SVG accessibility workarounds. The app's global :focus-visible
+     halo ring applies to them unchanged. */
+  .wlStateGrid{display:grid;grid-template-columns:repeat(11,1fr);gap:3px;width:100%}
+  .wlStateBtn{aspect-ratio:1/1;min-width:0;padding:0;border:2px solid #14181F;border-radius:7px;
+    background:#fff;color:#14181F;font:600 clamp(9px,2.4vw,11px)/1 'IBM Plex Mono',monospace;
+    cursor:pointer;transition:background .12s ease}
+  .wlStateBtn:hover{background:#EEF1FF}
+  .wlStateBtn[aria-pressed="true"]{background:#2B3AA8;color:#fff}
 
   /* Device / app shell */
   #root{min-height:100%;display:flex;align-items:center;justify-content:center;padding:24px}
@@ -875,6 +901,147 @@ function Icon({ name, size = 22, strokeWidth = 2, style }) {
     body
   );
 }
+const US_TILE_GRID = [
+  ["ME", 10, 0],
+  ["VT", 9, 1],
+  ["NH", 10, 1],
+  ["AK", 0, 2],
+  ["WI", 5, 2],
+  ["MI", 6, 2],
+  ["NY", 8, 2],
+  ["MA", 9, 2],
+  ["RI", 10, 2],
+  ["WA", 0, 3],
+  ["ID", 1, 3],
+  ["MT", 2, 3],
+  ["ND", 3, 3],
+  ["MN", 4, 3],
+  ["IL", 5, 3],
+  ["IN", 6, 3],
+  ["OH", 7, 3],
+  ["PA", 8, 3],
+  ["NJ", 9, 3],
+  ["CT", 10, 3],
+  ["OR", 0, 4],
+  ["NV", 1, 4],
+  ["WY", 2, 4],
+  ["SD", 3, 4],
+  ["IA", 4, 4],
+  ["MO", 5, 4],
+  ["KY", 6, 4],
+  ["WV", 7, 4],
+  ["VA", 8, 4],
+  ["MD", 9, 4],
+  ["DE", 10, 4],
+  ["CA", 0, 5],
+  ["UT", 1, 5],
+  ["CO", 2, 5],
+  ["NE", 3, 5],
+  ["KS", 4, 5],
+  ["AR", 5, 5],
+  ["TN", 6, 5],
+  ["NC", 7, 5],
+  ["SC", 8, 5],
+  ["DC", 9, 5],
+  ["AZ", 1, 6],
+  ["NM", 2, 6],
+  ["OK", 3, 6],
+  ["LA", 4, 6],
+  ["MS", 5, 6],
+  ["AL", 6, 6],
+  ["GA", 7, 6],
+  ["HI", 0, 7],
+  ["TX", 3, 7],
+  ["FL", 7, 7],
+  ["PR", 10, 7]
+];
+const TILE_S = 30, TILE_G = 3;
+const TILE_W = 11 * (TILE_S + TILE_G) - TILE_G;
+const TILE_H = 8 * (TILE_S + TILE_G) - TILE_G;
+function UsaTileDecor() {
+  return /* @__PURE__ */ React.createElement("g", { "aria-hidden": "true" }, US_TILE_GRID.map(([abbr, c, r], i) => /* @__PURE__ */ React.createElement("g", { key: abbr, className: "wlTile", style: { animationDelay: (0.035 * i).toFixed(2) + "s" } }, /* @__PURE__ */ React.createElement(
+    "rect",
+    {
+      x: c * (TILE_S + TILE_G),
+      y: r * (TILE_S + TILE_G),
+      width: TILE_S,
+      height: TILE_S,
+      rx: "7",
+      fill: WELCOME_TINT[abbr] || "#fff",
+      stroke: "#14181F",
+      strokeWidth: "3"
+    }
+  ))));
+}
+const WELCOME_TINT = { CA: "#EEF1FF", TX: "#EEF1FF", NY: "#EEF1FF", FL: "#EEF1FF", IL: "#EEF1FF", WA: "#EEF1FF", GA: "#EEF1FF" };
+function UsaStatePicker({ value, onPick }) {
+  const byAbbr = {};
+  US_STATES.forEach((n) => {
+    byAbbr[US_STATE_ABBR[n]] = n;
+  });
+  return /* @__PURE__ */ React.createElement("div", { className: "wlStateGrid", role: "group", "aria-label": "Pick your state from the map" }, US_TILE_GRID.map(([abbr, c, r]) => {
+    const name = byAbbr[abbr];
+    if (!name) return null;
+    const on = value === name;
+    return /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key: abbr,
+        type: "button",
+        className: "wlStateBtn",
+        "aria-pressed": on,
+        "aria-label": name,
+        onClick: () => onPick(name),
+        style: { gridColumn: c + 1, gridRow: r + 1 }
+      },
+      abbr
+    );
+  }));
+}
+const WL_SKIN = { l: "#FFDBB4", lm: "#F2C9A0", m: "#E0A97C", mt: "#C68642", md: "#8D5524", d: "#5C3317" };
+const WL_INK = "#14181F";
+function wlBase(skin, shirt, w) {
+  const sx = (w || 23) / 2, top = -49, ay = top + 7;
+  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("rect", { x: "-8", y: "-19", width: "7", height: "19", rx: "2", fill: "#3A4150", stroke: WL_INK, strokeWidth: "2" }), /* @__PURE__ */ React.createElement("rect", { x: "1", y: "-19", width: "7", height: "19", rx: "2", fill: "#3A4150", stroke: WL_INK, strokeWidth: "2" }), /* @__PURE__ */ React.createElement("path", { d: `M${-sx + 1} ${ay}L${-sx - 6} ${ay + 20}M${sx - 1} ${ay}L${sx + 6} ${ay + 20}`, stroke: WL_INK, strokeWidth: "6.5", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: `M${-sx + 1} ${ay}L${-sx - 6} ${ay + 20}M${sx - 1} ${ay}L${sx + 6} ${ay + 20}`, stroke: shirt, strokeWidth: "3", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("circle", { cx: -sx - 6, cy: ay + 22, r: "3.3", fill: skin, stroke: WL_INK, strokeWidth: "2" }), /* @__PURE__ */ React.createElement("circle", { cx: sx + 6, cy: ay + 22, r: "3.3", fill: skin, stroke: WL_INK, strokeWidth: "2" }), /* @__PURE__ */ React.createElement("path", { d: `M${-sx} ${top}h${w || 23}a4 4 0 0 1 4 4v${-top - 23}a4 4 0 0 1-4 4h${-(w || 23)}a4 4 0 0 1-4-4v${top + 23}a4 4 0 0 1 4-4Z`, fill: shirt, stroke: WL_INK, strokeWidth: "2.5" }), /* @__PURE__ */ React.createElement("circle", { cx: "0", cy: "-62", r: "11", fill: skin, stroke: WL_INK, strokeWidth: "2.5" }));
+}
+function wlFace(hy) {
+  const y = hy || -62;
+  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("circle", { cx: "-3.8", cy: y + 1, r: "1.6", fill: WL_INK }), /* @__PURE__ */ React.createElement("circle", { cx: "3.8", cy: y + 1, r: "1.6", fill: WL_INK }), /* @__PURE__ */ React.createElement("path", { d: `M-3 ${y + 5.5}q3 2.6 6 0`, stroke: WL_INK, strokeWidth: "1.8", fill: "none", strokeLinecap: "round" }));
+}
+function wlHair(color, hy) {
+  const y = hy || -62;
+  return /* @__PURE__ */ React.createElement("path", { d: `M-11 ${y - 4}q11-11 22 0q-1-10-11-10t-11 10`, fill: color });
+}
+const WL_WORKERS = [
+  // Construction — hard hat
+  /* @__PURE__ */ React.createElement(React.Fragment, null, wlBase(WL_SKIN.md, "#2B3AA8"), /* @__PURE__ */ React.createElement("path", { d: "M-12 -66a12 12 0 0 1 24 0z", fill: "#FFC83D", stroke: WL_INK, strokeWidth: "2.5", strokeLinejoin: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M-15.5 -66h31", stroke: WL_INK, strokeWidth: "2.5", strokeLinecap: "round" }), wlFace()),
+  // Healthcare — hijab
+  /* @__PURE__ */ React.createElement(React.Fragment, null, wlBase(WL_SKIN.mt, "#136B3C"), /* @__PURE__ */ React.createElement("path", { d: "M-13.5 -62a13.5 13.5 0 0 1 27 0v6q0 8-5 8h-17q-5 0-5-8z", fill: "#B3264F", stroke: WL_INK, strokeWidth: "2.5" }), /* @__PURE__ */ React.createElement("circle", { cx: "0", cy: "-61", r: "9.5", fill: WL_SKIN.mt, stroke: WL_INK, strokeWidth: "2.5" }), wlFace(-61)),
+  // Office — wheelchair user (seated: its own build, not wlBase)
+  /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("circle", { cx: "-4", cy: "-13", r: "13", fill: "#FFFDF8", stroke: WL_INK, strokeWidth: "2.5" }), /* @__PURE__ */ React.createElement("circle", { cx: "-4", cy: "-13", r: "2.8", fill: WL_INK }), /* @__PURE__ */ React.createElement("path", { d: "M-4 -26v26M-17 -13h26M-13.2 -22.2l18.4 18.4M-13.2 -3.8l18.4-18.4", stroke: WL_INK, strokeWidth: "1.3" }), /* @__PURE__ */ React.createElement("circle", { cx: "14", cy: "-4", r: "4.2", fill: "#FFFDF8", stroke: WL_INK, strokeWidth: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M-13 -26v-12", stroke: WL_INK, strokeWidth: "2.5", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M-9 -24h17l5 9h-22z", fill: "#4A5162", stroke: WL_INK, strokeWidth: "2.5", strokeLinejoin: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M10 -40l8 14", stroke: WL_INK, strokeWidth: "6.5", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M10 -40l8 14", stroke: "#B3264F", strokeWidth: "3", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("circle", { cx: "18", cy: "-24", r: "3.3", fill: WL_SKIN.d, stroke: WL_INK, strokeWidth: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M-11.5 -47h23a4 4 0 0 1 4 4v19h-31v-19a4 4 0 0 1 4-4Z", fill: "#B3264F", stroke: WL_INK, strokeWidth: "2.5" }), /* @__PURE__ */ React.createElement("circle", { cx: "0", cy: "-60", r: "11", fill: WL_SKIN.d, stroke: WL_INK, strokeWidth: "2.5" }), wlHair(WL_INK, -60), wlFace(-60)),
+  // Food service — apron
+  /* @__PURE__ */ React.createElement(React.Fragment, null, wlBase(WL_SKIN.lm, "#FFF4D6"), /* @__PURE__ */ React.createElement("path", { d: "M-6.5 -45h13v26h-13z", fill: "#C9553D", stroke: WL_INK, strokeWidth: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M-4.5 -45l4.5-4 4.5 4", fill: "none", stroke: WL_INK, strokeWidth: "2", strokeLinecap: "round" }), wlHair("#C9553D"), wlFace()),
+  // Warehouse — hi-vis vest
+  /* @__PURE__ */ React.createElement(React.Fragment, null, wlBase(WL_SKIN.m, "#FFC83D"), /* @__PURE__ */ React.createElement("path", { d: "M-5 -47v28M5 -47v28", stroke: "#FFFDF8", strokeWidth: "3.2" }), /* @__PURE__ */ React.createElement("path", { d: "M-11.5 -30h23", stroke: "#FFFDF8", strokeWidth: "3.2" }), wlHair("#8C6239"), wlFace()),
+  // Older office worker — glasses + cane
+  /* @__PURE__ */ React.createElement(React.Fragment, null, wlBase(WL_SKIN.l, "#1B2778"), /* @__PURE__ */ React.createElement("path", { d: "M0 -49v30", stroke: "#FFFDF8", strokeWidth: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M20 -20v20", stroke: WL_INK, strokeWidth: "2.5", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M20 -20q-5 0-5 4", fill: "none", stroke: WL_INK, strokeWidth: "2.5", strokeLinecap: "round" }), wlHair("#9AA0A8"), /* @__PURE__ */ React.createElement("circle", { cx: "-4.4", cy: "-61", r: "3.7", fill: "none", stroke: WL_INK, strokeWidth: "1.7" }), /* @__PURE__ */ React.createElement("circle", { cx: "4.4", cy: "-61", r: "3.7", fill: "none", stroke: WL_INK, strokeWidth: "1.7" }), /* @__PURE__ */ React.createElement("path", { d: "M-0.7 -61h1.4", stroke: WL_INK, strokeWidth: "1.7" }), /* @__PURE__ */ React.createElement("path", { d: "M-3 -55.5q3 2.6 6 0", stroke: WL_INK, strokeWidth: "1.8", fill: "none", strokeLinecap: "round" }))
+];
+const WL_WORKER_X = [44, 101, 158, 216, 273, 328];
+function WelcomeArt() {
+  return /* @__PURE__ */ React.createElement(
+    "svg",
+    {
+      viewBox: "0 0 360 284",
+      width: "100%",
+      role: "img",
+      "aria-label": "Illustration: workers of different jobs, ages and abilities standing below a map of the United States",
+      style: { display: "block", maxWidth: "420px", margin: "0 auto" }
+    },
+    /* @__PURE__ */ React.createElement("g", { transform: "translate(84,4) scale(.55)" }, /* @__PURE__ */ React.createElement(UsaTileDecor, null)),
+    /* @__PURE__ */ React.createElement("path", { d: "M14 252h332", stroke: "#14181F", strokeWidth: "2", strokeLinecap: "round", opacity: ".18" }),
+    WL_WORKERS.map((w, i) => /* @__PURE__ */ React.createElement("g", { key: i, className: "wlWorker", style: { animationDelay: (1 + i * 0.1).toFixed(2) + "s" } }, /* @__PURE__ */ React.createElement("g", { className: "wlBob" }, /* @__PURE__ */ React.createElement("g", { transform: `translate(${WL_WORKER_X[i]},250)` }, w))))
+  );
+}
 const RESULTS_WAGE = {
   r_salary_low: { v: "non", title: "Likely non-exempt \u2014 overtime is owed", body: "A salary under $684 per week ($35,568/year) fails the federal salary-level test automatically. No duties test can make you exempt below that line, whatever your title says.", cites: ["29 C.F.R. \xA7541.600", "29 U.S.C. \xA7207"] },
   r_hourly: { v: "non", title: "Likely non-exempt \u2014 overtime is owed", body: "Hourly pay fails the salary-basis test for the executive, administrative and professional exemptions. Outside of a few narrow carve-outs, hourly workers must be paid overtime.", cites: ["29 C.F.R. \xA7541.602", "29 U.S.C. \xA7207"] },
@@ -1241,6 +1408,20 @@ function saveCase(obj) {
     return { ok: true, quotaExceeded: false };
   } catch (e) {
     return { ok: false, quotaExceeded: isQuotaExceededError(e) };
+  }
+}
+const SEEN_WELCOME_KEY = "worklaw.seenWelcome.v1";
+function hasSeenWelcome() {
+  try {
+    return localStorage.getItem(SEEN_WELCOME_KEY) === "1";
+  } catch (e) {
+    return true;
+  }
+}
+function markWelcomeSeen() {
+  try {
+    localStorage.setItem(SEEN_WELCOME_KEY, "1");
+  } catch (e) {
   }
 }
 function daysAgo(iso) {
@@ -2238,7 +2419,8 @@ function App() {
   const [screen, setScreen] = useState(() => {
     const histScreen = typeof window !== "undefined" && window.history.state && window.history.state.screen;
     if (typeof histScreen === "string" && saved.onboarded && histScreen !== "onboarding") return histScreen;
-    return saved.onboarded ? "home" : "onboarding";
+    if (saved.onboarded) return "home";
+    return hasSeenWelcome() ? "onboarding" : "welcome";
   });
   const [onbStep, setOnbStep] = useState(() => saved.onbStep || 1);
   const [editDraft, setEditDraft] = useState(null);
@@ -2548,7 +2730,7 @@ function App() {
   const stateLabel = stateSel || "your state";
   const locationLabel = county ? county + (stateAbbr ? ", " + stateAbbr : "") : stateSel || "your location";
   const countyShort = county ? county.replace(/\s+(County|Parish|Borough|Census Area|Municipio|Municipality|city)$/i, "") : stateSel || "your area";
-  const showTabs = screen !== "onboarding";
+  const showTabs = screen !== "onboarding" && screen !== "welcome";
   const cfg = issueCfg(issue);
   const openedDays = daysAgo(caseOpened);
   const openedLabel = openedDays === 0 ? "today" : openedDays === 1 ? "yesterday" : openedDays + " days ago";
@@ -2614,6 +2796,28 @@ function App() {
     const stRev = !!(stateData && stateData.reviewed === true);
     return /* @__PURE__ */ React.createElement("div", { style: css("padding:18px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF;display:flex;flex-direction:column;gap:10px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, "How to actually recover this"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, /* @__PURE__ */ React.createElement("strong", null, "File a free WHD complaint"), " with the Department of Labor's Wage and Hour Division \u2014 confidential, no cost, but as of 2025 it recovers back wages only (no liquidated damages administratively). ", src(enf)), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, /* @__PURE__ */ React.createElement("strong", null, "Or file a private lawsuit"), " \u2014 it can recover back wages plus an equal amount in liquidated damages (about double), plus your attorney's fees and costs, which is why many wage lawyers take these cases on contingency. ", src(liq) || src(fees)), stRemedyNote && /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, /* @__PURE__ */ React.createElement("strong", null, stateSel || "Your state", " may add more", stRev ? "" : " (DRAFT \u2014 pending attorney review)", ":"), " ", stRemedyNote, " ", stRemedies.map((r) => src(r.fact))), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;padding:10px 12px;border-radius:0 8px 8px 0;background:#FFE7EC;border:none;border-left:4px solid #B3264F;font:700 14px/1.5 'Atkinson Hyperlegible',sans-serif;color:#5A1330;display:flex;align-items:flex-start;gap:8px") }, /* @__PURE__ */ React.createElement(Icon, { name: "alert", size: 18, style: { flex: "none", marginTop: "2px" } }), /* @__PURE__ */ React.createElement("span", null, "Accepting back pay under WHD supervision \u2014 or a case the Secretary of Labor already sued over \u2014 can waive your right to sue privately for those same wages.")), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "29 U.S.C. \xA7 216(b), (c) \xB7 this is general information, not a recommendation of which path to take \u2014 talk to an employment attorney before choosing."));
   };
+  const Welcome = () => {
+    const enter = () => {
+      markWelcomeSeen();
+      setScreen("onboarding");
+    };
+    return /* @__PURE__ */ React.createElement("div", { style: css("padding:14px 24px 40px;display:flex;flex-direction:column;gap:18px;min-height:100%") }, /* @__PURE__ */ React.createElement(WelcomeArt, null), /* @__PURE__ */ React.createElement("h1", { style: css("margin:0;font:700 30px/1.12 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty") }, "Know your rights at work"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 18px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty") }, "Plain-English employment law for every state \u2014 what you\u2019re owed, what counts as discrimination, and how long you have to act."), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Free, and private by design: everything you enter stays on this device. This is legal information, not legal advice."), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: enter,
+        className: "surfacefx",
+        style: css("min-height:52px;padding:14px 18px;border-radius:14px;border:2px solid #14181F;background:#2B3AA8;color:#fff;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")
+      },
+      "Find my state\u2019s rules"
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: enter,
+        style: css("align-self:center;min-height:44px;padding:10px 14px;background:none;border:none;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;text-decoration:underline;cursor:pointer")
+      },
+      "Skip"
+    ));
+  };
   const Onboarding = () => {
     const editing = onboarded && editDraft != null;
     const dStateSel = editing ? editDraft.stateSel : stateSel;
@@ -2649,7 +2853,7 @@ function App() {
       },
       /* @__PURE__ */ React.createElement(Icon, { name: "back", size: 18 }),
       " Back"
-    ), /* @__PURE__ */ React.createElement("h1", { style: css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty") }, ONB_TITLES[onbStep]), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 18px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty") }, editing ? "Nothing changes until you tap Save at the end." : ONB_BODIES[onbStep]), onbStep === 1 && /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:14px") }, /* @__PURE__ */ React.createElement("label", { htmlFor: "onb-state", style: css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em") }, "STATE"), /* @__PURE__ */ React.createElement("select", { id: "onb-state", value: dStateSel, onChange: (e) => setDStateSel(e.target.value), style: css("width:100%;padding:15px;border-radius:12px;border:2px solid #14181F;background:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer;appearance:menulist;-webkit-appearance:menulist") }, /* @__PURE__ */ React.createElement("option", { value: "" }, "Select your state\u2026"), US_STATES.map((n) => /* @__PURE__ */ React.createElement("option", { key: n, value: n }, n)))), onbStep === 2 && (() => {
+    ), /* @__PURE__ */ React.createElement("h1", { style: css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty") }, ONB_TITLES[onbStep]), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 18px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty") }, editing ? "Nothing changes until you tap Save at the end." : ONB_BODIES[onbStep]), onbStep === 1 && /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:14px") }, /* @__PURE__ */ React.createElement(UsaStatePicker, { value: dStateSel, onPick: setDStateSel }), /* @__PURE__ */ React.createElement("label", { htmlFor: "onb-state", style: css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em") }, "STATE"), /* @__PURE__ */ React.createElement("select", { id: "onb-state", value: dStateSel, onChange: (e) => setDStateSel(e.target.value), style: css("width:100%;padding:15px;border-radius:12px;border:2px solid #14181F;background:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer;appearance:menulist;-webkit-appearance:menulist") }, /* @__PURE__ */ React.createElement("option", { value: "" }, "Select your state\u2026"), US_STATES.map((n) => /* @__PURE__ */ React.createElement("option", { key: n, value: n }, n)))), onbStep === 2 && (() => {
       const countyLabelWord = US_COUNTY_LABEL[dStateSel] === "PARISH" ? "parish" : US_COUNTY_LABEL[dStateSel] === "BOROUGH" ? "borough" : "county";
       const countyLabelPlural = countyLabelWord === "parish" ? "parishes" : countyLabelWord === "county" ? "counties" : countyLabelWord + "s";
       const allCounties = US_COUNTIES[dStateSel] || [];
@@ -3353,6 +3557,7 @@ function App() {
     setCaseFileDownloaded(true);
   }, style: css("padding:15px;border-radius:12px;border:none;background:#2B3AA8;color:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, "Download your case file"), caseFileDownloaded && /* @__PURE__ */ React.createElement("p", { style: css("margin:2px 0 0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:" + (exportPath === "failed" ? "#B3264F" : "#136B3C")) }, exportPath === "download" ? "Your case file downloaded as a .txt file (your browser blocked the new-tab preview)." : exportPath === "failed" ? "Export did not work in this browser \u2014 note your case details from the dashboard manually." : "Your case file opened in a new tab \u2014 save it as PDF.")), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;gap:14px;padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff") }, /* @__PURE__ */ React.createElement("span", { style: css("flex:none;width:44px;height:44px;border-radius:12px;background:#EEF1FF;border:2px solid #14181F;display:flex;align-items:center;justify-content:center;color:#2B3AA8") }, /* @__PURE__ */ React.createElement(Icon, { name: "rights", size: 22 })), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:6px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Find an employment lawyer"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "You may also want to consult an employment attorney licensed in ", stateLabel, ". WorkLaw does not operate a referral service or recommend specific firms \u2014 your state or local bar association's lawyer-referral service is a reliable place to start."))), /* @__PURE__ */ React.createElement("div", { style: css("padding:16px;border-radius:14px;border:2px solid #14181F;background:#fff;display:flex;flex-direction:column;gap:10px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Manage your case data"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 13px/1.5 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Everything you enter stays in this browser on this device \u2014 nothing is uploaded. On a shared or work computer, delete your case when you\u2019re done."), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;gap:10px;flex-wrap:wrap") }, /* @__PURE__ */ React.createElement("button", { onClick: startFreshCase, className: "hoverfx", style: css("padding:12px 16px;border-radius:12px;border:2px solid #14181F;background:transparent;color:#14181F;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;min-height:44px") }, "Start a fresh case"), /* @__PURE__ */ React.createElement("button", { onClick: clearCase, className: "hoverfx", style: css("padding:12px 16px;border-radius:12px;border:2px solid #B3264F;background:transparent;color:#B3264F;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;min-height:44px") }, "Delete my case & start over"))), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "This is legal information, not legal advice."));
   const SCREENS = {
+    welcome: Welcome,
     onboarding: Onboarding,
     home: HomeScreen,
     chat: Chat,
