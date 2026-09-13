@@ -181,10 +181,18 @@ interactive cards for non-color affordance; 44px+ hit targets.
 
 - State legal content stays behind the `reviewed: false` draft banner until counsel
   signs off. Federal content is sourced the same way.
-- **No county or city ordinances are on file.** The county step is offered and
-  remembered, but `content/local/` does not exist, so a county pick does not yet
-  change what is shown. The UI says so in as many words rather than implying an
-  empty local layer.
+- **County and city ordinances are a first tranche, not full coverage.**
+  `content/local/<ABBR>/<slug>.json` currently holds the Los Angeles County
+  cities, San Francisco, King County (Seattle and neighbours), Cook County and
+  Chicago, Denver, and New York City — 16 localities across 10 counties. Every
+  other county shows federal and state law only, and the county step says that is
+  a gap in our data rather than an absence of local law.
+
+  A county is deliberately NOT one answer. Los Angeles County contains five
+  different minimum wages; the county's own covers unincorporated areas only, and
+  the City of Los Angeles pays *less* than the county around it. So each locality
+  is rendered separately with a `covers` sentence saying who it applies to, and
+  the app never merges them into a single "county minimum wage".
 - The AI chat, incident log, document review, letter drafting, damages estimate
   and case-strength tools were removed when the site became a reference rather
   than a dashboard. Their test suites went with them; see the git history if any

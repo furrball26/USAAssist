@@ -1,0 +1,58 @@
+{
+  "jurisdiction": "local",
+  "state": "NY",
+  "counties": [
+    "Bronx County",
+    "Kings County",
+    "New York County",
+    "Queens County",
+    "Richmond County"
+  ],
+  "name": "New York City",
+  "reviewed": false,
+  "lastChecked": "2026-09-13",
+  "localities": [
+    {
+      "name": "New York City (all five boroughs)",
+      "covers": "Work performed anywhere in the five boroughs. This is a higher rate set by New York State for the city specifically, not a city ordinance \u2014 so it is enforced by the state labour department.",
+      "facts": [
+        {
+          "topic": "minimumWage.hourly",
+          "value": 17.0,
+          "summary": "The minimum wage in New York City is $17.00 an hour from 1 January 2026 \u2014 higher than the rest of New York State. From 2027 it rises with inflation, tracked against the Northeast CPI-W.",
+          "citation": "New York Labor Law \u00a7 652 (state minimum wage)",
+          "sourceUrl": "https://www.ny.gov/programs/new-york-states-minimum-wage",
+          "sourceAgency": "New York State Dept of Labor",
+          "lastChecked": "2026-09-13",
+          "reviewed": false,
+          "reviewedBy": null,
+          "notes": "Set by state law for the NYC region rather than by a city ordinance. Compiled via web search; the agency page could not be fetched directly from this environment, so re-confirm before counsel review. The precise code section is not confirmed from this environment \u2014 the citation names the ordinance; verify the section number against the source before counsel review."
+        },
+        {
+          "topic": "minimumWage.tippedFoodService",
+          "value": 11.35,
+          "summary": "Tipped food-service workers in New York City must be paid at least $11.35 an hour in cash wages, with a tip credit of up to $5.65. Your tips have to bring you to $17.00 an hour \u2014 if they do not, your employer owes the difference.",
+          "citation": "New York hospitality industry wage order (12 NYCRR pt. 146)",
+          "sourceUrl": "https://www.ny.gov/programs/new-york-states-minimum-wage",
+          "sourceAgency": "New York State Dept of Labor",
+          "lastChecked": "2026-09-13",
+          "reviewed": false,
+          "reviewedBy": null,
+          "notes": "Compiled via web search; the agency page could not be fetched directly from this environment, so re-confirm before counsel review. The precise code section is not confirmed from this environment \u2014 the citation names the ordinance; verify the section number against the source before counsel review."
+        },
+        {
+          "topic": "minimumWage.tippedService",
+          "value": 14.15,
+          "summary": "Other tipped service employees in New York City must be paid at least $14.15 an hour in cash wages, with a tip credit of up to $2.85, and tips must bring you to $17.00 an hour in total.",
+          "citation": "New York hospitality industry wage order (12 NYCRR pt. 146)",
+          "sourceUrl": "https://www.ny.gov/programs/new-york-states-minimum-wage",
+          "sourceAgency": "New York State Dept of Labor",
+          "lastChecked": "2026-09-13",
+          "reviewed": false,
+          "reviewedBy": null,
+          "notes": "Compiled via web search; the agency page could not be fetched directly from this environment, so re-confirm before counsel review. The precise code section is not confirmed from this environment \u2014 the citation names the ordinance; verify the section number against the source before counsel review."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "jurisdiction": "local",
+  "state": "CO",
+  "counties": [
+    "Denver County"
+  ],
+  "name": "Denver",
+  "reviewed": false,
+  "lastChecked": "2026-09-13",
+  "localities": [
+    {
+      "name": "City and County of Denver",
+      "covers": "Work performed inside Denver city limits \u2014 four or more hours in a week. Work outside the city, or merely passing through, is not covered.",
+      "facts": [
+        {
+          "topic": "minimumWage.hourly",
+          "value": 19.29,
+          "summary": "Denver sets its own minimum wage of $19.29 an hour from 1 January 2026, well above the Colorado floor. It covers anyone working four or more hours a week inside the city; passing through Denver does not count.",
+          "citation": "Denver Citywide Minimum Wage Ordinance",
+          "sourceUrl": "https://denvergov.org/Government/Agencies-Departments-Offices/Agencies-Departments-Offices-Directory/Auditors-Office/Denver-Labor/Citywide-Minimum-Wage",
+          "sourceAgency": "Denver Labor, Office of the Auditor",
+          "lastChecked": "2026-09-13",
+          "reviewed": false,
+          "reviewedBy": null,
+          "notes": "Compiled from Denver Labor's published rate via web search; the page could not be fetched directly from this environment, so re-confirm before counsel review. The precise code section is not confirmed from this environment \u2014 the citation names the ordinance; verify the section number against the source before counsel review."
+        },
+        {
+          "topic": "minimumWage.tipped",
+          "value": 16.27,
+          "summary": "The tipped minimum wage for food and beverage workers in Denver is $16.27 an hour in 2026. Tips must make up the difference to $19.29; if they do not, your employer owes it.",
+          "citation": "Denver Citywide Minimum Wage Ordinance",
+          "sourceUrl": "https://denvergov.org/Government/Agencies-Departments-Offices/Agencies-Departments-Offices-Directory/Auditors-Office/Denver-Labor/Citywide-Minimum-Wage",
+          "sourceAgency": "Denver Labor, Office of the Auditor",
+          "lastChecked": "2026-09-13",
+          "reviewed": false,
+          "reviewedBy": null,
+          "notes": "Compiled via web search; the page could not be fetched directly from this environment, so re-confirm before counsel review. The precise code section is not confirmed from this environment \u2014 the citation names the ordinance; verify the section number against the source before counsel review."
+        }
+      ]
+    }
+  ]
+}

@@ -10,7 +10,7 @@ authoritative.
 content/
   _federal.json        # applies everywhere (FLSA, Title VII, ADA, ADEA, EPA, NLRA, FMLA)
   states/<ABBR>.json   # per-state overlay (50 + DC + PR)
-  local/<ABBR>/<x>.json # optional county/city overrides (e.g. local minimum wage)
+  local/<ABBR>/<x>.json # county/city ordinances, keyed to counties[] (see below)
   sources.md           # registry of official .gov source sites per jurisdiction
   index.json           # which files exist (drives the review page)
 ```
@@ -41,6 +41,37 @@ Rules:
 - `reviewed` starts `false`. Counsel flips it to `true` (with `reviewedBy` + date) per datum.
 - `lastChecked` is when the value was last confirmed against the source. Thresholds change
   yearly — anything past a review cadence is re-checked.
+
+## Local files are shaped differently, on purpose
+
+A county is almost never one answer, so `local/<ABBR>/<slug>.json` nests its facts one
+level down, under `localities[]`:
+
+```json
+{
+  "state": "CA",
+  "counties": ["Los Angeles County"],
+  "name": "Los Angeles County",
+  "localities": [
+    { "name": "Unincorporated Los Angeles County",
+      "covers": "Work performed in unincorporated areas of the county — not inside any incorporated city. …",
+      "facts": [ /* same cited-fact shape as above */ ] }
+  ]
+}
+```
+
+- **`counties[]` is the join key** against the county the reader picked, and it must match
+  the app's own `US_COUNTIES` spelling exactly. A typo does not fail loudly — the ordinance
+  simply never matches and never renders, which looks identical to "this county has no
+  local law". `validate-content.mjs` cross-checks it against the app and hard-fails.
+- One file can serve several counties: New York City's `counties[]` lists all five boroughs.
+- **`covers` is required on every locality** and must say, in words, who the ordinance
+  applies to. It is what stops five different rates in one county collapsing into a single
+  wrong number — Los Angeles County's own rate covers unincorporated areas only, and the
+  City of Los Angeles pays *less* than the county around it. The app renders each locality
+  as its own card with this sentence above the figures, and never merges them.
+- `index.json`'s `local{}` is the manifest the app fetches by; the validator keeps it and
+  the files on disk in sync in both directions.
 
 ## Rendering gate
 

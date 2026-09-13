@@ -1,0 +1,120 @@
+{
+  "jurisdiction": "local",
+  "state": "WA",
+  "counties": [
+    "King County"
+  ],
+  "name": "King County",
+  "reviewed": false,
+  "lastChecked": "2026-09-13",
+  "localities": [
+    {
+      "name": "Unincorporated King County",
+      "covers": "Work performed in unincorporated areas of the county \u2014 not inside any incorporated city.",
+      "facts": [
+        {
+          "topic": "minimumWage.hourly",
+          "value": 20.82,
+          "summary": "Unincorporated King County sets its own minimum wage of $20.82 an hour from 1 January 2026, above the Washington state floor.",
+          "citation": "King County Minimum Wage Ordinance",
+          "sourceUrl": "https://kingcounty.gov/en/dept/local-services/governance-leadership/local-government-for-unincorporated-king-county/minimum-wage",
+          "sourceAgency": "King County Dept of Local Services",
+          "lastChecked": "2026-09-13",
+          "reviewed": false,
+          "reviewedBy": null,
+          "notes": "Compiled from the county's published rate via web search; the page could not be fetched directly from this environment, so re-confirm before counsel review. The precise code section is not confirmed from this environment \u2014 the citation names the ordinance; verify the section number against the source before counsel review."
+        }
+      ]
+    },
+    {
+      "name": "Seattle",
+      "covers": "Work performed inside Seattle city limits. Since 1 January 2025 the same rate applies to every employer regardless of size.",
+      "facts": [
+        {
+          "topic": "minimumWage.hourly",
+          "value": 21.3,
+          "summary": "Seattle sets its own minimum wage of $21.30 an hour from 1 January 2026 \u2014 the highest of the King County jurisdictions and far above the state floor. Employer size no longer changes the rate.",
+          "citation": "Seattle Mun. Code ch. 14.19",
+          "sourceUrl": "https://www.seattle.gov/laborstandards/ordinances/minimum-wage",
+          "sourceAgency": "Seattle Office of Labor Standards",
+          "lastChecked": "2026-09-13",
+          "reviewed": false,
+          "reviewedBy": null,
+          "notes": "Adjusts annually by the Seattle-Tacoma-Bellevue CPI-W. Compiled from the agency's published rate via web search; the agency page could not be fetched directly from this environment, so re-confirm before counsel review."
+        }
+      ]
+    },
+    {
+      "name": "Tukwila",
+      "covers": "Work performed inside Tukwila city limits, for employers of any size.",
+      "facts": [
+        {
+          "topic": "minimumWage.hourly",
+          "value": 21.65,
+          "summary": "Tukwila sets its own minimum wage of $21.65 an hour from 1 January 2026, for all employers regardless of size.",
+          "citation": "Tukwila Minimum Wage Ordinance",
+          "sourceUrl": "https://www.lni.wa.gov/workers-rights/wages/minimum-wage/local-minimum-wage-rates",
+          "sourceAgency": "Washington State Dept of Labor & Industries",
+          "lastChecked": "2026-09-13",
+          "reviewed": false,
+          "reviewedBy": null,
+          "notes": "Rate published on Washington L&I's official local-minimum-wage page.  Compiled via web search; the L&I page could not be fetched directly from this environment, so re-confirm before counsel review. The precise code section is not confirmed from this environment \u2014 the citation names the ordinance; verify the section number against the source before counsel review."
+        }
+      ]
+    },
+    {
+      "name": "Renton",
+      "covers": "Work performed inside Renton city limits. The rate depends on employer size; from 1 July 2026 every employer with 15 or more employees pays the same rate.",
+      "facts": [
+        {
+          "topic": "minimumWage.hourly",
+          "value": 21.57,
+          "summary": "Renton sets its own minimum wage of $21.57 an hour in 2026. From 1 July 2026 all employers with at least fifteen employees pay this same rate; smaller employers may pay less, so check your employer's size.",
+          "citation": "Renton Minimum Wage Ordinance",
+          "sourceUrl": "https://www.lni.wa.gov/workers-rights/wages/minimum-wage/local-minimum-wage-rates",
+          "sourceAgency": "Washington State Dept of Labor & Industries",
+          "lastChecked": "2026-09-13",
+          "reviewed": false,
+          "reviewedBy": null,
+          "notes": "Rate published on Washington L&I's official local-minimum-wage page.  Compiled via web search; the L&I page could not be fetched directly from this environment, so re-confirm before counsel review. The precise code section is not confirmed from this environment \u2014 the citation names the ordinance; verify the section number against the source before counsel review."
+        }
+      ]
+    },
+    {
+      "name": "Burien",
+      "covers": "Work performed inside Burien city limits \u2014 but which of two conflicting laws applies is currently before the courts.",
+      "facts": [
+        {
+          "topic": "minimumWage.hourly",
+          "value": 21.63,
+          "summary": "Burien has TWO conflicting minimum-wage laws \u2014 one passed by the city council and one approved by voters as a ballot measure \u2014 and the city has asked King County Superior Court to decide which governs. $21.63 an hour is the reported 2026 figure, but do not rely on it without checking the current state of that case.",
+          "citation": "Burien minimum wage \u2014 city council ordinance and the competing voter initiative",
+          "sourceUrl": "https://www.lni.wa.gov/workers-rights/wages/minimum-wage/local-minimum-wage-rates",
+          "sourceAgency": "Washington State Dept of Labor & Industries",
+          "lastChecked": "2026-09-13",
+          "reviewed": false,
+          "reviewedBy": null,
+          "notes": "Rate published on Washington L&I's official local-minimum-wage page. Genuinely unsettled: two conflicting laws, litigation pending in King County Superior Court. Compiled via web search; the L&I page could not be fetched directly from this environment, so re-confirm before counsel review. The precise code section is not confirmed from this environment \u2014 the citation names the ordinance; verify the section number against the source before counsel review."
+        }
+      ]
+    },
+    {
+      "name": "SeaTac",
+      "covers": "Hospitality and transportation employers inside SeaTac city limits ONLY. Any other industry in SeaTac follows the Washington state rate.",
+      "facts": [
+        {
+          "topic": "minimumWage.hourly",
+          "value": 20.74,
+          "summary": "SeaTac's $20.74 an hour rate for 2026 applies only to hospitality and transportation employers. If you work in SeaTac in any other industry, the Washington state minimum wage applies instead, not this figure.",
+          "citation": "SeaTac Minimum Wage Ordinance (Proposition 1)",
+          "sourceUrl": "https://www.lni.wa.gov/workers-rights/wages/minimum-wage/local-minimum-wage-rates",
+          "sourceAgency": "Washington State Dept of Labor & Industries",
+          "lastChecked": "2026-09-13",
+          "reviewed": false,
+          "reviewedBy": null,
+          "notes": "Rate published on Washington L&I's official local-minimum-wage page. Industry-limited \u2014 do not present as a general city rate. Compiled via web search; the L&I page could not be fetched directly from this environment, so re-confirm before counsel review. The precise code section is not confirmed from this environment \u2014 the citation names the ordinance; verify the section number against the source before counsel review."
+        }
+      ]
+    }
+  ]
+}

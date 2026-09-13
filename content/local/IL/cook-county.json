@@ -1,0 +1,60 @@
+{
+  "jurisdiction": "local",
+  "state": "IL",
+  "counties": [
+    "Cook County"
+  ],
+  "name": "Cook County",
+  "reviewed": false,
+  "lastChecked": "2026-09-13",
+  "localities": [
+    {
+      "name": "Cook County (outside Chicago)",
+      "covers": "Work performed in Cook County outside the City of Chicago, including delivery and driving work within county limits. The county ordinance does not apply inside Chicago, which has its own.",
+      "facts": [
+        {
+          "topic": "minimumWage.hourly",
+          "value": 15.4,
+          "summary": "Cook County sets its own minimum wage of $15.40 an hour from 1 July 2026, above the Illinois floor. It covers hourly, salaried and tipped workers over 18 working in the county \u2014 including people who only drive or make deliveries through it.",
+          "citation": "Cook County Minimum Wage Ordinance",
+          "sourceUrl": "https://www.cookcountyil.gov/agency/commission-human-rights",
+          "sourceAgency": "Cook County Commission on Human Rights",
+          "lastChecked": "2026-09-13",
+          "reviewed": false,
+          "reviewedBy": null,
+          "notes": "Adjusts annually by CPI, capped at 2.5%. Some Cook County municipalities have opted out of the ordinance \u2014 check whether yours has. Compiled via web search and not confirmed against the county page from this environment. The precise code section is not confirmed from this environment \u2014 the citation names the ordinance; verify the section number against the source before counsel review."
+        },
+        {
+          "topic": "minimumWage.tipped",
+          "value": 9.25,
+          "summary": "The tipped minimum wage in Cook County outside Chicago is $9.25 an hour from 1 July 2026. Your tips must bring you up to the full $15.40; if they do not, your employer owes the difference.",
+          "citation": "Cook County Minimum Wage Ordinance",
+          "sourceUrl": "https://www.cookcountyil.gov/agency/commission-human-rights",
+          "sourceAgency": "Cook County Commission on Human Rights",
+          "lastChecked": "2026-09-13",
+          "reviewed": false,
+          "reviewedBy": null,
+          "notes": "Compiled via web search and not confirmed against the county page from this environment. The precise code section is not confirmed from this environment \u2014 the citation names the ordinance; verify the section number against the source before counsel review."
+        }
+      ]
+    },
+    {
+      "name": "Chicago",
+      "covers": "Work performed inside Chicago city limits, for employers with 4 or more employees. Employers with fewer than 4 follow the Illinois state rate.",
+      "facts": [
+        {
+          "topic": "minimumWage.hourly",
+          "value": 17.05,
+          "summary": "Chicago sets its own minimum wage of $17.05 an hour from 1 July 2026 for employers with four or more employees \u2014 well above both the Cook County and Illinois rates. Employers with fewer than four employees follow the state rate instead.",
+          "citation": "Chicago Minimum Wage Ordinance (Chicago Mun. Code \u00a7 6-105-020)",
+          "sourceUrl": "https://www.chicago.gov/city/en/depts/bacp/supp_info/minimumwageinformation.html",
+          "sourceAgency": "Chicago Dept of Business Affairs and Consumer Protection",
+          "lastChecked": "2026-09-13",
+          "reviewed": false,
+          "reviewedBy": null,
+          "notes": "Compiled via web search and not confirmed against the city page from this environment. The precise code section is not confirmed from this environment \u2014 the citation names the ordinance; verify the section number against the source before counsel review."
+        }
+      ]
+    }
+  ]
+}

@@ -73,9 +73,11 @@ try {
   txt = await bodyText();
   assert(/Where in California/i.test(txt), 'picking a state did not advance to the county step');
   assert(await page.$('#onb-county') !== null, 'the labelled county <select> is missing beside the county map');
-  // We hold no local ordinances; the county step has to say so rather than
-  // implying an empty local layer.
-  assert(/don.t hold county or city ordinances/i.test(txt), 'the county step does not disclose that no local ordinances are on file');
+  // The county step states OUR coverage, never the law's. California has local
+  // ordinances on file, so it names the counties it holds and says plainly that a
+  // county missing from that list is a gap in our data, not an absence of local law.
+  assert(/We hold local ordinances for/i.test(txt), 'the county step does not name the counties we hold local law for');
+  assert(/does not mean your county has no ordinance/i.test(txt), 'the county step does not disclaim that missing data means no local law exists');
 
   await page.select('#onb-county', 'Alameda County');
   await new Promise(r => setTimeout(r, 600));

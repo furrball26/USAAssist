@@ -1,0 +1,114 @@
+{
+  "jurisdiction": "local",
+  "state": "CA",
+  "counties": [
+    "Los Angeles County"
+  ],
+  "name": "Los Angeles County",
+  "reviewed": false,
+  "lastChecked": "2026-09-13",
+  "localities": [
+    {
+      "name": "Unincorporated Los Angeles County",
+      "covers": "Work performed in unincorporated areas of the county \u2014 not inside any incorporated city. Most of the county's population lives in a city with its own rate; check your worksite address.",
+      "facts": [
+        {
+          "topic": "minimumWage.hourly",
+          "value": 18.47,
+          "summary": "Unincorporated Los Angeles County sets its own minimum wage of $18.47 an hour from 1 July 2026, above both the California and federal floors. It applies to everyone working in an unincorporated area regardless of immigration status, employer size, or where you live.",
+          "citation": "L.A. County Code \u00a7 8.100.040",
+          "sourceUrl": "https://dcba.lacounty.gov/minimum-wage/",
+          "sourceAgency": "Los Angeles County Dept of Consumer & Business Affairs",
+          "lastChecked": "2026-09-13",
+          "reviewed": false,
+          "reviewedBy": null,
+          "notes": "Adjusts each 1 July by the Los Angeles-area CPI-W. Compiled from the agency's published rate via web search; the agency page could not be fetched directly from this environment, so re-confirm before counsel review."
+        }
+      ]
+    },
+    {
+      "name": "City of Los Angeles",
+      "covers": "Work performed inside Los Angeles city limits \u2014 at least two hours in a week. Separate, higher rates apply to large hotels.",
+      "facts": [
+        {
+          "topic": "minimumWage.hourly",
+          "value": 18.42,
+          "summary": "The City of Los Angeles sets its own minimum wage of $18.42 an hour from 1 July 2026. Note this is slightly below the unincorporated county rate \u2014 which of the two you are owed depends on whether your worksite is inside the city.",
+          "citation": "Los Angeles Minimum Wage Ordinance",
+          "sourceUrl": "https://wagesla.lacity.gov/",
+          "sourceAgency": "Los Angeles Office of Wage Standards",
+          "lastChecked": "2026-09-13",
+          "reviewed": false,
+          "reviewedBy": null,
+          "notes": "Compiled from the agency's published rate via web search; the agency page could not be fetched directly from this environment, so re-confirm before counsel review. The precise code section is not confirmed from this environment \u2014 the citation names the ordinance; verify the section number against the source before counsel review."
+        },
+        {
+          "topic": "minimumWage.hotelWorker",
+          "value": 25.0,
+          "summary": "Hotels with 60 or more guest rooms (50 or more near the airport) must pay a $25.00 cash wage from 1 July 2026, plus $4.25 an hour toward health benefits \u2014 or $29.25 an hour in total if the employer provides no qualifying health benefits.",
+          "citation": "Los Angeles Citywide Hotel Worker Minimum Wage Ordinance",
+          "sourceUrl": "https://wagesla.lacity.gov/",
+          "sourceAgency": "Los Angeles Office of Wage Standards",
+          "lastChecked": "2026-09-13",
+          "reviewed": false,
+          "reviewedBy": null,
+          "notes": "Compiled from the agency's published rate via web search; the agency page could not be fetched directly from this environment, so re-confirm before counsel review. The precise code section is not confirmed from this environment \u2014 the citation names the ordinance; verify the section number against the source before counsel review."
+        }
+      ]
+    },
+    {
+      "name": "Pasadena",
+      "covers": "Work performed inside Pasadena city limits.",
+      "facts": [
+        {
+          "topic": "minimumWage.hourly",
+          "value": 18.57,
+          "summary": "Pasadena sets its own minimum wage of $18.57 an hour from 1 July 2026 \u2014 higher than both the City of Los Angeles and the unincorporated county.",
+          "citation": "Pasadena Minimum Wage Ordinance (Pasadena Mun. Code ch. 5.02)",
+          "sourceUrl": "https://www.cityofpasadena.net/planning/code-compliance/minimum-wage-ordinance/",
+          "sourceAgency": "City of Pasadena",
+          "lastChecked": "2026-09-13",
+          "reviewed": false,
+          "reviewedBy": null,
+          "notes": "Compiled via web search; the city page could not be fetched directly from this environment, so both the rate and this URL need re-confirming before counsel review. The precise code section is not confirmed from this environment \u2014 the citation names the ordinance; verify the section number against the source before counsel review."
+        }
+      ]
+    },
+    {
+      "name": "Santa Monica",
+      "covers": "Work performed inside Santa Monica city limits \u2014 at least two hours in a week.",
+      "facts": [
+        {
+          "topic": "minimumWage.hourly",
+          "value": 18.47,
+          "summary": "Santa Monica sets its own minimum wage of $18.47 an hour from 1 July 2026. Hotel workers in Santa Monica are owed a substantially higher rate.",
+          "citation": "Santa Monica Minimum Wage Ordinance",
+          "sourceUrl": "https://www.santamonica.gov/minimum-wage",
+          "sourceAgency": "City of Santa Monica",
+          "lastChecked": "2026-09-13",
+          "reviewed": false,
+          "reviewedBy": null,
+          "notes": "Compiled from the city's published rate via web search; the page could not be fetched directly from this environment, so re-confirm before counsel review. The precise code section is not confirmed from this environment \u2014 the citation names the ordinance; verify the section number against the source before counsel review."
+        }
+      ]
+    },
+    {
+      "name": "West Hollywood",
+      "covers": "Work performed inside West Hollywood city limits.",
+      "facts": [
+        {
+          "topic": "minimumWage.hourly",
+          "value": 20.25,
+          "summary": "West Hollywood sets its own minimum wage of $20.25 an hour from 1 July 2026 \u2014 among the highest local rates in the United States, and well above the surrounding county.",
+          "citation": "West Hollywood Minimum Wage Ordinance",
+          "sourceUrl": "https://www.weho.org/business/operate-your-business/minimum-wage",
+          "sourceAgency": "City of West Hollywood",
+          "lastChecked": "2026-09-13",
+          "reviewed": false,
+          "reviewedBy": null,
+          "notes": "Compiled from the city's published rate via web search; the page could not be fetched directly from this environment, so re-confirm before counsel review. The precise code section is not confirmed from this environment \u2014 the citation names the ordinance; verify the section number against the source before counsel review."
+        }
+      ]
+    }
+  ]
+}
