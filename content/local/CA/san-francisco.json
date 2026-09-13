@@ -1,0 +1,30 @@
+{
+  "jurisdiction": "local",
+  "state": "CA",
+  "counties": [
+    "San Francisco County"
+  ],
+  "name": "San Francisco",
+  "reviewed": false,
+  "lastChecked": "2026-09-13",
+  "localities": [
+    {
+      "name": "City and County of San Francisco",
+      "covers": "Work performed in San Francisco \u2014 at least two hours in a week. San Francisco is a single consolidated city and county, so there is no separate unincorporated rate.",
+      "facts": [
+        {
+          "topic": "minimumWage.hourly",
+          "value": 19.61,
+          "summary": "San Francisco sets its own minimum wage of $19.61 an hour from 1 July 2026, well above the California floor. It covers anyone who works at least two hours in a week in the city, including temporary and part-time staff.",
+          "citation": "San Francisco Minimum Wage Ordinance (S.F. Admin. Code ch. 12R)",
+          "sourceUrl": "https://www.sf.gov/information--minimum-wage-ordinance",
+          "sourceAgency": "San Francisco Office of Labor Standards Enforcement",
+          "lastChecked": "2026-09-13",
+          "reviewed": false,
+          "reviewedBy": null,
+          "notes": "Compiled from the agency's published rate via web search; the agency page could not be fetched directly from this environment, so re-confirm before counsel review. The precise code section is not confirmed from this environment \u2014 the citation names the ordinance; verify the section number against the source before counsel review."
+        }
+      ]
+    }
+  ]
+}

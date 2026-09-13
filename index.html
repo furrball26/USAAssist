@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-r0NQkK6yCFwvpFWXyNnQIbdO/PWTHpZT15Kll3YtQsg='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-KLb/msJKq7V7RWyRABkAkMvJ+YNhZo3U+TQnYy07LbI='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14181F">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232B3AA8'/%3E%3Ctext x='32' y='47' font-size='42' text-anchor='middle' fill='white' font-family='Georgia,serif'%3E%C2%A7%3C/text%3E%3C/svg%3E">
@@ -657,7 +657,7 @@ if (typeof window !== "undefined" && window.top !== window.self) {
   window.top.location.href = window.self.location.href;
 }
 const CONTENT_BASE = typeof window !== "undefined" && window.CONTENT_BASE || typeof document !== "undefined" && document.querySelector('meta[name="worklaw-content-base"]') && document.querySelector('meta[name="worklaw-content-base"]').getAttribute("content") || "";
-const CONTENT_FALLBACK_BASE = "https://raw.githubusercontent.com/furrball26/USAAssist/39d0a0b0a1f33bb31a88c71b341eaccb63f7161b/";
+const CONTENT_FALLBACK_BASE = "https://raw.githubusercontent.com/furrball26/USAAssist/f1cfa3c82c2da27ea5099b397b7f7c7cff8e6b77/";
 function fetchContentJson(path) {
   return fetch(CONTENT_BASE + path).then((r) => {
     if (!r.ok) throw new Error("http " + r.status);
@@ -772,6 +772,10 @@ function factsInCategory(facts, catKey) {
 }
 function safeUrl(u) {
   return typeof u === "string" && /^https:\/\//i.test(u) ? u : null;
+}
+const MONEY_TOPIC_RE = /^(minimumWage\.(?!coverage$)|overtime\.(computerEmployeeHourly|highlyCompensatedAnnual|salaryFloorWeekly|salaryLevelWeekly|salaryThreshold)$)/;
+function isMoneyTopic(topic) {
+  return MONEY_TOPIC_RE.test(String(topic || ""));
 }
 function factValStr(v) {
   return Array.isArray(v) ? v.join(", ") : v == null ? "" : String(v);
@@ -1015,7 +1019,7 @@ const LABEL_FIT_R = 15;
 function UsaStatePicker({ value, onPick }) {
   const geo = useUsStates();
   const [hovered, setHovered] = useState(null);
-  if (geo === false) return null;
+  if (geo === false) return /* @__PURE__ */ React.createElement("div", { role: "alert", style: css("padding:15px 17px;border-radius:14px;border:2px dashed rgba(20,24,31,.22)") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "The map of the United States couldn\u2019t load. Pick your state from the list below instead \u2014 everything else works normally."));
   if (!geo) return /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Loading the map\u2026");
   const shown = hovered || value || "";
   const [, , vw, vh] = geo.viewBox.split(/\s+/).map(Number);
@@ -1119,7 +1123,8 @@ function StateCountyMap({ stateName, value, onPick }) {
       live = false;
     };
   }, [abbr]);
-  if (!abbr || failed) return null;
+  if (!abbr) return null;
+  if (failed) return /* @__PURE__ */ React.createElement("div", { role: "alert", style: css("padding:15px 17px;border-radius:14px;border:2px dashed rgba(20,24,31,.22)") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "The map of ", stateName, " couldn\u2019t load. Pick your county from the list below instead \u2014 everything else works normally."));
   if (!geo) return /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Loading the ", stateName, " map\u2026");
   const shown = hovered || value || "";
   return /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:8px") }, /* @__PURE__ */ React.createElement(
@@ -1790,6 +1795,8 @@ function App() {
   const [county, setCounty] = useState(() => saved.county || "");
   const [federal, setFederal] = useState(null);
   const [stateData, setStateData] = useState(void 0);
+  const [localData, setLocalData] = useState([]);
+  const [localCounties, setLocalCounties] = useState([]);
   const [contentErr, setContentErr] = useState(false);
   const [stateErr, setStateErr] = useState(false);
   const [wizNode, setWizNode] = useState("start");
@@ -1872,6 +1879,55 @@ function App() {
       ignore = true;
     };
   }, [stateSel]);
+  useEffect(() => {
+    const ab = US_STATE_ABBR[stateSel];
+    if (!ab) {
+      setLocalCounties([]);
+      return;
+    }
+    let ignore = false;
+    fetchContentJson("content/index.json").then((idx) => {
+      if (ignore) return;
+      const seen = [];
+      (idx && idx.local && idx.local[ab] || []).forEach((e) => (e.counties || []).forEach((c) => {
+        if (seen.indexOf(c) < 0) seen.push(c);
+      }));
+      setLocalCounties(seen.sort());
+    }).catch(() => {
+      if (!ignore) setLocalCounties([]);
+    });
+    return () => {
+      ignore = true;
+    };
+  }, [stateSel]);
+  useEffect(() => {
+    const ab = US_STATE_ABBR[stateSel];
+    if (!ab || !county || county === "\u2014") {
+      setLocalData([]);
+      return;
+    }
+    let ignore = false;
+    fetchContentJson("content/index.json").then((idx) => {
+      const entries = (idx && idx.local && idx.local[ab] || []).filter((e) => Array.isArray(e.counties) && e.counties.indexOf(county) >= 0);
+      if (!entries.length) {
+        if (!ignore) setLocalData([]);
+        return null;
+      }
+      return Promise.all(entries.map((e) => fetchContentJson("content/local/" + ab + "/" + e.file).catch(() => null)));
+    }).then((files) => {
+      if (ignore || !files) return;
+      const out = [];
+      files.filter(Boolean).forEach((f) => {
+        (f.localities || []).forEach((loc) => out.push(Object.assign({}, loc, { fileName: f.name })));
+      });
+      setLocalData(out);
+    }).catch(() => {
+      if (!ignore) setLocalData([]);
+    });
+    return () => {
+      ignore = true;
+    };
+  }, [stateSel, county]);
   const nav = useCallback((k) => () => setScreen(k), []);
   const locationLabel = [county && county !== "\u2014" ? county : "", stateSel].filter(Boolean).join(", ") || "Nowhere set yet";
   const showTabs = screen !== "welcome";
@@ -1964,7 +2020,7 @@ function App() {
       ), /* @__PURE__ */ React.createElement("select", { id: "onb-county", value: county && county !== "\u2014" ? county : "", onChange: (e) => {
         if (e.target.value) pickCounty(e.target.value);
       }, style: css("width:100%;padding:15px;border-radius:12px;border:2px solid #14181F;background:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer;appearance:menulist;-webkit-appearance:menulist") }, /* @__PURE__ */ React.createElement("option", { value: "" }, "Select a " + word + " (" + shown.length + (shown.length !== counties.length ? " of " + counties.length : "") + ")"), shown.map((n) => /* @__PURE__ */ React.createElement("option", { key: n, value: n }, n))), q && shown.length === 0 && /* @__PURE__ */ React.createElement("p", { role: "status", style: css("margin:0;font:600 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#B3264F") }, "No ", word, " matches \u201C", countyQuery.trim(), "\u201D."));
-    })(), /* @__PURE__ */ React.createElement("div", { style: css("padding:15px 17px;border-radius:14px;border:2px dashed rgba(20,24,31,.22)") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "We don\u2019t hold county or city ordinances yet \u2014 only federal and ", stName, " law. Many places do add their own minimum wage, sick leave or scheduling rules on top, so check your county and city sites too.")), /* @__PURE__ */ React.createElement(
+    })(), localCounties.length ? /* @__PURE__ */ React.createElement("div", { style: css("padding:15px 17px;border-radius:14px;border:2px solid #136B3C;background:#E8F6EE") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 6px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "We hold local ordinances for ", localCounties.length === 1 ? localCounties[0] : localCounties.slice(0, -1).join(", ") + " and " + localCounties[localCounties.length - 1], "."), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 14px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "Pick one of those and you will see the city and county minimum wages on top of ", stName, " and federal law. For any other county here we only hold ", stName, " and federal law \u2014 that does not mean your county has no ordinance, only that we have not compiled it. Check your county and city sites too.")) : /* @__PURE__ */ React.createElement("div", { style: css("padding:15px 17px;border-radius:14px;border:2px dashed rgba(20,24,31,.22)") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "We hold no county or city ordinances for ", stName, " yet \u2014 only federal and ", stName, " law. Many places add their own minimum wage, sick leave or scheduling rules on top, so check your county and city sites too.")), /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: () => setCounty("\u2014"),
@@ -1981,6 +2037,7 @@ function App() {
       const st = factsInCategory(stFacts, cat.key);
       const fed = factsInCategory(fedFacts, cat.key);
       const tools = EXPLAINERS_BY_CAT[cat.key] || [];
+      const localHere = (localData || []).map((loc) => ({ loc, facts: factsInCategory(loc.facts || [], cat.key) })).filter((x) => x.facts.length);
       return /* @__PURE__ */ React.createElement("div", { style: css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px") }, /* @__PURE__ */ React.createElement(
         "button",
         {
@@ -2011,7 +2068,9 @@ function App() {
           /* @__PURE__ */ React.createElement("span", { style: css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, t.label),
           /* @__PURE__ */ React.createElement("span", { style: css("font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, t.desc)
         )
-      )) : null, stateData && !stReviewed ? /* @__PURE__ */ React.createElement(DraftStateNotice, { stName, extra: "" }) : null, st.length ? /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:12px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:2px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em") }, stName.toUpperCase(), stReviewed ? "" : " (DRAFT)"), st.map((f, i) => factCard(f, i, stAbbr || stName.toUpperCase(), "#EEF1FF"))) : null, fed.length ? /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:12px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:6px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em") }, "FEDERAL \u2014 APPLIES NATIONWIDE"), fed.map((f, i) => factCard(f, i, "FEDERAL", "#F0EDE5"))) : null, !st.length && !fed.length ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Nothing recorded here yet for ", stName, ". That is a gap in our data, not a statement that no rule applies.") : null);
+      )) : null, stateData && !stReviewed ? /* @__PURE__ */ React.createElement(DraftStateNotice, { stName, extra: "" }) : null, localHere.length ? /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:12px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:2px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em") }, "IN AND AROUND ", (county && county !== "\u2014" ? county : stName).toUpperCase()), /* @__PURE__ */ React.createElement("div", { style: css("padding:14px 16px;border-radius:12px;background:#FFF4D6;border:2px solid #14181F") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 6px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Draft \u2014 local guidance is pending attorney review"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "These are separate local laws covering different places in this county, and they often disagree with each other. Which one you are owed depends on the exact address where you work \u2014 read what each says it covers. Local rates also change on a set date each year, so check the official source before relying on a figure.")), localHere.map(
+        ({ loc, facts }, i) => /* @__PURE__ */ React.createElement("div", { key: loc.name + i, style: css("display:flex;flex-direction:column;gap:10px;padding:16px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF") }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 18px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty") }, loc.name), /* @__PURE__ */ React.createElement("p", { style: css("margin:5px 0 0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, loc.covers)), facts.map((f, fi) => factCard(f, loc.name + fi, "LOCAL", "#FFF4D6")))
+      )) : null, st.length ? /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:12px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:2px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em") }, stName.toUpperCase(), stReviewed ? "" : " (DRAFT)"), st.map((f, i) => factCard(f, i, stAbbr || stName.toUpperCase(), "#EEF1FF"))) : null, fed.length ? /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:12px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:6px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em") }, "FEDERAL \u2014 APPLIES NATIONWIDE"), fed.map((f, i) => factCard(f, i, "FEDERAL", "#F0EDE5"))) : null, !st.length && !fed.length ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Nothing recorded here yet for ", stName, ". That is a gap in our data, not a statement that no rule applies.") : null);
     }
     return /* @__PURE__ */ React.createElement("div", { style: css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px") }, /* @__PURE__ */ React.createElement(LocationPill, null), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", { style: css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty") }, "Your rights in ", stName), /* @__PURE__ */ React.createElement("p", { style: css("margin:10px 0 0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "Federal law applies everywhere; ", stName, " rules layer on top. Pick a topic.")), contentErr ? /* @__PURE__ */ React.createElement("p", { role: "alert", style: css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F") }, "Couldn\u2019t load the law dataset. Check your connection and reopen.") : null, !federal && !contentErr ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Loading\u2026") : null, stateData === void 0 ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Loading ", stName, " rules\u2026") : null, stateErr ? /* @__PURE__ */ React.createElement("p", { role: "alert", style: css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F") }, "Couldn\u2019t load ", stName, " rules. Check your connection and reopen \u2014 this is not a confirmation that no extra state protections apply.", fedFacts.length ? " Federal law still applies nationwide." : "") : null, federal || stateData ? /* @__PURE__ */ React.createElement("div", { className: "catgrid" }, LAW_CATEGORIES.map((cat) => {
       const n = factsInCategory(stFacts, cat.key).length + factsInCategory(fedFacts, cat.key).length;
@@ -2124,8 +2183,9 @@ function App() {
     }, style: css("align-self:flex-start;display:flex;align-items:center;gap:4px;min-height:44px;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer") }, /* @__PURE__ */ React.createElement(Icon, { name: "back", size: 18 }), " Leaving a job"), /* @__PURE__ */ React.createElement("h1", { style: css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Is my non-compete enforceable?"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Non-compete law varies a lot by state, and several states have changed their rules recently. This is general information for ", stName, ", not an opinion on your specific agreement \u2014 only an attorney can tell you that."), contentErr ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F") }, "Couldn\u2019t load the rights dataset. Check your connection and reopen.") : null, ncFact ? /* @__PURE__ */ React.createElement(React.Fragment, null, !stReviewed && /* @__PURE__ */ React.createElement(DraftStateNotice, { stName }), factCard(ncFact, 0, stateAbbr || stName.toUpperCase(), "#EEF1FF")) : stateErr ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F") }, "Couldn\u2019t load ", stName, " rules. Check your connection and reopen \u2014 this is not a confirmation that ", stName, " has no non-compete rule.") : stateData === void 0 ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Loading ", stName, " rules\u2026") : /* @__PURE__ */ React.createElement("div", { style: css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#F0EDE5") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 16px/1.5 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "We don\u2019t have a sourced answer for ", stName, " yet. Non-compete law varies a lot by state and is changing \u2014 talk to an employment attorney before assuming your non-compete is (un)enforceable.")), ftcFact && /* @__PURE__ */ React.createElement("div", { style: css("padding:16px 18px;border-radius:14px;border:2px solid #2B3AA8;background:#EEF1FF;display:flex;flex-direction:column;gap:4px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 13px 'IBM Plex Mono',monospace;color:#1B2778;letter-spacing:.04em") }, "FEDERAL \u2014 FTC RULE STATUS"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, ftcFact.summary, " ", src(ftcFact))), /* @__PURE__ */ React.createElement("div", { style: css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 8px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "What courts generally weigh (general information, not applied to your facts)"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "In states that test non-competes for \u201Creasonableness\u201D rather than banning them outright, courts commonly look at: how narrow the ", /* @__PURE__ */ React.createElement("strong", null, "geographic scope"), " is, how long the ", /* @__PURE__ */ React.createElement("strong", null, "duration"), " runs, whether the employer has a genuine ", /* @__PURE__ */ React.createElement("strong", null, "legitimate business interest"), " to protect (like real trade secrets, not just avoiding competition), and whether you received real ", /* @__PURE__ */ React.createElement("strong", null, "consideration"), " (something of value, like a new job offer or a raise) in exchange for signing. This is a general description of common factors, not a scoring of your specific agreement.")), /* @__PURE__ */ React.createElement("div", { style: css("padding:16px;border-radius:14px;background:#F0EDE5;border:2px solid #14181F") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "This is legal information, not legal advice, and it is not an opinion on whether your specific non-compete is enforceable. An employment attorney licensed in ", stName, " can review your actual agreement.")), /* @__PURE__ */ React.createElement("button", { onClick: nav("agencies"), className: "hoverfx", style: css("align-self:flex-start;min-height:44px;padding:12px 16px;border-radius:12px;border:2px solid #2B3AA8;background:#fff;color:#2B3AA8;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:6px") }, "Find a lawyer ", /* @__PURE__ */ React.createElement(Icon, { name: "chevron-forward", size: 15 })));
   };
   const factCard = (f, i, scopeLabel, scopeTone) => {
-    const val = factValStr(f.value);
-    const showVal = val && typeof f.value === "number";
+    const isNum = typeof f.value === "number";
+    const val = isNum && isMoneyTopic(f.topic) ? money(f.value) : factValStr(f.value);
+    const showVal = val && isNum;
     return /* @__PURE__ */ React.createElement("div", { key: scopeLabel + i, style: css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 6px;font:600 13px 'IBM Plex Mono',monospace;color:#4A5162;letter-spacing:.04em") }, topicKicker(f.topic)), /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 14px;font:400 17px/1.55 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, f.summary), /* @__PURE__ */ React.createElement("div", { style: css("padding:13px 14px;border-radius:12px;background:#F0EDE5;border:2px solid rgba(20,24,31,.14)") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 8px;font:700 12px 'IBM Plex Mono',monospace;color:#4A5162;letter-spacing:.06em") }, "THE LAW"), showVal ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 8px;font:700 19px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, val) : null, f.citation ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 4px;font:600 14px/1.45 'IBM Plex Mono',monospace;color:#1B2778;overflow-wrap:anywhere") }, f.citation) : null, f.sourceAgency ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 13px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, f.sourceAgency) : null, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px") }, /* @__PURE__ */ React.createElement("span", { style: css("padding:7px 11px;border-radius:8px;background:" + scopeTone + ";border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace;color:#14181F") }, scopeLabel), safeUrl(f.sourceUrl) ? /* @__PURE__ */ React.createElement("a", { href: safeUrl(f.sourceUrl), target: "_blank", rel: "noopener noreferrer", className: "hoverfx", "aria-label": "Read the official text of " + (f.citation || f.topic) + " (opens in a new tab)", style: css("display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:7px 11px;border-radius:8px;background:#fff;border:2px solid #2B3AA8;font:600 13px 'IBM Plex Mono',monospace;color:#2B3AA8;text-decoration:none") }, "Read the official text \u2197") : null)));
   };
   const RightsLib = () => {

@@ -237,7 +237,7 @@ const CONTENT_BASE = (typeof window !== 'undefined' && window.CONTENT_BASE)
 // SHA-pinned fallback source for the same content/ path, tried once if the primary
 // CONTENT_BASE fetch fails (network error or non-2xx) before surfacing the error state.
 // Bump this SHA as part of routine maintenance so it stays a recent known-good commit.
-const CONTENT_FALLBACK_BASE = 'https://raw.githubusercontent.com/furrball26/USAAssist/39d0a0b0a1f33bb31a88c71b341eaccb63f7161b/';
+const CONTENT_FALLBACK_BASE = 'https://raw.githubusercontent.com/furrball26/USAAssist/f1cfa3c82c2da27ea5099b397b7f7c7cff8e6b77/';
 function fetchContentJson(path){
   return fetch(CONTENT_BASE + path)
     .then(r => { if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
@@ -311,6 +311,12 @@ function factsInCategory(facts, catKey){
 // Only ever render an https:// URL as an href — guards against a malformed/malicious
 // javascript:, data:, or other scheme reaching an <a href> from content data.
 function safeUrl(u){ return (typeof u === 'string' && /^https:\/\//i.test(u)) ? u : null; }
+// Which numeric fact values are DOLLARS rather than counts. Every minimumWage topic is
+// money except `coverage`, which is an employee-count threshold ("4 or more employees"),
+// and the overtime salary tests are money too. Getting this wrong in either direction is
+// visible and wrong — "$4" for an employee count, or a bare "18.47" for an hourly rate.
+const MONEY_TOPIC_RE = /^(minimumWage\.(?!coverage$)|overtime\.(computerEmployeeHourly|highlyCompensatedAnnual|salaryFloorWeekly|salaryLevelWeekly|salaryThreshold)$)/;
+function isMoneyTopic(topic){ return MONEY_TOPIC_RE.test(String(topic || '')); }
 function factValStr(v){ return Array.isArray(v) ? v.join(', ') : (v == null ? '' : String(v)); }
 function factByTopic(facts, topic){ return (facts || []).find(f => f.topic === topic); }
 function factsByPrefix(facts, prefix){ return (facts || []).filter(f => String(f.topic || '').split('.')[0] === prefix); }
@@ -701,7 +707,17 @@ const LABEL_FIT_R = 15;          // inscribed radius (viewBox units) a 2-char la
 function UsaStatePicker({ value, onPick }) {
   const geo = useUsStates();
   const [hovered, setHovered] = useState(null);
-  if (geo === false) return null;      // select below still works
+  // A failed map used to `return null`, which rendered nothing at all — the screen
+  // then showed only the <select> below and looked like a deliberate design choice
+  // rather than a broken fetch. Say it plainly instead: the control that still works
+  // is right underneath, and a silent absence is indistinguishable from "there is no
+  // map", which is what made the GitHub Pages Jekyll failure (see .nojekyll) so hard
+  // to spot from the outside.
+  if (geo === false) return (
+    <div role="alert" style={css("padding:15px 17px;border-radius:14px;border:2px dashed rgba(20,24,31,.22)")}>
+      <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>The map of the United States couldn’t load. Pick your state from the list below instead — everything else works normally.</p>
+    </div>
+  );
   if (!geo) return <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Loading the map…</p>;
   const shown = hovered || value || '';
   const [, , vw, vh] = geo.viewBox.split(/\s+/).map(Number);
@@ -798,7 +814,14 @@ function StateCountyMap({ stateName, value, onPick }) {
     return () => { live = false; };
   }, [abbr]);
 
-  if (!abbr || failed) return null;
+  if (!abbr) return null;
+  // Same reasoning as the national map: a silent null here left the county <select>
+  // standing alone and looking intentional.
+  if (failed) return (
+    <div role="alert" style={css("padding:15px 17px;border-radius:14px;border:2px dashed rgba(20,24,31,.22)")}>
+      <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>The map of {stateName} couldn’t load. Pick your county from the list below instead — everything else works normally.</p>
+    </div>
+  );
   if (!geo) return (
     <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Loading the {stateName} map…</p>
   );
@@ -1765,6 +1788,16 @@ function App(){
   const [county, setCounty] = useState(() => saved.county || '');
   const [federal, setFederal] = useState(null);
   const [stateData, setStateData] = useState(undefined); // undefined = loading, null = none, object = loaded
+  // County and city ordinances for the selected county. A county almost never has one
+  // answer — Los Angeles County contains five different minimum wages and the county's
+  // own covers only unincorporated areas — so this is an ARRAY of localities, each
+  // carrying its own `covers` sentence. [] means "we hold none for this county", which
+  // is not the same as "none exist"; the UI says so.
+  const [localData, setLocalData] = useState([]);
+  // Which counties in the selected state we hold ANY local ordinance for. Drives the
+  // county step's coverage note: telling someone up front whether picking their county
+  // will add anything is more useful than a blanket disclaimer either way.
+  const [localCounties, setLocalCounties] = useState([]);
   const [contentErr, setContentErr] = useState(false);
   const [stateErr, setStateErr] = useState(false); // true = state dataset fetch failed (distinct from "no extra state rule")
   // Self-check (Wizard) position. Transient: a half-finished "am I exempt?"
@@ -1856,6 +1889,52 @@ function App(){
       .catch(() => { if (!ignore) { setStateData(null); setStateErr(true); } });
     return () => { ignore = true; };
   }, [stateSel]);
+
+  // Local ordinances, keyed off state AND county. Fetched through content/index.json's
+  // local{} manifest rather than by guessing a filename: the manifest says which counties
+  // each file covers, so one file can serve five boroughs (New York City) without five
+  // copies of it. A failure here is deliberately quiet — local law is an addition to what
+  // is already on screen, and a missing one must never look like "no local law exists",
+  // which is why the UI states our coverage in words rather than inferring it from [].
+  useEffect(() => {
+    const ab = US_STATE_ABBR[stateSel];
+    if (!ab) { setLocalCounties([]); return; }
+    let ignore = false;
+    fetchContentJson('content/index.json')
+      .then(idx => {
+        if (ignore) return;
+        const seen = [];
+        ((idx && idx.local && idx.local[ab]) || []).forEach(e =>
+          (e.counties || []).forEach(c => { if (seen.indexOf(c) < 0) seen.push(c); }));
+        setLocalCounties(seen.sort());
+      })
+      .catch(() => { if (!ignore) setLocalCounties([]); });
+    return () => { ignore = true; };
+  }, [stateSel]);
+
+  useEffect(() => {
+    const ab = US_STATE_ABBR[stateSel];
+    if (!ab || !county || county === '—') { setLocalData([]); return; }
+    let ignore = false;
+    fetchContentJson('content/index.json')
+      .then(idx => {
+        const entries = ((idx && idx.local && idx.local[ab]) || [])
+          .filter(e => Array.isArray(e.counties) && e.counties.indexOf(county) >= 0);
+        if (!entries.length) { if (!ignore) setLocalData([]); return null; }
+        return Promise.all(entries.map(e =>
+          fetchContentJson('content/local/' + ab + '/' + e.file).catch(() => null)));
+      })
+      .then(files => {
+        if (ignore || !files) return;
+        const out = [];
+        files.filter(Boolean).forEach(f => {
+          (f.localities || []).forEach(loc => out.push(Object.assign({}, loc, { fileName: f.name })));
+        });
+        setLocalData(out);
+      })
+      .catch(() => { if (!ignore) setLocalData([]); });
+    return () => { ignore = true; };
+  }, [stateSel, county]);
 
   const nav = useCallback(k => () => setScreen(k), []);
 
@@ -2020,12 +2099,19 @@ function App(){
             </>
           );
         })()}
-        {/* Said plainly, because the alternative is implying a local layer
-            exists and is empty for this user — which is a different and
-            false claim. */}
-        <div style={css("padding:15px 17px;border-radius:14px;border:2px dashed rgba(20,24,31,.22)")}>
-          <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>We don’t hold county or city ordinances yet — only federal and {stName} law. Many places do add their own minimum wage, sick leave or scheduling rules on top, so check your county and city sites too.</p>
-        </div>
+        {/* States our coverage as a fact about US, not about the law. Plenty of
+            counties have their own ordinances we simply have not compiled, and
+            an empty result must never read as "no local law exists here". */}
+        {localCounties.length ?
+          <div style={css("padding:15px 17px;border-radius:14px;border:2px solid #136B3C;background:#E8F6EE")}>
+            <p style={css("margin:0 0 6px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>We hold local ordinances for {localCounties.length === 1 ? localCounties[0] : localCounties.slice(0, -1).join(', ') + ' and ' + localCounties[localCounties.length - 1]}.</p>
+            <p style={css("margin:0;font:400 14px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>Pick one of those and you will see the city and county minimum wages on top of {stName} and federal law. For any other county here we only hold {stName} and federal law — that does not mean your county has no ordinance, only that we have not compiled it. Check your county and city sites too.</p>
+          </div>
+          :
+          <div style={css("padding:15px 17px;border-radius:14px;border:2px dashed rgba(20,24,31,.22)")}>
+            <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>We hold no county or city ordinances for {stName} yet — only federal and {stName} law. Many places add their own minimum wage, sick leave or scheduling rules on top, so check your county and city sites too.</p>
+          </div>
+        }
         <button onClick={() => setCounty('—')} className="hoverfx"
           style={css("align-self:flex-start;min-height:44px;padding:12px 16px;border-radius:12px;border:2px solid #14181F;background:#fff;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer")}>Skip — show me {stName} law</button>
       </div>
@@ -2038,6 +2124,13 @@ function App(){
       const st = factsInCategory(stFacts, cat.key);
       const fed = factsInCategory(fedFacts, cat.key);
       const tools = EXPLAINERS_BY_CAT[cat.key] || [];
+      // Localities with something to say about THIS topic. Kept as separate cards
+      // rather than merged into one list: two of them routinely disagree (the City of
+      // Los Angeles pays less than the unincorporated county around it), and which one
+      // is yours depends on an address we deliberately never ask for.
+      const localHere = (localData || [])
+        .map(loc => ({ loc, facts: factsInCategory(loc.facts || [], cat.key) }))
+        .filter(x => x.facts.length);
       return (
         <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
           <button onClick={() => setLawCat(null)} aria-label="Back to all topics"
@@ -2060,6 +2153,31 @@ function App(){
             </div> : null}
 
           {stateData && !stReviewed ? <DraftStateNotice stName={stName} extra="" /> : null}
+
+          {/* Local first: it is the most specific law we hold, and where it exists it
+              usually pays more than the state floor. Ordered most-specific-outward
+              (local -> state -> federal) so the most likely answer is read first. */}
+          {localHere.length ?
+            <div style={css("display:flex;flex-direction:column;gap:12px")}>
+              <p style={css("margin:2px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em")}>IN AND AROUND {(county && county !== '—' ? county : stName).toUpperCase()}</p>
+              {/* Said once, above the cards, because it governs how to read all of
+                  them: these are different places with different rules, not one
+                  number with variations. */}
+              <div style={css("padding:14px 16px;border-radius:12px;background:#FFF4D6;border:2px solid #14181F")}>
+                <p style={css("margin:0 0 6px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Draft — local guidance is pending attorney review</p>
+                <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>These are separate local laws covering different places in this county, and they often disagree with each other. Which one you are owed depends on the exact address where you work — read what each says it covers. Local rates also change on a set date each year, so check the official source before relying on a figure.</p>
+              </div>
+              {localHere.map(({ loc, facts }, i) =>
+                <div key={loc.name + i} style={css("display:flex;flex-direction:column;gap:10px;padding:16px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF")}>
+                  <div>
+                    <p style={css("margin:0;font:700 18px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{loc.name}</p>
+                    <p style={css("margin:5px 0 0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{loc.covers}</p>
+                  </div>
+                  {facts.map((f, fi) => factCard(f, loc.name + fi, 'LOCAL', '#FFF4D6'))}
+                </div>
+              )}
+            </div> : null}
+
           {st.length ?
             <div style={css("display:flex;flex-direction:column;gap:12px")}>
               <p style={css("margin:2px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em")}>{stName.toUpperCase()}{stReviewed ? '' : ' (DRAFT)'}</p>
@@ -2391,8 +2509,9 @@ function App(){
      So the block cites and links, and says plainly that the source is where
      the actual text lives. */
   const factCard = (f, i, scopeLabel, scopeTone) => {
-    const val = factValStr(f.value);
-    const showVal = val && typeof f.value === 'number';
+    const isNum = typeof f.value === 'number';
+    const val = isNum && isMoneyTopic(f.topic) ? money(f.value) : factValStr(f.value);
+    const showVal = val && isNum;
     return (
       <div key={scopeLabel + i} style={css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff")}>
         <p style={css("margin:0 0 6px;font:600 13px 'IBM Plex Mono',monospace;color:#4A5162;letter-spacing:.04em")}>{topicKicker(f.topic)}</p>

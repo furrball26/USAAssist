@@ -52,5 +52,63 @@
     "WI",
     "WY"
   ],
-  "note": "states[] lists jurisdictions with an authored data file. reviewed:true (per file) gates authoritative rendering in the app."
+  "note": "states[] lists jurisdictions with an authored data file. reviewed:true (per file) gates authoritative rendering in the app. local{} maps a state abbreviation to the county/city ordinance files under content/local/<ABBR>/; counties[] on each entry is matched against the user's selected county.",
+  "local": {
+    "CA": [
+      {
+        "file": "los-angeles-county.json",
+        "name": "Los Angeles County",
+        "counties": [
+          "Los Angeles County"
+        ]
+      },
+      {
+        "file": "san-francisco.json",
+        "name": "San Francisco",
+        "counties": [
+          "San Francisco County"
+        ]
+      }
+    ],
+    "CO": [
+      {
+        "file": "denver-county.json",
+        "name": "Denver",
+        "counties": [
+          "Denver County"
+        ]
+      }
+    ],
+    "IL": [
+      {
+        "file": "cook-county.json",
+        "name": "Cook County",
+        "counties": [
+          "Cook County"
+        ]
+      }
+    ],
+    "NY": [
+      {
+        "file": "new-york-city.json",
+        "name": "New York City",
+        "counties": [
+          "Bronx County",
+          "Kings County",
+          "New York County",
+          "Queens County",
+          "Richmond County"
+        ]
+      }
+    ],
+    "WA": [
+      {
+        "file": "king-county.json",
+        "name": "King County",
+        "counties": [
+          "King County"
+        ]
+      }
+    ]
+  }
 }

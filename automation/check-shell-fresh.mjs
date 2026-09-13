@@ -80,7 +80,16 @@ if (!appScriptTagMatch) {
   if (!integrityMatch) {
     problems.push('assets/app.js <script> tag has no integrity="sha384-…" attribute (no SRI)');
   } else {
-    const appJs = readFileSync(ROOT + 'assets/app.js');
+    // Hash the COMMITTED assets/app.js, not the working tree's — render-shell.mjs reads
+    // its inputs at the pinned commit (so an uncommitted edit can never reach a deploy),
+    // and this check has to use the same basis or it compares two different things. It
+    // did: `npm run verify` rebuilds assets/app.js at step 2, so any uncommitted change
+    // to index.dev.html made the tree's hash diverge from the one render-shell embeds.
+    //
+    // Staleness of the committed artifacts against committed source is not lost — that is
+    // check-artifacts-fresh's job, which runs first in the chain. The invariant here is
+    // narrower and worth stating: the shell always describes a commit.
+    const appJs = execFileSync('git', ['show', 'HEAD:assets/app.js'], { cwd: ROOT, maxBuffer: 64 * 1024 * 1024 });
     const freshHash = 'sha384-' + createHash('sha384').update(appJs).digest('base64');
     if (integrityMatch[1] !== freshHash) {
       problems.push(`assets/app.js <script> integrity hash is stale — tag has "${integrityMatch[1]}", a fresh hash of the committed assets/app.js is "${freshHash}"`);
