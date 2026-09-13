@@ -30,12 +30,44 @@ const args = Object.fromEntries(
   })
 );
 
-const sha = args.sha || execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT }).toString().trim();
+const headSha = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT }).toString().trim();
+const sha = args.sha || headSha;
 if (!/^[0-9a-f]{40}$/i.test(sha)) {
   throw new Error(`render-shell: "${sha}" does not look like a full 40-char commit SHA`);
 }
 
-const template = readFileSync(ROOT + 'vercel/index.html', 'utf8');
+/*
+ * Read a file AS OF `sha`, not as it sits in the working tree.
+ *
+ * This used to read all three inputs from disk while pinning the jsDelivr URL to
+ * --sha, which made the README's rollback procedure ("render the shell pointed at
+ * the old SHA") actively dangerous: the SRI `integrity` digest below is computed
+ * over assets/app.js, so a rollback render produced a shell whose hash was the
+ * CURRENT bundle's while its URL served the OLD one. The hashes would not match
+ * and the browser would refuse to execute the script at all — a blank page, from
+ * the one procedure you reach for when the site is already broken.
+ *
+ * When --sha is HEAD (the normal deploy) this is identical to reading from disk,
+ * except that it ignores uncommitted edits — which is also correct: what ships
+ * must be a commit, or the deployed shell corresponds to no reviewable state.
+ */
+function readAt(relPath, encoding) {
+  if (sha === headSha) {
+    // Still go through git, so an uncommitted edit can never reach a deploy.
+    try {
+      return execFileSync('git', ['show', `${sha}:${relPath}`], { cwd: ROOT, maxBuffer: 64 * 1024 * 1024, encoding });
+    } catch (e) {
+      throw new Error(`render-shell: ${relPath} is not committed at ${sha.slice(0, 7)} — commit it before deploying (${e.message.split('\n')[0]})`);
+    }
+  }
+  try {
+    return execFileSync('git', ['show', `${sha}:${relPath}`], { cwd: ROOT, maxBuffer: 64 * 1024 * 1024, encoding });
+  } catch (e) {
+    throw new Error(`render-shell: could not read ${relPath} at ${sha.slice(0, 7)} (${e.message.split('\n')[0]})`);
+  }
+}
+
+const template = readAt('vercel/index.html', 'utf8');
 if (!template.includes('{{SHA}}')) {
   throw new Error('render-shell: vercel/index.html has no {{SHA}} placeholder — template drifted');
 }
@@ -44,7 +76,7 @@ if (!template.includes('{{SHA}}')) {
 // index.dev.html is the single source of truth, so inject its <style> block into the shell
 // at render time — this makes the committed template's <style> non-authoritative and prevents
 // CSS drift between the app and the worklaw.app shell.
-const dev = readFileSync(ROOT + 'index.dev.html', 'utf8');
+const dev = readAt('index.dev.html', 'utf8');
 const devStyle = (dev.match(/<style>[\s\S]*?<\/style>/) || [])[0];
 if (!devStyle) throw new Error('render-shell: could not find the app <style> block in index.dev.html');
 if (!/<style>[\s\S]*?<\/style>/.test(template)) throw new Error('render-shell: shell template has no <style> block to sync');
@@ -57,7 +89,7 @@ const withStyle = template.replace(/<style>[\s\S]*?<\/style>/, () => devStyle);
 // sha384 digest of the *committed* assets/app.js and inject it as a real `integrity`
 // attribute at render time, so the browser refuses to execute anything that doesn't hash
 // match exactly what's in this repo at this commit.
-const appJs = readFileSync(ROOT + 'assets/app.js');
+const appJs = readAt('assets/app.js', null); // Buffer — hashed for SRI below
 const appJsIntegrity = 'sha384-' + createHash('sha384').update(appJs).digest('base64');
 const APP_SCRIPT_RE = /<script src="https:\/\/cdn\.jsdelivr\.net\/gh\/furrball26\/USAAssist@\{\{SHA\}\}\/assets\/app\.js"><\/script>/;
 if (!APP_SCRIPT_RE.test(withStyle)) {
