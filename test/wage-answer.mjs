@@ -55,6 +55,24 @@ const CA = { stateFacts: F(16.90), fedFacts: F(7.25), stName: 'California' };
      'a city paying LESS than the state does not win just because it is more local');
 }
 {
+  /* Nineteen states set a minimum exactly EQUAL to the federal floor. The first
+     version struck the federal row through and explained that "a higher one
+     applies to you" - false in every one of them, since nothing higher applies.
+     A tie is not a loss. */
+  const TX = { stateFacts: F(7.25), fedFacts: F(7.25), stName: 'Texas' };
+  const r = resolveMinimumWage({ ...TX, cityFacts: null, otherLocal: [], cityName: '' });
+  const fed = r.layers.find(l => l.key === 'federal');
+  ok(fed.tied === true && fed.beaten === false,
+     'a state matching the federal floor leaves federal tied, not beaten');
+  ok(r.anyBeaten === false,
+     'and nothing is reported as beaten, so the screen cannot claim a higher rate applies');
+}
+{
+  const r = resolveMinimumWage({ ...CA, cityFacts: null, otherLocal: [], cityName: '' });
+  ok(r.anyBeaten === true && r.layers.find(l => l.key === 'federal').beaten === true,
+     'where a higher rate really does apply, the lower one is still marked beaten');
+}
+{
   const r = resolveMinimumWage({ ...CA, cityFacts: null, otherLocal: [L('West Hollywood', 20.25)], cityName: '' });
   ok(r.winner.name === 'California' && r.unresolvedLocal === true,
      'with no city chosen the local layer is reported unresolved, never assumed');
@@ -91,13 +109,15 @@ await new Promise(r => server.listen(0, r));
 const BASE = `http://127.0.0.1:${server.address().port}/index.html`;
 const browser = await puppeteer.launch({ executablePath: resolveChromePath(), headless: true, args: ['--no-sandbox'] });
 
-const openPay = async (city) => {
+const openPay = async (city, state) => {
   const pg = await browser.newPage();
   const errs = [];
   pg.on('pageerror', e => errs.push('PAGEERROR: ' + e.message));
   pg.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE: ' + m.text()); });
   await pg.setViewport({ width: 390, height: 900 });
-  await gotoApp(pg, BASE, { place: { state: 'California', county: 'Los Angeles County', city } });
+  const st = state || 'California';
+  const county = st === 'California' ? 'Los Angeles County' : 'Harris County';
+  await gotoApp(pg, BASE, { place: { state: st, county, city } });
   await new Promise(r => setTimeout(r, 1200));
   await pg.evaluate(() => {
     const b = [...document.querySelectorAll('button')].find(el => /^Pay & overtime/.test((el.textContent || '').trim()));
@@ -130,6 +150,15 @@ try {
        'and is told plainly that a higher local rate may be theirs');
     ok(/\$20\.25/.test(text), 'the higher local rates are named so the gap is visible');
     ok(/Tell us which one you work in/i.test(text), 'with a way to resolve it');
+  }
+  {
+    // The 19-state case end to end: equal figures must not be struck through,
+    // and the explanation must not claim something higher applies.
+    const { text } = await openPay('\u2014', 'Texas');
+    ok(/Every minimum wage that reaches your worksite is the same amount/.test(text),
+       'Texas, whose state minimum equals the federal floor, says the figures are the same');
+    ok(!/a higher one applies to you/.test(text),
+       'and does not claim a higher rate applies when none does');
   }
 } finally {
   await browser.close();

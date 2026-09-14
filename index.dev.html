@@ -1544,7 +1544,17 @@ function resolveMinimumWage({ cityFacts, otherLocal, stateFacts, fedFacts, stNam
   if (layers.length < 2) return null;
 
   const winner = layers.reduce((a, b) => (b.fact.value > a.fact.value ? b : a));
-  layers.forEach(l => { l.winner = l === winner; });
+  /* `tied` matters as much as `winner`. Nineteen states set a minimum wage
+     exactly EQUAL to the federal floor, and the first version struck the
+     federal row through and explained that "a higher one applies to you" —
+     false in every one of those states, because nothing higher applies. A
+     layer is only beaten if something actually pays more than it. */
+  layers.forEach(l => {
+    l.winner = l === winner;
+    l.tied = !l.winner && l.fact.value === winner.fact.value;
+    l.beaten = l.fact.value < winner.fact.value;
+  });
+  const anyBeaten = layers.some(l => l.beaten);
 
   /* Localities we hold for this county that are NOT the reader's, and that pay
      MORE than the figure we resolved. Only those are worth interrupting for:
@@ -1555,7 +1565,7 @@ function resolveMinimumWage({ cityFacts, otherLocal, stateFacts, fedFacts, stNam
     .filter(x => x.fact && x.fact.value > winner.fact.value)
     .sort((a, b) => b.fact.value - a.fact.value);
 
-  return { layers, winner, nearby, unresolvedLocal: !cityFact && nearby.length > 0 };
+  return { layers, winner, nearby, anyBeaten, unresolvedLocal: !cityFact && nearby.length > 0 };
 }
 
 function money(n){ return '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 }); }
@@ -2498,14 +2508,19 @@ function App(){
                   <div key={l.key} style={css("display:flex;align-items:center;gap:11px;padding:11px 14px;min-height:56px;" + (i ? 'border-top:1px solid rgba(20,24,31,.12);' : '') + (l.winner ? 'background:#F3FBF8' : ''))}>
                     <span style={css("flex:1;min-width:0;display:flex;flex-direction:column;gap:1px")}>
                       <span style={css("font:" + (l.winner ? '800' : '500') + " 16px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{l.name}</span>
-                      <span style={css("font:400 13px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{l.kind}</span>
+                      <span style={css("font:400 13px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{l.kind}{l.tied ? ' — the same amount' : ''}</span>
                     </span>
-                    <span style={css("flex:none;font:" + (l.winner ? "800 21px" : "500 17px") + " 'Atkinson Hyperlegible',sans-serif;color:" + (l.winner ? cat.edge : '#6B7280') + (l.winner ? '' : ';text-decoration:line-through'))}>{money(l.fact.value)}</span>
+                    {/* Struck through only if something genuinely pays more. A
+                        tied figure is not a loser, and marking it as one told
+                        19 states' readers something untrue. */}
+                    <span style={css("flex:none;font:" + (l.winner ? "800 21px" : "500 17px") + " 'Atkinson Hyperlegible',sans-serif;color:" + (l.winner ? cat.edge : (l.tied ? '#3A4150' : '#6B7280')) + (l.beaten ? ';text-decoration:line-through' : ''))}>{money(l.fact.value)}</span>
                   </div>
                 )}
               </div>
               <p style={css("margin:0;padding:12px 14px 13px;border-top:2px solid " + cat.edge + ";font:500 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty")}>
-                You must be paid the highest minimum wage that reaches where you work. The others are struck through because a higher one applies to you, not because they are wrong.
+                {wage.anyBeaten
+                  ? 'You must be paid the highest minimum wage that reaches where you work. The others are struck through because a higher one applies to you, not because they are wrong.'
+                  : 'Every minimum wage that reaches your worksite is the same amount, so this is what you are owed either way.'}
               </p>
             </div> : null}
 
