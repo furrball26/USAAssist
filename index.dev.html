@@ -2465,9 +2465,22 @@ function App(){
         <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
           <button onClick={() => setLawCat(null)} aria-label="Back to all topics"
             style={css("align-self:flex-start;display:flex;align-items:center;gap:4px;min-height:44px;background:none;border:none;padding:10px 12px;margin:-8px 0 -8px -10px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}><Icon name="back" size={18} /> All topics</button>
+          {/* The domain's colour follows the reader in from the grid. Without it
+              the six-colour system was a property of one screen rather than a
+              way to know where you are. */}
           <div>
             <span style={css("font:600 13px 'IBM Plex Mono',monospace;letter-spacing:.05em;color:#4A5162")}>{locationLabel.toUpperCase()}</span>
-            <h1 style={css("margin:8px 0 0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{cat.label}</h1>
+            {/* The icon carries the domain colour beside the heading rather than
+                in a pill above it — a coloured chip repeating the same words as
+                the h1 underneath is the label twice, which is the duplication
+                this redesign has been removing everywhere else. Colour + icon +
+                word, once (SC 1.4.1). */}
+            <div style={css("display:flex;align-items:center;gap:11px;margin:10px 0 0")}>
+              <span style={css('flex:none;display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:12px;border:2px solid ' + cat.edge + ';background:' + cat.fill + ';color:' + cat.on)}>
+                <Icon name={cat.icon} size={24} />
+              </span>
+              <h1 style={css("margin:0;font:700 26px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{cat.label}</h1>
+            </div>
             <p style={css("margin:8px 0 0;font:400 16px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{cat.blurb}</p>
           </div>
 
@@ -2903,7 +2916,11 @@ function App(){
     const showVal = val && isNum;
     return (
       <div key={scopeLabel + i} style={css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff")}>
-        <p style={css("margin:0 0 6px;font:600 13px 'IBM Plex Mono',monospace;color:#4A5162;letter-spacing:.04em")}>{topicKicker(f.topic)}</p>
+        {/* The rule's own name. This used to be topicKicker(), which returns the
+            topic PREFIX — so every card under Discrimination read
+            "DISCRIMINATION" and two different rules were labelled identically.
+            The reader could not tell which card answered which question. */}
+        <p style={css("margin:0 0 6px;font:700 14px/1.3 'Atkinson Hyperlegible',sans-serif;color:#4A5162;text-wrap:pretty")}>{topicLabel(f.topic)}</p>
         <p style={css("margin:0 0 14px;font:400 17px/1.55 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{f.summary}</p>
         <div style={css("padding:13px 14px;border-radius:12px;background:#F0EDE5;border:2px solid rgba(20,24,31,.14)")}>
           <p style={css("margin:0 0 8px;font:700 12px 'IBM Plex Mono',monospace;color:#4A5162;letter-spacing:.06em")}>THE LAW</p>
