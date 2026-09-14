@@ -64,8 +64,20 @@ try {
   // Both ways in, always: the map for people who can point at where they live,
   // the labelled <select> for everyone the map fails.
   assert(await page.$('#onb-state') !== null, 'the labelled state <select> is missing beside the map');
-  const stateShapes = await page.$$eval('.wlUsMap path[role="button"]', els => els.length);
-  assert(stateShapes === 50, `expected 50 selectable state shapes, found ${stateShapes}`);
+  // Nine states are too small to tap and deliberately leave the map's a11y tree
+  // for a button of their own (see test/small-state-targets.mjs), so a raw count
+  // of shapes no longer means "every state is reachable". Assert the thing that
+  // actually matters instead: each of the 50 has SOME control naming it.
+  const reachable = await page.evaluate(() => {
+    const names = new Set();
+    document.querySelectorAll('.wlUsMap path[role="button"]').forEach(p => names.add(p.getAttribute('aria-label')));
+    document.querySelectorAll('button').forEach(b => names.add((b.textContent || '').trim()));
+    return [...document.querySelectorAll('#onb-state option')]
+      .map(o => o.value).filter(Boolean)
+      .filter(n => !names.has(n));
+  });
+  assert(reachable.length === 0,
+    `every state must be pickable by a map shape or a button, not only the <select>; unreachable: ${reachable.join(', ')}`);
 
   // ── 2 · state → county → topics ──
   await page.select('#onb-state', 'California');

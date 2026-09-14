@@ -717,7 +717,15 @@ const STATE_CALLOUTS = {
 const INLINE_LABELS = { HI: { x: 402, y: 578 } };
 const CALLOUT_X = 1012;          // just right of the 1000-wide map
 const MAP_PAD_RIGHT = 130;       // room the callout column needs
-const LABEL_FIT_R = 15;          // inscribed radius (viewBox units) a 2-char label needs
+/* Inscribed radius (viewBox units) a 2-char label needs. It doubles as the
+   "too small to tap" threshold: a state with no room for two characters has no
+   room for a fingertip either. Measured at a 390px viewport, the states under
+   it are 3.7x5.3 (Rhode Island) up to 22.5x11.3 (Maryland) CSS px — every one
+   of them far under the 44px WCAG 2.5.8 target, and Rhode Island is a 20-square
+   -pixel target. They are unreachable through the map, so SmallStatePicker
+   below gives each one a real button and the shapes drop out of the a11y tree
+   rather than being announced as controls nobody can hit. */
+const LABEL_FIT_R = 15;
 
 function UsaStatePicker({ value, onPick }) {
   const geo = useUsStates();
@@ -742,9 +750,20 @@ function UsaStatePicker({ value, onPick }) {
         aria-label="Map of the United States — pick your state" style={{ maxHeight: '46vh' }}>
         {geo.states.map(st => {
           const on = value === st.name;
+          /* A shape too small to tap is not a control. It stays clickable for a
+             mouse (a precise pointer can hit Rhode Island; a thumb cannot) but
+             leaves the tab order and the a11y tree, so a keyboard or screen
+             reader user meets it once, as a real button, in the row below. */
+          const tiny = st.lr < LABEL_FIT_R;
           return (
-            <path key={st.abbr} d={st.d} tabIndex={0} role="button"
-              aria-label={st.name} aria-pressed={on}
+            /* data-state names every shape whatever its a11y role, so map
+               COVERAGE ("is each state drawn?") can be checked separately from
+               map REACHABILITY ("is each state pickable?") — the nine tiny ones
+               are drawn but are not controls. */
+            <path key={st.abbr} d={st.d} data-state={st.name}
+              tabIndex={tiny ? undefined : 0} role={tiny ? undefined : 'button'}
+              aria-hidden={tiny ? 'true' : undefined}
+              aria-label={tiny ? undefined : st.name} aria-pressed={tiny ? undefined : on}
               onClick={() => onPick(st.name)}
               onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onPick(st.name); } }}
               onMouseEnter={() => setHovered(st.name)} onMouseLeave={() => setHovered(null)}
@@ -784,6 +803,39 @@ function UsaStatePicker({ value, onPick }) {
       {/* The full name of whatever is under the cursor or keyboard focus —
           two-letter codes on the map, the whole word here. */}
       <p aria-live="polite" style={css("margin:0;min-height:24px;text-align:center;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{shown}</p>
+      <SmallStateRow states={geo.states.filter(st => st.lr < LABEL_FIT_R)} value={value} onPick={onPick}
+        onHover={setHovered} />
+    </div>
+  );
+}
+
+/* The nine states the map cannot give a fingertip (see LABEL_FIT_R). The
+   leader-line column beside the map names them, which is the right ATLAS
+   treatment and the wrong CONTROL: the label is 32 viewBox units tall, about
+   10 CSS px on a phone, and the shape it points at is smaller still. So the
+   names get real buttons here — full words, not two-letter codes, because at
+   this size the reader is picking from a list, not reading a map. */
+function SmallStateRow({ states, value, onPick, onHover }) {
+  if (!states.length) return null;
+  const sorted = [...states].sort((a, b) => a.name.localeCompare(b.name));
+  return (
+    <div style={css("display:flex;flex-direction:column;gap:7px;margin-top:2px")}>
+      <p style={css("margin:0;font:700 12px 'Atkinson Hyperlegible',sans-serif;color:#4A5162;letter-spacing:.04em")}>SMALL STATES — TAP A NAME</p>
+      <div style={css("display:flex;flex-wrap:wrap;gap:6px")}>
+        {sorted.map(st => {
+          const on = value === st.name;
+          return (
+            <button key={st.abbr} type="button" aria-pressed={on}
+              className={on ? 'surfacefx' : 'hoverfx'}
+              onClick={() => onPick(st.name)}
+              onMouseEnter={() => onHover(st.name)} onMouseLeave={() => onHover(null)}
+              onFocus={() => onHover(st.name)} onBlur={() => onHover(null)}
+              style={css("min-height:44px;padding:8px 12px;border-radius:999px;cursor:pointer;border:2px solid " + (on ? '#2B3AA8' : 'rgba(20,24,31,.28)') + ";background:" + (on ? '#2B3AA8' : '#FFFDF8') + ";color:" + (on ? '#FFFDF8' : '#14181F') + ";font:700 14px 'Atkinson Hyperlegible',sans-serif;white-space:nowrap")}>
+              {st.name}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -1986,13 +2038,13 @@ function App(){
         <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>
           Free, and private by design: everything you enter stays on this device. This is legal information, not legal advice.
         </p>
+        {/* One button, because there was only ever one destination. A "Skip"
+            link sat under this one calling the same enter() — it skipped
+            nothing, and offering an opt-out of a screen that is already just
+            an intro invites the reader to wonder what they are being spared. */}
         <button onClick={enter} className="surfacefx"
           style={css("min-height:52px;padding:14px 18px;border-radius:14px;border:2px solid #14181F;background:#2B3AA8;color:#fff;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>
           Find my state’s rules
-        </button>
-        <button onClick={enter}
-          style={css("align-self:center;min-height:44px;padding:10px 14px;background:none;border:none;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;text-decoration:underline;cursor:pointer")}>
-          Skip
         </button>
       </div>
     );
@@ -2096,7 +2148,6 @@ function App(){
           <option value="">Select your state</option>
           {US_STATE_NAMES.map(n => <option key={n} value={n}>{n}</option>)}
         </select>
-        <p style={css("margin:0;font:400 13.5px/1.45 'Atkinson Hyperlegible',sans-serif;color:#6B7280")}>Legal information, not legal advice.</p>
       </div>
     );
 
@@ -2782,8 +2833,13 @@ function App(){
               the map, so say exactly that rather than the old blanket warning
               about a shared computer holding a plaintext case file. */}
           {screen === 'home' &&
-            <div style={css("margin:0 22px 30px;padding-top:16px;border-top:1px solid rgba(20,24,31,.14)")}>
-              <p style={css("margin:0;font:400 13px/1.5 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Nothing you do here is uploaded, and nothing about you is stored — this browser remembers only the state and county you picked, so the law you see is yours.</p>
+            <div style={css("margin:0 22px 26px;padding-top:14px;border-top:1px solid rgba(20,24,31,.14)")}>
+              {/* Both halves of the promise in one sentence. The state-picker
+                  screen carried a second "Legal information, not legal advice."
+                  line of its own a few pixels above this one, so the first
+                  screen of a site whose whole job is "pick your state" led with
+                  four lines of boilerplate in two stacked blocks. */}
+              <p style={css("margin:0;font:400 13px/1.5 'Atkinson Hyperlegible',sans-serif;color:#6B7280")}>Legal information, not legal advice. Nothing is uploaded — this browser remembers only the state and county you picked.</p>
             </div>
           }
         </main>

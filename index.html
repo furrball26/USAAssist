@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-dykVMpyabChN2Fi5ZXtzgi8WGrCFIxa+EcoHwQ0WPsA='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-9kUy+/dEblote2JAfHWA9wusl2icZGwccplOflWTxew='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14181F">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232B3AA8'/%3E%3Ctext x='32' y='47' font-size='42' text-anchor='middle' fill='white' font-family='Georgia,serif'%3E%C2%A7%3C/text%3E%3C/svg%3E">
@@ -1049,27 +1049,36 @@ function UsaStatePicker({ value, onPick }) {
     },
     geo.states.map((st) => {
       const on = value === st.name;
-      return /* @__PURE__ */ React.createElement(
-        "path",
-        {
-          key: st.abbr,
-          d: st.d,
-          tabIndex: 0,
-          role: "button",
-          "aria-label": st.name,
-          "aria-pressed": on,
-          onClick: () => onPick(st.name),
-          onKeyDown: (e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              onPick(st.name);
-            }
-          },
-          onMouseEnter: () => setHovered(st.name),
-          onMouseLeave: () => setHovered(null),
-          onFocus: () => setHovered(st.name),
-          onBlur: () => setHovered(null)
-        }
+      const tiny = st.lr < LABEL_FIT_R;
+      return (
+        /* data-state names every shape whatever its a11y role, so map
+           COVERAGE ("is each state drawn?") can be checked separately from
+           map REACHABILITY ("is each state pickable?") — the nine tiny ones
+           are drawn but are not controls. */
+        /* @__PURE__ */ React.createElement(
+          "path",
+          {
+            key: st.abbr,
+            d: st.d,
+            "data-state": st.name,
+            tabIndex: tiny ? void 0 : 0,
+            role: tiny ? void 0 : "button",
+            "aria-hidden": tiny ? "true" : void 0,
+            "aria-label": tiny ? void 0 : st.name,
+            "aria-pressed": tiny ? void 0 : on,
+            onClick: () => onPick(st.name),
+            onKeyDown: (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onPick(st.name);
+              }
+            },
+            onMouseEnter: () => setHovered(st.name),
+            onMouseLeave: () => setHovered(null),
+            onFocus: () => setHovered(st.name),
+            onBlur: () => setHovered(null)
+          }
+        )
       );
     }),
     /* @__PURE__ */ React.createElement("g", { className: "wlMapLabels", "aria-hidden": "true" }, geo.states.map((st) => {
@@ -1115,7 +1124,38 @@ function UsaStatePicker({ value, onPick }) {
         st.abbr
       );
     }))
-  ), /* @__PURE__ */ React.createElement("p", { "aria-live": "polite", style: css("margin:0;min-height:24px;text-align:center;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, shown));
+  ), /* @__PURE__ */ React.createElement("p", { "aria-live": "polite", style: css("margin:0;min-height:24px;text-align:center;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, shown), /* @__PURE__ */ React.createElement(
+    SmallStateRow,
+    {
+      states: geo.states.filter((st) => st.lr < LABEL_FIT_R),
+      value,
+      onPick,
+      onHover: setHovered
+    }
+  ));
+}
+function SmallStateRow({ states, value, onPick, onHover }) {
+  if (!states.length) return null;
+  const sorted = [...states].sort((a, b) => a.name.localeCompare(b.name));
+  return /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:7px;margin-top:2px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 12px 'Atkinson Hyperlegible',sans-serif;color:#4A5162;letter-spacing:.04em") }, "SMALL STATES \u2014 TAP A NAME"), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-wrap:wrap;gap:6px") }, sorted.map((st) => {
+    const on = value === st.name;
+    return /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key: st.abbr,
+        type: "button",
+        "aria-pressed": on,
+        className: on ? "surfacefx" : "hoverfx",
+        onClick: () => onPick(st.name),
+        onMouseEnter: () => onHover(st.name),
+        onMouseLeave: () => onHover(null),
+        onFocus: () => onHover(st.name),
+        onBlur: () => onHover(null),
+        style: css("min-height:44px;padding:8px 12px;border-radius:999px;cursor:pointer;border:2px solid " + (on ? "#2B3AA8" : "rgba(20,24,31,.28)") + ";background:" + (on ? "#2B3AA8" : "#FFFDF8") + ";color:" + (on ? "#FFFDF8" : "#14181F") + ";font:700 14px 'Atkinson Hyperlegible',sans-serif;white-space:nowrap")
+      },
+      st.name
+    );
+  })));
 }
 const COUNTY_LABEL_STRIP = /\s+(County|Parish|Borough|Census Area|Municipio|Municipality|City and Borough)$/i;
 function StateCountyMap({ stateName, value, onPick }) {
@@ -1960,13 +2000,6 @@ function App() {
         style: css("min-height:52px;padding:14px 18px;border-radius:14px;border:2px solid #14181F;background:#2B3AA8;color:#fff;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")
       },
       "Find my state\u2019s rules"
-    ), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        onClick: enter,
-        style: css("align-self:center;min-height:44px;padding:10px 14px;background:none;border:none;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;text-decoration:underline;cursor:pointer")
-      },
-      "Skip"
     ));
   };
   const LocationPill = ({ dark }) => /* @__PURE__ */ React.createElement("button", { onClick: () => {
@@ -2015,7 +2048,7 @@ function App() {
     const stFacts = stateData && stateData.facts || [];
     const stReviewed = !!(stateData && stateData.reviewed === true);
     const counties = stName && US_COUNTIES[stName] || [];
-    if (!stName) return /* @__PURE__ */ React.createElement("div", { style: css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:18px") }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", { style: css("margin:0;font:700 30px/1.12 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty") }, "Where do you work?"), /* @__PURE__ */ React.createElement("p", { style: css("margin:10px 0 0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "Employment law is different in every state. Pick yours to see the rules that actually apply to you.")), /* @__PURE__ */ React.createElement("div", { className: "mapFrame" }, /* @__PURE__ */ React.createElement(UsaStatePicker, { value: stateSel, onPick: pickState })), /* @__PURE__ */ React.createElement("label", { htmlFor: "onb-state", style: css("margin:-6px 0 -10px;font:400 14px 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "or choose from a list"), /* @__PURE__ */ React.createElement("select", { id: "onb-state", value: stateSel, onChange: (e) => pickState(e.target.value), style: css("width:100%;padding:12px 13px;border-radius:11px;border:2px solid rgba(20,24,31,.28);background:#fff;font:600 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer;appearance:menulist;-webkit-appearance:menulist") }, /* @__PURE__ */ React.createElement("option", { value: "" }, "Select your state"), US_STATE_NAMES.map((n) => /* @__PURE__ */ React.createElement("option", { key: n, value: n }, n))), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 13.5px/1.45 'Atkinson Hyperlegible',sans-serif;color:#6B7280") }, "Legal information, not legal advice."));
+    if (!stName) return /* @__PURE__ */ React.createElement("div", { style: css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:18px") }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", { style: css("margin:0;font:700 30px/1.12 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty") }, "Where do you work?"), /* @__PURE__ */ React.createElement("p", { style: css("margin:10px 0 0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "Employment law is different in every state. Pick yours to see the rules that actually apply to you.")), /* @__PURE__ */ React.createElement("div", { className: "mapFrame" }, /* @__PURE__ */ React.createElement(UsaStatePicker, { value: stateSel, onPick: pickState })), /* @__PURE__ */ React.createElement("label", { htmlFor: "onb-state", style: css("margin:-6px 0 -10px;font:400 14px 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "or choose from a list"), /* @__PURE__ */ React.createElement("select", { id: "onb-state", value: stateSel, onChange: (e) => pickState(e.target.value), style: css("width:100%;padding:12px 13px;border-radius:11px;border:2px solid rgba(20,24,31,.28);background:#fff;font:600 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer;appearance:menulist;-webkit-appearance:menulist") }, /* @__PURE__ */ React.createElement("option", { value: "" }, "Select your state"), US_STATE_NAMES.map((n) => /* @__PURE__ */ React.createElement("option", { key: n, value: n }, n))));
     if (!county && counties.length) return /* @__PURE__ */ React.createElement("div", { style: css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:18px") }, /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -2305,7 +2338,7 @@ function App() {
       /* @__PURE__ */ React.createElement(Icon, { name, size: 22 }),
       /* @__PURE__ */ React.createElement("span", { style: css("font:700 12px 'Atkinson Hyperlegible',sans-serif") }, label)
     )
-  )), /* @__PURE__ */ React.createElement("main", { className: "scrollarea", ref: mainRef, tabIndex: -1, style: css("outline:none") }, Current(), screen === "home" && /* @__PURE__ */ React.createElement("div", { style: css("margin:0 22px 30px;padding-top:16px;border-top:1px solid rgba(20,24,31,.14)") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 13px/1.5 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Nothing you do here is uploaded, and nothing about you is stored \u2014 this browser remembers only the state and county you picked, so the law you see is yours.")))));
+  )), /* @__PURE__ */ React.createElement("main", { className: "scrollarea", ref: mainRef, tabIndex: -1, style: css("outline:none") }, Current(), screen === "home" && /* @__PURE__ */ React.createElement("div", { style: css("margin:0 22px 26px;padding-top:14px;border-top:1px solid rgba(20,24,31,.14)") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 13px/1.5 'Atkinson Hyperlegible',sans-serif;color:#6B7280") }, "Legal information, not legal advice. Nothing is uploaded \u2014 this browser remembers only the state and county you picked.")))));
 }
 class ErrorBoundary extends React.Component {
   constructor(props) {

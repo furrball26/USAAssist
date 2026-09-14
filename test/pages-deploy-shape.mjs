@@ -89,7 +89,11 @@ const drive = async (browser, base, { offline = false } = {}) => {
   await pg.goto(base, { waitUntil: 'networkidle0', timeout: 40000 });
   await new Promise(r => setTimeout(r, 2200));
   const out = await pg.evaluate(() => ({
-    shapes: document.querySelectorAll('.wlUsMap path[role="button"]').length,
+    // data-state, not role=button: this suite asks whether the geometry LOADED,
+    // and nine states are drawn without being controls (see
+    // test/small-state-targets.mjs). Counting controls here would report a
+    // deploy-shape failure for an a11y decision.
+    shapes: document.querySelectorAll('.wlUsMap path[data-state]').length,
     hasSelect: !!document.querySelector('#onb-state'),
     text: document.body.innerText,
   }));
@@ -161,7 +165,7 @@ try {
     await pg.evaluateOnNewDocument(() => { try { localStorage.setItem('worklaw.seenWelcome.v1', '1'); } catch (e) {} });
     await pg.goto(`http://127.0.0.1:${s.address().port}${PREFIX}/`, { waitUntil: 'networkidle0', timeout: 40000 });
     await new Promise(r => setTimeout(r, 2200));
-    const shapes = await pg.evaluate(() => document.querySelectorAll('.wlUsMap path[role="button"]').length);
+    const shapes = await pg.evaluate(() => document.querySelectorAll('.wlUsMap path[data-state]').length);
     await pg.close();
     s.close();
     ok(served.includes('content/geo/_states.json'),
