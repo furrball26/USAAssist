@@ -285,31 +285,55 @@ function topicKicker(topic){
    test/law-categories.mjs, which fails if a new prefix ships unmapped or two
    categories claim the same one). Counts today: 492 facts across all eight. */
 const US_COUNTY_LABEL = {"Alabama":"COUNTY","Alaska":"BOROUGH","Arizona":"COUNTY","Arkansas":"COUNTY","California":"COUNTY","Colorado":"COUNTY","Connecticut":"COUNTY","Delaware":"COUNTY","Florida":"COUNTY","Georgia":"COUNTY","Hawaii":"COUNTY","Idaho":"COUNTY","Illinois":"COUNTY","Indiana":"COUNTY","Iowa":"COUNTY","Kansas":"COUNTY","Kentucky":"COUNTY","Louisiana":"PARISH","Maine":"COUNTY","Maryland":"COUNTY","Massachusetts":"COUNTY","Michigan":"COUNTY","Minnesota":"COUNTY","Mississippi":"COUNTY","Missouri":"COUNTY","Montana":"COUNTY","Nebraska":"COUNTY","Nevada":"COUNTY","New Hampshire":"COUNTY","New Jersey":"COUNTY","New Mexico":"COUNTY","New York":"COUNTY","North Carolina":"COUNTY","North Dakota":"COUNTY","Ohio":"COUNTY","Oklahoma":"COUNTY","Oregon":"COUNTY","Pennsylvania":"COUNTY","Rhode Island":"COUNTY","South Carolina":"COUNTY","South Dakota":"COUNTY","Tennessee":"COUNTY","Texas":"COUNTY","Utah":"COUNTY","Vermont":"COUNTY","Virginia":"COUNTY","Washington":"COUNTY","West Virginia":"COUNTY","Wisconsin":"COUNTY","Wyoming":"COUNTY"};
+/* Six domains, not eight.
+ *
+ * The old taxonomy had eight topics sharing four tints, each used twice, so
+ * colour identified nothing — two unrelated topics were the same colour and a
+ * reader could learn no association from it. Colour-coding research is also
+ * clear that a categorical palette tops out around six once colour-vision
+ * safety and AA contrast both bind, so the taxonomy moved to fit the palette
+ * rather than the palette straining to fit the taxonomy:
+ *   - Disability folds into Discrimination. The ADA is anti-discrimination law
+ *     and readers do not arrive sorting themselves into separate statutes.
+ *   - Deadlines folds into What you can recover. Both are about ACTING on a
+ *     claim rather than about a right you hold, and a deadline is only
+ *     meaningful next to what it is a deadline for.
+ * No facts are dropped: every prefix from the retired topics is carried below.
+ *
+ * `fill` is Okabe-Ito (Color Universal Design), chosen for hue separation under
+ * colour-vision deficiency. `edge` is a darker grade of the SAME hue and does
+ * double duty as the border and as any text set in the domain colour, because
+ * only one Okabe-Ito hue clears 4.5:1 as text. `on` is whichever of ink/white
+ * actually passes on that fill — measured per hue, not assumed.
+ * automation/check-palette.mjs re-derives all of this from THIS array and fails
+ * the build if any pairing drops below AA or the hues stop being tellable apart.
+ * Colour is never the only cue: every domain ships fill + icon + word (SC 1.4.1).
+ */
 const LAW_CATEGORIES = [
-  { key:'pay', icon:'money', tint:'#EEF1FF',      label:'Pay & overtime',
+  { key:'pay', icon:'money', fill:'#009E73', edge:'#004532', on:'#14181F',
+    label:'Pay & overtime',
     blurb:'Minimum wage, overtime, tips, equal pay, and when you must be paid.',
     prefixes:['minimumWage','overtime','wagePayment','equalPay'] },
-  { key:'discrim', icon:'people', tint:'#FFE7EC',    label:'Discrimination & harassment',
-    blurb:'Who is protected, what counts, and what an employer must do about it.',
-    prefixes:['discrimination','harassment'] },
-  { key:'disability', icon:'access', tint:'#E8F6EE',       label:'Disability & accommodations',
-    blurb:'Reasonable accommodations and the interactive process.',
-    prefixes:['disability'] },
-  { key:'retaliation', icon:'megaphone', tint:'#FFF4D6',    label:'Retaliation & speaking up',
+  { key:'discrim', icon:'people', fill:'#D55E00', edge:'#7A3600', on:'#14181F',
+    label:'Discrimination & harassment',
+    blurb:'Who is protected, what counts, and disability accommodations.',
+    prefixes:['discrimination','harassment','disability'] },
+  { key:'retaliation', icon:'megaphone', fill:'#CC79A7', edge:'#6E2F50', on:'#14181F',
+    label:'Retaliation & speaking up',
     blurb:'Being punished for complaining, whistleblowing, or discussing pay.',
     prefixes:['retaliation','whistleblower','payDiscussion'] },
-  { key:'timeoff', icon:'clock', tint:'#F0EDE5',     label:'Time off & breaks',
+  { key:'timeoff', icon:'clock', fill:'#56B4E9', edge:'#10506F', on:'#14181F',
+    label:'Time off & breaks',
     blurb:'Family and medical leave, sick time, and meal breaks.',
     prefixes:['leave','mealBreak'] },
-  { key:'leaving', icon:'exit', tint:'#EEF1FF',       label:'Leaving a job',
+  { key:'leaving', icon:'exit', fill:'#F0E442', edge:'#544D00', on:'#14181F',
+    label:'Leaving a job',
     blurb:'Final paycheck timing, severance agreements, and non-competes.',
     prefixes:['final-pay','severance','nonCompete'] },
-  { key:'deadlines', icon:'alarm', tint:'#FFE7EC',     label:'Deadlines to act',
-    blurb:'How long you have before a claim expires. These are unforgiving.',
-    prefixes:['deadlines'] },
-  { key:'remedies', icon:'scale', tint:'#E8F6EE',   label:'What you can recover',
-    blurb:'Back pay, damages, attorney’s fees, and where to file.',
-    prefixes:['remedies','enforcement'] },
+  { key:'deadlines', icon:'alarm', fill:'#0072B2', edge:'#004B75', on:'#FFFFFF',
+    label:'Deadlines & what you can recover',
+    blurb:'How long you have before a claim expires, and what you can win. These are unforgiving.',
+    prefixes:['deadlines','remedies','enforcement'] },
 ];
 // prefix -> category key, built once.
 const TOPIC_PREFIX_CATEGORY = (() => {
@@ -2325,19 +2349,26 @@ function App(){
                 </div>
               );
               return (
-                <button key={cat.key} onClick={() => setLawCat(cat.key)} className="hoverfx"
-                  style={css('text-align:left;padding:15px 16px;border-radius:16px;border:2px solid #14181F;background:' + cat.tint + ';cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:44px')}>
-                  {/* Icon beside the title, not above it: eight stacked cards
-                      with a 28px icon on its own line put two and a half
-                      topics on a phone screen. The icon never stands alone —
-                      a pictogram is not universal, and this site is meant to
-                      be read in languages none of these were drawn for. */}
-                  <span style={css("display:flex;align-items:center;gap:10px")}>
+                /* surfacefx, not hoverfx: hoverfx swaps the background outright,
+                   which would wipe the domain colour on hover. surfacefx darkens
+                   whatever colour is already there, which is what these need. */
+                <button key={cat.key} onClick={() => setLawCat(cat.key)} className="surfacefx"
+                  style={css('text-align:left;padding:14px;border-radius:16px;cursor:pointer;display:flex;align-items:flex-start;gap:13px;min-height:44px;border:2px solid ' + cat.edge + ';background:' + cat.fill)}>
+                  {/* The icon sits in its own box so it reads at a glance, but it
+                      never stands alone — a pictogram is not universal, and this
+                      site is meant to be read in languages none of these were
+                      drawn for. Colour + icon + word, every time (SC 1.4.1). */}
+                  <span style={css('flex:none;display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.42);color:' + cat.on + ';border:2px solid ' + cat.edge)}>
                     <Icon name={cat.icon} size={24} />
-                    <span style={css("font:700 18px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{cat.label}</span>
                   </span>
-                  <span style={css("font:400 15px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{cat.blurb}</span>
-                  <span style={css("font:600 12px 'IBM Plex Mono',monospace;letter-spacing:.04em;color:#4A5162")}>{n} {n === 1 ? 'RULE' : 'RULES'}</span>
+                  {/* No fixed width anywhere on this card: a label 30% longer in
+                      Spanish has to be able to take a second line rather than
+                      truncate the name of a category of law. */}
+                  <span style={css("display:flex;flex-direction:column;gap:4px;min-width:0")}>
+                    <span style={css("font:700 18px/1.22 'Atkinson Hyperlegible',sans-serif;text-wrap:pretty;color:" + cat.on)}>{cat.label}</span>
+                    <span style={css("font:500 14px/1.4 'Atkinson Hyperlegible',sans-serif;text-wrap:pretty;opacity:.84;color:" + cat.on)}>{cat.blurb}</span>
+                    <span style={css("font:700 12.5px 'Atkinson Hyperlegible',sans-serif;letter-spacing:.02em;opacity:.7;color:" + cat.on)}>{n} {n === 1 ? 'RULE REACHES' : 'RULES REACH'} YOU</span>
+                  </span>
                 </button>
               );
             })}

@@ -85,7 +85,14 @@ async function check(label, minSvgs, walk, place) {
 }
 
 // Tab bar (3) + location pill (1) + one icon per law topic (8).
-await check('Laws (topic grid)', 12, async () => {});
+/* Derive the floor from the taxonomy instead of pinning a number that changes
+   whenever a domain is added or merged. Every domain card must carry an icon,
+   plus the tab bar's three and the location pill's one. */
+const devSrc = readFileSync(join(ROOT, 'index.dev.html'), 'utf8');
+const catBlock = devSrc.slice(devSrc.indexOf('const LAW_CATEGORIES = ['), devSrc.indexOf('const TOPIC_PREFIX_CATEGORY'));
+const CATEGORY_COUNT = (catBlock.match(/\{ key:'/g) || []).length;
+if (CATEGORY_COUNT < 1) { console.log('❌ could not count LAW_CATEGORIES'); process.exit(1); }
+await check('Laws (topic grid)', CATEGORY_COUNT + 4, async () => {});
 await check('Laws (one topic)', 4, async (pg) => { await click(pg, 'Pay & overtime'); });
 await check('Self-check', 4, async (pg) => {
   await click(pg, 'Pay & overtime');

@@ -102,7 +102,7 @@ try {
   // on the page.
   const opened = await pg.evaluate(() => {
     const btn = [...document.querySelectorAll('button')]
-      .find(b => /Discrimination & harassment|Pay & overtime|Deadlines to act/.test(b.textContent));
+      .find(b => /Discrimination & harassment|Pay & overtime|Deadlines & what you can recover/.test(b.textContent));
     if (!btn) return false;
     btn.click();
     return true;
