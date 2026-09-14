@@ -74,23 +74,38 @@
      because the shapes ARE the information: a map of tiles is not a map. The
      labelled <select> alongside carries anyone this doesn't serve. */
   .wlUsMap{width:100%;height:auto;display:block;touch-action:manipulation}
-  .wlUsMap path{fill:#fff;stroke:#14181F;stroke-width:1.4;cursor:pointer;
-    transition:fill .1s ease;vector-effect:non-scaling-stroke}
-  .wlUsMap path:hover{fill:#EEF1FF}
+  /* The map is the primary control on its screen, so it gets the full width of
+     the column and a surface of its own to sit on rather than floating. */
+  .mapFrame{background:#FFFDF8;border:2px solid #14181F;border-radius:18px;
+    padding:14px 12px;display:flex;flex-direction:column;gap:8px}
+  .wlUsMap path{fill:#EDF0FA;stroke:#14181F;stroke-width:1.6;cursor:pointer;
+    transition:fill .12s ease;vector-effect:non-scaling-stroke}
+  .wlUsMap path:hover{fill:#C9D3F5}
   .wlUsMap path[aria-pressed="true"]{fill:#2B3AA8}
   .wlUsMap path:focus{outline:none;fill:#EEF1FF;stroke:#2B3AA8;stroke-width:3.5}
   .wlUsMap path:focus-visible{stroke:#2B3AA8;stroke-width:3.5}
   /* Map labels. Pointer-transparent so a click always reaches the shape under
      them, and drawn after every path so nothing paints over them. */
   .wlMapLabels{pointer-events:none}
-  .wlLabel{font:700 26px 'IBM Plex Mono',monospace;fill:#14181F;paint-order:stroke;
-    stroke:#FFFDF8;stroke-width:5;stroke-linejoin:round}
+  .wlLabel{font:700 32px 'IBM Plex Mono',monospace;fill:#14181F;paint-order:stroke;
+    stroke:#FFFDF8;stroke-width:6;stroke-linejoin:round}
   .wlLeader{stroke:#4A5162;stroke-width:1.6;fill:none;vector-effect:non-scaling-stroke}
   .wlLeaderDot{fill:#4A5162}
   /* County names are words, not codes, so they need to be smaller to fit and
-     are only drawn where there is room (see lr in content/geo/<ABBR>.json). */
-  .wlCountyLabel{font:700 18px 'Atkinson Hyperlegible',sans-serif;fill:#14181F;
-    paint-order:stroke;stroke:#FFFDF8;stroke-width:4;stroke-linejoin:round}
+     are only drawn where there is room (see lr in content/geo/<ABBR>.json).
+     Sized in viewBox units, which every state normalises to 1000 wide — so the
+     RENDERED size is 18 x (container / 1000). In the 342px column of a phone
+     that is 6.2px, at which glyph spacing collapses and "Humboldt" renders as
+     "Humb o ld t". Genuinely illegible, and worse than nothing: it reads as a
+     broken map rather than an unlabelled one.
+     So they are drawn only from the desktop tier, where the 680px column puts
+     them at ~12px. Below that the map is unlabelled by design and the live
+     caption under it carries the name instead. */
+  .wlCountyLabel{display:none}
+  @media (min-width:1024px){
+    .wlCountyLabel{display:block;font:700 18px 'Atkinson Hyperlegible',sans-serif;fill:#14181F;
+      paint-order:stroke;stroke:#FFFDF8;stroke-width:4;stroke-linejoin:round}
+  }
   /* Decorative copy on the welcome screen — no pointer, no focus. */
   .wlUsMapDecor path{fill:#EEF1FF;stroke:#14181F;stroke-width:1.6;
     vector-effect:non-scaling-stroke;cursor:default}
@@ -100,9 +115,9 @@
      That is exactly why the searchable <select> underneath is the primary
      control and this is the enhancement, not the reverse. */
   .wlCountyMap{width:100%;height:auto;display:block;touch-action:manipulation}
-  .wlCountyMap path{fill:#fff;stroke:#14181F;stroke-width:1.6;cursor:pointer;
-    transition:fill .1s ease;vector-effect:non-scaling-stroke}
-  .wlCountyMap path:hover{fill:#EEF1FF}
+  .wlCountyMap path{fill:#EDF0FA;stroke:#14181F;stroke-width:1.6;cursor:pointer;
+    transition:fill .12s ease;vector-effect:non-scaling-stroke}
+  .wlCountyMap path:hover{fill:#C9D3F5}
   .wlCountyMap path[aria-pressed="true"]{fill:#2B3AA8}
   /* The app's global :focus-visible halo is a box-shadow, which SVG shapes
      ignore — give focused counties a real, visible outline of their own. */
@@ -1992,16 +2007,36 @@ function App(){
       : "align-self:flex-start;min-height:44px;display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;border:2px solid #14181F;background:#FFF;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer")}><Icon name="location-pin" size={18} /> {locationLabel}</button>
   );
 
-  // wl-ux HIGH #1 — the "{STATE} (DRAFT)" tag appeared with no explanation on the
-  // Wizard result's "What applies in {state}" panel, while the Rights tab explains
-  // what "(DRAFT)" means (pending attorney review) right above its own tag. Shared
-  // so every place the tag appears carries the same reassuring, honest explainer —
-  // only shown once state data has loaded and is not yet reviewed.
+  /* The review status, as a chip rather than a wall.
+     This was a 4-line bordered card, and the local layer added a second one
+     directly beneath it. Opening "Pay & overtime" — the screen someone reaches
+     when they want to know what they are owed — meant scrolling past roughly
+     twelve lines of near-identical caveat before a single law appeared. Two
+     individually reasonable disclosures, stacked, became the thing the page was
+     about.
+     The honesty is not negotiable; its footprint is. One line, always visible,
+     with the detail one tap away for anyone who wants it. */
+  const DraftChip = ({ label, children }) => {
+    const [open, setOpen] = useState(false);
+    return (
+      <div style={css("display:flex;flex-direction:column;gap:8px")}>
+        <button onClick={() => setOpen(o => !o)} aria-expanded={open}
+          style={css("align-self:flex-start;display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:7px 12px;border-radius:999px;border:2px solid #C99A00;background:#FFF9E8;cursor:pointer;font:700 13px 'Atkinson Hyperlegible',sans-serif;color:#6B4B00")}>
+          <span style={css("flex:none;width:7px;height:7px;border-radius:50%;background:#C99A00")} />
+          {label}
+          <span style={css("font:700 12px 'Atkinson Hyperlegible',sans-serif;color:#8A5A00")}>{open ? '▲' : '▼'}</span>
+        </button>
+        {open ?
+          <div style={css("padding:13px 15px;border-radius:12px;background:#FFF9E8;border-left:4px solid #C99A00")}>
+            <p style={css("margin:0;font:400 14.5px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{children}</p>
+          </div> : null}
+      </div>
+    );
+  };
   const DraftStateNotice = ({ stName, extra }) => (
-    <div style={css("padding:16px 18px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F")}>
-      <p style={css("margin:0 0 4px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Draft — {stName} guidance is pending attorney review</p>
-      <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>These state items are compiled from official sources but not yet verified by counsel.{extra ? ' ' + extra : ''}</p>
-    </div>
+    <DraftChip label={'Not yet lawyer-checked'}>
+      These {stName} items are compiled from official government sources but have not yet been verified by an attorney.{extra ? ' ' + extra : ''}
+    </DraftChip>
   );
 
   /* ── Laws: the whole site's spine ──────────────────────────────────────
@@ -2045,17 +2080,23 @@ function App(){
           <h1 style={css("margin:0;font:700 30px/1.12 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>Where do you work?</h1>
           <p style={css("margin:10px 0 0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>Employment law is different in every state. Pick yours to see the rules that actually apply to you.</p>
         </div>
-        <UsaStatePicker value={stateSel} onPick={pickState} />
+        <div className="mapFrame">
+          <UsaStatePicker value={stateSel} onPick={pickState} />
+        </div>
         {/* The map is the faster path and the one that needs no English; this
             labelled control is the one that always works — with a screen
             reader, a switch, a small screen, or a shaky hand. Both, always,
-            never one instead of the other. */}
-        <label htmlFor="onb-state" style={css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em")}>STATE</label>
-        <select id="onb-state" value={stateSel} onChange={e => pickState(e.target.value)} style={css("width:100%;padding:15px;border-radius:12px;border:2px solid #14181F;background:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer;appearance:menulist;-webkit-appearance:menulist")}>
+            never one instead of the other.
+            It is styled as the SECOND way in rather than the first: it used to
+            be a full-width bordered field with a shouting STATE label, which
+            gave it more visual weight than the map above it and quietly
+            inverted the hierarchy this whole flow is built on. */}
+        <label htmlFor="onb-state" style={css("margin:-6px 0 -10px;font:400 14px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>or choose from a list</label>
+        <select id="onb-state" value={stateSel} onChange={e => pickState(e.target.value)} style={css("width:100%;padding:12px 13px;border-radius:11px;border:2px solid rgba(20,24,31,.28);background:#fff;font:600 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer;appearance:menulist;-webkit-appearance:menulist")}>
           <option value="">Select your state</option>
           {US_STATE_NAMES.map(n => <option key={n} value={n}>{n}</option>)}
         </select>
-        <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Legal information, not legal advice. Laws change — confirm anything important with an attorney.</p>
+        <p style={css("margin:0;font:400 13.5px/1.45 'Atkinson Hyperlegible',sans-serif;color:#6B7280")}>Legal information, not legal advice.</p>
       </div>
     );
 
@@ -2068,7 +2109,9 @@ function App(){
           <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Where in {stName}?</h1>
           <p style={css("margin:10px 0 0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>Pick your county on the map.</p>
         </div>
-        <StateCountyMap stateName={stName} value={county} onPick={pickCounty} />
+        <div className="mapFrame">
+          <StateCountyMap stateName={stName} value={county} onPick={pickCounty} />
+        </div>
         {/* Same pairing as the state step, and the case is stronger here: county
             shapes are real, so plenty of targets are genuinely tiny, and many
             people know their county's name but not its outline. */}
@@ -2083,13 +2126,13 @@ function App(){
           if (county && county !== '—' && !shown.includes(county)) shown = [county].concat(shown);
           return (
             <>
-              <label htmlFor="onb-county" style={css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em")}>{(US_COUNTY_LABEL[stName] || 'COUNTY') + ' · ' + stName.toUpperCase()}</label>
+              <label htmlFor="onb-county" style={css("margin:-6px 0 -10px;font:400 14px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>or choose your {word} from a list</label>
               {counties.length > 20 &&
                 <input id="onb-county-filter" type="text" value={countyQuery} onChange={e => setCountyQuery(e.target.value)}
                   placeholder={'Type to filter ' + counties.length + ' ' + plural + '…'} aria-label={'Filter the ' + word + ' list'}
                   style={css("padding:14px;border-radius:12px;border:2px solid #14181F;font:400 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
               }
-              <select id="onb-county" value={county && county !== '—' ? county : ''} onChange={e => { if (e.target.value) pickCounty(e.target.value); }} style={css("width:100%;padding:15px;border-radius:12px;border:2px solid #14181F;background:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer;appearance:menulist;-webkit-appearance:menulist")}>
+              <select id="onb-county" value={county && county !== '—' ? county : ''} onChange={e => { if (e.target.value) pickCounty(e.target.value); }} style={css("width:100%;padding:12px 13px;border-radius:11px;border:2px solid rgba(20,24,31,.28);background:#fff;font:600 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer;appearance:menulist;-webkit-appearance:menulist")}>
                 <option value="">{'Select a ' + word + ' (' + shown.length + (shown.length !== counties.length ? ' of ' + counties.length : '') + ')'}</option>
                 {shown.map(n => <option key={n} value={n}>{n}</option>)}
               </select>
@@ -2145,14 +2188,21 @@ function App(){
             <div style={css("display:flex;flex-direction:column;gap:10px")}>
               {tools.map(t =>
                 <button key={t.label} className="hoverfx" onClick={() => { if (t.screen) { setScreen(t.screen); } else { setWizKey(t.key); setWizNode('start'); setWizPath([]); setScreen('wizard'); } }}
-                  style={css("text-align:left;padding:16px 18px;border-radius:14px;border:2px solid #2B3AA8;background:#EEF1FF;cursor:pointer;display:flex;flex-direction:column;gap:4px;min-height:44px")}>
-                  <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{t.label}</span>
-                  <span style={css("font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{t.desc}</span>
+                  aria-label={t.label + ' — ' + t.desc}
+                  style={css("text-align:left;padding:12px 14px;border-radius:12px;border:2px solid #2B3AA8;background:#EEF1FF;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:44px")}>
+                  <span style={css("flex:1;min-width:0;font:700 16px/1.3 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{t.label}</span>
+                  <Icon name="chevron-forward" size={16} />
                 </button>
               )}
             </div> : null}
 
-          {stateData && !stReviewed ? <DraftStateNotice stName={stName} extra="" /> : null}
+          {/* ONE review-status chip for the whole topic. State and local content are
+              both unreviewed and were each announcing it, which put two nearly
+              identical yellow cards a few lines apart. Scope the wording instead. */}
+          {(stateData && !stReviewed) || localHere.length ?
+            <DraftChip label={'Not yet lawyer-checked'}>
+              These {stName} items{localHere.length ? ' and the local ordinances below' : ''} are compiled from official government sources but have not yet been verified by an attorney.{localHere.length ? ' Local rates also change on a set date each year, so check the official source before relying on a figure.' : ''}
+            </DraftChip> : null}
 
           {/* Local first: it is the most specific law we hold, and where it exists it
               usually pays more than the state floor. Ordered most-specific-outward
@@ -2160,15 +2210,17 @@ function App(){
           {localHere.length ?
             <div style={css("display:flex;flex-direction:column;gap:12px")}>
               <p style={css("margin:2px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em")}>IN AND AROUND {(county && county !== '—' ? county : stName).toUpperCase()}</p>
-              {/* Said once, above the cards, because it governs how to read all of
-                  them: these are different places with different rules, not one
-                  number with variations. */}
-              <div style={css("padding:14px 16px;border-radius:12px;background:#FFF4D6;border:2px solid #14181F")}>
-                <p style={css("margin:0 0 6px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Draft — local guidance is pending attorney review</p>
-                <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>These are separate local laws covering different places in this county, and they often disagree with each other. Which one you are owed depends on the exact address where you work — read what each says it covers. Local rates also change on a set date each year, so check the official source before relying on a figure.</p>
-              </div>
+              {/* One line, because it governs how to read every card below it:
+                  these are different places with different rules, not one number
+                  with variations. The rest is behind the chip. */}
+              <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>Different places here set different rates, and they often disagree. Which one you are owed depends on where your worksite actually is — read what each says it covers.</p>
               {localHere.map(({ loc, facts }, i) =>
-                <div key={loc.name + i} style={css("display:flex;flex-direction:column;gap:10px;padding:16px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF")}>
+                /* A left rule rather than a full card. A bordered locality card
+                   wrapping a bordered fact card wrapping the bordered "THE LAW"
+                   block put three frames between the reader and a dollar figure,
+                   and cost ~32px of the width the figure is read in. The rule
+                   groups just as well and reads as a section, not a container. */
+                <div key={loc.name + i} style={css("display:flex;flex-direction:column;gap:10px;padding:2px 0 2px 14px;border-left:4px solid #2B3AA8")}>
                   <div>
                     <p style={css("margin:0;font:700 18px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{loc.name}</p>
                     <p style={css("margin:5px 0 0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{loc.covers}</p>
