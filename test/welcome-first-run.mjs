@@ -10,7 +10,7 @@
  *      straight to onboarding. The gate is a device-level key
  *      (SEEN_WELCOME_KEY), NOT the case blob — so it must survive a case
  *      being cleared, which is the whole reason it lives outside saveCase().
- *   2. It never traps anyone. Both the primary button and Skip leave.
+ *   2. It never traps anyone: one call to action, and it leaves.
  *   3. The illustration is announced as ONE image, not fifty state outlines
  *      and six figures — a screen-reader user should hear a sentence, not a
  *      list.
@@ -113,12 +113,20 @@ try {
   await pg.close();
 }
 
-// ── 3 · Skip is a real exit, not decoration ──
+// ── 3 · the intro offers exactly one way on, and it is not a trap ──
+// There used to be a "Skip" link under the primary button wired to the SAME
+// handler: two controls, one destination, and an opt-out that opted out of
+// nothing. It is gone, so assert the shape rather than the old label — a
+// second CTA reappearing here is the regression worth catching.
 {
   const { pg } = await freshPage();
   await gotoApp(pg, URL_, { freshVisitor: true });
-  await clickText(pg, 'Skip');
-  ok(await pg.$('#onb-state') !== null, 'Skip leaves the welcome screen for the state map');
+  const ctas = await pg.evaluate(() => [...document.querySelectorAll('button')]
+    .map(b => (b.textContent || '').trim())
+    .filter(t => t && !/^(Laws|All rights|Agencies)$/.test(t)));
+  ok(ctas.length === 1, `the welcome screen offers one call to action, not several — found: ${JSON.stringify(ctas)}`);
+  await clickText(pg, 'Find my state’s rules');
+  ok(await pg.$('#onb-state') !== null, 'that one button leaves the welcome screen for the state map');
   await pg.close();
 }
 
@@ -129,7 +137,7 @@ try {
 {
   const { pg } = await freshPage();
   await gotoApp(pg, URL_, { freshVisitor: true });
-  await clickText(pg, 'Skip');
+  await clickText(pg, 'Find my state’s rules');
   await pg.evaluate(() => { try { localStorage.removeItem('worklaw.place.v1'); } catch (e) {} });
   await reloadApp(pg);
   const t = await pg.evaluate(() => document.body.innerText);
@@ -143,12 +151,22 @@ try {
   const { pg, errs } = await freshPage();
   await gotoApp(pg, URL_);           // seeded: straight to the state map
   await new Promise(r => setTimeout(r, 1200));   // the map is fetched, not bundled
+  // Coverage is about what is DRAWN, so read data-state: nine states are too
+  // small to tap and are deliberately not controls (test/small-state-targets.mjs),
+  // but they must still appear on the map. Reachability is asserted below.
   const shapes = await pg.evaluate(() =>
-    [...document.querySelectorAll('.wlUsMap path[role="button"]')].map(el => el.getAttribute('aria-label')));
+    [...document.querySelectorAll('.wlUsMap path[data-state]')].map(el => el.getAttribute('data-state')));
   ok(shapes.length === 50, `map renders one shape per supported state (got ${shapes.length}, expected 50)`);
   ok(!shapes.includes('District of Columbia') && !shapes.includes('Puerto Rico'),
     'no shape for DC/PR — the app has no content file for either, so it would select nothing');
-  ok(shapes.every(l => l && l.length > 2), 'every shape has a full state name as its accessible label');
+  ok(shapes.every(l => l && l.length > 2), 'every shape names a full state, not an abbreviation');
+  // Every shape that IS a control must also carry that name to a screen reader.
+  const unlabelled = await pg.evaluate(() =>
+    [...document.querySelectorAll('.wlUsMap path[role="button"]')]
+      .filter(el => (el.getAttribute('aria-label') || '') !== el.getAttribute('data-state'))
+      .map(el => el.getAttribute('data-state')));
+  ok(unlabelled.length === 0,
+    'every shape offered as a control announces its state name' + (unlabelled.length ? `: ${unlabelled.join(', ')}` : ''));
 
   // The labelled <select> must still be present — the map never replaces it.
   ok(await pg.$('#onb-state') !== null, 'the conventional labelled <select> is still present alongside the map');
@@ -159,6 +177,19 @@ try {
   ok(opts.length === 50, `the state select offers 50 states (got ${opts.length})`);
   ok(shapes.every(l => opts.includes(l)), 'every state on the map is also in the select');
   ok(opts.every(v => shapes.includes(v)), 'every state in the select also has a shape on the map');
+
+  // Drawn is not the same as pickable. Every state must be reachable without
+  // the <select>, whether by its own shape or by a small-state button.
+  const pickable = await pg.evaluate(() => {
+    const names = new Set();
+    document.querySelectorAll('.wlUsMap path[role="button"]').forEach(el => names.add(el.getAttribute('data-state')));
+    document.querySelectorAll('button').forEach(b => names.add((b.textContent || '').trim()));
+    return [...names];
+  });
+  const unreachable = opts.filter(v => !pickable.includes(v));
+  ok(unreachable.length === 0,
+    'every state is pickable by a shape or a button, not only by the select' +
+    (unreachable.length ? `: ${unreachable.join(', ')}` : ''));
 
   // Picking on the map takes you to the same place picking in the select does:
   // that state's counties.
