@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-KLb/msJKq7V7RWyRABkAkMvJ+YNhZo3U+TQnYy07LbI='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-dykVMpyabChN2Fi5ZXtzgi8WGrCFIxa+EcoHwQ0WPsA='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14181F">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232B3AA8'/%3E%3Ctext x='32' y='47' font-size='42' text-anchor='middle' fill='white' font-family='Georgia,serif'%3E%C2%A7%3C/text%3E%3C/svg%3E">
@@ -214,23 +214,38 @@
      because the shapes ARE the information: a map of tiles is not a map. The
      labelled <select> alongside carries anyone this doesn't serve. */
   .wlUsMap{width:100%;height:auto;display:block;touch-action:manipulation}
-  .wlUsMap path{fill:#fff;stroke:#14181F;stroke-width:1.4;cursor:pointer;
-    transition:fill .1s ease;vector-effect:non-scaling-stroke}
-  .wlUsMap path:hover{fill:#EEF1FF}
+  /* The map is the primary control on its screen, so it gets the full width of
+     the column and a surface of its own to sit on rather than floating. */
+  .mapFrame{background:#FFFDF8;border:2px solid #14181F;border-radius:18px;
+    padding:14px 12px;display:flex;flex-direction:column;gap:8px}
+  .wlUsMap path{fill:#EDF0FA;stroke:#14181F;stroke-width:1.6;cursor:pointer;
+    transition:fill .12s ease;vector-effect:non-scaling-stroke}
+  .wlUsMap path:hover{fill:#C9D3F5}
   .wlUsMap path[aria-pressed="true"]{fill:#2B3AA8}
   .wlUsMap path:focus{outline:none;fill:#EEF1FF;stroke:#2B3AA8;stroke-width:3.5}
   .wlUsMap path:focus-visible{stroke:#2B3AA8;stroke-width:3.5}
   /* Map labels. Pointer-transparent so a click always reaches the shape under
      them, and drawn after every path so nothing paints over them. */
   .wlMapLabels{pointer-events:none}
-  .wlLabel{font:700 26px 'IBM Plex Mono',monospace;fill:#14181F;paint-order:stroke;
-    stroke:#FFFDF8;stroke-width:5;stroke-linejoin:round}
+  .wlLabel{font:700 32px 'IBM Plex Mono',monospace;fill:#14181F;paint-order:stroke;
+    stroke:#FFFDF8;stroke-width:6;stroke-linejoin:round}
   .wlLeader{stroke:#4A5162;stroke-width:1.6;fill:none;vector-effect:non-scaling-stroke}
   .wlLeaderDot{fill:#4A5162}
   /* County names are words, not codes, so they need to be smaller to fit and
-     are only drawn where there is room (see lr in content/geo/<ABBR>.json). */
-  .wlCountyLabel{font:700 18px 'Atkinson Hyperlegible',sans-serif;fill:#14181F;
-    paint-order:stroke;stroke:#FFFDF8;stroke-width:4;stroke-linejoin:round}
+     are only drawn where there is room (see lr in content/geo/<ABBR>.json).
+     Sized in viewBox units, which every state normalises to 1000 wide — so the
+     RENDERED size is 18 x (container / 1000). In the 342px column of a phone
+     that is 6.2px, at which glyph spacing collapses and "Humboldt" renders as
+     "Humb o ld t". Genuinely illegible, and worse than nothing: it reads as a
+     broken map rather than an unlabelled one.
+     So they are drawn only from the desktop tier, where the 680px column puts
+     them at ~12px. Below that the map is unlabelled by design and the live
+     caption under it carries the name instead. */
+  .wlCountyLabel{display:none}
+  @media (min-width:1024px){
+    .wlCountyLabel{display:block;font:700 18px 'Atkinson Hyperlegible',sans-serif;fill:#14181F;
+      paint-order:stroke;stroke:#FFFDF8;stroke-width:4;stroke-linejoin:round}
+  }
   /* Decorative copy on the welcome screen — no pointer, no focus. */
   .wlUsMapDecor path{fill:#EEF1FF;stroke:#14181F;stroke-width:1.6;
     vector-effect:non-scaling-stroke;cursor:default}
@@ -240,9 +255,9 @@
      That is exactly why the searchable <select> underneath is the primary
      control and this is the enhancement, not the reverse. */
   .wlCountyMap{width:100%;height:auto;display:block;touch-action:manipulation}
-  .wlCountyMap path{fill:#fff;stroke:#14181F;stroke-width:1.6;cursor:pointer;
-    transition:fill .1s ease;vector-effect:non-scaling-stroke}
-  .wlCountyMap path:hover{fill:#EEF1FF}
+  .wlCountyMap path{fill:#EDF0FA;stroke:#14181F;stroke-width:1.6;cursor:pointer;
+    transition:fill .12s ease;vector-effect:non-scaling-stroke}
+  .wlCountyMap path:hover{fill:#C9D3F5}
   .wlCountyMap path[aria-pressed="true"]{fill:#2B3AA8}
   /* The app's global :focus-visible halo is a box-shadow, which SVG shapes
      ignore — give focused counties a real, visible outline of their own. */
@@ -1960,7 +1975,21 @@ function App() {
     setLawCat(null);
     setScreen("home");
   }, "aria-label": "Change your state or county \u2014 currently " + locationLabel, className: "surfacefx", style: css(dark ? "align-self:flex-start;min-height:44px;display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;border:2px solid rgba(255,255,255,.6);background:rgba(255,255,255,.1);font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#fff;cursor:pointer" : "align-self:flex-start;min-height:44px;display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;border:2px solid #14181F;background:#FFF;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer") }, /* @__PURE__ */ React.createElement(Icon, { name: "location-pin", size: 18 }), " ", locationLabel);
-  const DraftStateNotice = ({ stName, extra }) => /* @__PURE__ */ React.createElement("div", { style: css("padding:16px 18px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 4px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Draft \u2014 ", stName, " guidance is pending attorney review"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "These state items are compiled from official sources but not yet verified by counsel.", extra ? " " + extra : ""));
+  const DraftChip = ({ label, children }) => {
+    const [open, setOpen] = useState(false);
+    return /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:8px") }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => setOpen((o) => !o),
+        "aria-expanded": open,
+        style: css("align-self:flex-start;display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:7px 12px;border-radius:999px;border:2px solid #C99A00;background:#FFF9E8;cursor:pointer;font:700 13px 'Atkinson Hyperlegible',sans-serif;color:#6B4B00")
+      },
+      /* @__PURE__ */ React.createElement("span", { style: css("flex:none;width:7px;height:7px;border-radius:50%;background:#C99A00") }),
+      label,
+      /* @__PURE__ */ React.createElement("span", { style: css("font:700 12px 'Atkinson Hyperlegible',sans-serif;color:#8A5A00") }, open ? "\u25B2" : "\u25BC")
+    ), open ? /* @__PURE__ */ React.createElement("div", { style: css("padding:13px 15px;border-radius:12px;background:#FFF9E8;border-left:4px solid #C99A00") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 14.5px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, children)) : null);
+  };
+  const DraftStateNotice = ({ stName, extra }) => /* @__PURE__ */ React.createElement(DraftChip, { label: "Not yet lawyer-checked" }, "These ", stName, " items are compiled from official government sources but have not yet been verified by an attorney.", extra ? " " + extra : "");
   const EXPLAINERS_BY_CAT = {
     pay: [{ label: "Am I exempt from overtime?", desc: "A short Q&A on the federal and state rules for your job.", key: "wage" }],
     discrim: [
@@ -1986,7 +2015,7 @@ function App() {
     const stFacts = stateData && stateData.facts || [];
     const stReviewed = !!(stateData && stateData.reviewed === true);
     const counties = stName && US_COUNTIES[stName] || [];
-    if (!stName) return /* @__PURE__ */ React.createElement("div", { style: css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:18px") }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", { style: css("margin:0;font:700 30px/1.12 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty") }, "Where do you work?"), /* @__PURE__ */ React.createElement("p", { style: css("margin:10px 0 0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "Employment law is different in every state. Pick yours to see the rules that actually apply to you.")), /* @__PURE__ */ React.createElement(UsaStatePicker, { value: stateSel, onPick: pickState }), /* @__PURE__ */ React.createElement("label", { htmlFor: "onb-state", style: css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em") }, "STATE"), /* @__PURE__ */ React.createElement("select", { id: "onb-state", value: stateSel, onChange: (e) => pickState(e.target.value), style: css("width:100%;padding:15px;border-radius:12px;border:2px solid #14181F;background:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer;appearance:menulist;-webkit-appearance:menulist") }, /* @__PURE__ */ React.createElement("option", { value: "" }, "Select your state"), US_STATE_NAMES.map((n) => /* @__PURE__ */ React.createElement("option", { key: n, value: n }, n))), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Legal information, not legal advice. Laws change \u2014 confirm anything important with an attorney."));
+    if (!stName) return /* @__PURE__ */ React.createElement("div", { style: css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:18px") }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", { style: css("margin:0;font:700 30px/1.12 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty") }, "Where do you work?"), /* @__PURE__ */ React.createElement("p", { style: css("margin:10px 0 0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "Employment law is different in every state. Pick yours to see the rules that actually apply to you.")), /* @__PURE__ */ React.createElement("div", { className: "mapFrame" }, /* @__PURE__ */ React.createElement(UsaStatePicker, { value: stateSel, onPick: pickState })), /* @__PURE__ */ React.createElement("label", { htmlFor: "onb-state", style: css("margin:-6px 0 -10px;font:400 14px 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "or choose from a list"), /* @__PURE__ */ React.createElement("select", { id: "onb-state", value: stateSel, onChange: (e) => pickState(e.target.value), style: css("width:100%;padding:12px 13px;border-radius:11px;border:2px solid rgba(20,24,31,.28);background:#fff;font:600 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer;appearance:menulist;-webkit-appearance:menulist") }, /* @__PURE__ */ React.createElement("option", { value: "" }, "Select your state"), US_STATE_NAMES.map((n) => /* @__PURE__ */ React.createElement("option", { key: n, value: n }, n))), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 13.5px/1.45 'Atkinson Hyperlegible',sans-serif;color:#6B7280") }, "Legal information, not legal advice."));
     if (!county && counties.length) return /* @__PURE__ */ React.createElement("div", { style: css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:18px") }, /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -2000,13 +2029,13 @@ function App() {
       },
       /* @__PURE__ */ React.createElement(Icon, { name: "back", size: 18 }),
       " The whole country"
-    ), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", { style: css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Where in ", stName, "?"), /* @__PURE__ */ React.createElement("p", { style: css("margin:10px 0 0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "Pick your county on the map.")), /* @__PURE__ */ React.createElement(StateCountyMap, { stateName: stName, value: county, onPick: pickCounty }), (() => {
+    ), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", { style: css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Where in ", stName, "?"), /* @__PURE__ */ React.createElement("p", { style: css("margin:10px 0 0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "Pick your county on the map.")), /* @__PURE__ */ React.createElement("div", { className: "mapFrame" }, /* @__PURE__ */ React.createElement(StateCountyMap, { stateName: stName, value: county, onPick: pickCounty })), (() => {
       const word = US_COUNTY_LABEL[stName] === "PARISH" ? "parish" : US_COUNTY_LABEL[stName] === "BOROUGH" ? "borough" : "county";
       const plural = word === "parish" ? "parishes" : word === "county" ? "counties" : word + "s";
       const q = countyQuery.trim().toLowerCase();
       let shown = q ? counties.filter((n) => n.toLowerCase().includes(q)) : counties;
       if (county && county !== "\u2014" && !shown.includes(county)) shown = [county].concat(shown);
-      return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { htmlFor: "onb-county", style: css("font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em") }, (US_COUNTY_LABEL[stName] || "COUNTY") + " \xB7 " + stName.toUpperCase()), counties.length > 20 && /* @__PURE__ */ React.createElement(
+      return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { htmlFor: "onb-county", style: css("margin:-6px 0 -10px;font:400 14px 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "or choose your ", word, " from a list"), counties.length > 20 && /* @__PURE__ */ React.createElement(
         "input",
         {
           id: "onb-county-filter",
@@ -2019,7 +2048,7 @@ function App() {
         }
       ), /* @__PURE__ */ React.createElement("select", { id: "onb-county", value: county && county !== "\u2014" ? county : "", onChange: (e) => {
         if (e.target.value) pickCounty(e.target.value);
-      }, style: css("width:100%;padding:15px;border-radius:12px;border:2px solid #14181F;background:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer;appearance:menulist;-webkit-appearance:menulist") }, /* @__PURE__ */ React.createElement("option", { value: "" }, "Select a " + word + " (" + shown.length + (shown.length !== counties.length ? " of " + counties.length : "") + ")"), shown.map((n) => /* @__PURE__ */ React.createElement("option", { key: n, value: n }, n))), q && shown.length === 0 && /* @__PURE__ */ React.createElement("p", { role: "status", style: css("margin:0;font:600 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#B3264F") }, "No ", word, " matches \u201C", countyQuery.trim(), "\u201D."));
+      }, style: css("width:100%;padding:12px 13px;border-radius:11px;border:2px solid rgba(20,24,31,.28);background:#fff;font:600 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer;appearance:menulist;-webkit-appearance:menulist") }, /* @__PURE__ */ React.createElement("option", { value: "" }, "Select a " + word + " (" + shown.length + (shown.length !== counties.length ? " of " + counties.length : "") + ")"), shown.map((n) => /* @__PURE__ */ React.createElement("option", { key: n, value: n }, n))), q && shown.length === 0 && /* @__PURE__ */ React.createElement("p", { role: "status", style: css("margin:0;font:600 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#B3264F") }, "No ", word, " matches \u201C", countyQuery.trim(), "\u201D."));
     })(), localCounties.length ? /* @__PURE__ */ React.createElement("div", { style: css("padding:15px 17px;border-radius:14px;border:2px solid #136B3C;background:#E8F6EE") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 6px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "We hold local ordinances for ", localCounties.length === 1 ? localCounties[0] : localCounties.slice(0, -1).join(", ") + " and " + localCounties[localCounties.length - 1], "."), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 14px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "Pick one of those and you will see the city and county minimum wages on top of ", stName, " and federal law. For any other county here we only hold ", stName, " and federal law \u2014 that does not mean your county has no ordinance, only that we have not compiled it. Check your county and city sites too.")) : /* @__PURE__ */ React.createElement("div", { style: css("padding:15px 17px;border-radius:14px;border:2px dashed rgba(20,24,31,.22)") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "We hold no county or city ordinances for ", stName, " yet \u2014 only federal and ", stName, " law. Many places add their own minimum wage, sick leave or scheduling rules on top, so check your county and city sites too.")), /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -2063,13 +2092,21 @@ function App() {
                 setScreen("wizard");
               }
             },
-            style: css("text-align:left;padding:16px 18px;border-radius:14px;border:2px solid #2B3AA8;background:#EEF1FF;cursor:pointer;display:flex;flex-direction:column;gap:4px;min-height:44px")
+            "aria-label": t.label + " \u2014 " + t.desc,
+            style: css("text-align:left;padding:12px 14px;border-radius:12px;border:2px solid #2B3AA8;background:#EEF1FF;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:44px")
           },
-          /* @__PURE__ */ React.createElement("span", { style: css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, t.label),
-          /* @__PURE__ */ React.createElement("span", { style: css("font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, t.desc)
+          /* @__PURE__ */ React.createElement("span", { style: css("flex:1;min-width:0;font:700 16px/1.3 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, t.label),
+          /* @__PURE__ */ React.createElement(Icon, { name: "chevron-forward", size: 16 })
         )
-      )) : null, stateData && !stReviewed ? /* @__PURE__ */ React.createElement(DraftStateNotice, { stName, extra: "" }) : null, localHere.length ? /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:12px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:2px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em") }, "IN AND AROUND ", (county && county !== "\u2014" ? county : stName).toUpperCase()), /* @__PURE__ */ React.createElement("div", { style: css("padding:14px 16px;border-radius:12px;background:#FFF4D6;border:2px solid #14181F") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 6px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Draft \u2014 local guidance is pending attorney review"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "These are separate local laws covering different places in this county, and they often disagree with each other. Which one you are owed depends on the exact address where you work \u2014 read what each says it covers. Local rates also change on a set date each year, so check the official source before relying on a figure.")), localHere.map(
-        ({ loc, facts }, i) => /* @__PURE__ */ React.createElement("div", { key: loc.name + i, style: css("display:flex;flex-direction:column;gap:10px;padding:16px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF") }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 18px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty") }, loc.name), /* @__PURE__ */ React.createElement("p", { style: css("margin:5px 0 0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, loc.covers)), facts.map((f, fi) => factCard(f, loc.name + fi, "LOCAL", "#FFF4D6")))
+      )) : null, stateData && !stReviewed || localHere.length ? /* @__PURE__ */ React.createElement(DraftChip, { label: "Not yet lawyer-checked" }, "These ", stName, " items", localHere.length ? " and the local ordinances below" : "", " are compiled from official government sources but have not yet been verified by an attorney.", localHere.length ? " Local rates also change on a set date each year, so check the official source before relying on a figure." : "") : null, localHere.length ? /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:12px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:2px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em") }, "IN AND AROUND ", (county && county !== "\u2014" ? county : stName).toUpperCase()), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "Different places here set different rates, and they often disagree. Which one you are owed depends on where your worksite actually is \u2014 read what each says it covers."), localHere.map(
+        ({ loc, facts }, i) => (
+          /* A left rule rather than a full card. A bordered locality card
+             wrapping a bordered fact card wrapping the bordered "THE LAW"
+             block put three frames between the reader and a dollar figure,
+             and cost ~32px of the width the figure is read in. The rule
+             groups just as well and reads as a section, not a container. */
+          /* @__PURE__ */ React.createElement("div", { key: loc.name + i, style: css("display:flex;flex-direction:column;gap:10px;padding:2px 0 2px 14px;border-left:4px solid #2B3AA8") }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 18px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty") }, loc.name), /* @__PURE__ */ React.createElement("p", { style: css("margin:5px 0 0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, loc.covers)), facts.map((f, fi) => factCard(f, loc.name + fi, "LOCAL", "#FFF4D6")))
+        )
       )) : null, st.length ? /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:12px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:2px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em") }, stName.toUpperCase(), stReviewed ? "" : " (DRAFT)"), st.map((f, i) => factCard(f, i, stAbbr || stName.toUpperCase(), "#EEF1FF"))) : null, fed.length ? /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:12px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:6px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em") }, "FEDERAL \u2014 APPLIES NATIONWIDE"), fed.map((f, i) => factCard(f, i, "FEDERAL", "#F0EDE5"))) : null, !st.length && !fed.length ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Nothing recorded here yet for ", stName, ". That is a gap in our data, not a statement that no rule applies.") : null);
     }
     return /* @__PURE__ */ React.createElement("div", { style: css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px") }, /* @__PURE__ */ React.createElement(LocationPill, null), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", { style: css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty") }, "Your rights in ", stName), /* @__PURE__ */ React.createElement("p", { style: css("margin:10px 0 0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "Federal law applies everywhere; ", stName, " rules layer on top. Pick a topic.")), contentErr ? /* @__PURE__ */ React.createElement("p", { role: "alert", style: css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F") }, "Couldn\u2019t load the law dataset. Check your connection and reopen.") : null, !federal && !contentErr ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Loading\u2026") : null, stateData === void 0 ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Loading ", stName, " rules\u2026") : null, stateErr ? /* @__PURE__ */ React.createElement("p", { role: "alert", style: css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F") }, "Couldn\u2019t load ", stName, " rules. Check your connection and reopen \u2014 this is not a confirmation that no extra state protections apply.", fedFacts.length ? " Federal law still applies nationwide." : "") : null, federal || stateData ? /* @__PURE__ */ React.createElement("div", { className: "catgrid" }, LAW_CATEGORIES.map((cat) => {

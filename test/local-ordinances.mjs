@@ -123,9 +123,9 @@ try {
     ok(/\$18\.47/.test(text) && /\$18\.42/.test(text),
        'both the county ($18.47) and city ($18.42) rates are shown — the lower city rate is not hidden by the higher county one');
     ok(/\$20\.25/.test(text), 'the highest local rate in the county (West Hollywood, $20.25) is shown');
-    ok(/depends on the exact address where you work/i.test(text),
+    ok(/depends on where your worksite actually is/i.test(text),
        'the reader is told which rate applies depends on their worksite address');
-    ok(/pending attorney review/i.test(text), 'local guidance is labelled as unreviewed draft');
+    ok(/not yet lawyer-checked/i.test(text), 'local guidance is labelled as unreviewed draft');
     ok(errs.length === 0, 'no console/page errors on a county with local law' + (errs.length ? ': ' + errs[0] : ''));
   }
 
