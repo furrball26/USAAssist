@@ -3019,27 +3019,66 @@ function App(){
      federal ones are constant. Both are shown, always: a state agency never
      replaces the federal route, and which one is the better door depends on
      facts this site does not ask for. */
+  /* `deadlineTopics` names the sourced clock that governs filing with each one.
+     The NLRB has none listed because no NLRB deadline ships in content/ — and
+     a filing deadline is the last thing in this app worth guessing at, so that
+     card shows no clock rather than a plausible one. */
   const FEDERAL_AGENCIES = [
-    { name:'U.S. Department of Labor — Wage & Hour Division', covers:'Unpaid wages, overtime, minimum wage, family and medical leave.', url:'https://www.dol.gov/agencies/whd/contact/local-offices' },
-    { name:'Equal Employment Opportunity Commission (EEOC)', covers:'Discrimination and harassment based on race, sex, religion, national origin, age, disability or genetic information.', url:'https://www.eeoc.gov/filing-charge-discrimination' },
-    { name:'OSHA', covers:'Unsafe working conditions, and retaliation for reporting them.', url:'https://www.osha.gov/workers/file-complaint' },
-    { name:'National Labor Relations Board (NLRB)', covers:'Being punished for organising, or for discussing pay and conditions with coworkers.', url:'https://www.nlrb.gov/about-nlrb/what-we-do/investigate-charges' },
+    { name:'U.S. Department of Labor — Wage & Hour Division', covers:'Unpaid wages, overtime, minimum wage, family and medical leave.', url:'https://www.dol.gov/agencies/whd/contact/local-offices', deadlineTopics:['deadlines.flsaWageClaim'] },
+    { name:'Equal Employment Opportunity Commission (EEOC)', covers:'Discrimination and harassment based on race, sex, religion, national origin, age, disability or genetic information.', url:'https://www.eeoc.gov/filing-charge-discrimination', deadlineTopics:['deadlines.eeocCharge'] },
+    { name:'OSHA', covers:'Unsafe working conditions, and retaliation for reporting them.', url:'https://www.osha.gov/workers/file-complaint', deadlineTopics:['deadlines.oshaWhistleblower'] },
+    { name:'National Labor Relations Board (NLRB)', covers:'Being punished for organising, or for discussing pay and conditions with coworkers.', url:'https://www.nlrb.gov/about-nlrb/what-we-do/investigate-charges', deadlineTopics:[] },
   ];
 
   const Agencies = () => {
     const stLabel = stateSel || 'your state';
     const ag = (stateData && stateData.agencies) || {};
+    const stFacts = (stateData && stateData.facts) || [];
+    const fedFacts = (federal && federal.facts) || [];
     const stateLinks = [
-      ag.wageHour && ['Wage & hour', ag.wageHour],
-      ag.discrimination && ['Discrimination & harassment', ag.discrimination],
-      ag.labor && ['Labor standards', ag.labor],
+      ag.wageHour && ['Wage & hour', ag.wageHour, ['deadlines.wageClaim']],
+      ag.discrimination && ['Discrimination & harassment', ag.discrimination, ['deadlines.discriminationComplaint', 'deadlines.fehaComplaint']],
+      ag.labor && ['Labor standards', ag.labor, ['deadlines.wageClaim']],
     ].filter(Boolean).filter(([, a]) => a && safeUrl(a.url));
 
-    const row = (title, covers, url, tone) => (
+    /* The clock that governs filing with this agency, taken from the dataset —
+       state facts first, because a state deadline is the one that binds a state
+       filing, then federal. Returns null when nothing is on file, and the card
+       then shows no deadline at all: inventing one here would be the single
+       most harmful thing this app could do. */
+    const deadlineFor = (topics) => {
+      if (!topics || !topics.length) return null;
+      for (const src of [stFacts, fedFacts]) {
+        for (const t of topics) {
+          const f = src.find(x => String(x.topic) === t && factValStr(x.value));
+          if (f) return f;
+        }
+      }
+      return null;
+    };
+
+    /* Deliberately not collapsible, and never behind a tap. A filing deadline is
+       the one fact on this screen that cannot be recovered once it passes. */
+    const deadlineStrip = (f) => f ? (
+      <span style={css("display:flex;align-items:flex-start;gap:9px;margin-top:9px;padding:10px 12px;border-radius:10px;background:#FFE9E9;border:2px solid #7A1F1F")}>
+        <span style={css("flex:none;margin-top:1px;color:#7A1F1F;display:flex")}><Icon name="alarm" size={18} /></span>
+        <span style={css("flex:1;min-width:0;display:flex;flex-direction:column;gap:2px")}>
+          {/* "You have {x} to file" reads fine for "180 days" and badly for
+              "180 days (general); 300 days for sexual harassment" — a real
+              Texas value. A label framing survives every value shape while
+              staying in second person. */}
+          <span style={css("font:700 14px/1.35 'Atkinson Hyperlegible',sans-serif;color:#7A1F1F")}>Your deadline to file: {factValStr(f.value)}</span>
+          {f.citation ? <span style={css("font:400 12.5px/1.4 'Atkinson Hyperlegible',sans-serif;color:#5C3030")}>{f.citation}</span> : null}
+        </span>
+      </span>
+    ) : null;
+
+    const row = (title, covers, url, tone, dl) => (
       <a key={url} href={url} target="_blank" rel="noopener noreferrer" className="hoverfx"
         style={css('display:flex;flex-direction:column;gap:5px;padding:16px 18px;border-radius:14px;border:2px solid #14181F;background:' + tone + ';text-decoration:none;min-height:44px')}>
         <span style={css("font:700 17px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{title} ↗</span>
         <span style={css("font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{covers}</span>
+        {deadlineStrip(dl)}
       </a>
     );
 
@@ -3060,13 +3099,13 @@ function App(){
         {stateLinks.length ?
           <div style={css("display:flex;flex-direction:column;gap:10px")}>
             <p style={css("margin:2px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em")}>{stLabel.toUpperCase()}</p>
-            {stateLinks.map(([covers, a]) => row(a.name, covers, safeUrl(a.url), '#EEF1FF'))}
+            {stateLinks.map(([covers, a, topics]) => row(a.name, covers, safeUrl(a.url), '#EEF1FF', deadlineFor(topics)))}
           </div> : null}
         {stateErr ? <p role="alert" style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load {stLabel} agency links. Check your connection and reopen — the federal agencies below are not the only ones that may apply.</p> : null}
 
         <div style={css("display:flex;flex-direction:column;gap:10px")}>
           <p style={css("margin:6px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em")}>FEDERAL — ANYWHERE IN THE US</p>
-          {FEDERAL_AGENCIES.map(a => row(a.name, a.covers, a.url, '#F0EDE5'))}
+          {FEDERAL_AGENCIES.map(a => row(a.name, a.covers, a.url, '#F0EDE5', deadlineFor(a.deadlineTopics)))}
         </div>
 
         <div style={css("display:flex;gap:14px;padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff")}>
@@ -3077,7 +3116,10 @@ function App(){
           </div>
         </div>
 
-        <p style={css("margin:0;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>This is legal information, not legal advice. Deadlines to file are short and unforgiving — check the Deadlines topic before you wait.</p>
+        {/* This used to end "check the Deadlines topic before you wait", which
+            sent someone to another screen for the most time-critical fact on
+            this one. The deadlines are on the cards now. */}
+        <p style={css("margin:0;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>This is legal information, not legal advice. Where a deadline is shown it comes from the source named on that card, and it is the shortest thing standing between you and a claim — a day late is usually the whole case.</p>
       </div>
     );
   };
