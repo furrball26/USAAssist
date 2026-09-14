@@ -1411,6 +1411,59 @@ function hasSeenWelcome(){
 function markWelcomeSeen(){
   try { localStorage.setItem(SEEN_WELCOME_KEY, '1'); } catch(e){ /* best-effort; a repeat intro is harmless */ }
 }
+/* ── Which minimum wage is actually owed ───────────────────────────────────
+   Several minimum wages reach any one worksite — federal, state, county and
+   city — and the app used to print all of them and leave the reader to work
+   out which was theirs. That is rule-selection work handed to someone under
+   stress, on a phone, and it is exactly the arithmetic this site exists to do.
+
+   This resolves them to ONE figure. It is deliberately narrow:
+
+   - Only `minimumWage.hourly`. "The highest rule wins" is true of wage FLOORS
+     and is NOT a general principle of employment law — elsewhere federal law
+     can preempt, and a state scheme can be narrower than the federal one.
+     Applying highest-wins across the board would invent law, so this function
+     refuses to look at any other topic.
+   - A local rate counts as applying only when the reader has told us they work
+     in that locality. If they have not, the local layer is reported as
+     unresolved rather than assumed — being told you are owed $20.25 when you
+     work two streets outside West Hollywood is worse than being told to check.
+
+   Returns null when there is nothing to resolve, so the caller renders the
+   ordinary fact list instead. */
+function resolveMinimumWage({ cityFacts, otherLocal, stateFacts, fedFacts, stName, cityName }) {
+  const rate = (facts) => {
+    const f = (facts || []).find(x => String(x.topic) === 'minimumWage.hourly' && typeof x.value === 'number');
+    return f || null;
+  };
+  const layers = [];
+  const cityFact = rate(cityFacts);
+  if (cityFact && cityName) {
+    layers.push({ key: 'city', name: cityName, kind: 'Local ordinance', fact: cityFact, applies: true });
+  }
+  const stFact = rate(stateFacts);
+  if (stFact) layers.push({ key: 'state', name: stName, kind: 'State law', fact: stFact, applies: true });
+  const fedFact = rate(fedFacts);
+  if (fedFact) layers.push({ key: 'federal', name: 'Federal', kind: 'The national floor (FLSA)', fact: fedFact, applies: true });
+
+  // Nothing to choose between is not an answer worth dressing up as one.
+  if (layers.length < 2) return null;
+
+  const winner = layers.reduce((a, b) => (b.fact.value > a.fact.value ? b : a));
+  layers.forEach(l => { l.winner = l === winner; });
+
+  /* Localities we hold for this county that are NOT the reader's, and that pay
+     MORE than the figure we resolved. Only those are worth interrupting for:
+     a nearby town paying less changes nothing about what this reader is owed,
+     and listing it under "you may be owed more" would simply be false. */
+  const nearby = (otherLocal || [])
+    .map(x => ({ name: x.loc.name, covers: x.loc.covers, fact: rate(x.facts) }))
+    .filter(x => x.fact && x.fact.value > winner.fact.value)
+    .sort((a, b) => b.fact.value - a.fact.value);
+
+  return { layers, winner, nearby, unresolvedLocal: !cityFact && nearby.length > 0 };
+}
+
 function money(n){ return '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 }); }
 // The date-input (<input type="date">) value for a JS Date, in the browser's LOCAL
 // calendar day — not toISOString().slice(0,10), which is UTC and can land on the
@@ -2304,6 +2357,16 @@ function App(){
       const localMine = city && city !== '—' ? localAll.filter(x => x.loc.name === city) : [];
       const localOther = localAll.filter(x => localMine.indexOf(x) < 0);
       const localHere = localMine.length ? localMine.concat(localOther) : localAll;
+      /* Narrow by design: only the wage floor resolves to a single number.
+         See resolveMinimumWage. */
+      const wage = cat.key === 'pay' ? resolveMinimumWage({
+        cityFacts: localMine.length ? localMine[0].facts : null,
+        otherLocal: localOther,
+        stateFacts: stFacts,
+        fedFacts: fedFacts,
+        stName: stName,
+        cityName: city && city !== '—' ? city : '',
+      }) : null;
       return (
         <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
           <button onClick={() => setLawCat(null)} aria-label="Back to all topics"
@@ -2313,6 +2376,49 @@ function App(){
             <h1 style={css("margin:8px 0 0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{cat.label}</h1>
             <p style={css("margin:8px 0 0;font:400 16px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{cat.blurb}</p>
           </div>
+
+          {/* The answer, before the evidence for it. Only minimum wage resolves
+              this way — see resolveMinimumWage for why that limit is load-bearing. */}
+          {wage ?
+            <div style={css("border:2px solid " + cat.edge + ";border-radius:16px;overflow:hidden;background:#fff")}>
+              <div style={css("padding:15px 16px 14px;background:" + cat.fill)}>
+                <p style={css("margin:0;font:500 15px/1.35 'Atkinson Hyperlegible',sans-serif;color:" + cat.on)}>The least you can legally be paid{wage.winner.key === 'city' ? ' in ' + wage.winner.name : ''}</p>
+                <p style={css("margin:4px 0 0;font:800 46px/1.05 'Atkinson Hyperlegible',sans-serif;letter-spacing:-.03em;color:" + cat.on)}>{money(wage.winner.fact.value)}</p>
+                <p style={css("margin:2px 0 0;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:" + cat.on)}>an hour, before tax</p>
+              </div>
+              <div>
+                {wage.layers.map((l, i) =>
+                  <div key={l.key} style={css("display:flex;align-items:center;gap:11px;padding:11px 14px;min-height:56px;" + (i ? 'border-top:1px solid rgba(20,24,31,.12);' : '') + (l.winner ? 'background:#F3FBF8' : ''))}>
+                    <span style={css("flex:1;min-width:0;display:flex;flex-direction:column;gap:1px")}>
+                      <span style={css("font:" + (l.winner ? '800' : '500') + " 16px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{l.name}</span>
+                      <span style={css("font:400 13px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{l.kind}</span>
+                    </span>
+                    <span style={css("flex:none;font:" + (l.winner ? "800 21px" : "500 17px") + " 'Atkinson Hyperlegible',sans-serif;color:" + (l.winner ? cat.edge : '#6B7280') + (l.winner ? '' : ';text-decoration:line-through'))}>{money(l.fact.value)}</span>
+                  </div>
+                )}
+              </div>
+              <p style={css("margin:0;padding:12px 14px 13px;border-top:2px solid " + cat.edge + ";font:500 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty")}>
+                You must be paid the highest minimum wage that reaches where you work. The others are struck through because a higher one applies to you, not because they are wrong.
+              </p>
+            </div> : null}
+
+          {/* Say plainly when we CANNOT resolve it, rather than showing a
+              confident state figure while a higher local one may be theirs. */}
+          {wage && wage.unresolvedLocal ?
+            <div style={css("padding:14px 15px;border-radius:14px;border:2px solid #C99A00;background:#FFF9E8")}>
+              <p style={css("margin:0;font:700 15px/1.4 'Atkinson Hyperlegible',sans-serif;color:#6B4B00;text-wrap:pretty")}>You may be owed more than the figure above.</p>
+              <p style={css("margin:6px 0 0;font:400 14px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty")}>{wage.nearby.length === 1 ? 'One place' : wage.nearby.length + ' places'} in {county && county !== '—' ? county : stName} set a higher rate of their own. Which applies depends on the exact address you work at, so we cannot pick one for you:</p>
+              <div style={css("display:flex;flex-direction:column;gap:7px;margin-top:10px")}>
+                {wage.nearby.map(n =>
+                  <div key={n.name} style={css("display:flex;align-items:baseline;gap:10px")}>
+                    <span style={css("flex:1;min-width:0;font:700 15px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{n.name}</span>
+                    <span style={css("flex:none;font:800 16px 'Atkinson Hyperlegible',sans-serif;color:#6B4B00")}>{money(n.fact.value)}</span>
+                  </div>
+                )}
+              </div>
+              <button onClick={() => setCity('')} className="hoverfx"
+                style={css("margin-top:12px;min-height:44px;padding:11px 14px;border-radius:11px;border:2px solid #14181F;background:#fff;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer")}>Tell us which one you work in</button>
+            </div> : null}
 
           {tools.length ?
             <div style={css("display:flex;flex-direction:column;gap:10px")}>
