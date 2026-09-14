@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-nDbkhTNiS7w3BQuSpXDz66tw87LsMKPf77Af0Yjxy2Q='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-fWIbLSLtqMmAJStcQLgcqNn4bKdJirkG3zwdk2onLxI='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14181F">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232B3AA8'/%3E%3Ctext x='32' y='47' font-size='42' text-anchor='middle' fill='white' font-family='Georgia,serif'%3E%C2%A7%3C/text%3E%3C/svg%3E">
@@ -681,6 +681,84 @@ function fetchContentJson(path) {
     if (!r.ok) throw new Error("http " + r.status);
     return r.json();
   }));
+}
+const TOPIC_LABELS = {
+  "deadlines.discriminationComplaint": "Deadline to file a discrimination complaint",
+  "deadlines.eeocCharge": "Deadline to file with the EEOC",
+  "deadlines.equalPayAct": "Deadline for an equal pay claim",
+  "deadlines.fehaComplaint": "Deadline to file a state civil rights complaint",
+  "deadlines.flsaWageClaim": "Deadline to sue for unpaid wages (federal)",
+  "deadlines.oshaWhistleblower": "Deadline to report safety retaliation",
+  "deadlines.wageClaim": "Deadline to claim unpaid wages",
+  "disability.accommodation": "Adjustments for a disability",
+  "disability.interactiveProcess": "Working out an adjustment with your employer",
+  "disability.pregnancyLeave": "Pregnancy-related leave",
+  "disability.reasonableAccommodation": "What counts as a reasonable adjustment",
+  "discrimination.age": "Age discrimination",
+  "discrimination.ageCoverage": "Which employers the age rules cover",
+  "discrimination.ageDiscrimination": "Age discrimination",
+  "discrimination.coverage": "Which employers the discrimination rules cover",
+  "discrimination.coverageTitleVII": "Which employers Title VII covers",
+  "discrimination.protectedClasses": "Who is protected from discrimination",
+  "discrimination.protectedClasses.age": "Age as a protected characteristic",
+  "discrimination.retaliation": "Punishment for a discrimination complaint",
+  "discrimination.sexualHarassment": "Sexual harassment",
+  "discrimination.sexualHarassmentPolicy": "What your employer must do about harassment",
+  "enforcement.paths": "Where you can file",
+  "equalPay": "Equal pay for equal work",
+  "final-pay": "Your final paycheck",
+  "final-pay.timing": "When your final paycheck is due",
+  "final-pay.wageClaim": "Claiming a final paycheck you never got",
+  "final-pay.wageRecoveryLimitations": "How far back unpaid wages can be claimed",
+  "harassment.employerLiability": "When an employer is on the hook for harassment",
+  "harassment.hostileEnvironmentStandard": "What counts as a hostile work environment",
+  "harassment.reporting": "Reporting harassment",
+  "leave.earnedPaidSickTime": "Paid sick time you earn as you work",
+  "leave.fmla": "Family and medical leave",
+  "leave.paidSickTime": "Paid sick time",
+  "mealBreak": "Meal and rest breaks",
+  "minimumWage.adjustment": "How the minimum wage changes each year",
+  "minimumWage.coverage": "Who the minimum wage covers",
+  "minimumWage.hotelWorker": "Minimum wage for hotel workers",
+  "minimumWage.hourly": "Minimum wage",
+  "minimumWage.localPreemption": "Whether cities can set their own minimum wage",
+  "minimumWage.tipped": "Minimum wage when you earn tips",
+  "minimumWage.tippedCash": "Cash wage when you earn tips",
+  "minimumWage.tippedCashWage": "Cash wage when you earn tips",
+  "minimumWage.tippedFoodService": "Minimum wage for tipped food service work",
+  "minimumWage.tippedService": "Minimum wage for tipped service work",
+  "minimumWage.youth": "Minimum wage for young workers",
+  "nonCompete.enforceability": "Whether a non-compete can be enforced",
+  "nonCompete.ftcRuleStatus": "Where the federal non-compete rule stands",
+  "overtime.basicRule": "When overtime pay starts",
+  "overtime.computerEmployeeHourly": "Hourly rate that exempts computer roles from overtime",
+  "overtime.computerExemption": "Overtime exemption for computer roles",
+  "overtime.daily": "Overtime counted by the day",
+  "overtime.highlyCompensatedAnnual": "Earnings that exempt high earners from overtime",
+  "overtime.salaryFloorWeekly": "Salary you must clear to be exempt from overtime",
+  "overtime.salaryLevelWeekly": "Salary you must clear to be exempt from overtime",
+  "overtime.salaryLevelWeekly.nycLIWestchester": "Exempt salary \u2014 New York City, Long Island and Westchester",
+  "overtime.salaryLevelWeekly.restOfState": "Exempt salary \u2014 rest of the state",
+  "overtime.salaryThreshold": "Salary you must clear to be exempt from overtime",
+  "payDiscussion.protected": "Your right to discuss your pay",
+  "remedies.attorneysFees": "Getting your legal costs paid",
+  "remedies.liquidatedDamages": "Double damages for unpaid wages",
+  "remedies.minimumWageDamages": "What you can recover if you were underpaid",
+  "remedies.trebleDamages": "Triple damages",
+  "retaliation": "Being punished for speaking up",
+  "retaliation.flsa": "Being punished for a wage complaint",
+  "retaliation.protected": "Which kinds of punishment are illegal",
+  "retaliation.whistleblower": "Whistleblower protection",
+  "severance.adeaWaiver": "Signing away an age discrimination claim",
+  "severance.wageWaiver": "Signing away unpaid wages",
+  "wagePayment.frequency": "How often you must be paid",
+  "whistleblower": "Whistleblower protection"
+};
+function topicLabel(topic) {
+  const k = String(topic || "");
+  if (TOPIC_LABELS[k]) return TOPIC_LABELS[k];
+  const tail = k.split(".").slice(1).join(" ") || k;
+  return tail.replace(/([A-Z])/g, " $1").replace(/[-_]/g, " ").replace(/\s+/g, " ").trim().replace(/^./, (c) => c.toUpperCase()) || k;
 }
 function topicKicker(topic) {
   const p = String(topic || "").split(".")[0];
@@ -2359,25 +2437,28 @@ function App() {
     const fedFacts = federal && federal.facts || [];
     const stFacts = stateData && stateData.facts || [];
     const stReviewed = !!(stateData && stateData.reviewed === true);
-    const ruleRow = (f, i, scope, tone) => /* @__PURE__ */ React.createElement("div", { key: scope + i, style: css("display:flex;flex-direction:column;gap:6px;padding:14px 16px;border-radius:12px;border:2px solid rgba(20,24,31,.16);background:#fff") }, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;align-items:baseline;gap:8px;flex-wrap:wrap") }, /* @__PURE__ */ React.createElement("span", { style: css("flex:none;padding:3px 8px;border-radius:6px;background:" + tone + ";font:600 11px 'IBM Plex Mono',monospace;color:#14181F") }, scope), /* @__PURE__ */ React.createElement("span", { style: css("font:600 13px 'IBM Plex Mono',monospace;color:#4A5162;overflow-wrap:anywhere") }, f.topic)), factValStr(f.value) ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 17px/1.35 'Atkinson Hyperlegible',sans-serif;color:#14181F;overflow-wrap:anywhere") }, factValStr(f.value)) : null, f.citation ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:600 14px/1.45 'IBM Plex Mono',monospace;color:#1B2778;overflow-wrap:anywhere") }, f.citation) : null, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;gap:10px;flex-wrap:wrap;align-items:center") }, f.sourceAgency ? /* @__PURE__ */ React.createElement("span", { style: css("font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, f.sourceAgency) : null, safeUrl(f.sourceUrl) ? /* @__PURE__ */ React.createElement("a", { href: safeUrl(f.sourceUrl), target: "_blank", rel: "noopener noreferrer", className: "hoverfx", "aria-label": "Official source for " + (f.citation || f.topic) + " (opens in a new tab)", style: css("display:inline-flex;align-items:center;min-height:44px;font:600 13px 'IBM Plex Mono',monospace;color:#2B3AA8;text-decoration:none") }, "source \u2197") : null));
+    const ruleRow = (f, i, scope, tone) => /* @__PURE__ */ React.createElement("div", { key: scope + i, style: css("display:flex;flex-direction:column;gap:6px;padding:14px 16px;border-radius:12px;border:2px solid rgba(20,24,31,.16);background:#fff") }, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;align-items:baseline;gap:8px;flex-wrap:wrap") }, /* @__PURE__ */ React.createElement("span", { style: css("flex:none;padding:3px 8px;border-radius:6px;background:" + tone + ";font:600 11px 'IBM Plex Mono',monospace;color:#14181F") }, scope), /* @__PURE__ */ React.createElement("span", { title: f.topic, style: css("font:700 15px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty") }, topicLabel(f.topic))), factValStr(f.value) ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 17px/1.35 'Atkinson Hyperlegible',sans-serif;color:#14181F;overflow-wrap:anywhere") }, typeof f.value === "number" && isMoneyTopic(f.topic) ? money(f.value) : factValStr(f.value)) : null, f.citation ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:600 14px/1.45 'IBM Plex Mono',monospace;color:#1B2778;overflow-wrap:anywhere") }, f.citation) : null, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;gap:10px;flex-wrap:wrap;align-items:center") }, f.sourceAgency ? /* @__PURE__ */ React.createElement("span", { style: css("font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, f.sourceAgency) : null, safeUrl(f.sourceUrl) ? /* @__PURE__ */ React.createElement("a", { href: safeUrl(f.sourceUrl), target: "_blank", rel: "noopener noreferrer", className: "hoverfx", "aria-label": "Official source for " + (f.citation || f.topic) + " (opens in a new tab)", style: css("display:inline-flex;align-items:center;min-height:44px;font:600 13px 'IBM Plex Mono',monospace;color:#2B3AA8;text-decoration:none") }, "source \u2197") : null));
     const groups = (() => {
-      const seen = [];
-      const byPrefix = /* @__PURE__ */ new Map();
+      const byCat = /* @__PURE__ */ new Map();
       const push = (f, scope, tone) => {
-        const p = topicPrefix(f.topic);
-        if (!byPrefix.has(p)) {
-          byPrefix.set(p, []);
-          seen.push(p);
-        }
-        byPrefix.get(p).push([f, scope, tone]);
+        const key = categoryOfTopic(f.topic) || "_other";
+        if (!byCat.has(key)) byCat.set(key, []);
+        byCat.get(key).push([f, scope, tone]);
       };
       stFacts.forEach((f) => push(f, stAbbr || stName.toUpperCase(), "#EEF1FF"));
       fedFacts.forEach((f) => push(f, "FED", "#F0EDE5"));
-      return seen.map((p) => [p, byPrefix.get(p)]);
+      const out = [];
+      LAW_CATEGORIES.forEach((c) => {
+        if (byCat.has(c.key)) out.push([c, byCat.get(c.key)]);
+      });
+      if (byCat.has("_other")) {
+        out.push([{ key: "_other", label: "Everything else", fill: "#F0EDE5", edge: "#14181F", on: "#14181F" }, byCat.get("_other")]);
+      }
+      return out;
     })();
     const total = stFacts.length + fedFacts.length;
     return /* @__PURE__ */ React.createElement("div", { style: css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px") }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", { style: css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Every rule, as written"), /* @__PURE__ */ React.createElement("p", { style: css("margin:10px 0 0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "The same rules the Laws tab explains \u2014 here with no explanation, just the citation, the figure and the official source. ", total ? total + " on file for " + stName + "." : "")), contentErr ? /* @__PURE__ */ React.createElement("p", { role: "alert", style: css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F") }, "Couldn\u2019t load the law dataset. Check your connection and reopen.") : null, !federal && !contentErr ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Loading\u2026") : null, stateData === void 0 ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Loading ", stName, " rules\u2026") : null, stateErr ? /* @__PURE__ */ React.createElement("p", { role: "alert", style: css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F") }, "Couldn\u2019t load ", stName, " rules. Check your connection and reopen \u2014 this is not a confirmation that no extra state protections apply.") : null, stateData && !stReviewed ? /* @__PURE__ */ React.createElement(DraftStateNotice, { stName, extra: "" }) : null, groups.map(
-      ([prefix, rows]) => /* @__PURE__ */ React.createElement("div", { key: prefix, style: css("display:flex;flex-direction:column;gap:8px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:6px 0 0;font:700 14px 'IBM Plex Mono',monospace;letter-spacing:.05em;color:#14181F") }, topicKicker(prefix + ".x")), rows.map(([f, scope, tone], i) => ruleRow(f, prefix + i, scope, tone)))
+      ([cat, rows]) => /* @__PURE__ */ React.createElement("div", { key: cat.key, style: css("display:flex;flex-direction:column;gap:8px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:8px 0 0;padding:7px 12px;border-radius:999px;align-self:flex-start;font:700 14px 'Atkinson Hyperlegible',sans-serif;border:2px solid " + cat.edge + ";background:" + cat.fill + ";color:" + cat.on) }, cat.label), rows.map(([f, scope, tone], i) => ruleRow(f, cat.key + i, scope, tone)))
     ), /* @__PURE__ */ React.createElement("p", { style: css("margin:4px 0 0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Legal information for ", stName, ", not legal advice, and laws change. Confirm anything important with an attorney."));
   };
   const FEDERAL_AGENCIES = [

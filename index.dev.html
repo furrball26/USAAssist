@@ -259,6 +259,100 @@ function fetchContentJson(path){
     .catch(() => fetch(CONTENT_FALLBACK_BASE + path).then(r => { if (!r.ok) throw new Error('http ' + r.status); return r.json(); }));
 }
 
+/* ── Plain-language names for every rule ───────────────────────────────────
+   Topic keys are internal identifiers: `overtime.salaryFloorWeekly`,
+   `minimumWage.tippedCashWage`. The All rights tab was printing them straight
+   to the reader, which is developer vocabulary shown to someone under stress
+   who may be reading in a second language. Nobody searches for "salaryFloor
+   Weekly"; they want to know what the row is.
+
+   Every key that ships in content/ has an entry here, and
+   automation/check-topic-labels.mjs fails the build if one does not — so a
+   newly added fact cannot quietly leak its key into the interface. The
+   humanising fallback below exists only so a missing label degrades to
+   something readable rather than to a crash; it is not the safety net, the
+   gate is. */
+const TOPIC_LABELS = {
+  'deadlines.discriminationComplaint': 'Deadline to file a discrimination complaint',
+  'deadlines.eeocCharge': 'Deadline to file with the EEOC',
+  'deadlines.equalPayAct': 'Deadline for an equal pay claim',
+  'deadlines.fehaComplaint': 'Deadline to file a state civil rights complaint',
+  'deadlines.flsaWageClaim': 'Deadline to sue for unpaid wages (federal)',
+  'deadlines.oshaWhistleblower': 'Deadline to report safety retaliation',
+  'deadlines.wageClaim': 'Deadline to claim unpaid wages',
+  'disability.accommodation': 'Adjustments for a disability',
+  'disability.interactiveProcess': 'Working out an adjustment with your employer',
+  'disability.pregnancyLeave': 'Pregnancy-related leave',
+  'disability.reasonableAccommodation': 'What counts as a reasonable adjustment',
+  'discrimination.age': 'Age discrimination',
+  'discrimination.ageCoverage': 'Which employers the age rules cover',
+  'discrimination.ageDiscrimination': 'Age discrimination',
+  'discrimination.coverage': 'Which employers the discrimination rules cover',
+  'discrimination.coverageTitleVII': 'Which employers Title VII covers',
+  'discrimination.protectedClasses': 'Who is protected from discrimination',
+  'discrimination.protectedClasses.age': 'Age as a protected characteristic',
+  'discrimination.retaliation': 'Punishment for a discrimination complaint',
+  'discrimination.sexualHarassment': 'Sexual harassment',
+  'discrimination.sexualHarassmentPolicy': 'What your employer must do about harassment',
+  'enforcement.paths': 'Where you can file',
+  'equalPay': 'Equal pay for equal work',
+  'final-pay': 'Your final paycheck',
+  'final-pay.timing': 'When your final paycheck is due',
+  'final-pay.wageClaim': 'Claiming a final paycheck you never got',
+  'final-pay.wageRecoveryLimitations': 'How far back unpaid wages can be claimed',
+  'harassment.employerLiability': 'When an employer is on the hook for harassment',
+  'harassment.hostileEnvironmentStandard': 'What counts as a hostile work environment',
+  'harassment.reporting': 'Reporting harassment',
+  'leave.earnedPaidSickTime': 'Paid sick time you earn as you work',
+  'leave.fmla': 'Family and medical leave',
+  'leave.paidSickTime': 'Paid sick time',
+  'mealBreak': 'Meal and rest breaks',
+  'minimumWage.adjustment': 'How the minimum wage changes each year',
+  'minimumWage.coverage': 'Who the minimum wage covers',
+  'minimumWage.hotelWorker': 'Minimum wage for hotel workers',
+  'minimumWage.hourly': 'Minimum wage',
+  'minimumWage.localPreemption': 'Whether cities can set their own minimum wage',
+  'minimumWage.tipped': 'Minimum wage when you earn tips',
+  'minimumWage.tippedCash': 'Cash wage when you earn tips',
+  'minimumWage.tippedCashWage': 'Cash wage when you earn tips',
+  'minimumWage.tippedFoodService': 'Minimum wage for tipped food service work',
+  'minimumWage.tippedService': 'Minimum wage for tipped service work',
+  'minimumWage.youth': 'Minimum wage for young workers',
+  'nonCompete.enforceability': 'Whether a non-compete can be enforced',
+  'nonCompete.ftcRuleStatus': 'Where the federal non-compete rule stands',
+  'overtime.basicRule': 'When overtime pay starts',
+  'overtime.computerEmployeeHourly': 'Hourly rate that exempts computer roles from overtime',
+  'overtime.computerExemption': 'Overtime exemption for computer roles',
+  'overtime.daily': 'Overtime counted by the day',
+  'overtime.highlyCompensatedAnnual': 'Earnings that exempt high earners from overtime',
+  'overtime.salaryFloorWeekly': 'Salary you must clear to be exempt from overtime',
+  'overtime.salaryLevelWeekly': 'Salary you must clear to be exempt from overtime',
+  'overtime.salaryLevelWeekly.nycLIWestchester': 'Exempt salary — New York City, Long Island and Westchester',
+  'overtime.salaryLevelWeekly.restOfState': 'Exempt salary — rest of the state',
+  'overtime.salaryThreshold': 'Salary you must clear to be exempt from overtime',
+  'payDiscussion.protected': 'Your right to discuss your pay',
+  'remedies.attorneysFees': 'Getting your legal costs paid',
+  'remedies.liquidatedDamages': 'Double damages for unpaid wages',
+  'remedies.minimumWageDamages': 'What you can recover if you were underpaid',
+  'remedies.trebleDamages': 'Triple damages',
+  'retaliation': 'Being punished for speaking up',
+  'retaliation.flsa': 'Being punished for a wage complaint',
+  'retaliation.protected': 'Which kinds of punishment are illegal',
+  'retaliation.whistleblower': 'Whistleblower protection',
+  'severance.adeaWaiver': 'Signing away an age discrimination claim',
+  'severance.wageWaiver': 'Signing away unpaid wages',
+  'wagePayment.frequency': 'How often you must be paid',
+  'whistleblower': 'Whistleblower protection',
+};
+function topicLabel(topic){
+  const k = String(topic || '');
+  if (TOPIC_LABELS[k]) return TOPIC_LABELS[k];
+  // Degrade to something readable rather than a raw key. The build gate is
+  // what actually prevents this from being reached in shipped content.
+  const tail = k.split('.').slice(1).join(' ') || k;
+  return tail.replace(/([A-Z])/g, ' $1').replace(/[-_]/g, ' ')
+    .replace(/\s+/g, ' ').trim().replace(/^./, c => c.toUpperCase()) || k;
+}
 function topicKicker(topic){
   const p = String(topic || '').split('.')[0];
   const m = { overtime:'OVERTIME', minimumWage:'MINIMUM WAGE', discrimination:'DISCRIMINATION',
@@ -2849,9 +2943,14 @@ function App(){
       <div key={scope + i} style={css("display:flex;flex-direction:column;gap:6px;padding:14px 16px;border-radius:12px;border:2px solid rgba(20,24,31,.16);background:#fff")}>
         <div style={css("display:flex;align-items:baseline;gap:8px;flex-wrap:wrap")}>
           <span style={css('flex:none;padding:3px 8px;border-radius:6px;background:' + tone + ";font:600 11px 'IBM Plex Mono',monospace;color:#14181F")}>{scope}</span>
-          <span style={css("font:600 13px 'IBM Plex Mono',monospace;color:#4A5162;overflow-wrap:anywhere")}>{f.topic}</span>
+          {/* The rule's name in words. The raw key still rides along as a title
+              attribute for anyone cross-referencing the dataset, but it is not
+              what the reader is asked to parse. */}
+          <span title={f.topic} style={css("font:700 15px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{topicLabel(f.topic)}</span>
         </div>
-        {factValStr(f.value) ? <p style={css("margin:0;font:700 17px/1.35 'Atkinson Hyperlegible',sans-serif;color:#14181F;overflow-wrap:anywhere")}>{factValStr(f.value)}</p> : null}
+        {/* Same money treatment as the Laws tab: a salary floor rendered as a
+            bare "1352" is a number the reader has to guess the units of. */}
+        {factValStr(f.value) ? <p style={css("margin:0;font:700 17px/1.35 'Atkinson Hyperlegible',sans-serif;color:#14181F;overflow-wrap:anywhere")}>{typeof f.value === 'number' && isMoneyTopic(f.topic) ? money(f.value) : factValStr(f.value)}</p> : null}
         {f.citation ? <p style={css("margin:0;font:600 14px/1.45 'IBM Plex Mono',monospace;color:#1B2778;overflow-wrap:anywhere")}>{f.citation}</p> : null}
         <div style={css("display:flex;gap:10px;flex-wrap:wrap;align-items:center")}>
           {f.sourceAgency ? <span style={css("font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{f.sourceAgency}</span> : null}
@@ -2862,19 +2961,27 @@ function App(){
       </div>
     );
 
-    // Every rule on file for this reader, state first, grouped by topic prefix
-    // in the dataset's own order rather than re-sorted into our categories.
+    /* Grouped by the same six domains the Laws tab uses, in the same order and
+       the same colours. Previously this grouped by raw topic prefix, which
+       meant the colour system died at the topic grid and a reader who had just
+       learned that green is pay found none of it here. Anything whose prefix
+       maps to no domain lands in a clearly-named tail group rather than being
+       dropped — an unreachable rule is worse than an untidy one. */
     const groups = (() => {
-      const seen = [];
-      const byPrefix = new Map();
+      const byCat = new Map();
       const push = (f, scope, tone) => {
-        const p = topicPrefix(f.topic);
-        if (!byPrefix.has(p)) { byPrefix.set(p, []); seen.push(p); }
-        byPrefix.get(p).push([f, scope, tone]);
+        const key = categoryOfTopic(f.topic) || '_other';
+        if (!byCat.has(key)) byCat.set(key, []);
+        byCat.get(key).push([f, scope, tone]);
       };
       stFacts.forEach(f => push(f, stAbbr || stName.toUpperCase(), '#EEF1FF'));
       fedFacts.forEach(f => push(f, 'FED', '#F0EDE5'));
-      return seen.map(p => [p, byPrefix.get(p)]);
+      const out = [];
+      LAW_CATEGORIES.forEach(c => { if (byCat.has(c.key)) out.push([c, byCat.get(c.key)]); });
+      if (byCat.has('_other')) {
+        out.push([{ key: '_other', label: 'Everything else', fill: '#F0EDE5', edge: '#14181F', on: '#14181F' }, byCat.get('_other')]);
+      }
+      return out;
     })();
     const total = stFacts.length + fedFacts.length;
 
@@ -2891,10 +2998,10 @@ function App(){
         {stateErr ? <p role="alert" style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load {stName} rules. Check your connection and reopen — this is not a confirmation that no extra state protections apply.</p> : null}
         {stateData && !stReviewed ? <DraftStateNotice stName={stName} extra="" /> : null}
 
-        {groups.map(([prefix, rows]) =>
-          <div key={prefix} style={css("display:flex;flex-direction:column;gap:8px")}>
-            <p style={css("margin:6px 0 0;font:700 14px 'IBM Plex Mono',monospace;letter-spacing:.05em;color:#14181F")}>{topicKicker(prefix + '.x')}</p>
-            {rows.map(([f, scope, tone], i) => ruleRow(f, prefix + i, scope, tone))}
+        {groups.map(([cat, rows]) =>
+          <div key={cat.key} style={css("display:flex;flex-direction:column;gap:8px")}>
+            <p style={css('margin:8px 0 0;padding:7px 12px;border-radius:999px;align-self:flex-start;font:700 14px \'Atkinson Hyperlegible\',sans-serif;border:2px solid ' + cat.edge + ';background:' + cat.fill + ';color:' + cat.on)}>{cat.label}</p>
+            {rows.map(([f, scope, tone], i) => ruleRow(f, cat.key + i, scope, tone))}
           </div>
         )}
 

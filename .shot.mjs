@@ -1,0 +1,36 @@
+import { createServer } from 'node:http';
+import { readFileSync, existsSync, statSync } from 'node:fs';
+import { extname, join, normalize } from 'node:path';
+import puppeteer from 'puppeteer-core';
+import { gotoApp } from './test/lib/nav.mjs';
+import { resolveChromePath } from './test/lib/chrome.mjs';
+const ROOT = new URL('.', import.meta.url).pathname, SP = process.argv[2];
+const T={'.html':'text/html','.js':'text/javascript','.json':'application/json','.css':'text/css','.svg':'image/svg+xml'};
+const server=createServer((q,r)=>{let p=decodeURIComponent(q.url.split('?')[0]);if(p==='/')p='/index.html';
+ const f=normalize(join(ROOT,p));if(!f.startsWith(ROOT)||!existsSync(f)||statSync(f).isDirectory()){r.writeHead(404);r.end('nf');return;}
+ r.writeHead(200,{'content-type':T[extname(f)]||'application/octet-stream'});r.end(readFileSync(f));});
+await new Promise(r=>server.listen(0,r));
+const BASE=`http://127.0.0.1:${server.address().port}/index.html`;
+const b=await puppeteer.launch({executablePath:resolveChromePath(),headless:true,args:['--no-sandbox']});
+const WEHO={state:'California',county:'Los Angeles County',city:'West Hollywood'};
+const shot=async(name,place,steps)=>{
+  const pg=await b.newPage();const errs=[];
+  pg.on('pageerror',e=>errs.push('PAGEERROR: '+e.message));
+  pg.on('console',m=>{if(m.type()==='error')errs.push('CONSOLE: '+m.text());});
+  await pg.setViewport({width:390,height:844,deviceScaleFactor:2});
+  await gotoApp(pg,BASE,place?{place}:{freshVisitor:true});
+  await new Promise(r=>setTimeout(r,1100));
+  if(steps)await steps(pg);
+  await pg.screenshot({path:`${SP}/${name}.png`});
+  console.log(name.padEnd(18),errs.length?'ERRORS: '+errs.slice(0,2).join(' | '):'ok');
+  await pg.close();
+};
+const click=async(p,t)=>{const d=await p.evaluate(x=>{const e=[...document.querySelectorAll('button,a')].find(n=>(n.textContent||'').trim().startsWith(x));if(!e)return false;e.click();return true;},t);if(!d)throw new Error('no: '+t);await new Promise(r=>setTimeout(r,800));};
+await shot('S1-welcome',null);
+await shot('S2-statemap',null,async p=>{await click(p,'Find my state');});
+await shot('S3-rights',WEHO,async p=>{await click(p,'All rights');});
+await shot('S4-agencies',WEHO,async p=>{await click(p,'Agencies');});
+await shot('S5-discrim',WEHO,async p=>{await click(p,'Discrimination');});
+await shot('S6-deadlines',WEHO,async p=>{await click(p,'Deadlines');});
+await shot('S7-wizard',WEHO,async p=>{await click(p,'Pay & overtime');await click(p,'Am I exempt');});
+await b.close();server.close();
