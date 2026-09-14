@@ -1372,6 +1372,11 @@ function sanitizePrefs(raw){
   return {
     stateSel: typeof c.stateSel === 'string' ? c.stateSel : '',
     county:   typeof c.county   === 'string' ? c.county   : '',
+    // Local wage ordinances are set by CITIES, not counties: the City of Los
+    // Angeles, West Hollywood and unincorporated LA County all sit inside one
+    // county and all pay differently. Without this the app cannot say which
+    // rate a reader is owed, only list several and leave them to guess.
+    city:     typeof c.city     === 'string' ? c.city     : '',
   };
 }
 function loadPrefs(){
@@ -1884,6 +1889,7 @@ function App(){
   // own covers only unincorporated areas — so this is an ARRAY of localities, each
   // carrying its own `covers` sentence. [] means "we hold none for this county", which
   // is not the same as "none exist"; the UI says so.
+  const [city, setCity] = useState(() => loadPrefs().city || '');
   const [localData, setLocalData] = useState([]);
   // Which counties in the selected state we hold ANY local ordinance for. Drives the
   // county step's coverage note: telling someone up front whether picking their county
@@ -1954,9 +1960,9 @@ function App(){
   // remember. A visitor who never picks a state leaves nothing behind at all,
   // rather than an empty record announcing they were here.
   useEffect(() => {
-    if (stateSel) savePrefs({ stateSel, county });
+    if (stateSel) savePrefs({ stateSel, county, city });
     else forgetPlace();
-  }, [stateSel, county]);
+  }, [stateSel, county, city]);
   // Clear the old case blob once, on first mount. See dropLegacyCase.
   useEffect(() => { dropLegacyCase(); }, []);
 
@@ -2030,7 +2036,11 @@ function App(){
   const nav = useCallback(k => () => setScreen(k), []);
 
   // How the place is named on screen, and in the one aria-label that reads it out.
-  const locationLabel = [county && county !== '—' ? county : '', stateSel].filter(Boolean).join(', ') || 'Nowhere set yet';
+  /* City first: it is the most specific thing we know and the layer that
+     actually decides a wage. A reader who sees only "Los Angeles County" has no
+     way to tell whether the figure on screen is the one they are owed. */
+  const locationLabel = [city && city !== '—' ? city : '', county && county !== '—' ? county : '', stateSel]
+    .filter(Boolean).join(', ') || 'Nowhere set yet';
   // The welcome illustration is the one screen with no tab bar — it is the
   // orientation before the app, not a destination inside it.
   const showTabs = screen !== 'welcome';
@@ -2078,7 +2088,7 @@ function App(){
   // it. It used to open a staged edit form over the saved case; there is no
   // case now, so changing location is just clearing the pick.
   const LocationPill = ({ dark }) => (
-    <button onClick={() => { setStateSel(''); setCounty(''); setLawCat(null); setScreen('home'); }} aria-label={'Change your state or county — currently ' + locationLabel} className="surfacefx" style={css(dark
+    <button onClick={() => { setStateSel(''); setCounty(''); setCity(''); setLawCat(null); setScreen('home'); }} aria-label={'Change where you work — currently ' + locationLabel} className="surfacefx" style={css(dark
       ? "align-self:flex-start;min-height:44px;display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;border:2px solid rgba(255,255,255,.6);background:rgba(255,255,255,.1);font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#fff;cursor:pointer"
       : "align-self:flex-start;min-height:44px;display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;border:2px solid #14181F;background:#FFF;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer")}><Icon name="location-pin" size={18} /> {locationLabel}</button>
   );
@@ -2140,8 +2150,8 @@ function App(){
   };
 
   const LawsHome = () => {
-    const pickState  = st => { setStateSel(st); setCounty(''); setCountyQuery(''); setLawCat(null); };
-    const pickCounty = c  => { setCounty(c); setLawCat(null); };
+    const pickState  = st => { setStateSel(st); setCounty(''); setCity(''); setCountyQuery(''); setLawCat(null); };
+    const pickCounty = c  => { setCounty(c); setCity(''); setLawCat(null); };
     const stName = stateSel || '';
     const stAbbr = US_STATE_ABBR[stName] || '';
     const fedFacts = (federal && federal.facts) || [];
@@ -2235,6 +2245,45 @@ function App(){
       </div>
     );
 
+    /* ── stop 2b · the city ────────────────────────────────────────────────
+       Only asked where it changes the answer: a county we hold more than one
+       locality for. US local wage ordinances are municipal, so two worksites a
+       block apart in the same county can be owed different amounts — the City
+       of Los Angeles pays less than the unincorporated county wrapped around
+       it, and West Hollywood pays more than both. Until we know which side of
+       a city line the work happens on, the honest output is a list the reader
+       has to resolve themselves, which is the job this screen takes off them.
+
+       The real long-term answer is a worksite address geocoded against
+       municipal boundary polygons. That needs boundary data this repo does not
+       ship, so this asks the question directly instead of guessing. */
+    if (county && county !== '—' && localData.length > 1 && !city) return (
+      <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:18px")}>
+        <button onClick={() => { setCounty(''); setLawCat(null); }} aria-label={'Back to the counties of ' + stName}
+          style={css("align-self:flex-start;display:flex;align-items:center;gap:4px;min-height:44px;background:none;border:none;padding:10px 12px;margin:-8px 0 -8px -10px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}><Icon name="back" size={18} /> {county}</button>
+        <div>
+          <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>Where in {county} do you work?</h1>
+          <p style={css("margin:10px 0 0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty")}>Not where you live — where you actually do the work. {localData.length} places in this county set their own rules, and they do not agree with each other.</p>
+        </div>
+        <div style={css("display:flex;flex-direction:column;gap:10px")}>
+          {localData.map(loc =>
+            <button key={loc.name} onClick={() => { setCity(loc.name); setLawCat(null); }} className="hoverfx"
+              style={css("text-align:left;padding:14px 15px;border-radius:14px;border:2px solid #14181F;background:#fff;cursor:pointer;display:flex;flex-direction:column;gap:5px;min-height:44px")}>
+              <span style={css("font:700 18px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{loc.name}</span>
+              <span style={css("font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty")}>{loc.covers}</span>
+            </button>
+          )}
+          {/* Never a dead end: a reader whose town is not listed still gets the
+              state and federal layers rather than being stuck on this screen. */}
+          <button onClick={() => { setCity('—'); setLawCat(null); }} className="hoverfx"
+            style={css("text-align:left;padding:14px 15px;border-radius:14px;border:2px dashed rgba(20,24,31,.34);background:transparent;cursor:pointer;display:flex;flex-direction:column;gap:5px;min-height:44px")}>
+            <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Somewhere else in {county}</span>
+            <span style={css("font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty")}>Or you are not sure. You will see {stName} and federal law, and every local rule we hold for this county underneath.</span>
+          </button>
+        </div>
+      </div>
+    );
+
     // ── stop 4 · one category ──
     if (lawCat) {
       const cat = LAW_CATEGORIES.find(c => c.key === lawCat);
@@ -2246,9 +2295,15 @@ function App(){
       // rather than merged into one list: two of them routinely disagree (the City of
       // Los Angeles pays less than the unincorporated county around it), and which one
       // is yours depends on an address we deliberately never ask for.
-      const localHere = (localData || [])
+      const localAll = (localData || [])
         .map(loc => ({ loc, facts: factsInCategory(loc.facts || [], cat.key) }))
         .filter(x => x.facts.length);
+      /* Once the city is known, one of these is the reader's and the rest are
+         context. Before that they are all just candidates, which is why the
+         city step exists. */
+      const localMine = city && city !== '—' ? localAll.filter(x => x.loc.name === city) : [];
+      const localOther = localAll.filter(x => localMine.indexOf(x) < 0);
+      const localHere = localMine.length ? localMine.concat(localOther) : localAll;
       return (
         <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
           <button onClick={() => setLawCat(null)} aria-label="Back to all topics"
@@ -2870,7 +2925,7 @@ function App(){
                   line of its own a few pixels above this one, so the first
                   screen of a site whose whole job is "pick your state" led with
                   four lines of boilerplate in two stacked blocks. */}
-              <p style={css("margin:0;font:400 13px/1.5 'Atkinson Hyperlegible',sans-serif;color:#6B7280")}>Legal information, not legal advice. Nothing is uploaded — this browser remembers only the state and county you picked.</p>
+              <p style={css("margin:0;font:400 13px/1.5 'Atkinson Hyperlegible',sans-serif;color:#6B7280")}>Legal information, not legal advice. Nothing is uploaded — this browser remembers only the place you picked: state, county, and city if you gave one.</p>
             </div>
           }
         </main>

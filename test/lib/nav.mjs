@@ -114,7 +114,16 @@ export const PLACE_KEY = 'worklaw.place.v1';
 async function seedPlace(page, place) {
   await page.evaluateOnNewDocument((key, value) => {
     try { localStorage.setItem(key, value); } catch (e) { /* about:blank / blocked storage */ }
-  }, PLACE_KEY, JSON.stringify({ stateSel: place.state || '', county: place.county || '—' }));
+  }, PLACE_KEY, JSON.stringify({
+    stateSel: place.state || '',
+    county: place.county || '—',
+    /* A county we hold several localities for now asks which city, because a
+       municipal ordinance is what decides a wage. A suite that wants to land on
+       the topic grid has to answer that, so default to "somewhere else in the
+       county" unless it says otherwise. Suites testing the city step itself
+       pass city: '' to leave it unanswered. */
+    city: place.city === undefined ? '—' : place.city,
+  }));
 }
 
 /**
@@ -122,6 +131,8 @@ async function seedPlace(page, place) {
  *
  *   { freshVisitor: true }            — opt out of the seen-welcome flag
  *   { place: { state, county } }      — start already located, on the topic grid
+ *   { place: { state, county, city } } — ...and in a named city; city:'' stops
+ *                                        on the city step instead
  */
 export async function gotoApp(page, url, opts = {}) {
   const { freshVisitor, place, ...gotoOpts } = opts;
