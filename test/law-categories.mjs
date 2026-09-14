@@ -33,7 +33,13 @@ const dev = readFileSync(join(ROOT, 'index.dev.html'), 'utf8');
 const block = dev.slice(dev.indexOf('const LAW_CATEGORIES = ['), dev.indexOf('const TOPIC_PREFIX_CATEGORY'));
 const cats = [...block.matchAll(/\{ key:'([a-z]+)',[\s\S]*?prefixes:\[([^\]]+)\]/g)]
   .map(m => ({ key: m[1], prefixes: m[2].split(',').map(s => s.trim().replace(/^'|'$/g, '')) }));
-ok(cats.length === 8, `parsed ${cats.length} categories from LAW_CATEGORIES (expected 8)`);
+// Guard the PARSE, not the product decision. A hardcoded count fails whenever
+// the taxonomy is deliberately reshaped (8 -> 6 when disability folded into
+// discrimination) while still missing the thing worth catching: a regex that
+// quietly stops matching and leaves later assertions grading an empty list.
+const declared = (block.match(/\{ key:'/g) || []).length;
+ok(cats.length === declared && cats.length > 0,
+   `parsed every declared category (${cats.length} of ${declared})`);
 
 const owner = {};
 let dupes = [];
@@ -84,7 +90,10 @@ try {
   await new Promise(r => setTimeout(r, 900));
 
   const idx = await pg.evaluate(() => document.body.innerText);
-  ok(/Pay & overtime/.test(idx) && /Deadlines to act/.test(idx), 'the Laws tab opens on the topic grid');
+  // Two domains from opposite ends of the list, so the assertion proves the whole
+  // grid rendered rather than just its first card.
+  ok(/Pay & overtime/.test(idx) && /Deadlines & what you can recover/.test(idx),
+     'the Laws tab opens on the topic grid');
   ok(!/THE LAW/.test(idx), 'the grid shows topics, not a flat wall of facts');
 
   // Opening a category shows its facts, state before federal.

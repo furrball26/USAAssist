@@ -285,31 +285,55 @@ function topicKicker(topic){
    test/law-categories.mjs, which fails if a new prefix ships unmapped or two
    categories claim the same one). Counts today: 492 facts across all eight. */
 const US_COUNTY_LABEL = {"Alabama":"COUNTY","Alaska":"BOROUGH","Arizona":"COUNTY","Arkansas":"COUNTY","California":"COUNTY","Colorado":"COUNTY","Connecticut":"COUNTY","Delaware":"COUNTY","Florida":"COUNTY","Georgia":"COUNTY","Hawaii":"COUNTY","Idaho":"COUNTY","Illinois":"COUNTY","Indiana":"COUNTY","Iowa":"COUNTY","Kansas":"COUNTY","Kentucky":"COUNTY","Louisiana":"PARISH","Maine":"COUNTY","Maryland":"COUNTY","Massachusetts":"COUNTY","Michigan":"COUNTY","Minnesota":"COUNTY","Mississippi":"COUNTY","Missouri":"COUNTY","Montana":"COUNTY","Nebraska":"COUNTY","Nevada":"COUNTY","New Hampshire":"COUNTY","New Jersey":"COUNTY","New Mexico":"COUNTY","New York":"COUNTY","North Carolina":"COUNTY","North Dakota":"COUNTY","Ohio":"COUNTY","Oklahoma":"COUNTY","Oregon":"COUNTY","Pennsylvania":"COUNTY","Rhode Island":"COUNTY","South Carolina":"COUNTY","South Dakota":"COUNTY","Tennessee":"COUNTY","Texas":"COUNTY","Utah":"COUNTY","Vermont":"COUNTY","Virginia":"COUNTY","Washington":"COUNTY","West Virginia":"COUNTY","Wisconsin":"COUNTY","Wyoming":"COUNTY"};
+/* Six domains, not eight.
+ *
+ * The old taxonomy had eight topics sharing four tints, each used twice, so
+ * colour identified nothing — two unrelated topics were the same colour and a
+ * reader could learn no association from it. Colour-coding research is also
+ * clear that a categorical palette tops out around six once colour-vision
+ * safety and AA contrast both bind, so the taxonomy moved to fit the palette
+ * rather than the palette straining to fit the taxonomy:
+ *   - Disability folds into Discrimination. The ADA is anti-discrimination law
+ *     and readers do not arrive sorting themselves into separate statutes.
+ *   - Deadlines folds into What you can recover. Both are about ACTING on a
+ *     claim rather than about a right you hold, and a deadline is only
+ *     meaningful next to what it is a deadline for.
+ * No facts are dropped: every prefix from the retired topics is carried below.
+ *
+ * `fill` is Okabe-Ito (Color Universal Design), chosen for hue separation under
+ * colour-vision deficiency. `edge` is a darker grade of the SAME hue and does
+ * double duty as the border and as any text set in the domain colour, because
+ * only one Okabe-Ito hue clears 4.5:1 as text. `on` is whichever of ink/white
+ * actually passes on that fill — measured per hue, not assumed.
+ * automation/check-palette.mjs re-derives all of this from THIS array and fails
+ * the build if any pairing drops below AA or the hues stop being tellable apart.
+ * Colour is never the only cue: every domain ships fill + icon + word (SC 1.4.1).
+ */
 const LAW_CATEGORIES = [
-  { key:'pay', icon:'money', tint:'#EEF1FF',      label:'Pay & overtime',
+  { key:'pay', icon:'money', fill:'#009E73', edge:'#004532', on:'#14181F',
+    label:'Pay & overtime',
     blurb:'Minimum wage, overtime, tips, equal pay, and when you must be paid.',
     prefixes:['minimumWage','overtime','wagePayment','equalPay'] },
-  { key:'discrim', icon:'people', tint:'#FFE7EC',    label:'Discrimination & harassment',
-    blurb:'Who is protected, what counts, and what an employer must do about it.',
-    prefixes:['discrimination','harassment'] },
-  { key:'disability', icon:'access', tint:'#E8F6EE',       label:'Disability & accommodations',
-    blurb:'Reasonable accommodations and the interactive process.',
-    prefixes:['disability'] },
-  { key:'retaliation', icon:'megaphone', tint:'#FFF4D6',    label:'Retaliation & speaking up',
+  { key:'discrim', icon:'people', fill:'#D55E00', edge:'#7A3600', on:'#14181F',
+    label:'Discrimination & harassment',
+    blurb:'Who is protected, what counts, and disability accommodations.',
+    prefixes:['discrimination','harassment','disability'] },
+  { key:'retaliation', icon:'megaphone', fill:'#CC79A7', edge:'#6E2F50', on:'#14181F',
+    label:'Retaliation & speaking up',
     blurb:'Being punished for complaining, whistleblowing, or discussing pay.',
     prefixes:['retaliation','whistleblower','payDiscussion'] },
-  { key:'timeoff', icon:'clock', tint:'#F0EDE5',     label:'Time off & breaks',
+  { key:'timeoff', icon:'clock', fill:'#56B4E9', edge:'#10506F', on:'#14181F',
+    label:'Time off & breaks',
     blurb:'Family and medical leave, sick time, and meal breaks.',
     prefixes:['leave','mealBreak'] },
-  { key:'leaving', icon:'exit', tint:'#EEF1FF',       label:'Leaving a job',
+  { key:'leaving', icon:'exit', fill:'#F0E442', edge:'#544D00', on:'#14181F',
+    label:'Leaving a job',
     blurb:'Final paycheck timing, severance agreements, and non-competes.',
     prefixes:['final-pay','severance','nonCompete'] },
-  { key:'deadlines', icon:'alarm', tint:'#FFE7EC',     label:'Deadlines to act',
-    blurb:'How long you have before a claim expires. These are unforgiving.',
-    prefixes:['deadlines'] },
-  { key:'remedies', icon:'scale', tint:'#E8F6EE',   label:'What you can recover',
-    blurb:'Back pay, damages, attorney’s fees, and where to file.',
-    prefixes:['remedies','enforcement'] },
+  { key:'deadlines', icon:'alarm', fill:'#0072B2', edge:'#004B75', on:'#FFFFFF',
+    label:'Deadlines & what you can recover',
+    blurb:'How long you have before a claim expires, and what you can win. These are unforgiving.',
+    prefixes:['deadlines','remedies','enforcement'] },
 ];
 // prefix -> category key, built once.
 const TOPIC_PREFIX_CATEGORY = (() => {
@@ -1348,6 +1372,11 @@ function sanitizePrefs(raw){
   return {
     stateSel: typeof c.stateSel === 'string' ? c.stateSel : '',
     county:   typeof c.county   === 'string' ? c.county   : '',
+    // Local wage ordinances are set by CITIES, not counties: the City of Los
+    // Angeles, West Hollywood and unincorporated LA County all sit inside one
+    // county and all pay differently. Without this the app cannot say which
+    // rate a reader is owed, only list several and leave them to guess.
+    city:     typeof c.city     === 'string' ? c.city     : '',
   };
 }
 function loadPrefs(){
@@ -1382,6 +1411,59 @@ function hasSeenWelcome(){
 function markWelcomeSeen(){
   try { localStorage.setItem(SEEN_WELCOME_KEY, '1'); } catch(e){ /* best-effort; a repeat intro is harmless */ }
 }
+/* ── Which minimum wage is actually owed ───────────────────────────────────
+   Several minimum wages reach any one worksite — federal, state, county and
+   city — and the app used to print all of them and leave the reader to work
+   out which was theirs. That is rule-selection work handed to someone under
+   stress, on a phone, and it is exactly the arithmetic this site exists to do.
+
+   This resolves them to ONE figure. It is deliberately narrow:
+
+   - Only `minimumWage.hourly`. "The highest rule wins" is true of wage FLOORS
+     and is NOT a general principle of employment law — elsewhere federal law
+     can preempt, and a state scheme can be narrower than the federal one.
+     Applying highest-wins across the board would invent law, so this function
+     refuses to look at any other topic.
+   - A local rate counts as applying only when the reader has told us they work
+     in that locality. If they have not, the local layer is reported as
+     unresolved rather than assumed — being told you are owed $20.25 when you
+     work two streets outside West Hollywood is worse than being told to check.
+
+   Returns null when there is nothing to resolve, so the caller renders the
+   ordinary fact list instead. */
+function resolveMinimumWage({ cityFacts, otherLocal, stateFacts, fedFacts, stName, cityName }) {
+  const rate = (facts) => {
+    const f = (facts || []).find(x => String(x.topic) === 'minimumWage.hourly' && typeof x.value === 'number');
+    return f || null;
+  };
+  const layers = [];
+  const cityFact = rate(cityFacts);
+  if (cityFact && cityName) {
+    layers.push({ key: 'city', name: cityName, kind: 'Local ordinance', fact: cityFact, applies: true });
+  }
+  const stFact = rate(stateFacts);
+  if (stFact) layers.push({ key: 'state', name: stName, kind: 'State law', fact: stFact, applies: true });
+  const fedFact = rate(fedFacts);
+  if (fedFact) layers.push({ key: 'federal', name: 'Federal', kind: 'The national floor (FLSA)', fact: fedFact, applies: true });
+
+  // Nothing to choose between is not an answer worth dressing up as one.
+  if (layers.length < 2) return null;
+
+  const winner = layers.reduce((a, b) => (b.fact.value > a.fact.value ? b : a));
+  layers.forEach(l => { l.winner = l === winner; });
+
+  /* Localities we hold for this county that are NOT the reader's, and that pay
+     MORE than the figure we resolved. Only those are worth interrupting for:
+     a nearby town paying less changes nothing about what this reader is owed,
+     and listing it under "you may be owed more" would simply be false. */
+  const nearby = (otherLocal || [])
+    .map(x => ({ name: x.loc.name, covers: x.loc.covers, fact: rate(x.facts) }))
+    .filter(x => x.fact && x.fact.value > winner.fact.value)
+    .sort((a, b) => b.fact.value - a.fact.value);
+
+  return { layers, winner, nearby, unresolvedLocal: !cityFact && nearby.length > 0 };
+}
+
 function money(n){ return '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 }); }
 // The date-input (<input type="date">) value for a JS Date, in the browser's LOCAL
 // calendar day — not toISOString().slice(0,10), which is UTC and can land on the
@@ -1860,6 +1942,7 @@ function App(){
   // own covers only unincorporated areas — so this is an ARRAY of localities, each
   // carrying its own `covers` sentence. [] means "we hold none for this county", which
   // is not the same as "none exist"; the UI says so.
+  const [city, setCity] = useState(() => loadPrefs().city || '');
   const [localData, setLocalData] = useState([]);
   // Which counties in the selected state we hold ANY local ordinance for. Drives the
   // county step's coverage note: telling someone up front whether picking their county
@@ -1930,9 +2013,9 @@ function App(){
   // remember. A visitor who never picks a state leaves nothing behind at all,
   // rather than an empty record announcing they were here.
   useEffect(() => {
-    if (stateSel) savePrefs({ stateSel, county });
+    if (stateSel) savePrefs({ stateSel, county, city });
     else forgetPlace();
-  }, [stateSel, county]);
+  }, [stateSel, county, city]);
   // Clear the old case blob once, on first mount. See dropLegacyCase.
   useEffect(() => { dropLegacyCase(); }, []);
 
@@ -2006,7 +2089,11 @@ function App(){
   const nav = useCallback(k => () => setScreen(k), []);
 
   // How the place is named on screen, and in the one aria-label that reads it out.
-  const locationLabel = [county && county !== '—' ? county : '', stateSel].filter(Boolean).join(', ') || 'Nowhere set yet';
+  /* City first: it is the most specific thing we know and the layer that
+     actually decides a wage. A reader who sees only "Los Angeles County" has no
+     way to tell whether the figure on screen is the one they are owed. */
+  const locationLabel = [city && city !== '—' ? city : '', county && county !== '—' ? county : '', stateSel]
+    .filter(Boolean).join(', ') || 'Nowhere set yet';
   // The welcome illustration is the one screen with no tab bar — it is the
   // orientation before the app, not a destination inside it.
   const showTabs = screen !== 'welcome';
@@ -2054,7 +2141,7 @@ function App(){
   // it. It used to open a staged edit form over the saved case; there is no
   // case now, so changing location is just clearing the pick.
   const LocationPill = ({ dark }) => (
-    <button onClick={() => { setStateSel(''); setCounty(''); setLawCat(null); setScreen('home'); }} aria-label={'Change your state or county — currently ' + locationLabel} className="surfacefx" style={css(dark
+    <button onClick={() => { setStateSel(''); setCounty(''); setCity(''); setLawCat(null); setScreen('home'); }} aria-label={'Change where you work — currently ' + locationLabel} className="surfacefx" style={css(dark
       ? "align-self:flex-start;min-height:44px;display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;border:2px solid rgba(255,255,255,.6);background:rgba(255,255,255,.1);font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#fff;cursor:pointer"
       : "align-self:flex-start;min-height:44px;display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;border:2px solid #14181F;background:#FFF;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer")}><Icon name="location-pin" size={18} /> {locationLabel}</button>
   );
@@ -2116,8 +2203,8 @@ function App(){
   };
 
   const LawsHome = () => {
-    const pickState  = st => { setStateSel(st); setCounty(''); setCountyQuery(''); setLawCat(null); };
-    const pickCounty = c  => { setCounty(c); setLawCat(null); };
+    const pickState  = st => { setStateSel(st); setCounty(''); setCity(''); setCountyQuery(''); setLawCat(null); };
+    const pickCounty = c  => { setCounty(c); setCity(''); setLawCat(null); };
     const stName = stateSel || '';
     const stAbbr = US_STATE_ABBR[stName] || '';
     const fedFacts = (federal && federal.facts) || [];
@@ -2211,6 +2298,45 @@ function App(){
       </div>
     );
 
+    /* ── stop 2b · the city ────────────────────────────────────────────────
+       Only asked where it changes the answer: a county we hold more than one
+       locality for. US local wage ordinances are municipal, so two worksites a
+       block apart in the same county can be owed different amounts — the City
+       of Los Angeles pays less than the unincorporated county wrapped around
+       it, and West Hollywood pays more than both. Until we know which side of
+       a city line the work happens on, the honest output is a list the reader
+       has to resolve themselves, which is the job this screen takes off them.
+
+       The real long-term answer is a worksite address geocoded against
+       municipal boundary polygons. That needs boundary data this repo does not
+       ship, so this asks the question directly instead of guessing. */
+    if (county && county !== '—' && localData.length > 1 && !city) return (
+      <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:18px")}>
+        <button onClick={() => { setCounty(''); setLawCat(null); }} aria-label={'Back to the counties of ' + stName}
+          style={css("align-self:flex-start;display:flex;align-items:center;gap:4px;min-height:44px;background:none;border:none;padding:10px 12px;margin:-8px 0 -8px -10px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}><Icon name="back" size={18} /> {county}</button>
+        <div>
+          <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>Where in {county} do you work?</h1>
+          <p style={css("margin:10px 0 0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty")}>Not where you live — where you actually do the work. {localData.length} places in this county set their own rules, and they do not agree with each other.</p>
+        </div>
+        <div style={css("display:flex;flex-direction:column;gap:10px")}>
+          {localData.map(loc =>
+            <button key={loc.name} onClick={() => { setCity(loc.name); setLawCat(null); }} className="hoverfx"
+              style={css("text-align:left;padding:14px 15px;border-radius:14px;border:2px solid #14181F;background:#fff;cursor:pointer;display:flex;flex-direction:column;gap:5px;min-height:44px")}>
+              <span style={css("font:700 18px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{loc.name}</span>
+              <span style={css("font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty")}>{loc.covers}</span>
+            </button>
+          )}
+          {/* Never a dead end: a reader whose town is not listed still gets the
+              state and federal layers rather than being stuck on this screen. */}
+          <button onClick={() => { setCity('—'); setLawCat(null); }} className="hoverfx"
+            style={css("text-align:left;padding:14px 15px;border-radius:14px;border:2px dashed rgba(20,24,31,.34);background:transparent;cursor:pointer;display:flex;flex-direction:column;gap:5px;min-height:44px")}>
+            <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Somewhere else in {county}</span>
+            <span style={css("font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty")}>Or you are not sure. You will see {stName} and federal law, and every local rule we hold for this county underneath.</span>
+          </button>
+        </div>
+      </div>
+    );
+
     // ── stop 4 · one category ──
     if (lawCat) {
       const cat = LAW_CATEGORIES.find(c => c.key === lawCat);
@@ -2222,9 +2348,25 @@ function App(){
       // rather than merged into one list: two of them routinely disagree (the City of
       // Los Angeles pays less than the unincorporated county around it), and which one
       // is yours depends on an address we deliberately never ask for.
-      const localHere = (localData || [])
+      const localAll = (localData || [])
         .map(loc => ({ loc, facts: factsInCategory(loc.facts || [], cat.key) }))
         .filter(x => x.facts.length);
+      /* Once the city is known, one of these is the reader's and the rest are
+         context. Before that they are all just candidates, which is why the
+         city step exists. */
+      const localMine = city && city !== '—' ? localAll.filter(x => x.loc.name === city) : [];
+      const localOther = localAll.filter(x => localMine.indexOf(x) < 0);
+      const localHere = localMine.length ? localMine.concat(localOther) : localAll;
+      /* Narrow by design: only the wage floor resolves to a single number.
+         See resolveMinimumWage. */
+      const wage = cat.key === 'pay' ? resolveMinimumWage({
+        cityFacts: localMine.length ? localMine[0].facts : null,
+        otherLocal: localOther,
+        stateFacts: stFacts,
+        fedFacts: fedFacts,
+        stName: stName,
+        cityName: city && city !== '—' ? city : '',
+      }) : null;
       return (
         <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
           <button onClick={() => setLawCat(null)} aria-label="Back to all topics"
@@ -2234,6 +2376,49 @@ function App(){
             <h1 style={css("margin:8px 0 0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{cat.label}</h1>
             <p style={css("margin:8px 0 0;font:400 16px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{cat.blurb}</p>
           </div>
+
+          {/* The answer, before the evidence for it. Only minimum wage resolves
+              this way — see resolveMinimumWage for why that limit is load-bearing. */}
+          {wage ?
+            <div style={css("border:2px solid " + cat.edge + ";border-radius:16px;overflow:hidden;background:#fff")}>
+              <div style={css("padding:15px 16px 14px;background:" + cat.fill)}>
+                <p style={css("margin:0;font:500 15px/1.35 'Atkinson Hyperlegible',sans-serif;color:" + cat.on)}>The least you can legally be paid{wage.winner.key === 'city' ? ' in ' + wage.winner.name : ''}</p>
+                <p style={css("margin:4px 0 0;font:800 46px/1.05 'Atkinson Hyperlegible',sans-serif;letter-spacing:-.03em;color:" + cat.on)}>{money(wage.winner.fact.value)}</p>
+                <p style={css("margin:2px 0 0;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:" + cat.on)}>an hour, before tax</p>
+              </div>
+              <div>
+                {wage.layers.map((l, i) =>
+                  <div key={l.key} style={css("display:flex;align-items:center;gap:11px;padding:11px 14px;min-height:56px;" + (i ? 'border-top:1px solid rgba(20,24,31,.12);' : '') + (l.winner ? 'background:#F3FBF8' : ''))}>
+                    <span style={css("flex:1;min-width:0;display:flex;flex-direction:column;gap:1px")}>
+                      <span style={css("font:" + (l.winner ? '800' : '500') + " 16px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{l.name}</span>
+                      <span style={css("font:400 13px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{l.kind}</span>
+                    </span>
+                    <span style={css("flex:none;font:" + (l.winner ? "800 21px" : "500 17px") + " 'Atkinson Hyperlegible',sans-serif;color:" + (l.winner ? cat.edge : '#6B7280') + (l.winner ? '' : ';text-decoration:line-through'))}>{money(l.fact.value)}</span>
+                  </div>
+                )}
+              </div>
+              <p style={css("margin:0;padding:12px 14px 13px;border-top:2px solid " + cat.edge + ";font:500 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty")}>
+                You must be paid the highest minimum wage that reaches where you work. The others are struck through because a higher one applies to you, not because they are wrong.
+              </p>
+            </div> : null}
+
+          {/* Say plainly when we CANNOT resolve it, rather than showing a
+              confident state figure while a higher local one may be theirs. */}
+          {wage && wage.unresolvedLocal ?
+            <div style={css("padding:14px 15px;border-radius:14px;border:2px solid #C99A00;background:#FFF9E8")}>
+              <p style={css("margin:0;font:700 15px/1.4 'Atkinson Hyperlegible',sans-serif;color:#6B4B00;text-wrap:pretty")}>You may be owed more than the figure above.</p>
+              <p style={css("margin:6px 0 0;font:400 14px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty")}>{wage.nearby.length === 1 ? 'One place' : wage.nearby.length + ' places'} in {county && county !== '—' ? county : stName} set a higher rate of their own. Which applies depends on the exact address you work at, so we cannot pick one for you:</p>
+              <div style={css("display:flex;flex-direction:column;gap:7px;margin-top:10px")}>
+                {wage.nearby.map(n =>
+                  <div key={n.name} style={css("display:flex;align-items:baseline;gap:10px")}>
+                    <span style={css("flex:1;min-width:0;font:700 15px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{n.name}</span>
+                    <span style={css("flex:none;font:800 16px 'Atkinson Hyperlegible',sans-serif;color:#6B4B00")}>{money(n.fact.value)}</span>
+                  </div>
+                )}
+              </div>
+              <button onClick={() => setCity('')} className="hoverfx"
+                style={css("margin-top:12px;min-height:44px;padding:11px 14px;border-radius:11px;border:2px solid #14181F;background:#fff;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer")}>Tell us which one you work in</button>
+            </div> : null}
 
           {tools.length ?
             <div style={css("display:flex;flex-direction:column;gap:10px")}>
@@ -2325,19 +2510,26 @@ function App(){
                 </div>
               );
               return (
-                <button key={cat.key} onClick={() => setLawCat(cat.key)} className="hoverfx"
-                  style={css('text-align:left;padding:15px 16px;border-radius:16px;border:2px solid #14181F;background:' + cat.tint + ';cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:44px')}>
-                  {/* Icon beside the title, not above it: eight stacked cards
-                      with a 28px icon on its own line put two and a half
-                      topics on a phone screen. The icon never stands alone —
-                      a pictogram is not universal, and this site is meant to
-                      be read in languages none of these were drawn for. */}
-                  <span style={css("display:flex;align-items:center;gap:10px")}>
+                /* surfacefx, not hoverfx: hoverfx swaps the background outright,
+                   which would wipe the domain colour on hover. surfacefx darkens
+                   whatever colour is already there, which is what these need. */
+                <button key={cat.key} onClick={() => setLawCat(cat.key)} className="surfacefx"
+                  style={css('text-align:left;padding:14px;border-radius:16px;cursor:pointer;display:flex;align-items:flex-start;gap:13px;min-height:44px;border:2px solid ' + cat.edge + ';background:' + cat.fill)}>
+                  {/* The icon sits in its own box so it reads at a glance, but it
+                      never stands alone — a pictogram is not universal, and this
+                      site is meant to be read in languages none of these were
+                      drawn for. Colour + icon + word, every time (SC 1.4.1). */}
+                  <span style={css('flex:none;display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.42);color:' + cat.on + ';border:2px solid ' + cat.edge)}>
                     <Icon name={cat.icon} size={24} />
-                    <span style={css("font:700 18px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{cat.label}</span>
                   </span>
-                  <span style={css("font:400 15px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{cat.blurb}</span>
-                  <span style={css("font:600 12px 'IBM Plex Mono',monospace;letter-spacing:.04em;color:#4A5162")}>{n} {n === 1 ? 'RULE' : 'RULES'}</span>
+                  {/* No fixed width anywhere on this card: a label 30% longer in
+                      Spanish has to be able to take a second line rather than
+                      truncate the name of a category of law. */}
+                  <span style={css("display:flex;flex-direction:column;gap:4px;min-width:0")}>
+                    <span style={css("font:700 18px/1.22 'Atkinson Hyperlegible',sans-serif;text-wrap:pretty;color:" + cat.on)}>{cat.label}</span>
+                    <span style={css("font:500 14px/1.4 'Atkinson Hyperlegible',sans-serif;text-wrap:pretty;opacity:.84;color:" + cat.on)}>{cat.blurb}</span>
+                    <span style={css("font:700 12.5px 'Atkinson Hyperlegible',sans-serif;letter-spacing:.02em;opacity:.7;color:" + cat.on)}>{n} {n === 1 ? 'RULE REACHES' : 'RULES REACH'} YOU</span>
+                  </span>
                 </button>
               );
             })}
@@ -2839,7 +3031,7 @@ function App(){
                   line of its own a few pixels above this one, so the first
                   screen of a site whose whole job is "pick your state" led with
                   four lines of boilerplate in two stacked blocks. */}
-              <p style={css("margin:0;font:400 13px/1.5 'Atkinson Hyperlegible',sans-serif;color:#6B7280")}>Legal information, not legal advice. Nothing is uploaded — this browser remembers only the state and county you picked.</p>
+              <p style={css("margin:0;font:400 13px/1.5 'Atkinson Hyperlegible',sans-serif;color:#6B7280")}>Legal information, not legal advice. Nothing is uploaded — this browser remembers only the place you picked: state, county, and city if you gave one.</p>
             </div>
           }
         </main>

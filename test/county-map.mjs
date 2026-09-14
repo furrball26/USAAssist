@@ -170,8 +170,24 @@ try {
   await new Promise(r => setTimeout(r, 700));
   ok(picked, 'Los Angeles County has a shape on the map');
   const after = await pg.evaluate(() => document.body.innerText);
-  ok(/Your rights in California/i.test(after), 'clicking a county goes straight to the law for that place');
-  ok(/Los Angeles County, California/i.test(after), 'the picked county is named on the screen it leads to');
+  /* Los Angeles County holds five separate municipal ordinances that disagree
+     with each other, so picking the county cannot decide a wage on its own and
+     the flow asks which city next. Assert the whole chain rather than the
+     single hop: county -> city -> law. */
+  ok(/Where in Los Angeles County do you work\?/i.test(after),
+     'a county with several local ordinances asks which city, instead of guessing');
+  const toLaw = await pg.evaluate(() => {
+    const b = [...document.querySelectorAll('button')]
+      .find(el => /^West Hollywood/.test((el.textContent || '').trim()));
+    if (!b) return false;
+    b.click(); return true;
+  });
+  await new Promise(r => setTimeout(r, 900));
+  const law = toLaw ? await pg.evaluate(() => document.body.innerText) : '';
+  ok(toLaw && /Your rights in California/i.test(law),
+     'picking the city from there lands on the law for that place');
+  ok(/West Hollywood/i.test(law),
+     'the city that decides the rate is named on the screen it leads to');
   const stored = await pg.evaluate(() => JSON.parse(localStorage.getItem('worklaw.place.v1') || '{}'));
   ok(stored.county === 'Los Angeles County',
      `clicking a county stores the same value the select offers (got "${stored.county}")`);
