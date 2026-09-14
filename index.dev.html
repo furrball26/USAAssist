@@ -2494,6 +2494,18 @@ function App(){
             <p style={css("margin:8px 0 0;font:400 16px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{cat.blurb}</p>
           </div>
 
+          {/* Coverage, stated as a fact about US rather than about the law.
+              "Time off & breaks" carries one federal rule (FMLA) and no state
+              rule at all in 47 of 50 states, so "1 rule reaches you" can read
+              as "only one rule exists" — which for paid sick leave and meal
+              breaks is usually false. Say which layer is missing from OUR data,
+              the same way the county step already does for local ordinances. */}
+          {stateData && !st.length && fed.length ?
+            <div style={css("padding:14px 15px;border-radius:14px;border:2px dashed rgba(20,24,31,.3)")}>
+              <p style={css("margin:0;font:700 15px/1.4 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>Everything below is federal law. We hold no {stName} rules on this yet.</p>
+              <p style={css("margin:6px 0 0;font:400 14px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty")}>That is a gap in what we have compiled, not a finding that {stName} has none — many states add their own rules on top of the federal floor. Your state labor agency on the Agencies tab is the place to check.</p>
+            </div> : null}
+
           {/* The answer, before the evidence for it. Only minimum wage resolves
               this way — see resolveMinimumWage for why that limit is load-bearing. */}
           {wage ?
@@ -3059,7 +3071,7 @@ function App(){
     { name:'U.S. Department of Labor — Wage & Hour Division', covers:'Unpaid wages, overtime, minimum wage, family and medical leave.', url:'https://www.dol.gov/agencies/whd/contact/local-offices', deadlineTopics:['deadlines.flsaWageClaim'] },
     { name:'Equal Employment Opportunity Commission (EEOC)', covers:'Discrimination and harassment based on race, sex, religion, national origin, age, disability or genetic information.', url:'https://www.eeoc.gov/filing-charge-discrimination', deadlineTopics:['deadlines.eeocCharge'] },
     { name:'OSHA', covers:'Unsafe working conditions, and retaliation for reporting them.', url:'https://www.osha.gov/workers/file-complaint', deadlineTopics:['deadlines.oshaWhistleblower'] },
-    { name:'National Labor Relations Board (NLRB)', covers:'Being punished for organising, or for discussing pay and conditions with coworkers.', url:'https://www.nlrb.gov/about-nlrb/what-we-do/investigate-charges', deadlineTopics:[] },
+    { name:'National Labor Relations Board (NLRB)', covers:'Being punished for organizing, or for discussing pay and conditions with coworkers.', url:'https://www.nlrb.gov/about-nlrb/what-we-do/investigate-charges', deadlineTopics:[] },
   ];
 
   const Agencies = () => {
