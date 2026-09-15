@@ -144,6 +144,24 @@ try {
     await pg.close();
   }
   {
+    /* The Agencies tab shows filing deadlines drawn from the same unreviewed
+       facts the Laws tab marks "not yet lawyer-checked" — and for a while it
+       was the one screen that did NOT say so, which overstated confidence
+       exactly where a number cannot be recovered once it runs out. */
+    const { pg, errs } = await open(() => {
+      const b = [...document.querySelectorAll('button,a')].find(el => /Agencies/i.test((el.textContent || '').trim()));
+      if (b) b.click();
+    });
+    const text = await pg.evaluate(() => document.body.innerText);
+    ok(errs.length === 0, 'the agencies screen renders clean' + (errs.length ? ': ' + errs[0] : ''));
+    ok(/Your deadline to file/.test(text), 'and shows at least one filing deadline');
+    ok(/lawyer-checked/i.test(text),
+       'the deadlines there are marked as not yet attorney-verified, like the same facts elsewhere');
+    const notices = (text.match(/lawyer-checked/gi) || []).length;
+    ok(notices === 1, 'said once for the screen, not per card (' + notices + ')');
+    await pg.close();
+  }
+  {
     const { pg, errs } = await open(() => {
       const b = [...document.querySelectorAll('button,a')].find(el => /All rights/i.test((el.textContent || '').trim()));
       if (b) b.click();

@@ -676,6 +676,11 @@ const STRINGS = {
     'agencies.retal.sub': 'It is illegal for an employer to punish you \u2014 fire, demote, cut your hours \u2014 for asking about, complaining about, or filing a claim over your rights at work. That protection covers internal and verbal complaints too, not only formal filings.',
     'agencies.lawyer.h':  'Find an employment lawyer',
     'agencies.lawyer.sub': 'You may also want an employment attorney licensed in {state}. WorkLaw does not operate a referral service or recommend firms \u2014 your state or local bar association\u2019s lawyer-referral service is a reliable place to start.',
+    // Said on the Agencies tab too. The same unreviewed facts are labelled
+    // "not yet lawyer-checked" on the Laws tab and were unlabelled here, which
+    // overstated confidence on the one screen whose numbers cannot be
+    // recovered once they run out.
+    'draft.agencies':     'The deadlines on these cards come from official government sources but have not yet been verified by an attorney. Check the source named on the card before you rely on a date.',
     'agencies.foot':      'This is legal information, not legal advice. Where a deadline is shown it comes from the source named on that card, and it is the shortest thing standing between you and a claim \u2014 a day late is usually the whole case.',
     'scope.fedNationwide': 'FEDERAL \u2014 APPLIES NATIONWIDE',
     'scope.fedAnywhere':  'FEDERAL \u2014 ANYWHERE IN THE US',
@@ -3404,6 +3409,12 @@ function App(){
             clock — 180 days at the EEOC and three years in court are the same
             elapsed time and two very different situations — so the reading is
             per card even though the question is not. */}
+        {/* The Laws tab marks these same facts "not yet lawyer-checked"; this
+            screen did not, which meant the one place a reader meets a filing
+            deadline was also the one place we did not say nobody has checked
+            it. Said once, above every card it governs. */}
+        {anyDeadline ? <DraftChip label={t('draft.chip')}>{t('draft.agencies')}</DraftChip> : null}
+
         {anyDeadline ?
           <div style={css("padding:15px 17px;border-radius:14px;border:2px solid rgba(20,24,31,.22);background:#fff")}>
             <WhenPicker value={when} onPick={setWhen} tone="light" />
