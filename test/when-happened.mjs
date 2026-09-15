@@ -28,6 +28,7 @@ import { extname, join, normalize } from 'node:path';
 import puppeteer from 'puppeteer-core';
 import { resolveChromePath } from './lib/chrome.mjs';
 import { gotoApp } from './lib/nav.mjs';
+import { devSource, catalogue, translator } from './lib/appsrc.mjs';
 
 const ROOT = new URL('..', import.meta.url).pathname;
 let fails = 0;
@@ -42,8 +43,14 @@ const grab = (name) => {
   if (!m) { console.log('❌ could not find ' + name + ' in index.dev.html'); process.exit(1); }
   return m[0];
 };
+/* elapsedLabel() now builds its sentence out of the catalogue, so the real one
+   needs a real t() to run. Both come from the source, so this measures the
+   strings that actually ship. */
+const CAT = catalogue(dev);
 const support = 'function factValStr(v){ return Array.isArray(v) ? v.join(", ") : (v == null ? "" : String(v)); }\n' +
-  'const DURATION_DAYS = { day: 1, week: 7, month: 30, year: 365 };\n';
+  'const DURATION_DAYS = { day: 1, week: 7, month: 30, year: 365 };\n' +
+  'const __t = ' + translator.toString() + '(' + JSON.stringify(CAT) + ');\n' +
+  'const t = __t;\n';
 const { parseYM, monthsSince, elapsedLabel, shortestDeadlineDays, deadlineElapsed } = (0, eval)(
   '(function(){' + support + grab('parseYM') + grab('monthsSince') + grab('elapsedLabel') +
   grab('shortestDeadlineDays') + grab('deadlineElapsed') +
@@ -156,8 +163,8 @@ const REASSURING = /still (in time|have time)|you are fine|plenty of time|not to
 {
   // The copy is the safety property. If any of it ever starts reassuring, the
   // asymmetry above becomes decorative.
-  const copy = dev.match(/const ELAPSED_COPY = \{[\s\S]*?\n\};/)[0] +
-               dev.match(/const ELAPSED_CAVEAT = '[^']*';/)[0];
+  // The warning copy lives in the catalogue now, under its keys.
+  const copy = [CAT['when.past'], CAT['when.soon'], CAT['when.caveat']].join(' ');
   ok(/check today/.test(copy) && /do not wait/i.test(copy), 'the warning copy tells the reader to act');
   ok(!/you are out of time|too late|you have missed|no longer/i.test(copy),
      'and never declares a claim dead — deadlines run from different dates and some can be paused');

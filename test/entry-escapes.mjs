@@ -21,20 +21,29 @@ import { extname, join, normalize } from 'node:path';
 import puppeteer from 'puppeteer-core';
 import { resolveChromePath } from './lib/chrome.mjs';
 import { gotoApp, PLACE_KEY } from './lib/nav.mjs';
+import { devSource, constSource, catalogue, translator } from './lib/appsrc.mjs';
 
 const ROOT = new URL('..', import.meta.url).pathname;
 let fails = 0;
 const ok = (c, m) => { console.log((c ? '✅ ' : '❌ ') + m); if (!c) fails++; };
 
 // ── Part 1 · the copy ───────────────────────────────────────────────────────
-const dev = readFileSync(join(ROOT, 'index.dev.html'), 'utf8');
-const block = dev.match(/const ENTRY_SITUATIONS = \[[\s\S]*?\n\];/);
-if (!block) { console.log('❌ could not find ENTRY_SITUATIONS in index.dev.html'); process.exit(1); }
-const SITUATIONS = (0, eval)(block[0] + '; ENTRY_SITUATIONS');
+/* The situations now hold catalogue KEYS, not prose, so the assertions below
+   resolve through the catalogue — which is where a translation will land, and
+   therefore the right place to be asserting about what the copy may claim. */
+const dev = devSource();
+const CAT = catalogue(dev);
+const tr = translator(CAT);
+const SITUATIONS = (0, eval)(constSource(dev, 'ENTRY_SITUATIONS') + ' ENTRY_SITUATIONS')
+  .map(s => ({ key: s.key, label: tr(s.label), note: tr(s.note), labelKey: s.label, noteKey: s.note }));
 
 {
   ok(SITUATIONS.length === 4, 'four situations the map cannot express');
   ok(SITUATIONS.every(s => s.key && s.label && s.note), 'each has a key, a label and a note');
+  // A key that resolves to itself is a key with no catalogue entry behind it —
+  // which renders the dotted key on screen rather than a sentence.
+  ok(SITUATIONS.every(s => s.label !== s.labelKey && s.note !== s.noteKey),
+     'every label and note resolves through the catalogue rather than rendering its key');
   ok(new Set(SITUATIONS.map(s => s.key)).size === 4, 'the keys are distinct');
   // Every note has to leave the reader with something to do. A note that only
   // explains why we cannot help is a dead end with extra words.

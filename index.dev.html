@@ -645,6 +645,122 @@ const ADA_LOG_WHAT_LABELS = ADA_LOG_WHAT_OPTIONS.reduce((m, [k, l]) => (m[k] = l
 // this hedge never drifts between the two.
 const ADA_PROCESS_GOOD_FAITH_NOTE = 'The ADA generally requires both you and your employer to engage in this interactive process in good faith, on an ongoing basis — not a one-time letter. This log is a record of that back-and-forth, not a legal conclusion about whether either side met that duty.';
 
+/* ── The string catalogue ──────────────────────────────────────────────────
+   Every word a reader meets lives here, keyed, so a translation can be added
+   without touching a line of app code.
+
+   No second language ships yet, and the language control stays hidden until
+   one does: a toggle offering one choice is a dead control, and a HALF
+   translated app is worse than an untranslated one — a Spanish reader who
+   gets Spanish headings and English legal copy has been told this site speaks
+   their language and then handed the part that decides their claim in a
+   language they may not read. automation/check-i18n.mjs is what makes
+   "complete" checkable: it counts the strings still baked into the JSX and
+   fails the build if that number goes up.
+
+   Fonts are the other half and are deliberately not solved here. The app
+   inlines sixteen base64 faces to stay a single self-contained file that
+   makes no off-origin request (test/privacy.mjs asserts that), and Atkinson
+   Hyperlegible covers no Arabic, CJK or Korean. That is a decision about
+   weight and typography, not about strings, and it does not block this.
+
+   Keys are dotted and read screen-first — entry.county.h1, pay.cta.file —
+   so a translator can work down a screen rather than through an alphabet. */
+const STRINGS = {
+  en: {
+    // ── The four working lives the map cannot express ──
+    'entry.sit.heading':    'NONE OF THOSE FIT?',
+    'entry.sit.home.label': 'I work from home',
+    'entry.sit.home.note':  'Pick where you sit when you work, not where the company is. Which state\u2019s law reaches a remote worker is not always settled, so if those are two different states it is worth reading both.',
+    'entry.sit.many.label': 'More than one place',
+    'entry.sit.many.note':  'Start with the place you work most. Rules and rates can differ at each one and we cannot combine them \u2014 come back and change your place to read the others.',
+    'entry.sit.drive.label': 'I drive or deliver',
+    'entry.sit.drive.note': 'Pick where your route usually starts. Which local rate reaches driving and delivery work can turn on where you are based as much as on where you actually drive, and if you cross city lines more than one may apply. We cannot resolve that for you.',
+    'entry.sit.past.label': 'I left that job',
+    'entry.sit.past.note':  'Pick where you worked, not where you are now. Every figure on this site is today\u2019s \u2014 we do not hold what it was on an earlier date. The filing clock has been running since it happened, though, and the deadline cards will tell you how long that has been.',
+
+    // ── When did this happen, and what it means for the clock ──
+    'when.heading':      'When did this happen?',
+    'when.sub':          'Optional \u2014 every deadline shows either way. If you tell us, we will say how long ago that was, beside each one.',
+    'when.month':        'Month',
+    'when.monthAria':    'Month it happened',
+    'when.year':         'Year',
+    'when.yearAria':     'Year it happened',
+    'when.clear':        'Clear',
+    'when.said':         'You said this happened {elapsed}.',
+    'when.saidUrgent':   'You said this happened {elapsed}. {verdict}',
+    'when.past':         'That is past this deadline.',
+    'when.soon':         'That is most of this deadline \u2014 do not wait.',
+    'when.caveat':       'Deadlines run from different dates, and some can be paused, so a date past one is not necessarily the end of it \u2014 but check today, not next week.',
+    // Elapsed time, said the way a person says it.
+    'when.elapsed.thisMonth': 'this month',
+    'when.elapsed.oneMonth':  'about a month ago',
+    'when.elapsed.months':    'about {n} months ago',
+    'when.elapsed.years':     'about {years} ago',
+    'when.elapsed.yearsAnd':  'about {years} and {months} ago',
+    'when.unit.oneYear':      'a year',
+    'when.unit.years':        '{n} years',
+    'when.unit.oneMonth':     'a month',
+    'when.unit.months':       '{n} months',
+
+    // ── Provenance: who said it, when we last looked ──
+    'source.unnamed':    'Official source',
+    'source.checkedLong': '{agency} \u00b7 we last checked this {date}',
+    'source.checkedShort': '{agency} \u00b7 checked {date}',
+    'source.cta':        'Check the official text \u2197',
+    'source.ctaAria':    'Check the official text of {rule} (opens in a new tab)',
+    'source.none':       'We hold no link to the official text for this one \u2014 treat it as a lead, not an answer.',
+  },
+};
+
+/* The locales offered in the UI. One entry means no control is drawn. */
+const LOCALES = [{ code: 'en', name: 'English' }];
+
+/* There is one locale, so this never moves yet. When a second one lands it is
+   assigned at the top of App()'s render, before any child renders — React runs
+   a parent's function body to completion before rendering the children it
+   returned, so every t() below it would see the language the reader picked.
+   A module-level binding rather than a context because t() is also called from
+   plain functions that are not components and cannot useContext.
+
+   No language STATE and no stored preference yet, deliberately: with nothing
+   able to change the language, both would be scaffolding that no code path
+   reaches, and the stored one would widen the privacy promise for nothing. */
+let CURRENT_LANG = 'en';
+
+/* Look up a string, filling {placeholders} from `vars`.
+
+   Returns a plain string when every value is text, and a React fragment when
+   any of them is an element — so a sentence with a link inside it stays one
+   translatable sentence instead of being cut into three fragments that no
+   translator can reorder. Word order is the whole reason this matters:
+   German and Japanese put the verb where English does not, and copy
+   assembled by concatenation cannot be reordered at all.
+
+   A missing key renders the key itself. That is deliberately ugly and
+   deliberately not a crash: a typo should be obvious on screen in review, and
+   should never take the app down in front of a reader. check-i18n.mjs fails
+   the build on any key that is used and not defined. */
+function t(key, vars) {
+  const table = STRINGS[CURRENT_LANG] || STRINGS.en;
+  let s = table[key];
+  if (s === undefined) s = STRINGS.en[key];
+  if (s === undefined) return key;
+  if (!vars) return s;
+  const parts = String(s).split(/(\{[A-Za-z0-9_]+\})/);
+  let hasNode = false;
+  const out = parts.map((p) => {
+    const m = /^\{([A-Za-z0-9_]+)\}$/.exec(p);
+    if (!m || !Object.prototype.hasOwnProperty.call(vars, m[1])) return p;
+    const v = vars[m[1]];
+    if (v !== null && typeof v === 'object') hasNode = true;
+    return v;
+  });
+  // Spread as children rather than returning the array: variadic children
+  // need no keys, so this cannot produce React's list-key warning.
+  return hasNode ? React.createElement(React.Fragment, null, ...out) : out.join('');
+}
+
 /* Parse a CSS declaration string into a React style object.
    Lets us reuse the design's exact inline-style strings verbatim. */
 function css(str){
@@ -1558,15 +1674,21 @@ function monthsSince(ym, now){
   return diff < 0 ? null : diff;   // a date in the future is not elapsed time
 }
 
+/* Assembled from whole phrases rather than concatenated fragments. "about " +
+   y + " and " + m + " ago" cannot be translated: German and Japanese put those
+   pieces in a different order, and a translator handed the word "about" on its
+   own has nothing to work with. Each shape is one catalogue string with named
+   holes it can move around. */
 function elapsedLabel(months){
   if (months == null) return null;
-  if (months === 0) return 'this month';
-  if (months === 1) return 'about a month ago';
-  if (months < 12) return 'about ' + months + ' months ago';
+  if (months === 0) return t('when.elapsed.thisMonth');
+  if (months === 1) return t('when.elapsed.oneMonth');
+  if (months < 12) return t('when.elapsed.months', { n: months });
   const years = Math.floor(months / 12), rem = months % 12;
-  const y = years === 1 ? 'a year' : years + ' years';
-  if (rem === 0) return 'about ' + y + ' ago';
-  return 'about ' + y + ' and ' + (rem === 1 ? 'a month' : rem + ' months') + ' ago';
+  const y = years === 1 ? t('when.unit.oneYear') : t('when.unit.years', { n: years });
+  if (rem === 0) return t('when.elapsed.years', { years: y });
+  const m = rem === 1 ? t('when.unit.oneMonth') : t('when.unit.months', { n: rem });
+  return t('when.elapsed.yearsAnd', { years: y, months: m });
 }
 
 const DURATION_DAYS = { day: 1, week: 7, month: 30, year: 365 };
@@ -1622,11 +1744,7 @@ function deadlineElapsed(value, ym, now){
    printed the same forty words five times down one screen — a reader scrolls
    past that, which is the opposite of what a deadline warning is for. The
    verdict is per card; the caveat below is said once, by the picker. */
-const ELAPSED_COPY = {
-  past: 'That is past this deadline.',
-  soon: 'That is most of this deadline — do not wait.',
-};
-const ELAPSED_CAVEAT = 'Deadlines run from different dates, and some can be paused, so a date past one is not necessarily the end of it — but check today, not next week.';
+const ELAPSED_COPY = { past: 'when.past', soon: 'when.soon' };
 
 /* The arithmetic, done for the reader rather than described to them. A third of
    US adults score at or below Level 1 numeracy, and this app's whole subject is
@@ -2206,16 +2324,9 @@ function formatChecked(iso){
    governs: for remote and for driving work that question is genuinely
    unsettled, and we hold no sourced answer to it, so the notes point at
    reading both rather than at picking one. */
-const ENTRY_SITUATIONS = [
-  { key: 'home', label: 'I work from home',
-    note: 'Pick where you sit when you work, not where the company is. Which state’s law reaches a remote worker is not always settled, so if those are two different states it is worth reading both.' },
-  { key: 'many', label: 'More than one place',
-    note: 'Start with the place you work most. Rules and rates can differ at each one and we cannot combine them — come back and change your place to read the others.' },
-  { key: 'drive', label: 'I drive or deliver',
-    note: 'Pick where your route usually starts. Which local rate reaches driving and delivery work can turn on where you are based as much as on where you actually drive, and if you cross city lines more than one may apply. We cannot resolve that for you.' },
-  { key: 'past', label: 'I left that job',
-    note: 'Pick where you worked, not where you are now. Every figure on this site is today’s — we do not hold what it was on an earlier date. The filing clock has been running since it happened, though, and the deadline cards will tell you how long that has been.' },
-];
+const ENTRY_SITUATIONS = ['home', 'many', 'drive', 'past'].map(k => ({
+  key: k, label: 'entry.sit.' + k + '.label', note: 'entry.sit.' + k + '.note',
+}));
 
 /* Offered on both "where do you work" steps, because either can be the one a
    reader gets stuck on. Deliberately NOT persisted: it is guidance for getting
@@ -2224,7 +2335,7 @@ const ENTRY_SITUATIONS = [
 function EntrySituations({ value, onPick }) {
   return (
     <div style={css("display:flex;flex-direction:column;gap:10px")}>
-      <p style={css("margin:0;font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#4A5162;letter-spacing:.03em")}>NONE OF THOSE FIT?</p>
+      <p style={css("margin:0;font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#4A5162;letter-spacing:.03em")}>{t('entry.sit.heading')}</p>
       <div style={css("display:flex;flex-wrap:wrap;gap:8px")}>
         {ENTRY_SITUATIONS.map(s => {
           const on = value === s.key;
@@ -2235,13 +2346,13 @@ function EntrySituations({ value, onPick }) {
             <button key={s.key} onClick={() => onPick(on ? null : s.key)} aria-pressed={on} className="hoverfx"
               style={css("min-height:44px;padding:9px 14px;border-radius:999px;cursor:pointer;text-wrap:pretty;font:700 15px 'Atkinson Hyperlegible',sans-serif;" +
                 (on ? 'border:2px solid #004532;background:#B9F0DD;color:#00291E'
-                    : 'border:2px solid rgba(20,24,31,.28);background:#fff;color:#3A4150'))}>{s.label}</button>
+                    : 'border:2px solid rgba(20,24,31,.28);background:#fff;color:#3A4150'))}>{t(s.label)}</button>
           );
         })}
       </div>
       {value ?
         <p role="status" style={css("margin:0;padding:12px 13px;border-radius:12px;background:#E7F6F1;border-left:5px solid #004532;font:500 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#00382A;text-wrap:pretty")}>
-          {(ENTRY_SITUATIONS.find(s => s.key === value) || {}).note}
+          {t((ENTRY_SITUATIONS.find(s => s.key === value) || {}).note || '')}
         </p>
         : null}
     </div>
@@ -2277,22 +2388,22 @@ function WhenPicker({ value, onPick, tone }) {
   const set = (y, m) => onPick(y && m ? y + '-' + String(m).padStart(2, '0') : '');
   return (
     <div style={css("margin-top:11px;display:flex;flex-direction:column;gap:8px")}>
-      <p style={css("margin:0;font:700 14px/1.35 'Atkinson Hyperlegible',sans-serif;color:" + ink)}>When did this happen?</p>
-      <p style={css("margin:0;font:400 13.5px/1.45 'Atkinson Hyperlegible',sans-serif;color:" + quiet + ";text-wrap:pretty")}>Optional — every deadline shows either way. If you tell us, we will say how long ago that was, beside each one.</p>
+      <p style={css("margin:0;font:700 14px/1.35 'Atkinson Hyperlegible',sans-serif;color:" + ink)}>{t('when.heading')}</p>
+      <p style={css("margin:0;font:400 13.5px/1.45 'Atkinson Hyperlegible',sans-serif;color:" + quiet + ";text-wrap:pretty")}>{t('when.sub')}</p>
       <div style={css("display:flex;gap:8px;flex-wrap:wrap")}>
         {/* The visible "When did this happen?" line above labels the pair, but
             each control also carries its own name: a screen-reader user landing
             on the second <select> alone still hears which half it is. */}
-        <select aria-label="Month it happened" value={parsed ? parsed.m : ''}
+        <select aria-label={t('when.monthAria')} value={parsed ? parsed.m : ''}
           style={css("flex:1 1 130px;min-width:0;" + field)}
           onChange={e => set(parsed ? parsed.y : thisYear, e.target.value)}>
-          <option value="">Month</option>
+          <option value="">{t('when.month')}</option>
           {MONTH_NAMES.map((n, i) => <option key={n} value={i + 1}>{n}</option>)}
         </select>
-        <select aria-label="Year it happened" value={parsed ? parsed.y : ''}
+        <select aria-label={t('when.yearAria')} value={parsed ? parsed.y : ''}
           style={css("flex:1 1 110px;min-width:0;" + field)}
           onChange={e => set(e.target.value, parsed ? parsed.m : '')}>
-          <option value="">Year</option>
+          <option value="">{t('when.year')}</option>
           {years.map(y => <option key={y} value={y}>{y}</option>)}
         </select>
         {/* Never a one-way door: a reader who mistypes, or who decides they
@@ -2302,18 +2413,18 @@ function WhenPicker({ value, onPick, tone }) {
             single change of the year. Visually hidden because the reading is
             already on screen for anyone who can see it. */}
         <span role="status" style={css("position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap")}>
-          {parsed ? 'You said this happened ' + elapsedLabel(monthsSince(value)) + '.' : ''}
+          {parsed ? t('when.said', { elapsed: elapsedLabel(monthsSince(value)) }) : ''}
         </span>
         {parsed ?
           <button onClick={() => onPick('')} className="hoverfx"
-            style={css("min-height:44px;padding:10px 14px;border-radius:10px;border:2px solid " + (dark ? 'rgba(255,253,248,.45)' : 'rgba(20,24,31,.28)') + ";background:transparent;font:700 14px 'Atkinson Hyperlegible',sans-serif;color:" + ink + ";cursor:pointer")}>Clear</button>
+            style={css("min-height:44px;padding:10px 14px;border-radius:10px;border:2px solid " + (dark ? 'rgba(255,253,248,.45)' : 'rgba(20,24,31,.28)') + ";background:transparent;font:700 14px 'Atkinson Hyperlegible',sans-serif;color:" + ink + ";cursor:pointer")}>{t('when.clear')}</button>
           : null}
       </div>
       {/* Said once, here, rather than on every card that shows a verdict. It is
           true of any deadline on any screen, so it does not need repeating
           beside each one — and repeated, it stopped being read. */}
       {parsed ?
-        <p style={css("margin:2px 0 0;font:400 13px/1.5 'Atkinson Hyperlegible',sans-serif;color:" + quiet + ";text-wrap:pretty")}>{ELAPSED_CAVEAT}</p>
+        <p style={css("margin:2px 0 0;font:400 13px/1.5 'Atkinson Hyperlegible',sans-serif;color:" + quiet + ";text-wrap:pretty")}>{t('when.caveat')}</p>
         : null}
     </div>
   );
@@ -2335,7 +2446,9 @@ function ElapsedNote({ value, when, tone }) {
     <span style={css("display:block;margin-top:7px;text-wrap:pretty;font:" +
       (urgent ? '700' : '400') + " 13.5px/1.45 'Atkinson Hyperlegible',sans-serif;color:" +
       (dark ? (urgent ? '#FFC9C9' : '#C6D3CE') : (urgent ? '#7A1F1F' : '#4A5162')))}>
-      You said this happened {e.label}.{e.urgency ? ' ' + ELAPSED_COPY[e.urgency] : ''}
+      {e.urgency
+        ? t('when.saidUrgent', { elapsed: e.label, verdict: t(ELAPSED_COPY[e.urgency]) })
+        : t('when.said', { elapsed: e.label })}
     </span>
   );
 }
@@ -3352,7 +3465,9 @@ function App(){
               without a date the reader has no way to weigh that. */}
           {f.sourceAgency || formatChecked(f.lastChecked) ?
             <p style={css("margin:0;font:400 13px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>
-              {f.sourceAgency || 'Official source'}{formatChecked(f.lastChecked) ? ' · we last checked this ' + formatChecked(f.lastChecked) : ''}
+              {formatChecked(f.lastChecked)
+                ? t('source.checkedLong', { agency: f.sourceAgency || t('source.unnamed'), date: formatChecked(f.lastChecked) })
+                : (f.sourceAgency || t('source.unnamed'))}
             </p> : null}
           <div style={css("display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px")}>
             <span style={css('padding:7px 11px;border-radius:8px;background:' + scopeTone + ";border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace;color:#14181F")}>{scopeLabel}</span>
@@ -3364,10 +3479,10 @@ function App(){
               taps. The reason is given once, by the notice at the top of the
               list; repeating it per card would make it wallpaper. */}
           {safeUrl(f.sourceUrl)
-            ? <a href={safeUrl(f.sourceUrl)} target="_blank" rel="noopener noreferrer" className="hoverfx" aria-label={'Check the official text of ' + (f.citation || topicLabel(f.topic)) + ' (opens in a new tab)'}
-                style={css("display:flex;align-items:center;justify-content:center;gap:7px;margin-top:10px;min-height:48px;padding:12px 14px;border-radius:10px;background:#1B2778;border:2px solid #1B2778;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#FFFDF8;text-decoration:none;text-wrap:pretty")}>Check the official text ↗</a>
+            ? <a href={safeUrl(f.sourceUrl)} target="_blank" rel="noopener noreferrer" className="hoverfx" aria-label={t('source.ctaAria', { rule: f.citation || topicLabel(f.topic) })}
+                style={css("display:flex;align-items:center;justify-content:center;gap:7px;margin-top:10px;min-height:48px;padding:12px 14px;border-radius:10px;background:#1B2778;border:2px solid #1B2778;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#FFFDF8;text-decoration:none;text-wrap:pretty")}>{t('source.cta')}</a>
             : /* Silence here would read as "nothing to check". Say the gap. */
-              <p style={css("margin:10px 0 0;font:600 13.5px/1.45 'Atkinson Hyperlegible',sans-serif;color:#7A3600")}>We hold no link to the official text for this one — treat it as a lead, not an answer.</p>}
+              <p style={css("margin:10px 0 0;font:600 13.5px/1.45 'Atkinson Hyperlegible',sans-serif;color:#7A3600")}>{t('source.none')}</p>}
         </div>
       </div>
     );
@@ -3407,7 +3522,9 @@ function App(){
         <div style={css("display:flex;gap:10px;flex-wrap:wrap;align-items:center")}>
           {f.sourceAgency || formatChecked(f.lastChecked) ?
             <span style={css("font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>
-              {f.sourceAgency || 'Official source'}{formatChecked(f.lastChecked) ? ' · checked ' + formatChecked(f.lastChecked) : ''}
+              {formatChecked(f.lastChecked)
+                ? t('source.checkedShort', { agency: f.sourceAgency || t('source.unnamed'), date: formatChecked(f.lastChecked) })
+                : (f.sourceAgency || t('source.unnamed'))}
             </span> : null}
           {safeUrl(f.sourceUrl)
             ? <a href={safeUrl(f.sourceUrl)} target="_blank" rel="noopener noreferrer" className="hoverfx" aria-label={'Official source for ' + (f.citation || f.topic) + ' (opens in a new tab)'} style={css("display:inline-flex;align-items:center;min-height:44px;font:600 13px 'IBM Plex Mono',monospace;color:#2B3AA8;text-decoration:none")}>source ↗</a>

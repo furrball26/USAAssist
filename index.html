@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-z4FWus9rdzQLQd48BCj2vaHtXHNzHaVK8b333JIL4SI='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-U8DBOhMcE9TfnzaH1VVaQnssJzSYpTxO+Ffgx3GVFdI='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14181F">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232B3AA8'/%3E%3Ctext x='32' y='47' font-size='42' text-anchor='middle' fill='white' font-family='Georgia,serif'%3E%C2%A7%3C/text%3E%3C/svg%3E">
@@ -876,8 +876,8 @@ function factsByPrefix(facts, prefix) {
   return (facts || []).filter((f) => String(f.topic || "").split(".")[0] === prefix);
 }
 function stateFactFor(facts, topics) {
-  for (const t of topics) {
-    const f = factByTopic(facts, t);
+  for (const t2 of topics) {
+    const f = factByTopic(facts, t2);
     if (f) return f;
   }
   return null;
@@ -1004,6 +1004,69 @@ const ADA_LOG_WHAT_OPTIONS = [
 ];
 const ADA_LOG_WHAT_LABELS = ADA_LOG_WHAT_OPTIONS.reduce((m, [k, l]) => (m[k] = l, m), {});
 const ADA_PROCESS_GOOD_FAITH_NOTE = "The ADA generally requires both you and your employer to engage in this interactive process in good faith, on an ongoing basis \u2014 not a one-time letter. This log is a record of that back-and-forth, not a legal conclusion about whether either side met that duty.";
+const STRINGS = {
+  en: {
+    // ── The four working lives the map cannot express ──
+    "entry.sit.heading": "NONE OF THOSE FIT?",
+    "entry.sit.home.label": "I work from home",
+    "entry.sit.home.note": "Pick where you sit when you work, not where the company is. Which state\u2019s law reaches a remote worker is not always settled, so if those are two different states it is worth reading both.",
+    "entry.sit.many.label": "More than one place",
+    "entry.sit.many.note": "Start with the place you work most. Rules and rates can differ at each one and we cannot combine them \u2014 come back and change your place to read the others.",
+    "entry.sit.drive.label": "I drive or deliver",
+    "entry.sit.drive.note": "Pick where your route usually starts. Which local rate reaches driving and delivery work can turn on where you are based as much as on where you actually drive, and if you cross city lines more than one may apply. We cannot resolve that for you.",
+    "entry.sit.past.label": "I left that job",
+    "entry.sit.past.note": "Pick where you worked, not where you are now. Every figure on this site is today\u2019s \u2014 we do not hold what it was on an earlier date. The filing clock has been running since it happened, though, and the deadline cards will tell you how long that has been.",
+    // ── When did this happen, and what it means for the clock ──
+    "when.heading": "When did this happen?",
+    "when.sub": "Optional \u2014 every deadline shows either way. If you tell us, we will say how long ago that was, beside each one.",
+    "when.month": "Month",
+    "when.monthAria": "Month it happened",
+    "when.year": "Year",
+    "when.yearAria": "Year it happened",
+    "when.clear": "Clear",
+    "when.said": "You said this happened {elapsed}.",
+    "when.saidUrgent": "You said this happened {elapsed}. {verdict}",
+    "when.past": "That is past this deadline.",
+    "when.soon": "That is most of this deadline \u2014 do not wait.",
+    "when.caveat": "Deadlines run from different dates, and some can be paused, so a date past one is not necessarily the end of it \u2014 but check today, not next week.",
+    // Elapsed time, said the way a person says it.
+    "when.elapsed.thisMonth": "this month",
+    "when.elapsed.oneMonth": "about a month ago",
+    "when.elapsed.months": "about {n} months ago",
+    "when.elapsed.years": "about {years} ago",
+    "when.elapsed.yearsAnd": "about {years} and {months} ago",
+    "when.unit.oneYear": "a year",
+    "when.unit.years": "{n} years",
+    "when.unit.oneMonth": "a month",
+    "when.unit.months": "{n} months",
+    // ── Provenance: who said it, when we last looked ──
+    "source.unnamed": "Official source",
+    "source.checkedLong": "{agency} \xB7 we last checked this {date}",
+    "source.checkedShort": "{agency} \xB7 checked {date}",
+    "source.cta": "Check the official text \u2197",
+    "source.ctaAria": "Check the official text of {rule} (opens in a new tab)",
+    "source.none": "We hold no link to the official text for this one \u2014 treat it as a lead, not an answer."
+  }
+};
+const LOCALES = [{ code: "en", name: "English" }];
+let CURRENT_LANG = "en";
+function t(key, vars) {
+  const table = STRINGS[CURRENT_LANG] || STRINGS.en;
+  let s = table[key];
+  if (s === void 0) s = STRINGS.en[key];
+  if (s === void 0) return key;
+  if (!vars) return s;
+  const parts = String(s).split(/(\{[A-Za-z0-9_]+\})/);
+  let hasNode = false;
+  const out = parts.map((p) => {
+    const m = /^\{([A-Za-z0-9_]+)\}$/.exec(p);
+    if (!m || !Object.prototype.hasOwnProperty.call(vars, m[1])) return p;
+    const v = vars[m[1]];
+    if (v !== null && typeof v === "object") hasNode = true;
+    return v;
+  });
+  return hasNode ? React.createElement(React.Fragment, null, ...out) : out.join("");
+}
 function css(str) {
   const out = {};
   if (!str) return out;
@@ -1596,8 +1659,8 @@ function markWelcomeSeen() {
 function findDeadline(topics, stFacts, fedFacts) {
   if (!topics || !topics.length) return null;
   for (const src of [stFacts || [], fedFacts || []]) {
-    for (const t of topics) {
-      const f = src.find((x) => String(x.topic) === t && factValStr(x.value));
+    for (const t2 of topics) {
+      const f = src.find((x) => String(x.topic) === t2 && factValStr(x.value));
       if (f) return f;
     }
   }
@@ -1634,13 +1697,14 @@ function monthsSince(ym, now) {
 }
 function elapsedLabel(months) {
   if (months == null) return null;
-  if (months === 0) return "this month";
-  if (months === 1) return "about a month ago";
-  if (months < 12) return "about " + months + " months ago";
+  if (months === 0) return t("when.elapsed.thisMonth");
+  if (months === 1) return t("when.elapsed.oneMonth");
+  if (months < 12) return t("when.elapsed.months", { n: months });
   const years = Math.floor(months / 12), rem = months % 12;
-  const y = years === 1 ? "a year" : years + " years";
-  if (rem === 0) return "about " + y + " ago";
-  return "about " + y + " and " + (rem === 1 ? "a month" : rem + " months") + " ago";
+  const y = years === 1 ? t("when.unit.oneYear") : t("when.unit.years", { n: years });
+  if (rem === 0) return t("when.elapsed.years", { years: y });
+  const m = rem === 1 ? t("when.unit.oneMonth") : t("when.unit.months", { n: rem });
+  return t("when.elapsed.yearsAnd", { years: y, months: m });
 }
 const DURATION_DAYS = { day: 1, week: 7, month: 30, year: 365 };
 function shortestDeadlineDays(value) {
@@ -1667,11 +1731,7 @@ function deadlineElapsed(value, ym, now) {
     urgency: ratio === null ? null : ratio >= 1 ? "past" : ratio >= 0.75 ? "soon" : null
   };
 }
-const ELAPSED_COPY = {
-  past: "That is past this deadline.",
-  soon: "That is most of this deadline \u2014 do not wait."
-};
-const ELAPSED_CAVEAT = "Deadlines run from different dates, and some can be paused, so a date past one is not necessarily the end of it \u2014 but check today, not next week.";
+const ELAPSED_COPY = { past: "when.past", soon: "when.soon" };
 function workedExample(rate, hours) {
   if (typeof rate !== "number" || !(rate > 0)) return null;
   const NORMAL = 40;
@@ -2043,30 +2103,13 @@ function formatChecked(iso) {
   if (mo < 1 || mo > 12 || d < 1 || d > 31) return "";
   return d + " " + CHECKED_MONTHS[mo - 1] + " " + m[1];
 }
-const ENTRY_SITUATIONS = [
-  {
-    key: "home",
-    label: "I work from home",
-    note: "Pick where you sit when you work, not where the company is. Which state\u2019s law reaches a remote worker is not always settled, so if those are two different states it is worth reading both."
-  },
-  {
-    key: "many",
-    label: "More than one place",
-    note: "Start with the place you work most. Rules and rates can differ at each one and we cannot combine them \u2014 come back and change your place to read the others."
-  },
-  {
-    key: "drive",
-    label: "I drive or deliver",
-    note: "Pick where your route usually starts. Which local rate reaches driving and delivery work can turn on where you are based as much as on where you actually drive, and if you cross city lines more than one may apply. We cannot resolve that for you."
-  },
-  {
-    key: "past",
-    label: "I left that job",
-    note: "Pick where you worked, not where you are now. Every figure on this site is today\u2019s \u2014 we do not hold what it was on an earlier date. The filing clock has been running since it happened, though, and the deadline cards will tell you how long that has been."
-  }
-];
+const ENTRY_SITUATIONS = ["home", "many", "drive", "past"].map((k) => ({
+  key: k,
+  label: "entry.sit." + k + ".label",
+  note: "entry.sit." + k + ".note"
+}));
 function EntrySituations({ value, onPick }) {
-  return /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:10px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#4A5162;letter-spacing:.03em") }, "NONE OF THOSE FIT?"), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-wrap:wrap;gap:8px") }, ENTRY_SITUATIONS.map((s) => {
+  return /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:10px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#4A5162;letter-spacing:.03em") }, t("entry.sit.heading")), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-wrap:wrap;gap:8px") }, ENTRY_SITUATIONS.map((s) => {
     const on = value === s.key;
     return (
       /* Content-sized, min-height rather than height: these labels are
@@ -2081,10 +2124,10 @@ function EntrySituations({ value, onPick }) {
           className: "hoverfx",
           style: css("min-height:44px;padding:9px 14px;border-radius:999px;cursor:pointer;text-wrap:pretty;font:700 15px 'Atkinson Hyperlegible',sans-serif;" + (on ? "border:2px solid #004532;background:#B9F0DD;color:#00291E" : "border:2px solid rgba(20,24,31,.28);background:#fff;color:#3A4150"))
         },
-        s.label
+        t(s.label)
       )
     );
-  })), value ? /* @__PURE__ */ React.createElement("p", { role: "status", style: css("margin:0;padding:12px 13px;border-radius:12px;background:#E7F6F1;border-left:5px solid #004532;font:500 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#00382A;text-wrap:pretty") }, (ENTRY_SITUATIONS.find((s) => s.key === value) || {}).note) : null);
+  })), value ? /* @__PURE__ */ React.createElement("p", { role: "status", style: css("margin:0;padding:12px 13px;border-radius:12px;background:#E7F6F1;border-left:5px solid #004532;font:500 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#00382A;text-wrap:pretty") }, t((ENTRY_SITUATIONS.find((s) => s.key === value) || {}).note || "")) : null);
 }
 function WhenPicker({ value, onPick, tone }) {
   const dark = tone === "dark";
@@ -2096,42 +2139,42 @@ function WhenPicker({ value, onPick, tone }) {
   const parsed = parseYM(value);
   const field = "min-height:44px;padding:10px 11px;border-radius:10px;border:2px solid " + (dark ? "rgba(255,253,248,.45)" : "rgba(20,24,31,.28)") + ";background:" + (dark ? "#0C1016" : "#fff") + ";font:600 15px 'Atkinson Hyperlegible',sans-serif;color:" + ink + ";cursor:pointer;appearance:menulist;-webkit-appearance:menulist";
   const set = (y, m) => onPick(y && m ? y + "-" + String(m).padStart(2, "0") : "");
-  return /* @__PURE__ */ React.createElement("div", { style: css("margin-top:11px;display:flex;flex-direction:column;gap:8px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 14px/1.35 'Atkinson Hyperlegible',sans-serif;color:" + ink) }, "When did this happen?"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 13.5px/1.45 'Atkinson Hyperlegible',sans-serif;color:" + quiet + ";text-wrap:pretty") }, "Optional \u2014 every deadline shows either way. If you tell us, we will say how long ago that was, beside each one."), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;gap:8px;flex-wrap:wrap") }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { style: css("margin-top:11px;display:flex;flex-direction:column;gap:8px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 14px/1.35 'Atkinson Hyperlegible',sans-serif;color:" + ink) }, t("when.heading")), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 13.5px/1.45 'Atkinson Hyperlegible',sans-serif;color:" + quiet + ";text-wrap:pretty") }, t("when.sub")), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;gap:8px;flex-wrap:wrap") }, /* @__PURE__ */ React.createElement(
     "select",
     {
-      "aria-label": "Month it happened",
+      "aria-label": t("when.monthAria"),
       value: parsed ? parsed.m : "",
       style: css("flex:1 1 130px;min-width:0;" + field),
       onChange: (e) => set(parsed ? parsed.y : thisYear, e.target.value)
     },
-    /* @__PURE__ */ React.createElement("option", { value: "" }, "Month"),
+    /* @__PURE__ */ React.createElement("option", { value: "" }, t("when.month")),
     MONTH_NAMES.map((n, i) => /* @__PURE__ */ React.createElement("option", { key: n, value: i + 1 }, n))
   ), /* @__PURE__ */ React.createElement(
     "select",
     {
-      "aria-label": "Year it happened",
+      "aria-label": t("when.yearAria"),
       value: parsed ? parsed.y : "",
       style: css("flex:1 1 110px;min-width:0;" + field),
       onChange: (e) => set(e.target.value, parsed ? parsed.m : "")
     },
-    /* @__PURE__ */ React.createElement("option", { value: "" }, "Year"),
+    /* @__PURE__ */ React.createElement("option", { value: "" }, t("when.year")),
     years.map((y) => /* @__PURE__ */ React.createElement("option", { key: y, value: y }, y))
-  ), /* @__PURE__ */ React.createElement("span", { role: "status", style: css("position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap") }, parsed ? "You said this happened " + elapsedLabel(monthsSince(value)) + "." : ""), parsed ? /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("span", { role: "status", style: css("position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap") }, parsed ? t("when.said", { elapsed: elapsedLabel(monthsSince(value)) }) : ""), parsed ? /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => onPick(""),
       className: "hoverfx",
       style: css("min-height:44px;padding:10px 14px;border-radius:10px;border:2px solid " + (dark ? "rgba(255,253,248,.45)" : "rgba(20,24,31,.28)") + ";background:transparent;font:700 14px 'Atkinson Hyperlegible',sans-serif;color:" + ink + ";cursor:pointer")
     },
-    "Clear"
-  ) : null), parsed ? /* @__PURE__ */ React.createElement("p", { style: css("margin:2px 0 0;font:400 13px/1.5 'Atkinson Hyperlegible',sans-serif;color:" + quiet + ";text-wrap:pretty") }, ELAPSED_CAVEAT) : null);
+    t("when.clear")
+  ) : null), parsed ? /* @__PURE__ */ React.createElement("p", { style: css("margin:2px 0 0;font:400 13px/1.5 'Atkinson Hyperlegible',sans-serif;color:" + quiet + ";text-wrap:pretty") }, t("when.caveat")) : null);
 }
 function ElapsedNote({ value, when, tone }) {
   const e = deadlineElapsed(value, when);
   if (!e) return null;
   const dark = tone === "dark";
   const urgent = !!e.urgency;
-  return /* @__PURE__ */ React.createElement("span", { style: css("display:block;margin-top:7px;text-wrap:pretty;font:" + (urgent ? "700" : "400") + " 13.5px/1.45 'Atkinson Hyperlegible',sans-serif;color:" + (dark ? urgent ? "#FFC9C9" : "#C6D3CE" : urgent ? "#7A1F1F" : "#4A5162")) }, "You said this happened ", e.label, ".", e.urgency ? " " + ELAPSED_COPY[e.urgency] : "");
+  return /* @__PURE__ */ React.createElement("span", { style: css("display:block;margin-top:7px;text-wrap:pretty;font:" + (urgent ? "700" : "400") + " 13.5px/1.45 'Atkinson Hyperlegible',sans-serif;color:" + (dark ? urgent ? "#FFC9C9" : "#C6D3CE" : urgent ? "#7A1F1F" : "#4A5162")) }, e.urgency ? t("when.saidUrgent", { elapsed: e.label, verdict: t(ELAPSED_COPY[e.urgency]) }) : t("when.said", { elapsed: e.label }));
 }
 function App() {
   const [saved] = useState(loadPrefs);
@@ -2486,25 +2529,25 @@ function App() {
         },
         "Tell us which one you work in"
       )) : null, tools.length ? /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:10px") }, tools.map(
-        (t) => /* @__PURE__ */ React.createElement(
+        (t2) => /* @__PURE__ */ React.createElement(
           "button",
           {
-            key: t.label,
+            key: t2.label,
             className: "hoverfx",
             onClick: () => {
-              if (t.screen) {
-                setScreen(t.screen);
+              if (t2.screen) {
+                setScreen(t2.screen);
               } else {
-                setWizKey(t.key);
+                setWizKey(t2.key);
                 setWizNode("start");
                 setWizPath([]);
                 setScreen("wizard");
               }
             },
-            "aria-label": t.label + " \u2014 " + t.desc,
+            "aria-label": t2.label + " \u2014 " + t2.desc,
             style: css("text-align:left;padding:12px 14px;border-radius:12px;border:2px solid #2B3AA8;background:#EEF1FF;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:44px")
           },
-          /* @__PURE__ */ React.createElement("span", { style: css("flex:1;min-width:0;font:700 16px/1.3 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, t.label),
+          /* @__PURE__ */ React.createElement("span", { style: css("flex:1;min-width:0;font:700 16px/1.3 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, t2.label),
           /* @__PURE__ */ React.createElement(Icon, { name: "chevron-forward", size: 16 })
         )
       )) : null, stateData && !stReviewed || localHere.length ? /* @__PURE__ */ React.createElement(DraftChip, { label: "Not yet lawyer-checked" }, "These ", stName, " items", localHere.length ? " and the local ordinances below" : "", " are compiled from official government sources but have not yet been verified by an attorney.", localHere.length ? " Local rates also change on a set date each year, so check the official source before relying on a figure." : "") : null, localHere.length ? /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:12px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:2px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em") }, "IN AND AROUND ", (county && county !== "\u2014" ? county : stName).toUpperCase()), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "Different places here set different rates, and they often disagree. Which one you are owed depends on where your worksite actually is \u2014 read what each says it covers."), localHere.map(
@@ -2570,7 +2613,7 @@ function App() {
       const stF = stateData && stateData.facts || [];
       const stRev = !!(stateData && stateData.reviewed === true);
       const fedTopics = wkey === "harassment" ? HARASSMENT_FACT_TOPICS : DISCRIMINATION_FACT_TOPICS;
-      const fedFacts = fedTopics.map((t) => factByTopic(fedF, t)).filter(Boolean);
+      const fedFacts = fedTopics.map((t2) => factByTopic(fedF, t2)).filter(Boolean);
       const stFacts = factsByPrefix(stF, "discrimination");
       const line = (f) => {
         const u = safeUrl(f.sourceUrl);
@@ -2636,20 +2679,20 @@ function App() {
     const isNum = typeof f.value === "number";
     const val = isNum && isMoneyTopic(f.topic) ? money(f.value) : factValStr(f.value);
     const showVal = val && isNum;
-    return /* @__PURE__ */ React.createElement("div", { key: scopeLabel + i, style: css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 6px;font:700 14px/1.3 'Atkinson Hyperlegible',sans-serif;color:#4A5162;text-wrap:pretty") }, topicLabel(f.topic)), /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 14px;font:400 17px/1.55 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, f.summary), /* @__PURE__ */ React.createElement("div", { style: css("padding:13px 14px;border-radius:12px;background:#F0EDE5;border:2px solid rgba(20,24,31,.14)") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 8px;font:700 12px 'IBM Plex Mono',monospace;color:#4A5162;letter-spacing:.06em") }, "THE LAW"), showVal ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 8px;font:700 19px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, val) : null, f.citation ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 4px;font:600 14px/1.45 'IBM Plex Mono',monospace;color:#1B2778;overflow-wrap:anywhere") }, f.citation) : null, f.sourceAgency || formatChecked(f.lastChecked) ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 13px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, f.sourceAgency || "Official source", formatChecked(f.lastChecked) ? " \xB7 we last checked this " + formatChecked(f.lastChecked) : "") : null, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px") }, /* @__PURE__ */ React.createElement("span", { style: css("padding:7px 11px;border-radius:8px;background:" + scopeTone + ";border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace;color:#14181F") }, scopeLabel)), safeUrl(f.sourceUrl) ? /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { key: scopeLabel + i, style: css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 6px;font:700 14px/1.3 'Atkinson Hyperlegible',sans-serif;color:#4A5162;text-wrap:pretty") }, topicLabel(f.topic)), /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 14px;font:400 17px/1.55 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, f.summary), /* @__PURE__ */ React.createElement("div", { style: css("padding:13px 14px;border-radius:12px;background:#F0EDE5;border:2px solid rgba(20,24,31,.14)") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 8px;font:700 12px 'IBM Plex Mono',monospace;color:#4A5162;letter-spacing:.06em") }, "THE LAW"), showVal ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 8px;font:700 19px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, val) : null, f.citation ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 4px;font:600 14px/1.45 'IBM Plex Mono',monospace;color:#1B2778;overflow-wrap:anywhere") }, f.citation) : null, f.sourceAgency || formatChecked(f.lastChecked) ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 13px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, formatChecked(f.lastChecked) ? t("source.checkedLong", { agency: f.sourceAgency || t("source.unnamed"), date: formatChecked(f.lastChecked) }) : f.sourceAgency || t("source.unnamed")) : null, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px") }, /* @__PURE__ */ React.createElement("span", { style: css("padding:7px 11px;border-radius:8px;background:" + scopeTone + ";border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace;color:#14181F") }, scopeLabel)), safeUrl(f.sourceUrl) ? /* @__PURE__ */ React.createElement(
       "a",
       {
         href: safeUrl(f.sourceUrl),
         target: "_blank",
         rel: "noopener noreferrer",
         className: "hoverfx",
-        "aria-label": "Check the official text of " + (f.citation || topicLabel(f.topic)) + " (opens in a new tab)",
+        "aria-label": t("source.ctaAria", { rule: f.citation || topicLabel(f.topic) }),
         style: css("display:flex;align-items:center;justify-content:center;gap:7px;margin-top:10px;min-height:48px;padding:12px 14px;border-radius:10px;background:#1B2778;border:2px solid #1B2778;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#FFFDF8;text-decoration:none;text-wrap:pretty")
       },
-      "Check the official text \u2197"
+      t("source.cta")
     ) : (
       /* Silence here would read as "nothing to check". Say the gap. */
-      /* @__PURE__ */ React.createElement("p", { style: css("margin:10px 0 0;font:600 13.5px/1.45 'Atkinson Hyperlegible',sans-serif;color:#7A3600") }, "We hold no link to the official text for this one \u2014 treat it as a lead, not an answer.")
+      /* @__PURE__ */ React.createElement("p", { style: css("margin:10px 0 0;font:600 13.5px/1.45 'Atkinson Hyperlegible',sans-serif;color:#7A3600") }, t("source.none"))
     )));
   };
   const RightsLib = () => {
@@ -2658,7 +2701,7 @@ function App() {
     const fedFacts = federal && federal.facts || [];
     const stFacts = stateData && stateData.facts || [];
     const stReviewed = !!(stateData && stateData.reviewed === true);
-    const ruleRow = (f, i, scope, tone) => /* @__PURE__ */ React.createElement("div", { key: scope + i, style: css("display:flex;flex-direction:column;gap:6px;padding:14px 16px;border-radius:12px;border:2px solid rgba(20,24,31,.16);background:#fff") }, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;align-items:baseline;gap:8px;flex-wrap:wrap") }, /* @__PURE__ */ React.createElement("span", { style: css("flex:none;padding:3px 8px;border-radius:6px;background:" + tone + ";font:600 11px 'IBM Plex Mono',monospace;color:#14181F") }, scope), /* @__PURE__ */ React.createElement("span", { title: f.topic, style: css("font:700 15px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty") }, topicLabel(f.topic))), factValStr(f.value) ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 17px/1.35 'Atkinson Hyperlegible',sans-serif;color:#14181F;overflow-wrap:anywhere") }, typeof f.value === "number" && isMoneyTopic(f.topic) ? money(f.value) : factValStr(f.value)) : null, f.citation ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:600 14px/1.45 'IBM Plex Mono',monospace;color:#1B2778;overflow-wrap:anywhere") }, f.citation) : null, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;gap:10px;flex-wrap:wrap;align-items:center") }, f.sourceAgency || formatChecked(f.lastChecked) ? /* @__PURE__ */ React.createElement("span", { style: css("font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, f.sourceAgency || "Official source", formatChecked(f.lastChecked) ? " \xB7 checked " + formatChecked(f.lastChecked) : "") : null, safeUrl(f.sourceUrl) ? /* @__PURE__ */ React.createElement("a", { href: safeUrl(f.sourceUrl), target: "_blank", rel: "noopener noreferrer", className: "hoverfx", "aria-label": "Official source for " + (f.citation || f.topic) + " (opens in a new tab)", style: css("display:inline-flex;align-items:center;min-height:44px;font:600 13px 'IBM Plex Mono',monospace;color:#2B3AA8;text-decoration:none") }, "source \u2197") : null));
+    const ruleRow = (f, i, scope, tone) => /* @__PURE__ */ React.createElement("div", { key: scope + i, style: css("display:flex;flex-direction:column;gap:6px;padding:14px 16px;border-radius:12px;border:2px solid rgba(20,24,31,.16);background:#fff") }, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;align-items:baseline;gap:8px;flex-wrap:wrap") }, /* @__PURE__ */ React.createElement("span", { style: css("flex:none;padding:3px 8px;border-radius:6px;background:" + tone + ";font:600 11px 'IBM Plex Mono',monospace;color:#14181F") }, scope), /* @__PURE__ */ React.createElement("span", { title: f.topic, style: css("font:700 15px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty") }, topicLabel(f.topic))), factValStr(f.value) ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 17px/1.35 'Atkinson Hyperlegible',sans-serif;color:#14181F;overflow-wrap:anywhere") }, typeof f.value === "number" && isMoneyTopic(f.topic) ? money(f.value) : factValStr(f.value)) : null, f.citation ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:600 14px/1.45 'IBM Plex Mono',monospace;color:#1B2778;overflow-wrap:anywhere") }, f.citation) : null, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;gap:10px;flex-wrap:wrap;align-items:center") }, f.sourceAgency || formatChecked(f.lastChecked) ? /* @__PURE__ */ React.createElement("span", { style: css("font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, formatChecked(f.lastChecked) ? t("source.checkedShort", { agency: f.sourceAgency || t("source.unnamed"), date: formatChecked(f.lastChecked) }) : f.sourceAgency || t("source.unnamed")) : null, safeUrl(f.sourceUrl) ? /* @__PURE__ */ React.createElement("a", { href: safeUrl(f.sourceUrl), target: "_blank", rel: "noopener noreferrer", className: "hoverfx", "aria-label": "Official source for " + (f.citation || f.topic) + " (opens in a new tab)", style: css("display:inline-flex;align-items:center;min-height:44px;font:600 13px 'IBM Plex Mono',monospace;color:#2B3AA8;text-decoration:none") }, "source \u2197") : null));
     const groups = (() => {
       const byCat = /* @__PURE__ */ new Map();
       const push = (f, scope, tone) => {
@@ -2699,7 +2742,7 @@ function App() {
       ag.labor && ["Labor standards", ag.labor, ["deadlines.wageClaim"]]
     ].filter(Boolean).filter(([, a]) => a && safeUrl(a.url));
     const deadlineFor = (topics) => findDeadline(topics, stFacts, fedFacts);
-    const anyDeadline = stateLinks.some(([, , t]) => deadlineFor(t)) || FEDERAL_AGENCIES.some((a) => deadlineFor(a.deadlineTopics));
+    const anyDeadline = stateLinks.some(([, , t2]) => deadlineFor(t2)) || FEDERAL_AGENCIES.some((a) => deadlineFor(a.deadlineTopics));
     const deadlineStrip = (f) => f ? /* @__PURE__ */ React.createElement("span", { style: css("display:flex;align-items:flex-start;gap:9px;margin-top:9px;padding:10px 12px;border-radius:10px;background:#FFE9E9;border:2px solid #7A1F1F") }, /* @__PURE__ */ React.createElement("span", { style: css("flex:none;margin-top:1px;color:#7A1F1F;display:flex") }, /* @__PURE__ */ React.createElement(Icon, { name: "alarm", size: 18 })), /* @__PURE__ */ React.createElement("span", { style: css("flex:1;min-width:0;display:flex;flex-direction:column;gap:2px") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 14px/1.35 'Atkinson Hyperlegible',sans-serif;color:#7A1F1F") }, "Your deadline to file: ", factValStr(f.value)), f.citation ? /* @__PURE__ */ React.createElement("span", { style: css("font:400 12.5px/1.4 'Atkinson Hyperlegible',sans-serif;color:#5C3030") }, f.citation) : null, /* @__PURE__ */ React.createElement(ElapsedNote, { value: f.value, when, tone: "light" }))) : null;
     const row = (title, covers, url, tone, dl) => /* @__PURE__ */ React.createElement(
       "a",
