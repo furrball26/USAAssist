@@ -22,6 +22,65 @@ Keep `auto/agents` and `main` aligned — reconcile onto `auto/agents`, then fas
 - **Legal content** (`content/**`) stays `reviewed:false` until counsel signs off. Don't flip `reviewed` flags.
 - Run `npm run verify` before every push; it's the real gate (the `test` script is only a subset).
 
+## Copy goes through `t()` — all of it
+
+Every word a reader meets lives in the `STRINGS` catalogue in `index.dev.html`
+and is fetched with `t('some.key')`. `node automation/check-i18n.mjs` (part of
+`npm run verify`) fails the build on a bare string, so this is enforced rather
+than remembered.
+
+It checks five things:
+
+| Failure | What it means |
+| --- | --- |
+| *N un-extracted strings, up from 0* | New copy is baked into the JSX. Move it to the catalogue. |
+| *used but not in the catalogue* | A `t('typo')`. On screen that renders the key itself. |
+| *duplicate catalogue keys* | Two entries for one key: JS keeps the last silently, so one is dead. |
+| *placeholder mismatch* | The string wants `{state}` and the call does not pass it (or the reverse). An unfilled hole renders as a literal `{state}`. |
+| *catalogue key nothing reaches* | A leftover. Delete it, or point a call site at it. |
+
+### Writing a string
+
+**Whole sentences with named holes, never fragments glued together.**
+
+```js
+// no — a translator cannot reorder these, and German and Japanese need to
+'about ' + years + ' and ' + months + ' ago'
+
+// yes
+'when.elapsed.yearsAnd': 'about {years} and {months} ago'
+t('when.elapsed.yearsAnd', { years: y, months: m })
+```
+
+The same goes for plurals: branch on the whole sentence
+(`pay.more.one` / `pay.more.many`), don't splice a word into one template.
+Splicing works in English and in almost nothing else.
+
+A hole can carry a React element, not just text — `t()` returns a fragment
+when one does, which is how `nc.weigh.body` keeps four emphasised terms inside
+one translatable sentence.
+
+Data structures hold **keys**, not prose: `ENTRY_SITUATIONS`, `LAW_CATEGORIES`
+and the wizard trees all store `'cat.pay.label'` and the component calls
+`t()` on it. `topic.*` is reserved for dataset topic names — a UI string in
+that namespace is read as a rule the dataset covers and breaks
+`check-topic-labels.mjs`.
+
+### Adding a language
+
+The catalogue is ready; **fonts are the open problem.** `index.html` inlines
+sixteen base64 faces so the app is a single self-contained file that makes no
+off-origin request (`test/privacy.mjs` asserts that), and Atkinson
+Hyperlegible covers no Arabic, CJK or Korean. Adding a Latin-script language
+(Spanish, Vietnamese, Tagalog) needs no new fonts; anything else needs that
+decision made first.
+
+When a second locale lands it also needs: a `lang` state assigned to
+`CURRENT_LANG` at the top of `App()`'s render, somewhere to store the choice,
+and a visible control. None of those exist yet, deliberately — with one locale
+they would be code no path reaches, and a stored preference would widen the
+privacy promise for nothing.
+
 ## Two gotchas
 
 - **`workflow` OAuth scope:** pushing any change to `.github/workflows/*` requires the GitHub token to have `workflow` scope (`gh auth refresh -s workflow`). Without it the push is rejected outright.
