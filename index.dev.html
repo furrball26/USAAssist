@@ -272,81 +272,350 @@ function fetchContentJson(path){
    humanising fallback below exists only so a missing label degrades to
    something readable rather than to a crash; it is not the safety net, the
    gate is. */
-const TOPIC_LABELS = {
-  'deadlines.discriminationComplaint': 'Deadline to file a discrimination complaint',
-  'deadlines.eeocCharge': 'Deadline to file with the EEOC',
-  'deadlines.equalPayAct': 'Deadline for an equal pay claim',
-  'deadlines.fehaComplaint': 'Deadline to file a state civil rights complaint',
-  'deadlines.flsaWageClaim': 'Deadline to sue for unpaid wages (federal)',
-  'deadlines.oshaWhistleblower': 'Deadline to report safety retaliation',
-  'deadlines.wageClaim': 'Deadline to claim unpaid wages',
-  'disability.accommodation': 'Adjustments for a disability',
-  'disability.interactiveProcess': 'Working out an adjustment with your employer',
-  'disability.pregnancyLeave': 'Pregnancy-related leave',
-  'disability.reasonableAccommodation': 'What counts as a reasonable adjustment',
-  'discrimination.age': 'Age discrimination',
-  'discrimination.ageCoverage': 'Which employers the age rules cover',
-  'discrimination.ageDiscrimination': 'Age discrimination',
-  'discrimination.coverage': 'Which employers the discrimination rules cover',
-  'discrimination.coverageTitleVII': 'Which employers Title VII covers',
-  'discrimination.protectedClasses': 'Who is protected from discrimination',
-  'discrimination.protectedClasses.age': 'Age as a protected characteristic',
-  'discrimination.retaliation': 'Punishment for a discrimination complaint',
-  'discrimination.sexualHarassment': 'Sexual harassment',
-  'discrimination.sexualHarassmentPolicy': 'What your employer must do about harassment',
-  'enforcement.paths': 'Where you can file',
-  'equalPay': 'Equal pay for equal work',
-  'final-pay': 'Your final paycheck',
-  'final-pay.timing': 'When your final paycheck is due',
-  'final-pay.wageClaim': 'Claiming a final paycheck you never got',
-  'final-pay.wageRecoveryLimitations': 'How far back unpaid wages can be claimed',
-  'harassment.employerLiability': 'When an employer is on the hook for harassment',
-  'harassment.hostileEnvironmentStandard': 'What counts as a hostile work environment',
-  'harassment.reporting': 'Reporting harassment',
-  'leave.earnedPaidSickTime': 'Paid sick time you earn as you work',
-  'leave.fmla': 'Family and medical leave',
-  'leave.paidSickTime': 'Paid sick time',
-  'mealBreak': 'Meal and rest breaks',
-  'minimumWage.adjustment': 'How the minimum wage changes each year',
-  'minimumWage.coverage': 'Who the minimum wage covers',
-  'minimumWage.hotelWorker': 'Minimum wage for hotel workers',
-  'minimumWage.hourly': 'Minimum wage',
-  'minimumWage.localPreemption': 'Whether cities can set their own minimum wage',
-  'minimumWage.tipped': 'Minimum wage when you earn tips',
-  'minimumWage.tippedCash': 'Cash wage when you earn tips',
-  'minimumWage.tippedCashWage': 'Cash wage when you earn tips',
-  'minimumWage.tippedFoodService': 'Minimum wage for tipped food service work',
-  'minimumWage.tippedService': 'Minimum wage for tipped service work',
-  'minimumWage.youth': 'Minimum wage for young workers',
-  'nonCompete.enforceability': 'Whether a non-compete can be enforced',
-  'nonCompete.ftcRuleStatus': 'Where the federal non-compete rule stands',
-  'overtime.basicRule': 'When overtime pay starts',
-  'overtime.computerEmployeeHourly': 'Hourly rate that exempts computer roles from overtime',
-  'overtime.computerExemption': 'Overtime exemption for computer roles',
-  'overtime.daily': 'Overtime counted by the day',
-  'overtime.highlyCompensatedAnnual': 'Earnings that exempt high earners from overtime',
-  'overtime.salaryFloorWeekly': 'Salary you must clear to be exempt from overtime',
-  'overtime.salaryLevelWeekly': 'Salary you must clear to be exempt from overtime',
-  'overtime.salaryLevelWeekly.nycLIWestchester': 'Exempt salary — New York City, Long Island and Westchester',
-  'overtime.salaryLevelWeekly.restOfState': 'Exempt salary — rest of the state',
-  'overtime.salaryThreshold': 'Salary you must clear to be exempt from overtime',
-  'payDiscussion.protected': 'Your right to discuss your pay',
-  'remedies.attorneysFees': 'Getting your legal costs paid',
-  'remedies.liquidatedDamages': 'Double damages for unpaid wages',
-  'remedies.minimumWageDamages': 'What you can recover if you were underpaid',
-  'remedies.trebleDamages': 'Triple damages',
-  'retaliation': 'Being punished for speaking up',
-  'retaliation.flsa': 'Being punished for a wage complaint',
-  'retaliation.protected': 'Which kinds of punishment are illegal',
-  'retaliation.whistleblower': 'Whistleblower protection',
-  'severance.adeaWaiver': 'Signing away an age discrimination claim',
-  'severance.wageWaiver': 'Signing away unpaid wages',
-  'wagePayment.frequency': 'How often you must be paid',
-  'whistleblower': 'Whistleblower protection',
+/* The rule names a reader sees, by dataset topic key.
+
+   The names themselves live in the catalogue under topic.<key>; this is just
+   the list of topics we have one for, which is what check-topic-labels.mjs
+   walks the dataset against. Keeping the list separate from the prose means a
+   translator adding a language cannot accidentally drop a topic from coverage.
+   Built from the catalogue so the two can never disagree. */
+/* topic.* is RESERVED for dataset topic names. A UI string that happened to
+   start with it — 'topic.reach.one' did, briefly — would be read here as a
+   rule the dataset has a name for, and check-topic-labels.mjs would report
+   coverage for a topic that does not exist. */
+/* ── The string catalogue ──────────────────────────────────────────────────
+   Every word a reader meets lives here, keyed, so a translation can be added
+   without touching a line of app code.
+
+   No second language ships yet, and the language control stays hidden until
+   one does: a toggle offering one choice is a dead control, and a HALF
+   translated app is worse than an untranslated one — a Spanish reader who
+   gets Spanish headings and English legal copy has been told this site speaks
+   their language and then handed the part that decides their claim in a
+   language they may not read. automation/check-i18n.mjs is what makes
+   "complete" checkable: it counts the strings still baked into the JSX and
+   fails the build if that number goes up.
+
+   Fonts are the other half and are deliberately not solved here. The app
+   inlines sixteen base64 faces to stay a single self-contained file that
+   makes no off-origin request (test/privacy.mjs asserts that), and Atkinson
+   Hyperlegible covers no Arabic, CJK or Korean. That is a decision about
+   weight and typography, not about strings, and it does not block this.
+
+   Keys are dotted and read screen-first — entry.county.h1, pay.cta.file —
+   so a translator can work down a screen rather than through an alphabet. */
+const STRINGS = {
+  en: {
+    // ── Every rule in the dataset, named in plain English ──
+    'topic.deadlines.discriminationComplaint': 'Deadline to file a discrimination complaint',
+    'topic.deadlines.eeocCharge': 'Deadline to file with the EEOC',
+    'topic.deadlines.equalPayAct': 'Deadline for an equal pay claim',
+    'topic.deadlines.fehaComplaint': 'Deadline to file a state civil rights complaint',
+    'topic.deadlines.flsaWageClaim': 'Deadline to sue for unpaid wages (federal)',
+    'topic.deadlines.oshaWhistleblower': 'Deadline to report safety retaliation',
+    'topic.deadlines.wageClaim': 'Deadline to claim unpaid wages',
+    'topic.disability.accommodation': 'Adjustments for a disability',
+    'topic.disability.interactiveProcess': 'Working out an adjustment with your employer',
+    'topic.disability.pregnancyLeave': 'Pregnancy-related leave',
+    'topic.disability.reasonableAccommodation': 'What counts as a reasonable adjustment',
+    'topic.discrimination.age': 'Age discrimination',
+    'topic.discrimination.ageCoverage': 'Which employers the age rules cover',
+    'topic.discrimination.ageDiscrimination': 'Age discrimination',
+    'topic.discrimination.coverage': 'Which employers the discrimination rules cover',
+    'topic.discrimination.coverageTitleVII': 'Which employers Title VII covers',
+    'topic.discrimination.protectedClasses': 'Who is protected from discrimination',
+    'topic.discrimination.protectedClasses.age': 'Age as a protected characteristic',
+    'topic.discrimination.retaliation': 'Punishment for a discrimination complaint',
+    'topic.discrimination.sexualHarassment': 'Sexual harassment',
+    'topic.discrimination.sexualHarassmentPolicy': 'What your employer must do about harassment',
+    'topic.enforcement.paths': 'Where you can file',
+    'topic.equalPay': 'Equal pay for equal work',
+    'topic.final-pay': 'Your final paycheck',
+    'topic.final-pay.timing': 'When your final paycheck is due',
+    'topic.final-pay.wageClaim': 'Claiming a final paycheck you never got',
+    'topic.final-pay.wageRecoveryLimitations': 'How far back unpaid wages can be claimed',
+    'topic.harassment.employerLiability': 'When an employer is on the hook for harassment',
+    'topic.harassment.hostileEnvironmentStandard': 'What counts as a hostile work environment',
+    'topic.harassment.reporting': 'Reporting harassment',
+    'topic.leave.earnedPaidSickTime': 'Paid sick time you earn as you work',
+    'topic.leave.fmla': 'Family and medical leave',
+    'topic.leave.paidSickTime': 'Paid sick time',
+    'topic.mealBreak': 'Meal and rest breaks',
+    'topic.minimumWage.adjustment': 'How the minimum wage changes each year',
+    'topic.minimumWage.coverage': 'Who the minimum wage covers',
+    'topic.minimumWage.hotelWorker': 'Minimum wage for hotel workers',
+    'topic.minimumWage.hourly': 'Minimum wage',
+    'topic.minimumWage.localPreemption': 'Whether cities can set their own minimum wage',
+    'topic.minimumWage.tipped': 'Minimum wage when you earn tips',
+    'topic.minimumWage.tippedCash': 'Cash wage when you earn tips',
+    'topic.minimumWage.tippedCashWage': 'Cash wage when you earn tips',
+    'topic.minimumWage.tippedFoodService': 'Minimum wage for tipped food service work',
+    'topic.minimumWage.tippedService': 'Minimum wage for tipped service work',
+    'topic.minimumWage.youth': 'Minimum wage for young workers',
+    'topic.nonCompete.enforceability': 'Whether a non-compete can be enforced',
+    'topic.nonCompete.ftcRuleStatus': 'Where the federal non-compete rule stands',
+    'topic.overtime.basicRule': 'When overtime pay starts',
+    'topic.overtime.computerEmployeeHourly': 'Hourly rate that exempts computer roles from overtime',
+    'topic.overtime.computerExemption': 'Overtime exemption for computer roles',
+    'topic.overtime.daily': 'Overtime counted by the day',
+    'topic.overtime.highlyCompensatedAnnual': 'Earnings that exempt high earners from overtime',
+    'topic.overtime.salaryFloorWeekly': 'Salary you must clear to be exempt from overtime',
+    'topic.overtime.salaryLevelWeekly': 'Salary you must clear to be exempt from overtime',
+    'topic.overtime.salaryLevelWeekly.nycLIWestchester': 'Exempt salary — New York City, Long Island and Westchester',
+    'topic.overtime.salaryLevelWeekly.restOfState': 'Exempt salary — rest of the state',
+    'topic.overtime.salaryThreshold': 'Salary you must clear to be exempt from overtime',
+    'topic.payDiscussion.protected': 'Your right to discuss your pay',
+    'topic.remedies.attorneysFees': 'Getting your legal costs paid',
+    'topic.remedies.liquidatedDamages': 'Double damages for unpaid wages',
+    'topic.remedies.minimumWageDamages': 'What you can recover if you were underpaid',
+    'topic.remedies.trebleDamages': 'Triple damages',
+    'topic.retaliation': 'Being punished for speaking up',
+    'topic.retaliation.flsa': 'Being punished for a wage complaint',
+    'topic.retaliation.protected': 'Which kinds of punishment are illegal',
+    'topic.retaliation.whistleblower': 'Whistleblower protection',
+    'topic.severance.adeaWaiver': 'Signing away an age discrimination claim',
+    'topic.severance.wageWaiver': 'Signing away unpaid wages',
+    'topic.wagePayment.frequency': 'How often you must be paid',
+    'topic.whistleblower': 'Whistleblower protection',
+
+    // ── Coverage gaps: what silence does NOT mean ──
+    // Every one of these says the same thing in a different place: an empty
+    // result is a gap in what we compiled, never a finding that no rule exists.
+    'gap.topic.h':        'Everything below is federal law. We hold no {state} rules on this yet.',
+    'gap.topic.sub':      'That is a gap in what we have compiled, not a finding that {state} has none \u2014 many states add their own rules on top of the federal floor. Your state labor agency on the Agencies tab is the place to check.',
+    'gap.rights':         'Nothing recorded here yet for {state}. That is a gap in our data, not a statement that no rule applies.',
+    'gap.grid':           'Nothing recorded yet for {state}. That doesn\u2019t mean no rule applies.',
+    'gap.noncompete':     'We don\u2019t have a sourced answer for {state} yet. Non-compete law varies a lot by state and is changing \u2014 talk to an employment attorney before assuming your non-compete is (un)enforceable.',
+    'gap.harassment':     'No state file here has a separate \u201charassment\u201d entry \u2014 shown below is {state}\u2019s own anti-discrimination law, which generally also covers harassment claims.',
+
+    // ── The topic grid, the raw list and the agencies ──
+    'grid.h1':            'Your rights in {state}',
+    'grid.sub':           'Federal law applies everywhere; {state} rules layer on top. Pick a topic.',
+    'rights.h1':          'Every rule, as written',
+    'rights.sub':         'The same rules the Laws tab explains \u2014 here with no explanation, just the citation, the figure and the official source.',
+    'rights.count':       '{n} on file for {state}.',
+    'rights.sourceAria':  'Official source for {rule}',
+    'agencies.h1':        'Who enforces this',
+    'agencies.sub':       'Government agencies you can contact yourself, for free, without a lawyer.',
+    // Said BEFORE the links, not after: complaining is itself protected, and
+    // someone weighing whether to file needs to know that first.
+    'agencies.retal.h':   'You are protected from retaliation for speaking up',
+    'agencies.retal.sub': 'It is illegal for an employer to punish you \u2014 fire, demote, cut your hours \u2014 for asking about, complaining about, or filing a claim over your rights at work. That protection covers internal and verbal complaints too, not only formal filings.',
+    'agencies.lawyer.h':  'Find an employment lawyer',
+    'agencies.lawyer.sub': 'You may also want an employment attorney licensed in {state}. WorkLaw does not operate a referral service or recommend firms \u2014 your state or local bar association\u2019s lawyer-referral service is a reliable place to start.',
+    'agencies.foot':      'This is legal information, not legal advice. Where a deadline is shown it comes from the source named on that card, and it is the shortest thing standing between you and a claim \u2014 a day late is usually the whole case.',
+    'scope.fedNationwide': 'FEDERAL \u2014 APPLIES NATIONWIDE',
+    'scope.fedAnywhere':  'FEDERAL \u2014 ANYWHERE IN THE US',
+    'wizard.applies':     'What applies in {state}',
+
+    // ── The welcome screen, the footer and the last-resort error ──
+    'welcome.sub':        'Plain-English employment law for every state \u2014 what you\u2019re owed, what counts as discrimination, and how long you have to act.',
+    'welcome.artAria':    'Illustration: workers of different jobs, ages and abilities standing below a map of the United States',
+    'map.smallStates':    'SMALL STATES \u2014 TAP A NAME',
+    'foot.privacy':       'Legal information, not legal advice. Nothing is uploaded \u2014 this browser remembers only the place you picked: state, county, and city if you gave one.',
+    'crash.h':            'Something went wrong',
+    'crash.sub':          'WorkLaw hit an unexpected error. This is usually caused by a saved setting that got corrupted. Your options:',
+    // ── Pay: the resolved wage, the arithmetic, the next step ──
+    'pay.least':          'The least you can legally be paid',
+    'pay.leastIn':        'The least you can legally be paid in {city}',
+    'pay.perHour':        'an hour, before tax',
+    // Says why the struck-through rates are struck through. Without it the
+    // reader sees three numbers crossed out and no reason.
+    'pay.rule.beaten':    'You must be paid the highest minimum wage that reaches where you work. The others are struck through because a higher one applies to you, not because they are wrong.',
+    'pay.rule.tied':      'Every minimum wage that reaches your worksite is the same amount, so this is what you are owed either way.',
+    'pay.example.h':      'If you were paid the minimum and worked 45 hours last week',
+    'pay.example.base':   '{hours} hours \u00d7 {rate}',
+    'pay.example.ot':     '{hours} overtime hours at 1.5\u00d7',
+    'pay.example.total':  'Your employer owes you',
+    'pay.example.note':   'An illustration at the minimum wage, using the federal rule that overtime starts after 40 hours in a week. If you are paid more than the minimum, or your state counts overtime by the day, your own figure is higher.',
+    'pay.cta.kicker':     'IF YOU WERE PAID LESS THAN THIS',
+    'pay.cta.h':          'File a wage claim. It is free, and you do not need a lawyer.',
+    'pay.cta.agency':     '{agency} takes the claim directly.',
+    'pay.cta.go':         'Start a wage claim \u2197',
+    'pay.deadline':       'Your deadline to file: {value}',
+    'pay.more.h':         'You may be owed more than the figure above.',
+    'pay.more.one':       'One place in {where} sets a higher rate of its own. Which applies depends on the exact address you work at, so we cannot pick one for you:',
+    'pay.more.many':      '{n} places in {where} set a higher rate of their own. Which applies depends on the exact address you work at, so we cannot pick one for you:',
+    'pay.more.pick':      'Tell us which one you work in',
+    'pay.local.kicker':   'IN AND AROUND {where}',
+    'pay.local.sub':      'Different places here set different rates, and they often disagree. Which one you are owed depends on where your worksite actually is \u2014 read what each says it covers.',
+    'grid.reach.one':    '{n} RULE REACHES YOU',
+    'grid.reach.many':   '{n} RULES REACH YOU',
+
+    // ── Draft notice: nothing here is attorney-checked ──
+    'draft.chip':         'Not yet lawyer-checked',
+    'draft.state':        'These {state} items are compiled from official government sources but have not yet been verified by an attorney.',
+    'draft.stateLocal':   'These {state} items and the local ordinances below are compiled from official government sources but have not yet been verified by an attorney. Local rates also change on a set date each year, so check the official source before relying on a figure.',
+    // ── Maps, loading and the error states behind them ──
+    'map.us.aria':        'Map of the United States \u2014 pick your state',
+    'map.us.failed':      'The map of the United States couldn\u2019t load. Pick your state from the list below instead \u2014 everything else works normally.',
+    'map.us.loading':     'Loading the map\u2026',
+    'map.state.aria':     'Map of {state} \u2014 pick your county',
+    'map.state.failed':   'The map of {state} couldn\u2019t load. Pick your county from the list below instead \u2014 everything else works normally.',
+    'map.state.loading':  'Loading the {state} map\u2026',
+    'loading':            'Loading\u2026',
+    'loading.state':      'Loading {state} rules\u2026',
+
+    // ── Chrome, and the sentence that has to be true on every screen ──
+    'home.h1':            'Know your rights at work',
+    'home.cta':           'Find my state\u2019s rules',
+    'chrome.changePlace': 'Change where you work \u2014 currently {place}',
+    'chrome.backTopics':  'All topics',
+    'chrome.backTopicsAria': 'Back to all topics',
+    'disclaimer.state':   'Legal information for {state}, not legal advice, and laws change. Confirm anything important with an attorney.',
+
+    // ── When the dataset does not arrive ──
+    'err.law':            'Couldn\u2019t load the law dataset. Check your connection and reopen.',
+    'err.rights':         'Couldn\u2019t load the rights dataset. Check your connection and reopen.',
+    'err.federal':        'Couldn\u2019t load federal rules. Check your connection and reopen.',
+    // Says what the silence does NOT mean. An error here must never be read as
+    // "your state adds nothing" — that is the reading that costs someone a claim.
+    'err.state':          'Couldn\u2019t load {state} rules. Check your connection and reopen \u2014 this is not a confirmation that no extra state protections apply.',
+    'err.stateFed':       'Couldn\u2019t load {state} rules. Check your connection and reopen \u2014 this is not a confirmation that no extra state protections apply. Federal law still applies nationwide.',
+    'err.stateRule':      'Couldn\u2019t load {state} rules. Check your connection and reopen \u2014 this is not a confirmation that no extra state rule applies.',
+    'err.stateNoncompete': 'Couldn\u2019t load {state} rules. Check your connection and reopen \u2014 this is not a confirmation that {state} has no non-compete rule.',
+    'err.agencies':       'Couldn\u2019t load {state} agency links. Check your connection and reopen \u2014 the federal agencies below are not the only ones that may apply.',
+    // ── Entry: the country, the county, the city ──
+    'entry.country.h1':      'Where do you work?',
+    'entry.country.sub':     'Employment law is different in every state. Pick yours to see the rules that actually apply to you.',
+    'entry.country.list':    'or choose from a list',
+    'entry.country.select':  'Select your state',
+    'entry.country.mapAria': 'Map of the United States \u2014 pick your state',
+    'entry.county.back':     'The whole country',
+    'entry.county.backAria': 'Back to the map of the United States',
+    'entry.county.h1':       'Where in {state}?',
+    'entry.county.sub':      'Pick your county on the map.',
+    'entry.county.list':     'or choose your {word} from a list',
+    'entry.county.filter':   'Type to filter {n} {plural}\u2026',
+    'entry.county.filterAria': 'Filter the {word} list',
+    'entry.county.select':   'Select a {word} ({n})',
+    'entry.county.selectSome': 'Select a {word} ({n} of {total})',
+    'entry.county.noMatch':  'No {word} matches \u201c{query}\u201d.',
+    'entry.county.mapAria':  'Map of {state} \u2014 pick your county',
+    'entry.county.haveLocal': 'We hold local ordinances for {places}.',
+    'entry.county.haveLocalSub': 'Pick one of those and you will see the city and county minimum wages on top of {state} and federal law. For any other county here we only hold {state} and federal law \u2014 that does not mean your county has no ordinance, only that we have not compiled it. Check your county and city sites too.',
+    'entry.county.noLocal':  'We hold no county or city ordinances for {state} yet \u2014 only federal and {state} law. Many places add their own minimum wage, sick leave or scheduling rules on top, so check your county and city sites too.',
+    'entry.county.skip':     'Skip \u2014 show me {state} law',
+    'entry.city.backAria':   'Back to the counties of {state}',
+    'entry.city.h1':         'Where in {county} do you work?',
+    'entry.city.sub':        'Not where you live \u2014 where you actually do the work. {n} places in this county set their own rules, and they do not agree with each other.',
+    'entry.city.elsewhere':  'Somewhere else in {county}',
+    'entry.city.elsewhereSub': 'Or you are not sure. You will see {state} and federal law, and every local rule we hold for this county underneath.',
+    // Joining a list is language-specific: English puts "and" before the last
+    // item, other languages do not, and some use a different separator.
+    'list.pair':             '{a} and {b}',
+    'list.more':             '{items} and {last}',
+    // ── The four working lives the map cannot express ──
+    'entry.sit.heading':    'NONE OF THOSE FIT?',
+    'entry.sit.home.label': 'I work from home',
+    'entry.sit.home.note':  'Pick where you sit when you work, not where the company is. Which state\u2019s law reaches a remote worker is not always settled, so if those are two different states it is worth reading both.',
+    'entry.sit.many.label': 'More than one place',
+    'entry.sit.many.note':  'Start with the place you work most. Rules and rates can differ at each one and we cannot combine them \u2014 come back and change your place to read the others.',
+    'entry.sit.drive.label': 'I drive or deliver',
+    'entry.sit.drive.note': 'Pick where your route usually starts. Which local rate reaches driving and delivery work can turn on where you are based as much as on where you actually drive, and if you cross city lines more than one may apply. We cannot resolve that for you.',
+    'entry.sit.past.label': 'I left that job',
+    'entry.sit.past.note':  'Pick where you worked, not where you are now. Every figure on this site is today\u2019s \u2014 we do not hold what it was on an earlier date. The filing clock has been running since it happened, though, and the deadline cards will tell you how long that has been.',
+
+    // ── When did this happen, and what it means for the clock ──
+    'when.heading':      'When did this happen?',
+    'when.sub':          'Optional \u2014 every deadline shows either way. If you tell us, we will say how long ago that was, beside each one.',
+    'when.month':        'Month',
+    'when.monthAria':    'Month it happened',
+    'when.year':         'Year',
+    'when.yearAria':     'Year it happened',
+    'when.clear':        'Clear',
+    'when.said':         'You said this happened {elapsed}.',
+    'when.saidUrgent':   'You said this happened {elapsed}. {verdict}',
+    'when.past':         'That is past this deadline.',
+    'when.soon':         'That is most of this deadline \u2014 do not wait.',
+    'when.caveat':       'Deadlines run from different dates, and some can be paused, so a date past one is not necessarily the end of it \u2014 but check today, not next week.',
+    // Elapsed time, said the way a person says it.
+    'when.elapsed.thisMonth': 'this month',
+    'when.elapsed.oneMonth':  'about a month ago',
+    'when.elapsed.months':    'about {n} months ago',
+    'when.elapsed.years':     'about {years} ago',
+    'when.elapsed.yearsAnd':  'about {years} and {months} ago',
+    'when.unit.oneYear':      'a year',
+    'when.unit.years':        '{n} years',
+    'when.unit.oneMonth':     'a month',
+    'when.unit.months':       '{n} months',
+
+    // ── Provenance: who said it, when we last looked ──
+    'source.unnamed':    'Official source',
+    'source.checkedLong': '{agency} \u00b7 we last checked this {date}',
+    'source.checkedShort': '{agency} \u00b7 checked {date}',
+    'source.cta':        'Check the official text \u2197',
+    'source.ctaAria':    'Check the official text of {rule} (opens in a new tab)',
+    'source.none':       'We hold no link to the official text for this one \u2014 treat it as a lead, not an answer.',
+  },
 };
+
+/* "A, B and C". Kept in the catalogue rather than hardcoded because the last
+   separator is language-specific — plenty of languages do not put a word
+   before the final item, and some use a different mark entirely. */
+function joinList(items){
+  const xs = (items || []).filter(Boolean).map(String);
+  if (!xs.length) return '';
+  if (xs.length === 1) return xs[0];
+  if (xs.length === 2) return t('list.pair', { a: xs[0], b: xs[1] });
+  return t('list.more', { items: xs.slice(0, -1).join(', '), last: xs[xs.length - 1] });
+}
+
+/* The locales offered in the UI. One entry means no control is drawn. */
+const LOCALES = [{ code: 'en', name: 'English' }];
+
+/* There is one locale, so this never moves yet. When a second one lands it is
+   assigned at the top of App()'s render, before any child renders — React runs
+   a parent's function body to completion before rendering the children it
+   returned, so every t() below it would see the language the reader picked.
+   A module-level binding rather than a context because t() is also called from
+   plain functions that are not components and cannot useContext.
+
+   No language STATE and no stored preference yet, deliberately: with nothing
+   able to change the language, both would be scaffolding that no code path
+   reaches, and the stored one would widen the privacy promise for nothing. */
+let CURRENT_LANG = 'en';
+
+/* Look up a string, filling {placeholders} from `vars`.
+
+   Returns a plain string when every value is text, and a React fragment when
+   any of them is an element — so a sentence with a link inside it stays one
+   translatable sentence instead of being cut into three fragments that no
+   translator can reorder. Word order is the whole reason this matters:
+   German and Japanese put the verb where English does not, and copy
+   assembled by concatenation cannot be reordered at all.
+
+   A missing key renders the key itself. That is deliberately ugly and
+   deliberately not a crash: a typo should be obvious on screen in review, and
+   should never take the app down in front of a reader. check-i18n.mjs fails
+   the build on any key that is used and not defined. */
+function t(key, vars) {
+  const table = STRINGS[CURRENT_LANG] || STRINGS.en;
+  let s = table[key];
+  if (s === undefined) s = STRINGS.en[key];
+  if (s === undefined) return key;
+  if (!vars) return s;
+  const parts = String(s).split(/(\{[A-Za-z0-9_]+\})/);
+  let hasNode = false;
+  const out = parts.map((p) => {
+    const m = /^\{([A-Za-z0-9_]+)\}$/.exec(p);
+    if (!m || !Object.prototype.hasOwnProperty.call(vars, m[1])) return p;
+    const v = vars[m[1]];
+    if (v !== null && typeof v === 'object') hasNode = true;
+    return v;
+  });
+  // Spread as children rather than returning the array: variadic children
+  // need no keys, so this cannot produce React's list-key warning.
+  return hasNode ? React.createElement(React.Fragment, null, ...out) : out.join('');
+}
+
+const TOPIC_KEYS = Object.keys(STRINGS.en)
+  .filter(k => k.indexOf('topic.') === 0)
+  .map(k => k.slice('topic.'.length));
+const TOPIC_LABELS = TOPIC_KEYS.reduce((o, k) => { o[k] = 'topic.' + k; return o; }, {});
 function topicLabel(topic){
   const k = String(topic || '');
-  if (TOPIC_LABELS[k]) return TOPIC_LABELS[k];
+  if (TOPIC_LABELS[k]) return t(TOPIC_LABELS[k]);
   // Degrade to something readable rather than a raw key. The build gate is
   // what actually prevents this from being reached in shipped content.
   const tail = k.split('.').slice(1).join(' ') || k;
@@ -645,223 +914,6 @@ const ADA_LOG_WHAT_LABELS = ADA_LOG_WHAT_OPTIONS.reduce((m, [k, l]) => (m[k] = l
 // this hedge never drifts between the two.
 const ADA_PROCESS_GOOD_FAITH_NOTE = 'The ADA generally requires both you and your employer to engage in this interactive process in good faith, on an ongoing basis — not a one-time letter. This log is a record of that back-and-forth, not a legal conclusion about whether either side met that duty.';
 
-/* ── The string catalogue ──────────────────────────────────────────────────
-   Every word a reader meets lives here, keyed, so a translation can be added
-   without touching a line of app code.
-
-   No second language ships yet, and the language control stays hidden until
-   one does: a toggle offering one choice is a dead control, and a HALF
-   translated app is worse than an untranslated one — a Spanish reader who
-   gets Spanish headings and English legal copy has been told this site speaks
-   their language and then handed the part that decides their claim in a
-   language they may not read. automation/check-i18n.mjs is what makes
-   "complete" checkable: it counts the strings still baked into the JSX and
-   fails the build if that number goes up.
-
-   Fonts are the other half and are deliberately not solved here. The app
-   inlines sixteen base64 faces to stay a single self-contained file that
-   makes no off-origin request (test/privacy.mjs asserts that), and Atkinson
-   Hyperlegible covers no Arabic, CJK or Korean. That is a decision about
-   weight and typography, not about strings, and it does not block this.
-
-   Keys are dotted and read screen-first — entry.county.h1, pay.cta.file —
-   so a translator can work down a screen rather than through an alphabet. */
-const STRINGS = {
-  en: {
-    // ── Pay: the resolved wage, the arithmetic, the next step ──
-    'pay.least':          'The least you can legally be paid',
-    'pay.leastIn':        'The least you can legally be paid in {city}',
-    'pay.perHour':        'an hour, before tax',
-    // Says why the struck-through rates are struck through. Without it the
-    // reader sees three numbers crossed out and no reason.
-    'pay.rule.beaten':    'You must be paid the highest minimum wage that reaches where you work. The others are struck through because a higher one applies to you, not because they are wrong.',
-    'pay.rule.tied':      'Every minimum wage that reaches your worksite is the same amount, so this is what you are owed either way.',
-    'pay.example.h':      'If you were paid the minimum and worked 45 hours last week',
-    'pay.example.base':   '{hours} hours \u00d7 {rate}',
-    'pay.example.ot':     '{hours} overtime hours at 1.5\u00d7',
-    'pay.example.total':  'Your employer owes you',
-    'pay.example.note':   'An illustration at the minimum wage, using the federal rule that overtime starts after 40 hours in a week. If you are paid more than the minimum, or your state counts overtime by the day, your own figure is higher.',
-    'pay.cta.kicker':     'IF YOU WERE PAID LESS THAN THIS',
-    'pay.cta.h':          'File a wage claim. It is free, and you do not need a lawyer.',
-    'pay.cta.agency':     '{agency} takes the claim directly.',
-    'pay.cta.go':         'Start a wage claim \u2197',
-    'pay.deadline':       'Your deadline to file: {value}',
-    'pay.more.h':         'You may be owed more than the figure above.',
-    'pay.more.one':       'One place in {where} sets a higher rate of its own. Which applies depends on the exact address you work at, so we cannot pick one for you:',
-    'pay.more.many':      '{n} places in {where} set a higher rate of their own. Which applies depends on the exact address you work at, so we cannot pick one for you:',
-    'pay.more.pick':      'Tell us which one you work in',
-    'pay.local.kicker':   'IN AND AROUND {where}',
-    'pay.local.sub':      'Different places here set different rates, and they often disagree. Which one you are owed depends on where your worksite actually is \u2014 read what each says it covers.',
-    'topic.reach.one':    '{n} RULE REACHES YOU',
-    'topic.reach.many':   '{n} RULES REACH YOU',
-
-    // ── Draft notice: nothing here is attorney-checked ──
-    'draft.chip':         'Not yet lawyer-checked',
-    'draft.state':        'These {state} items are compiled from official government sources but have not yet been verified by an attorney.',
-    'draft.stateLocal':   'These {state} items and the local ordinances below are compiled from official government sources but have not yet been verified by an attorney. Local rates also change on a set date each year, so check the official source before relying on a figure.',
-    // ── Maps, loading and the error states behind them ──
-    'map.us.aria':        'Map of the United States \u2014 pick your state',
-    'map.us.failed':      'The map of the United States couldn\u2019t load. Pick your state from the list below instead \u2014 everything else works normally.',
-    'map.us.loading':     'Loading the map\u2026',
-    'map.state.aria':     'Map of {state} \u2014 pick your county',
-    'map.state.failed':   'The map of {state} couldn\u2019t load. Pick your county from the list below instead \u2014 everything else works normally.',
-    'map.state.loading':  'Loading the {state} map\u2026',
-    'loading':            'Loading\u2026',
-    'loading.state':      'Loading {state} rules\u2026',
-
-    // ── Chrome, and the sentence that has to be true on every screen ──
-    'home.h1':            'Know your rights at work',
-    'home.cta':           'Find my state\u2019s rules',
-    'chrome.changePlace': 'Change where you work \u2014 currently {place}',
-    'chrome.backTopics':  'All topics',
-    'chrome.backTopicsAria': 'Back to all topics',
-    'disclaimer.state':   'Legal information for {state}, not legal advice, and laws change. Confirm anything important with an attorney.',
-
-    // ── When the dataset does not arrive ──
-    'err.law':            'Couldn\u2019t load the law dataset. Check your connection and reopen.',
-    'err.rights':         'Couldn\u2019t load the rights dataset. Check your connection and reopen.',
-    'err.federal':        'Couldn\u2019t load federal rules. Check your connection and reopen.',
-    // Says what the silence does NOT mean. An error here must never be read as
-    // "your state adds nothing" — that is the reading that costs someone a claim.
-    'err.state':          'Couldn\u2019t load {state} rules. Check your connection and reopen \u2014 this is not a confirmation that no extra state protections apply.',
-    'err.stateFed':       'Couldn\u2019t load {state} rules. Check your connection and reopen \u2014 this is not a confirmation that no extra state protections apply. Federal law still applies nationwide.',
-    'err.stateRule':      'Couldn\u2019t load {state} rules. Check your connection and reopen \u2014 this is not a confirmation that no extra state rule applies.',
-    'err.stateNoncompete': 'Couldn\u2019t load {state} rules. Check your connection and reopen \u2014 this is not a confirmation that {state} has no non-compete rule.',
-    'err.agencies':       'Couldn\u2019t load {state} agency links. Check your connection and reopen \u2014 the federal agencies below are not the only ones that may apply.',
-    // ── Entry: the country, the county, the city ──
-    'entry.country.h1':      'Where do you work?',
-    'entry.country.sub':     'Employment law is different in every state. Pick yours to see the rules that actually apply to you.',
-    'entry.country.list':    'or choose from a list',
-    'entry.country.select':  'Select your state',
-    'entry.country.mapAria': 'Map of the United States \u2014 pick your state',
-    'entry.county.back':     'The whole country',
-    'entry.county.backAria': 'Back to the map of the United States',
-    'entry.county.h1':       'Where in {state}?',
-    'entry.county.sub':      'Pick your county on the map.',
-    'entry.county.list':     'or choose your {word} from a list',
-    'entry.county.filter':   'Type to filter {n} {plural}\u2026',
-    'entry.county.filterAria': 'Filter the {word} list',
-    'entry.county.select':   'Select a {word} ({n})',
-    'entry.county.selectSome': 'Select a {word} ({n} of {total})',
-    'entry.county.noMatch':  'No {word} matches \u201c{query}\u201d.',
-    'entry.county.mapAria':  'Map of {state} \u2014 pick your county',
-    'entry.county.haveLocal': 'We hold local ordinances for {places}.',
-    'entry.county.haveLocalSub': 'Pick one of those and you will see the city and county minimum wages on top of {state} and federal law. For any other county here we only hold {state} and federal law \u2014 that does not mean your county has no ordinance, only that we have not compiled it. Check your county and city sites too.',
-    'entry.county.noLocal':  'We hold no county or city ordinances for {state} yet \u2014 only federal and {state} law. Many places add their own minimum wage, sick leave or scheduling rules on top, so check your county and city sites too.',
-    'entry.county.skip':     'Skip \u2014 show me {state} law',
-    'entry.city.backAria':   'Back to the counties of {state}',
-    'entry.city.h1':         'Where in {county} do you work?',
-    'entry.city.sub':        'Not where you live \u2014 where you actually do the work. {n} places in this county set their own rules, and they do not agree with each other.',
-    'entry.city.elsewhere':  'Somewhere else in {county}',
-    'entry.city.elsewhereSub': 'Or you are not sure. You will see {state} and federal law, and every local rule we hold for this county underneath.',
-    // Joining a list is language-specific: English puts "and" before the last
-    // item, other languages do not, and some use a different separator.
-    'list.pair':             '{a} and {b}',
-    'list.more':             '{items} and {last}',
-    // ── The four working lives the map cannot express ──
-    'entry.sit.heading':    'NONE OF THOSE FIT?',
-    'entry.sit.home.label': 'I work from home',
-    'entry.sit.home.note':  'Pick where you sit when you work, not where the company is. Which state\u2019s law reaches a remote worker is not always settled, so if those are two different states it is worth reading both.',
-    'entry.sit.many.label': 'More than one place',
-    'entry.sit.many.note':  'Start with the place you work most. Rules and rates can differ at each one and we cannot combine them \u2014 come back and change your place to read the others.',
-    'entry.sit.drive.label': 'I drive or deliver',
-    'entry.sit.drive.note': 'Pick where your route usually starts. Which local rate reaches driving and delivery work can turn on where you are based as much as on where you actually drive, and if you cross city lines more than one may apply. We cannot resolve that for you.',
-    'entry.sit.past.label': 'I left that job',
-    'entry.sit.past.note':  'Pick where you worked, not where you are now. Every figure on this site is today\u2019s \u2014 we do not hold what it was on an earlier date. The filing clock has been running since it happened, though, and the deadline cards will tell you how long that has been.',
-
-    // ── When did this happen, and what it means for the clock ──
-    'when.heading':      'When did this happen?',
-    'when.sub':          'Optional \u2014 every deadline shows either way. If you tell us, we will say how long ago that was, beside each one.',
-    'when.month':        'Month',
-    'when.monthAria':    'Month it happened',
-    'when.year':         'Year',
-    'when.yearAria':     'Year it happened',
-    'when.clear':        'Clear',
-    'when.said':         'You said this happened {elapsed}.',
-    'when.saidUrgent':   'You said this happened {elapsed}. {verdict}',
-    'when.past':         'That is past this deadline.',
-    'when.soon':         'That is most of this deadline \u2014 do not wait.',
-    'when.caveat':       'Deadlines run from different dates, and some can be paused, so a date past one is not necessarily the end of it \u2014 but check today, not next week.',
-    // Elapsed time, said the way a person says it.
-    'when.elapsed.thisMonth': 'this month',
-    'when.elapsed.oneMonth':  'about a month ago',
-    'when.elapsed.months':    'about {n} months ago',
-    'when.elapsed.years':     'about {years} ago',
-    'when.elapsed.yearsAnd':  'about {years} and {months} ago',
-    'when.unit.oneYear':      'a year',
-    'when.unit.years':        '{n} years',
-    'when.unit.oneMonth':     'a month',
-    'when.unit.months':       '{n} months',
-
-    // ── Provenance: who said it, when we last looked ──
-    'source.unnamed':    'Official source',
-    'source.checkedLong': '{agency} \u00b7 we last checked this {date}',
-    'source.checkedShort': '{agency} \u00b7 checked {date}',
-    'source.cta':        'Check the official text \u2197',
-    'source.ctaAria':    'Check the official text of {rule} (opens in a new tab)',
-    'source.none':       'We hold no link to the official text for this one \u2014 treat it as a lead, not an answer.',
-  },
-};
-
-/* "A, B and C". Kept in the catalogue rather than hardcoded because the last
-   separator is language-specific — plenty of languages do not put a word
-   before the final item, and some use a different mark entirely. */
-function joinList(items){
-  const xs = (items || []).filter(Boolean).map(String);
-  if (!xs.length) return '';
-  if (xs.length === 1) return xs[0];
-  if (xs.length === 2) return t('list.pair', { a: xs[0], b: xs[1] });
-  return t('list.more', { items: xs.slice(0, -1).join(', '), last: xs[xs.length - 1] });
-}
-
-/* The locales offered in the UI. One entry means no control is drawn. */
-const LOCALES = [{ code: 'en', name: 'English' }];
-
-/* There is one locale, so this never moves yet. When a second one lands it is
-   assigned at the top of App()'s render, before any child renders — React runs
-   a parent's function body to completion before rendering the children it
-   returned, so every t() below it would see the language the reader picked.
-   A module-level binding rather than a context because t() is also called from
-   plain functions that are not components and cannot useContext.
-
-   No language STATE and no stored preference yet, deliberately: with nothing
-   able to change the language, both would be scaffolding that no code path
-   reaches, and the stored one would widen the privacy promise for nothing. */
-let CURRENT_LANG = 'en';
-
-/* Look up a string, filling {placeholders} from `vars`.
-
-   Returns a plain string when every value is text, and a React fragment when
-   any of them is an element — so a sentence with a link inside it stays one
-   translatable sentence instead of being cut into three fragments that no
-   translator can reorder. Word order is the whole reason this matters:
-   German and Japanese put the verb where English does not, and copy
-   assembled by concatenation cannot be reordered at all.
-
-   A missing key renders the key itself. That is deliberately ugly and
-   deliberately not a crash: a typo should be obvious on screen in review, and
-   should never take the app down in front of a reader. check-i18n.mjs fails
-   the build on any key that is used and not defined. */
-function t(key, vars) {
-  const table = STRINGS[CURRENT_LANG] || STRINGS.en;
-  let s = table[key];
-  if (s === undefined) s = STRINGS.en[key];
-  if (s === undefined) return key;
-  if (!vars) return s;
-  const parts = String(s).split(/(\{[A-Za-z0-9_]+\})/);
-  let hasNode = false;
-  const out = parts.map((p) => {
-    const m = /^\{([A-Za-z0-9_]+)\}$/.exec(p);
-    if (!m || !Object.prototype.hasOwnProperty.call(vars, m[1])) return p;
-    const v = vars[m[1]];
-    if (v !== null && typeof v === 'object') hasNode = true;
-    return v;
-  });
-  // Spread as children rather than returning the array: variadic children
-  // need no keys, so this cannot produce React's list-key warning.
-  return hasNode ? React.createElement(React.Fragment, null, ...out) : out.join('');
-}
-
 /* Parse a CSS declaration string into a React style object.
    Lets us reuse the design's exact inline-style strings verbatim. */
 function css(str){
@@ -1155,7 +1207,7 @@ function SmallStateRow({ states, value, onPick, onHover }) {
   const sorted = [...states].sort((a, b) => a.name.localeCompare(b.name));
   return (
     <div style={css("display:flex;flex-direction:column;gap:7px;margin-top:2px")}>
-      <p style={css("margin:0;font:700 12px 'Atkinson Hyperlegible',sans-serif;color:#4A5162;letter-spacing:.04em")}>SMALL STATES — TAP A NAME</p>
+      <p style={css("margin:0;font:700 12px 'Atkinson Hyperlegible',sans-serif;color:#4A5162;letter-spacing:.04em")}>{t('map.smallStates')}</p>
       <div style={css("display:flex;flex-wrap:wrap;gap:6px")}>
         {sorted.map(st => {
           const on = value === st.name;
@@ -1379,7 +1431,7 @@ function WelcomeArt() {
   const K = 0.25;
   return (
     <svg viewBox="0 0 360 284" width="100%" role="img"
-      aria-label="Illustration: workers of different jobs, ages and abilities standing below a map of the United States"
+      aria-label={t('welcome.artAria')}
       style={{ display: 'block', maxWidth: '420px', margin: '0 auto' }}>
       {geo && geo.states ?
         <g className="wlUsMapDecor" aria-hidden="true" transform={`translate(55,4) scale(${K})`}>
@@ -2762,7 +2814,7 @@ function App(){
         <WelcomeArt />
         <h1 style={css("margin:0;font:700 30px/1.12 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{t('home.h1')}</h1>
         <p style={css("margin:0;font:400 18px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty")}>
-          Plain-English employment law for every state — what you’re owed, what counts as discrimination, and how long you have to act.
+          {t('welcome.sub')}
         </p>
         <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>
           Free, and private by design: everything you enter stays on this device. This is legal information, not legal advice.
@@ -3059,8 +3111,8 @@ function App(){
               the same way the county step already does for local ordinances. */}
           {stateData && !st.length && fed.length ?
             <div style={css("padding:14px 15px;border-radius:14px;border:2px dashed rgba(20,24,31,.3)")}>
-              <p style={css("margin:0;font:700 15px/1.4 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>Everything below is federal law. We hold no {stName} rules on this yet.</p>
-              <p style={css("margin:6px 0 0;font:400 14px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty")}>That is a gap in what we have compiled, not a finding that {stName} has none — many states add their own rules on top of the federal floor. Your state labor agency on the Agencies tab is the place to check.</p>
+              <p style={css("margin:0;font:700 15px/1.4 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{t('gap.topic.h', { state: stName })}</p>
+              <p style={css("margin:6px 0 0;font:400 14px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty")}>{t('gap.topic.sub', { state: stName })}</p>
             </div> : null}
 
           {/* The answer, before the evidence for it. Only minimum wage resolves
@@ -3216,11 +3268,11 @@ function App(){
             </div> : null}
           {fed.length ?
             <div style={css("display:flex;flex-direction:column;gap:12px")}>
-              <p style={css("margin:6px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em")}>FEDERAL — APPLIES NATIONWIDE</p>
+              <p style={css("margin:6px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em")}>{t('scope.fedNationwide')}</p>
               {fed.map((f, i) => factCard(f, i, 'FEDERAL', '#F0EDE5'))}
             </div> : null}
           {!st.length && !fed.length ?
-            <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Nothing recorded here yet for {stName}. That is a gap in our data, not a statement that no rule applies.</p> : null}
+            <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{t('gap.rights', { state: stName })}</p> : null}
         </div>
       );
     }
@@ -3230,8 +3282,8 @@ function App(){
       <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
         <LocationPill />
         <div>
-          <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>Your rights in {stName}</h1>
-          <p style={css("margin:10px 0 0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>Federal law applies everywhere; {stName} rules layer on top. Pick a topic.</p>
+          <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{t('grid.h1', { state: stName })}</h1>
+          <p style={css("margin:10px 0 0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{t('grid.sub', { state: stName })}</p>
         </div>
 
         {contentErr ? <p role="alert" style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>{t('err.law')}</p> : null}
@@ -3249,7 +3301,7 @@ function App(){
                     <Icon name={cat.icon} size={24} />
                     <span style={css("font:700 18px/1.2 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{cat.label}</span>
                   </span>
-                  <span style={css("font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Nothing recorded yet for {stName}. That doesn’t mean no rule applies.</span>
+                  <span style={css("font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{t('gap.grid', { state: stName })}</span>
                 </div>
               );
               return (
@@ -3271,7 +3323,7 @@ function App(){
                   <span style={css("display:flex;flex-direction:column;gap:4px;min-width:0")}>
                     <span style={css("font:700 18px/1.22 'Atkinson Hyperlegible',sans-serif;text-wrap:pretty;color:" + cat.on)}>{cat.label}</span>
                     <span style={css("font:500 14px/1.4 'Atkinson Hyperlegible',sans-serif;text-wrap:pretty;opacity:.84;color:" + cat.on)}>{cat.blurb}</span>
-                    <span style={css("font:700 12.5px 'Atkinson Hyperlegible',sans-serif;letter-spacing:.02em;opacity:.7;color:" + cat.on)}>{t(n === 1 ? 'topic.reach.one' : 'topic.reach.many', { n })}</span>
+                    <span style={css("font:700 12.5px 'Atkinson Hyperlegible',sans-serif;letter-spacing:.02em;opacity:.7;color:" + cat.on)}>{t(n === 1 ? 'grid.reach.one' : 'grid.reach.many', { n })}</span>
                   </span>
                 </button>
               );
@@ -3355,7 +3407,7 @@ function App(){
               const line = f => { const u = safeUrl(f.sourceUrl); return <p key={f.topic} style={css("margin:0 0 8px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{f.summary} {u ? <a href={u} target="_blank" rel="noopener noreferrer" className="hoverfx" aria-label={'Official source for ' + (f.citation || f.topic)} style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null}</p>; };
               return (
                 <div style={css("padding:18px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF")}>
-                  <p style={css("margin:0 0 10px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>What applies in {stateLabel}</p>
+                  <p style={css("margin:0 0 10px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{t('wizard.applies', { state: stateLabel })}</p>
                   <p style={css("margin:0 0 4px;font:700 13px 'IBM Plex Mono',monospace;color:#1B2778;letter-spacing:.04em")}>FEDERAL</p>
                   {fedOT.length ? fedOT.map(line) : contentErr ?
                     <p style={css("margin:0 0 8px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>{t('err.federal')}</p> :
@@ -3388,7 +3440,7 @@ function App(){
               const line = f => { const u = safeUrl(f.sourceUrl); return <p key={f.topic} style={css("margin:0 0 8px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{f.summary} {u ? <a href={u} target="_blank" rel="noopener noreferrer" className="hoverfx" style={css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none")}>[source ↗]</a> : null}</p>; };
               return (
                 <div style={css("padding:18px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF")}>
-                  <p style={css("margin:0 0 10px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>What applies in {stateLabel}</p>
+                  <p style={css("margin:0 0 10px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{t('wizard.applies', { state: stateLabel })}</p>
                   <p style={css("margin:0 0 4px;font:700 13px 'IBM Plex Mono',monospace;color:#1B2778;letter-spacing:.04em")}>FEDERAL</p>
                   {fedFacts.length ? fedFacts.map(line) : contentErr ?
                     <p style={css("margin:0 0 8px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>{t('err.federal')}</p> :
@@ -3396,7 +3448,7 @@ function App(){
                   <p style={css("margin:10px 0 4px;font:700 13px 'IBM Plex Mono',monospace;color:#1B2778;letter-spacing:.04em")}>{stateSel ? stateSel.toUpperCase() : stateLabel.toUpperCase()}{stRev ? '' : ' (DRAFT)'}</p>
                   {stateData && !stRev && <div style={css("margin:0 0 8px")}><DraftStateNotice stName={stateLabel} /></div>}
                   {wkey === 'harassment' && stFacts.length > 0 &&
-                    <p style={css("margin:0 0 8px;font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>No state file here has a separate “harassment” entry — shown below is {stateLabel}’s own anti-discrimination law, which generally also covers harassment claims.</p>
+                    <p style={css("margin:0 0 8px;font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{t('gap.harassment', { state: stateLabel })}</p>
                   }
                   {stFacts.length ? stFacts.map(line) : stateErr ?
                     <p style={css("margin:0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>{t('err.stateRule', { state: stateLabel })}</p> :
@@ -3468,7 +3520,7 @@ function App(){
                 longer builds a case file. */}
             <button onClick={() => { setLawCat(wkey === 'wage' ? 'pay' : 'discrim'); setScreen('home'); }} className="hoverfx"
               style={css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Read the {wkey === 'wage' ? 'pay and overtime' : 'discrimination and harassment'} rules</button>
-            <button onClick={nav('agencies')} style={css("padding:18px;border-radius:16px;border:none;background:#2B3AA8;color:#fff;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Who enforces this</button>
+            <button onClick={nav('agencies')} style={css("padding:18px;border-radius:16px;border:none;background:#2B3AA8;color:#fff;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>{t('agencies.h1')}</button>
             <button onClick={() => { setWizNode('start'); setWizPath([]); }} style={css("padding:16px;border-radius:16px;border:2px solid #14181F;background:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer")}>Run the check again</button>
             <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{wcfg.doneDisclaimer}</p>
           </div>
@@ -3505,7 +3557,7 @@ function App(){
         <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{t('loading.state', { state: stName })}</p>
       ) : (
         <div style={css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#F0EDE5")}>
-          <p style={css("margin:0;font:400 16px/1.5 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>We don’t have a sourced answer for {stName} yet. Non-compete law varies a lot by state and is changing — talk to an employment attorney before assuming your non-compete is (un)enforceable.</p>
+          <p style={css("margin:0;font:400 16px/1.5 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{t('gap.noncompete', { state: stName })}</p>
         </div>
       )}
 
@@ -3630,7 +3682,7 @@ function App(){
                 : (f.sourceAgency || t('source.unnamed'))}
             </span> : null}
           {safeUrl(f.sourceUrl)
-            ? <a href={safeUrl(f.sourceUrl)} target="_blank" rel="noopener noreferrer" className="hoverfx" aria-label={'Official source for ' + (f.citation || f.topic) + ' (opens in a new tab)'} style={css("display:inline-flex;align-items:center;min-height:44px;font:600 13px 'IBM Plex Mono',monospace;color:#2B3AA8;text-decoration:none")}>source ↗</a>
+            ? <a href={safeUrl(f.sourceUrl)} target="_blank" rel="noopener noreferrer" className="hoverfx" aria-label={t('rights.sourceAria', { rule: f.citation || f.topic })} style={css("display:inline-flex;align-items:center;min-height:44px;font:600 13px 'IBM Plex Mono',monospace;color:#2B3AA8;text-decoration:none")}>source ↗</a>
             : null}
         </div>
       </div>
@@ -3663,8 +3715,8 @@ function App(){
     return (
       <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
         <div>
-          <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Every rule, as written</h1>
-          <p style={css("margin:10px 0 0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>The same rules the Laws tab explains — here with no explanation, just the citation, the figure and the official source. {total ? total + ' on file for ' + stName + '.' : ''}</p>
+          <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{t('rights.h1')}</h1>
+          <p style={css("margin:10px 0 0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{t('rights.sub')}{total ? ' ' + t('rights.count', { n: total, state: stName }) : ''}</p>
         </div>
 
         {contentErr ? <p role="alert" style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>{t('err.law')}</p> : null}
@@ -3764,15 +3816,15 @@ function App(){
     return (
       <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
         <div>
-          <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Who enforces this</h1>
-          <p style={css("margin:10px 0 0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>Government agencies you can contact yourself, for free, without a lawyer.</p>
+          <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{t('agencies.h1')}</h1>
+          <p style={css("margin:10px 0 0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{t('agencies.sub')}</p>
         </div>
 
         {/* Said before the links, not after: complaining is itself protected,
             and someone weighing whether to file needs to know that first. */}
         <div style={css("padding:16px 18px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F;display:flex;flex-direction:column;gap:6px")}>
-          <p style={css("margin:0;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>You are protected from retaliation for speaking up</p>
-          <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>It is illegal for an employer to punish you — fire, demote, cut your hours — for asking about, complaining about, or filing a claim over your rights at work. That protection covers internal and verbal complaints too, not only formal filings.</p>
+          <p style={css("margin:0;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{t('agencies.retal.h')}</p>
+          <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{t('agencies.retal.sub')}</p>
         </div>
 
         {/* Asked once, read on every card below. Each agency runs a different
@@ -3792,22 +3844,22 @@ function App(){
         {stateErr ? <p role="alert" style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>{t('err.agencies', { state: stLabel })}</p> : null}
 
         <div style={css("display:flex;flex-direction:column;gap:10px")}>
-          <p style={css("margin:6px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em")}>FEDERAL — ANYWHERE IN THE US</p>
+          <p style={css("margin:6px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em")}>{t('scope.fedAnywhere')}</p>
           {FEDERAL_AGENCIES.map(a => row(a.name, a.covers, a.url, '#F0EDE5', deadlineFor(a.deadlineTopics)))}
         </div>
 
         <div style={css("display:flex;gap:14px;padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff")}>
           <span style={css("flex:none;width:44px;height:44px;border-radius:12px;background:#EEF1FF;border:2px solid #14181F;display:flex;align-items:center;justify-content:center;color:#2B3AA8")}><Icon name="scale" size={22} /></span>
           <div style={css("display:flex;flex-direction:column;gap:6px")}>
-            <p style={css("margin:0;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Find an employment lawyer</p>
-            <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>You may also want an employment attorney licensed in {stLabel}. WorkLaw does not operate a referral service or recommend firms — your state or local bar association’s lawyer-referral service is a reliable place to start.</p>
+            <p style={css("margin:0;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{t('agencies.lawyer.h')}</p>
+            <p style={css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{t('agencies.lawyer.sub', { state: stLabel })}</p>
           </div>
         </div>
 
         {/* This used to end "check the Deadlines topic before you wait", which
             sent someone to another screen for the most time-critical fact on
             this one. The deadlines are on the cards now. */}
-        <p style={css("margin:0;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>This is legal information, not legal advice. Where a deadline is shown it comes from the source named on that card, and it is the shortest thing standing between you and a claim — a day late is usually the whole case.</p>
+        <p style={css("margin:0;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{t('agencies.foot')}</p>
       </div>
     );
   };
@@ -3868,7 +3920,7 @@ function App(){
                   line of its own a few pixels above this one, so the first
                   screen of a site whose whole job is "pick your state" led with
                   four lines of boilerplate in two stacked blocks. */}
-              <p style={css("margin:0;font:400 13px/1.5 'Atkinson Hyperlegible',sans-serif;color:#6B7280")}>Legal information, not legal advice. Nothing is uploaded — this browser remembers only the place you picked: state, county, and city if you gave one.</p>
+              <p style={css("margin:0;font:400 13px/1.5 'Atkinson Hyperlegible',sans-serif;color:#6B7280")}>{t('foot.privacy')}</p>
             </div>
           }
         </main>
@@ -3900,8 +3952,8 @@ class ErrorBoundary extends React.Component {
     };
     return (
       <div style={css("max-width:480px;margin:60px auto;padding:28px;font-family:'Atkinson Hyperlegible',sans-serif;color:#14181F")}>
-        <h1 style={css("font:700 22px 'Atkinson Hyperlegible',sans-serif;margin:0 0 12px")}>Something went wrong</h1>
-        <p style={css("font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;margin:0 0 16px")}>WorkLaw hit an unexpected error. This is usually caused by a saved setting that got corrupted. Your options:</p>
+        <h1 style={css("font:700 22px 'Atkinson Hyperlegible',sans-serif;margin:0 0 12px")}>{t('crash.h')}</h1>
+        <p style={css("font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;margin:0 0 16px")}>{t('crash.sub')}</p>
         <div style={css("display:flex;flex-direction:column;gap:10px")}>
           <button onClick={reloadOnly} style={css("min-height:44px;padding:14px 18px;border-radius:12px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Try reloading</button>
           <button onClick={clearAndReload} style={css("min-height:44px;padding:14px 18px;border-radius:12px;border:2px solid #B3264F;background:#fff;color:#B3264F;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Reset and start over</button>

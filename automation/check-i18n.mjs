@@ -176,21 +176,46 @@ const isProse = (v) => {
   return true;
 };
 
+/* ── Prose held in DATA, which the walk above cannot see ───────────────────
+   LAW_CATEGORIES carries `label: 'Pay & overtime'` and the JSX renders it as
+   {cat.label} — an expression, not a literal, so the createElement walk finds
+   nothing and would happily report nought while six category names, seventy
+   topic labels and every wizard question sat in English forever.
+
+   So the source is also read for the property names that carry prose. A value
+   that is already a dotted catalogue key ('entry.sit.home.label') has been
+   migrated; a value that is a sentence has not. */
+const PROSE_KEYS = ['label', 'blurb', 'desc', 'summary', 'help', 'note', 'covers',
+                    'doneTitle', 'qDisclaimer', 'tag', 'heading', 'title', 'q'];
+const looksLikeKey = (v) => /^[a-z][A-Za-z0-9]*(\.[A-Za-z0-9_]+)+$/.test(v.trim());
+const inData = [];
+for (const key of PROSE_KEYS) {
+  // One quoted string, either quote style, escapes allowed: the backreference
+  // keeps an apostrophe inside a double-quoted value from ending the match.
+  const re = new RegExp('(?:^|[{,\\s])' + key + '\\s*:\\s*([\'"])((?:\\\\.|(?!\\1)[^\\\\])*)\\1', 'g');
+  for (const m of jsx.matchAll(re)) {
+    const v = m[2];
+    if (!v || looksLikeKey(v) || !isProse(v)) continue;
+    inData.push({ kind: 'data:' + key, value: v });
+  }
+}
+
 /* ── The other half: every key used must exist, exactly once ───────────────
-   The ratchet above proves strings have LEFT the JSX. This proves they landed
+   The ratchet proves strings have LEFT the JSX. This proves they landed
    somewhere real. A t('typo') renders the key itself on screen, which is loud
    in review and harmless to a reader — but only if something fails the build
    when it happens, or it ships.
 
    Keys are read out of the SOURCE text rather than by evaluating the object,
    because a duplicate key in a JS object literal is silently the last one to
-   win: two entries for 'when.heading' would leave one of them dead and the
-   other quietly overriding it, with no error anywhere. */
+   win: two entries for 'when.heading' would leave one dead and the other
+   quietly overriding it, with no error anywhere. */
 const catBlock = (() => {
   const at = jsx.indexOf('const STRINGS = {');
   if (at < 0) return null;
   const enAt = jsx.indexOf('en: {', at);
-  let d = 0, i = jsx.indexOf('{', enAt);
+  let d = 0;
+  const i = jsx.indexOf('{', enAt);
   for (let j = i; j < jsx.length; j++) {
     if (jsx[j] === '{') d++;
     else if (jsx[j] === '}') { d--; if (d === 0) return jsx.slice(i + 1, j); }
@@ -208,8 +233,8 @@ if (dupes.length) {
 }
 const definedSet = new Set(defined);
 
-// Only literal keys can be checked. t(s.label) and t('entry.sit.' + k) are
-// resolved at runtime; the suites that render those screens are what cover them.
+// Only literal keys can be checked. t(s.label) and t('topic.' + k) are resolved
+// at runtime; the suites that render those screens are what cover them.
 const usedLiteral = [...jsx.matchAll(/\bt\(\s*'([^']+)'/g)].map(m => m[1]);
 const missing = [...new Set(usedLiteral)].filter(k => !definedSet.has(k));
 if (missing.length) {
@@ -217,7 +242,7 @@ if (missing.length) {
   process.exit(1);
 }
 
-const all = scan(code).filter(f => isProse(f.value));
+const all = scan(code).filter(f => isProse(f.value)).concat(inData);
 // One entry per distinct string: the same label in three places is one thing
 // to translate, not three.
 const distinct = [...new Map(all.map(f => [f.kind + ' | ' + f.value.trim(), f])).keys()].sort();
