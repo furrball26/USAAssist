@@ -668,6 +668,96 @@ const ADA_PROCESS_GOOD_FAITH_NOTE = 'The ADA generally requires both you and you
    so a translator can work down a screen rather than through an alphabet. */
 const STRINGS = {
   en: {
+    // ── Pay: the resolved wage, the arithmetic, the next step ──
+    'pay.least':          'The least you can legally be paid',
+    'pay.leastIn':        'The least you can legally be paid in {city}',
+    'pay.perHour':        'an hour, before tax',
+    // Says why the struck-through rates are struck through. Without it the
+    // reader sees three numbers crossed out and no reason.
+    'pay.rule.beaten':    'You must be paid the highest minimum wage that reaches where you work. The others are struck through because a higher one applies to you, not because they are wrong.',
+    'pay.rule.tied':      'Every minimum wage that reaches your worksite is the same amount, so this is what you are owed either way.',
+    'pay.example.h':      'If you were paid the minimum and worked 45 hours last week',
+    'pay.example.base':   '{hours} hours \u00d7 {rate}',
+    'pay.example.ot':     '{hours} overtime hours at 1.5\u00d7',
+    'pay.example.total':  'Your employer owes you',
+    'pay.example.note':   'An illustration at the minimum wage, using the federal rule that overtime starts after 40 hours in a week. If you are paid more than the minimum, or your state counts overtime by the day, your own figure is higher.',
+    'pay.cta.kicker':     'IF YOU WERE PAID LESS THAN THIS',
+    'pay.cta.h':          'File a wage claim. It is free, and you do not need a lawyer.',
+    'pay.cta.agency':     '{agency} takes the claim directly.',
+    'pay.cta.go':         'Start a wage claim \u2197',
+    'pay.deadline':       'Your deadline to file: {value}',
+    'pay.more.h':         'You may be owed more than the figure above.',
+    'pay.more.one':       'One place in {where} sets a higher rate of its own. Which applies depends on the exact address you work at, so we cannot pick one for you:',
+    'pay.more.many':      '{n} places in {where} set a higher rate of their own. Which applies depends on the exact address you work at, so we cannot pick one for you:',
+    'pay.more.pick':      'Tell us which one you work in',
+    'pay.local.kicker':   'IN AND AROUND {where}',
+    'pay.local.sub':      'Different places here set different rates, and they often disagree. Which one you are owed depends on where your worksite actually is \u2014 read what each says it covers.',
+    'topic.reach.one':    '{n} RULE REACHES YOU',
+    'topic.reach.many':   '{n} RULES REACH YOU',
+
+    // ── Draft notice: nothing here is attorney-checked ──
+    'draft.chip':         'Not yet lawyer-checked',
+    'draft.state':        'These {state} items are compiled from official government sources but have not yet been verified by an attorney.',
+    'draft.stateLocal':   'These {state} items and the local ordinances below are compiled from official government sources but have not yet been verified by an attorney. Local rates also change on a set date each year, so check the official source before relying on a figure.',
+    // ── Maps, loading and the error states behind them ──
+    'map.us.aria':        'Map of the United States \u2014 pick your state',
+    'map.us.failed':      'The map of the United States couldn\u2019t load. Pick your state from the list below instead \u2014 everything else works normally.',
+    'map.us.loading':     'Loading the map\u2026',
+    'map.state.aria':     'Map of {state} \u2014 pick your county',
+    'map.state.failed':   'The map of {state} couldn\u2019t load. Pick your county from the list below instead \u2014 everything else works normally.',
+    'map.state.loading':  'Loading the {state} map\u2026',
+    'loading':            'Loading\u2026',
+    'loading.state':      'Loading {state} rules\u2026',
+
+    // ── Chrome, and the sentence that has to be true on every screen ──
+    'home.h1':            'Know your rights at work',
+    'home.cta':           'Find my state\u2019s rules',
+    'chrome.changePlace': 'Change where you work \u2014 currently {place}',
+    'chrome.backTopics':  'All topics',
+    'chrome.backTopicsAria': 'Back to all topics',
+    'disclaimer.state':   'Legal information for {state}, not legal advice, and laws change. Confirm anything important with an attorney.',
+
+    // ── When the dataset does not arrive ──
+    'err.law':            'Couldn\u2019t load the law dataset. Check your connection and reopen.',
+    'err.rights':         'Couldn\u2019t load the rights dataset. Check your connection and reopen.',
+    'err.federal':        'Couldn\u2019t load federal rules. Check your connection and reopen.',
+    // Says what the silence does NOT mean. An error here must never be read as
+    // "your state adds nothing" — that is the reading that costs someone a claim.
+    'err.state':          'Couldn\u2019t load {state} rules. Check your connection and reopen \u2014 this is not a confirmation that no extra state protections apply.',
+    'err.stateFed':       'Couldn\u2019t load {state} rules. Check your connection and reopen \u2014 this is not a confirmation that no extra state protections apply. Federal law still applies nationwide.',
+    'err.stateRule':      'Couldn\u2019t load {state} rules. Check your connection and reopen \u2014 this is not a confirmation that no extra state rule applies.',
+    'err.stateNoncompete': 'Couldn\u2019t load {state} rules. Check your connection and reopen \u2014 this is not a confirmation that {state} has no non-compete rule.',
+    'err.agencies':       'Couldn\u2019t load {state} agency links. Check your connection and reopen \u2014 the federal agencies below are not the only ones that may apply.',
+    // ── Entry: the country, the county, the city ──
+    'entry.country.h1':      'Where do you work?',
+    'entry.country.sub':     'Employment law is different in every state. Pick yours to see the rules that actually apply to you.',
+    'entry.country.list':    'or choose from a list',
+    'entry.country.select':  'Select your state',
+    'entry.country.mapAria': 'Map of the United States \u2014 pick your state',
+    'entry.county.back':     'The whole country',
+    'entry.county.backAria': 'Back to the map of the United States',
+    'entry.county.h1':       'Where in {state}?',
+    'entry.county.sub':      'Pick your county on the map.',
+    'entry.county.list':     'or choose your {word} from a list',
+    'entry.county.filter':   'Type to filter {n} {plural}\u2026',
+    'entry.county.filterAria': 'Filter the {word} list',
+    'entry.county.select':   'Select a {word} ({n})',
+    'entry.county.selectSome': 'Select a {word} ({n} of {total})',
+    'entry.county.noMatch':  'No {word} matches \u201c{query}\u201d.',
+    'entry.county.mapAria':  'Map of {state} \u2014 pick your county',
+    'entry.county.haveLocal': 'We hold local ordinances for {places}.',
+    'entry.county.haveLocalSub': 'Pick one of those and you will see the city and county minimum wages on top of {state} and federal law. For any other county here we only hold {state} and federal law \u2014 that does not mean your county has no ordinance, only that we have not compiled it. Check your county and city sites too.',
+    'entry.county.noLocal':  'We hold no county or city ordinances for {state} yet \u2014 only federal and {state} law. Many places add their own minimum wage, sick leave or scheduling rules on top, so check your county and city sites too.',
+    'entry.county.skip':     'Skip \u2014 show me {state} law',
+    'entry.city.backAria':   'Back to the counties of {state}',
+    'entry.city.h1':         'Where in {county} do you work?',
+    'entry.city.sub':        'Not where you live \u2014 where you actually do the work. {n} places in this county set their own rules, and they do not agree with each other.',
+    'entry.city.elsewhere':  'Somewhere else in {county}',
+    'entry.city.elsewhereSub': 'Or you are not sure. You will see {state} and federal law, and every local rule we hold for this county underneath.',
+    // Joining a list is language-specific: English puts "and" before the last
+    // item, other languages do not, and some use a different separator.
+    'list.pair':             '{a} and {b}',
+    'list.more':             '{items} and {last}',
     // ── The four working lives the map cannot express ──
     'entry.sit.heading':    'NONE OF THOSE FIT?',
     'entry.sit.home.label': 'I work from home',
@@ -712,6 +802,17 @@ const STRINGS = {
     'source.none':       'We hold no link to the official text for this one \u2014 treat it as a lead, not an answer.',
   },
 };
+
+/* "A, B and C". Kept in the catalogue rather than hardcoded because the last
+   separator is language-specific — plenty of languages do not put a word
+   before the final item, and some use a different mark entirely. */
+function joinList(items){
+  const xs = (items || []).filter(Boolean).map(String);
+  if (!xs.length) return '';
+  if (xs.length === 1) return xs[0];
+  if (xs.length === 2) return t('list.pair', { a: xs[0], b: xs[1] });
+  return t('list.more', { items: xs.slice(0, -1).join(', '), last: xs[xs.length - 1] });
+}
 
 /* The locales offered in the UI. One entry means no control is drawn. */
 const LOCALES = [{ code: 'en', name: 'English' }];
@@ -972,16 +1073,16 @@ function UsaStatePicker({ value, onPick }) {
   // to spot from the outside.
   if (geo === false) return (
     <div role="alert" style={css("padding:15px 17px;border-radius:14px;border:2px dashed rgba(20,24,31,.22)")}>
-      <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>The map of the United States couldn’t load. Pick your state from the list below instead — everything else works normally.</p>
+      <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{t('map.us.failed')}</p>
     </div>
   );
-  if (!geo) return <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Loading the map…</p>;
+  if (!geo) return <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{t('map.us.loading')}</p>;
   const shown = hovered || value || '';
   const [, , vw, vh] = geo.viewBox.split(/\s+/).map(Number);
   return (
     <div style={css("display:flex;flex-direction:column;gap:8px")}>
       <svg className="wlUsMap" viewBox={`0 0 ${vw + MAP_PAD_RIGHT} ${vh}`} role="group"
-        aria-label="Map of the United States — pick your state" style={{ maxHeight: '46vh' }}>
+        aria-label={t('map.us.aria')} style={{ maxHeight: '46vh' }}>
         {geo.states.map(st => {
           const on = value === st.name;
           /* A shape too small to tap is not a control. It stays clickable for a
@@ -1120,18 +1221,18 @@ function StateCountyMap({ stateName, value, onPick }) {
   // standing alone and looking intentional.
   if (failed) return (
     <div role="alert" style={css("padding:15px 17px;border-radius:14px;border:2px dashed rgba(20,24,31,.22)")}>
-      <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>The map of {stateName} couldn’t load. Pick your county from the list below instead — everything else works normally.</p>
+      <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{t('map.state.failed', { state: stateName })}</p>
     </div>
   );
   if (!geo) return (
-    <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Loading the {stateName} map…</p>
+    <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{t('map.state.loading', { state: stateName })}</p>
   );
 
   const shown = hovered || value || '';
   return (
     <div style={css("display:flex;flex-direction:column;gap:8px")}>
       <svg className="wlCountyMap" viewBox={geo.viewBox} role="group"
-        aria-label={'Map of ' + stateName + ' — pick your county'}
+        aria-label={t('map.state.aria', { state: stateName })}
         style={{ maxHeight: '46vh' }}>
         {geo.counties.map(c => {
           const full = c.name;
@@ -2659,7 +2760,7 @@ function App(){
     return (
       <div style={css("padding:14px 24px 40px;display:flex;flex-direction:column;gap:18px;min-height:100%")}>
         <WelcomeArt />
-        <h1 style={css("margin:0;font:700 30px/1.12 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>Know your rights at work</h1>
+        <h1 style={css("margin:0;font:700 30px/1.12 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{t('home.h1')}</h1>
         <p style={css("margin:0;font:400 18px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty")}>
           Plain-English employment law for every state — what you’re owed, what counts as discrimination, and how long you have to act.
         </p>
@@ -2672,7 +2773,7 @@ function App(){
             an intro invites the reader to wonder what they are being spared. */}
         <button onClick={enter} className="surfacefx"
           style={css("min-height:52px;padding:14px 18px;border-radius:14px;border:2px solid #14181F;background:#2B3AA8;color:#fff;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>
-          Find my state’s rules
+          {t('home.cta')}
         </button>
       </div>
     );
@@ -2682,7 +2783,7 @@ function App(){
   // it. It used to open a staged edit form over the saved case; there is no
   // case now, so changing location is just clearing the pick.
   const LocationPill = ({ dark }) => (
-    <button onClick={() => { setStateSel(''); setCounty(''); setCity(''); setLawCat(null); setScreen('home'); }} aria-label={'Change where you work — currently ' + locationLabel} className="surfacefx" style={css(dark
+    <button onClick={() => { setStateSel(''); setCounty(''); setCity(''); setLawCat(null); setScreen('home'); }} aria-label={t('chrome.changePlace', { place: locationLabel })} className="surfacefx" style={css(dark
       ? "align-self:flex-start;min-height:44px;display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;border:2px solid rgba(255,255,255,.6);background:rgba(255,255,255,.1);font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#fff;cursor:pointer"
       : "align-self:flex-start;min-height:44px;display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;border:2px solid #14181F;background:#FFF;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer")}><Icon name="location-pin" size={18} /> {locationLabel}</button>
   );
@@ -2714,8 +2815,8 @@ function App(){
     );
   };
   const DraftStateNotice = ({ stName, extra }) => (
-    <DraftChip label={'Not yet lawyer-checked'}>
-      These {stName} items are compiled from official government sources but have not yet been verified by an attorney.{extra ? ' ' + extra : ''}
+    <DraftChip label={t('draft.chip')}>
+      {t('draft.state', { state: stName })}{extra ? ' ' + extra : ''}
     </DraftChip>
   );
 
@@ -2757,8 +2858,8 @@ function App(){
     if (!stName) return (
       <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:18px")}>
         <div>
-          <h1 style={css("margin:0;font:700 30px/1.12 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>Where do you work?</h1>
-          <p style={css("margin:10px 0 0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>Employment law is different in every state. Pick yours to see the rules that actually apply to you.</p>
+          <h1 style={css("margin:0;font:700 30px/1.12 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{t('entry.country.h1')}</h1>
+          <p style={css("margin:10px 0 0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{t('entry.country.sub')}</p>
         </div>
         <div className="mapFrame">
           <UsaStatePicker value={stateSel} onPick={pickState} />
@@ -2771,9 +2872,9 @@ function App(){
             be a full-width bordered field with a shouting STATE label, which
             gave it more visual weight than the map above it and quietly
             inverted the hierarchy this whole flow is built on. */}
-        <label htmlFor="onb-state" style={css("margin:-6px 0 -10px;font:400 14px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>or choose from a list</label>
+        <label htmlFor="onb-state" style={css("margin:-6px 0 -10px;font:400 14px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{t('entry.country.list')}</label>
         <select id="onb-state" value={stateSel} onChange={e => pickState(e.target.value)} style={css("width:100%;padding:12px 13px;border-radius:11px;border:2px solid rgba(20,24,31,.28);background:#fff;font:600 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer;appearance:menulist;-webkit-appearance:menulist")}>
-          <option value="">Select your state</option>
+          <option value="">{t('entry.country.select')}</option>
           {US_STATE_NAMES.map(n => <option key={n} value={n}>{n}</option>)}
         </select>
       </div>
@@ -2782,11 +2883,11 @@ function App(){
     // ── stop 2 · the county ──
     if (!county && counties.length) return (
       <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:18px")}>
-        <button onClick={() => { setStateSel(''); setCounty(''); setLawCat(null); }} aria-label="Back to the map of the United States"
-          style={css("align-self:flex-start;display:flex;align-items:center;gap:4px;min-height:44px;background:none;border:none;padding:10px 12px;margin:-8px 0 -8px -10px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}><Icon name="back" size={18} /> The whole country</button>
+        <button onClick={() => { setStateSel(''); setCounty(''); setLawCat(null); }} aria-label={t('entry.county.backAria')}
+          style={css("align-self:flex-start;display:flex;align-items:center;gap:4px;min-height:44px;background:none;border:none;padding:10px 12px;margin:-8px 0 -8px -10px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}><Icon name="back" size={18} /> {t('entry.county.back')}</button>
         <div>
-          <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Where in {stName}?</h1>
-          <p style={css("margin:10px 0 0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>Pick your county on the map.</p>
+          <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{t('entry.county.h1', { state: stName })}</h1>
+          <p style={css("margin:10px 0 0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{t('entry.county.sub')}</p>
         </div>
         <div className="mapFrame">
           <StateCountyMap stateName={stName} value={county} onPick={pickCounty} />
@@ -2805,18 +2906,20 @@ function App(){
           if (county && county !== '—' && !shown.includes(county)) shown = [county].concat(shown);
           return (
             <>
-              <label htmlFor="onb-county" style={css("margin:-6px 0 -10px;font:400 14px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>or choose your {word} from a list</label>
+              <label htmlFor="onb-county" style={css("margin:-6px 0 -10px;font:400 14px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{t('entry.county.list', { word })}</label>
               {counties.length > 20 &&
                 <input id="onb-county-filter" type="text" value={countyQuery} onChange={e => setCountyQuery(e.target.value)}
-                  placeholder={'Type to filter ' + counties.length + ' ' + plural + '…'} aria-label={'Filter the ' + word + ' list'}
+                  placeholder={t('entry.county.filter', { n: counties.length, plural })} aria-label={t('entry.county.filterAria', { word })}
                   style={css("padding:14px;border-radius:12px;border:2px solid #14181F;font:400 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F")} />
               }
               <select id="onb-county" value={county && county !== '—' ? county : ''} onChange={e => { if (e.target.value) pickCounty(e.target.value); }} style={css("width:100%;padding:12px 13px;border-radius:11px;border:2px solid rgba(20,24,31,.28);background:#fff;font:600 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer;appearance:menulist;-webkit-appearance:menulist")}>
-                <option value="">{'Select a ' + word + ' (' + shown.length + (shown.length !== counties.length ? ' of ' + counties.length : '') + ')'}</option>
+                <option value="">{shown.length === counties.length
+                  ? t('entry.county.select', { word, n: shown.length })
+                  : t('entry.county.selectSome', { word, n: shown.length, total: counties.length })}</option>
                 {shown.map(n => <option key={n} value={n}>{n}</option>)}
               </select>
               {q && shown.length === 0 &&
-                <p role="status" style={css("margin:0;font:600 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>No {word} matches “{countyQuery.trim()}”.</p>
+                <p role="status" style={css("margin:0;font:600 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>{t('entry.county.noMatch', { word, query: countyQuery.trim() })}</p>
               }
             </>
           );
@@ -2831,16 +2934,16 @@ function App(){
             an empty result must never read as "no local law exists here". */}
         {localCounties.length ?
           <div style={css("padding:15px 17px;border-radius:14px;border:2px solid #136B3C;background:#E8F6EE")}>
-            <p style={css("margin:0 0 6px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>We hold local ordinances for {localCounties.length === 1 ? localCounties[0] : localCounties.slice(0, -1).join(', ') + ' and ' + localCounties[localCounties.length - 1]}.</p>
-            <p style={css("margin:0;font:400 14px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>Pick one of those and you will see the city and county minimum wages on top of {stName} and federal law. For any other county here we only hold {stName} and federal law — that does not mean your county has no ordinance, only that we have not compiled it. Check your county and city sites too.</p>
+            <p style={css("margin:0 0 6px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{t('entry.county.haveLocal', { places: joinList(localCounties) })}</p>
+            <p style={css("margin:0;font:400 14px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{t('entry.county.haveLocalSub', { state: stName })}</p>
           </div>
           :
           <div style={css("padding:15px 17px;border-radius:14px;border:2px dashed rgba(20,24,31,.22)")}>
-            <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>We hold no county or city ordinances for {stName} yet — only federal and {stName} law. Many places add their own minimum wage, sick leave or scheduling rules on top, so check your county and city sites too.</p>
+            <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{t('entry.county.noLocal', { state: stName })}</p>
           </div>
         }
         <button onClick={() => setCounty('—')} className="hoverfx"
-          style={css("align-self:flex-start;min-height:44px;padding:12px 16px;border-radius:12px;border:2px solid #14181F;background:#fff;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer")}>Skip — show me {stName} law</button>
+          style={css("align-self:flex-start;min-height:44px;padding:12px 16px;border-radius:12px;border:2px solid #14181F;background:#fff;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer")}>{t('entry.county.skip', { state: stName })}</button>
       </div>
     );
 
@@ -2858,11 +2961,11 @@ function App(){
        ship, so this asks the question directly instead of guessing. */
     if (county && county !== '—' && localData.length > 1 && !city) return (
       <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:18px")}>
-        <button onClick={() => { setCounty(''); setLawCat(null); }} aria-label={'Back to the counties of ' + stName}
+        <button onClick={() => { setCounty(''); setLawCat(null); }} aria-label={t('entry.city.backAria', { state: stName })}
           style={css("align-self:flex-start;display:flex;align-items:center;gap:4px;min-height:44px;background:none;border:none;padding:10px 12px;margin:-8px 0 -8px -10px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}><Icon name="back" size={18} /> {county}</button>
         <div>
-          <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>Where in {county} do you work?</h1>
-          <p style={css("margin:10px 0 0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty")}>Not where you live — where you actually do the work. {localData.length} places in this county set their own rules, and they do not agree with each other.</p>
+          <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{t('entry.city.h1', { county })}</h1>
+          <p style={css("margin:10px 0 0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty")}>{t('entry.city.sub', { n: localData.length })}</p>
         </div>
         <div style={css("display:flex;flex-direction:column;gap:10px")}>
           {localData.map(loc =>
@@ -2876,8 +2979,8 @@ function App(){
               state and federal layers rather than being stuck on this screen. */}
           <button onClick={() => { setCity('—'); setLawCat(null); }} className="hoverfx"
             style={css("text-align:left;padding:14px 15px;border-radius:14px;border:2px dashed rgba(20,24,31,.34);background:transparent;cursor:pointer;display:flex;flex-direction:column;gap:5px;min-height:44px")}>
-            <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Somewhere else in {county}</span>
-            <span style={css("font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty")}>Or you are not sure. You will see {stName} and federal law, and every local rule we hold for this county underneath.</span>
+            <span style={css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{t('entry.city.elsewhere', { county })}</span>
+            <span style={css("font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty")}>{t('entry.city.elsewhereSub', { state: stName })}</span>
           </button>
         </div>
         {/* Offered here too. This screen insists on "not where you live", which
@@ -2927,8 +3030,8 @@ function App(){
       const wageAgency = (stateData && stateData.agencies && stateData.agencies.wageHour) || null;
       return (
         <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
-          <button onClick={() => setLawCat(null)} aria-label="Back to all topics"
-            style={css("align-self:flex-start;display:flex;align-items:center;gap:4px;min-height:44px;background:none;border:none;padding:10px 12px;margin:-8px 0 -8px -10px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}><Icon name="back" size={18} /> All topics</button>
+          <button onClick={() => setLawCat(null)} aria-label={t('chrome.backTopicsAria')}
+            style={css("align-self:flex-start;display:flex;align-items:center;gap:4px;min-height:44px;background:none;border:none;padding:10px 12px;margin:-8px 0 -8px -10px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}><Icon name="back" size={18} /> {t('chrome.backTopics')}</button>
           {/* The domain's colour follows the reader in from the grid. Without it
               the six-colour system was a property of one screen rather than a
               way to know where you are. */}
@@ -2965,9 +3068,9 @@ function App(){
           {wage ?
             <div style={css("border:2px solid " + cat.edge + ";border-radius:16px;overflow:hidden;background:#fff")}>
               <div style={css("padding:15px 16px 14px;background:" + cat.fill)}>
-                <p style={css("margin:0;font:500 15px/1.35 'Atkinson Hyperlegible',sans-serif;color:" + cat.on)}>The least you can legally be paid{wage.winner.key === 'city' ? ' in ' + wage.winner.name : ''}</p>
+                <p style={css("margin:0;font:500 15px/1.35 'Atkinson Hyperlegible',sans-serif;color:" + cat.on)}>{wage.winner.key === 'city' ? t('pay.leastIn', { city: wage.winner.name }) : t('pay.least')}</p>
                 <p style={css("margin:4px 0 0;font:800 46px/1.05 'Atkinson Hyperlegible',sans-serif;letter-spacing:-.03em;color:" + cat.on)}>{money(wage.winner.fact.value)}</p>
-                <p style={css("margin:2px 0 0;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:" + cat.on)}>an hour, before tax</p>
+                <p style={css("margin:2px 0 0;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:" + cat.on)}>{t('pay.perHour')}</p>
               </div>
               <div>
                 {wage.layers.map((l, i) =>
@@ -2985,8 +3088,8 @@ function App(){
               </div>
               <p style={css("margin:0;padding:12px 14px 13px;border-top:2px solid " + cat.edge + ";font:500 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty")}>
                 {wage.anyBeaten
-                  ? 'You must be paid the highest minimum wage that reaches where you work. The others are struck through because a higher one applies to you, not because they are wrong.'
-                  : 'Every minimum wage that reaches your worksite is the same amount, so this is what you are owed either way.'}
+                  ? t('pay.rule.beaten')
+                  : t('pay.rule.tied')}
               </p>
             </div> : null}
 
@@ -2996,22 +3099,22 @@ function App(){
               likely to be nodded at and not computed. */}
           {example ?
             <div style={css("border-radius:16px;background:#FFF8DF;border:2px solid #544D00;padding:16px")}>
-              <p style={css("margin:0;font:700 17px/1.35 'Atkinson Hyperlegible',sans-serif;color:#3D3800;text-wrap:pretty")}>If you were paid the minimum and worked 45 hours last week</p>
+              <p style={css("margin:0;font:700 17px/1.35 'Atkinson Hyperlegible',sans-serif;color:#3D3800;text-wrap:pretty")}>{t('pay.example.h')}</p>
               <div style={css("display:flex;flex-direction:column;gap:8px;margin-top:13px")}>
                 <div style={css("display:flex;align-items:baseline;gap:10px")}>
-                  <span style={css("flex:1;font:500 16px 'Atkinson Hyperlegible',sans-serif;color:#3D3800")}>{example.normalHours} hours × {money(example.rate)}</span>
+                  <span style={css("flex:1;font:500 16px 'Atkinson Hyperlegible',sans-serif;color:#3D3800")}>{t('pay.example.base', { hours: example.normalHours, rate: money(example.rate) })}</span>
                   <span style={css("flex:none;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#3D3800")}>{money(example.base)}</span>
                 </div>
                 <div style={css("display:flex;align-items:baseline;gap:10px")}>
-                  <span style={css("flex:1;font:500 16px 'Atkinson Hyperlegible',sans-serif;color:#3D3800")}>{example.otHours} overtime hours at 1.5×</span>
+                  <span style={css("flex:1;font:500 16px 'Atkinson Hyperlegible',sans-serif;color:#3D3800")}>{t('pay.example.ot', { hours: example.otHours })}</span>
                   <span style={css("flex:none;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#3D3800")}>{money(example.otPay)}</span>
                 </div>
               </div>
               <div style={css("display:flex;align-items:baseline;gap:10px;margin-top:12px;padding-top:12px;border-top:2px solid #544D00")}>
-                <span style={css("flex:1;font:800 17px 'Atkinson Hyperlegible',sans-serif;color:#3D3800")}>Your employer owes you</span>
+                <span style={css("flex:1;font:800 17px 'Atkinson Hyperlegible',sans-serif;color:#3D3800")}>{t('pay.example.total')}</span>
                 <span style={css("flex:none;font:800 26px 'Atkinson Hyperlegible',sans-serif;color:#3D3800")}>{money(example.total)}</span>
               </div>
-              <p style={css("margin:12px 0 0;font:400 13.5px/1.5 'Atkinson Hyperlegible',sans-serif;color:#5C5200;text-wrap:pretty")}>An illustration at the minimum wage, using the federal rule that overtime starts after 40 hours in a week. If you are paid more than the minimum, or your state counts overtime by the day, your own figure is higher.</p>
+              <p style={css("margin:12px 0 0;font:400 13.5px/1.5 'Atkinson Hyperlegible',sans-serif;color:#5C5200;text-wrap:pretty")}>{t('pay.example.note')}</p>
             </div> : null}
 
           {/* The remedy, named, with its clock beside it. "Consult an attorney"
@@ -3019,14 +3122,14 @@ function App(){
               the agency that takes it is. */}
           {wage && wageAgency && safeUrl(wageAgency.url) ?
             <div style={css("border-radius:16px;background:#14181F;padding:17px")}>
-              <p style={css("margin:0;font:700 13px 'Atkinson Hyperlegible',sans-serif;letter-spacing:.04em;color:#8FE3C6")}>IF YOU WERE PAID LESS THAN THIS</p>
-              <p style={css("margin:8px 0 0;font:800 19px/1.3 'Atkinson Hyperlegible',sans-serif;color:#FFFDF8;text-wrap:pretty")}>File a wage claim. It is free, and you do not need a lawyer.</p>
-              <p style={css("margin:8px 0 0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#C6D3CE;text-wrap:pretty")}>{wageAgency.name} takes the claim directly.</p>
+              <p style={css("margin:0;font:700 13px 'Atkinson Hyperlegible',sans-serif;letter-spacing:.04em;color:#8FE3C6")}>{t('pay.cta.kicker')}</p>
+              <p style={css("margin:8px 0 0;font:800 19px/1.3 'Atkinson Hyperlegible',sans-serif;color:#FFFDF8;text-wrap:pretty")}>{t('pay.cta.h')}</p>
+              <p style={css("margin:8px 0 0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#C6D3CE;text-wrap:pretty")}>{t('pay.cta.agency', { agency: wageAgency.name })}</p>
               {wageDeadline ?
                 <div style={css("display:flex;align-items:flex-start;gap:10px;margin-top:13px;padding:11px 12px;border-radius:10px;background:#7A1F1F")}>
                   <span style={css("flex:none;margin-top:1px;color:#FFC9C9;display:flex")}><Icon name="alarm" size={18} /></span>
                   <span style={css("flex:1;min-width:0;display:flex;flex-direction:column;gap:2px")}>
-                    <span style={css("font:700 14px/1.35 'Atkinson Hyperlegible',sans-serif;color:#FFE8E8")}>Your deadline to file: {factValStr(wageDeadline.value)}</span>
+                    <span style={css("font:700 14px/1.35 'Atkinson Hyperlegible',sans-serif;color:#FFE8E8")}>{t('pay.deadline', { value: factValStr(wageDeadline.value) })}</span>
                     {wageDeadline.citation ? <span style={css("font:400 12.5px/1.4 'Atkinson Hyperlegible',sans-serif;color:#F3C9C9")}>{wageDeadline.citation}</span> : null}
                   </span>
                 </div> : null}
@@ -3039,15 +3142,15 @@ function App(){
                 <ElapsedNote value={wageDeadline.value} when={when} tone="dark" />
               </> : null}
               <a href={safeUrl(wageAgency.url)} target="_blank" rel="noopener noreferrer"
-                style={css("display:flex;align-items:center;justify-content:center;margin-top:14px;min-height:54px;padding:15px;border-radius:12px;background:#8FE3C6;color:#06332B;text-decoration:none;font:800 17px 'Atkinson Hyperlegible',sans-serif")}>Start a wage claim ↗</a>
+                style={css("display:flex;align-items:center;justify-content:center;margin-top:14px;min-height:54px;padding:15px;border-radius:12px;background:#8FE3C6;color:#06332B;text-decoration:none;font:800 17px 'Atkinson Hyperlegible',sans-serif")}>{t('pay.cta.go')}</a>
             </div> : null}
 
           {/* Say plainly when we CANNOT resolve it, rather than showing a
               confident state figure while a higher local one may be theirs. */}
           {wage && wage.unresolvedLocal ?
             <div style={css("padding:14px 15px;border-radius:14px;border:2px solid #C99A00;background:#FFF9E8")}>
-              <p style={css("margin:0;font:700 15px/1.4 'Atkinson Hyperlegible',sans-serif;color:#6B4B00;text-wrap:pretty")}>You may be owed more than the figure above.</p>
-              <p style={css("margin:6px 0 0;font:400 14px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty")}>{wage.nearby.length === 1 ? 'One place' : wage.nearby.length + ' places'} in {county && county !== '—' ? county : stName} set a higher rate of their own. Which applies depends on the exact address you work at, so we cannot pick one for you:</p>
+              <p style={css("margin:0;font:700 15px/1.4 'Atkinson Hyperlegible',sans-serif;color:#6B4B00;text-wrap:pretty")}>{t('pay.more.h')}</p>
+              <p style={css("margin:6px 0 0;font:400 14px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty")}>{t(wage.nearby.length === 1 ? 'pay.more.one' : 'pay.more.many', { n: wage.nearby.length, where: county && county !== '—' ? county : stName })}</p>
               <div style={css("display:flex;flex-direction:column;gap:7px;margin-top:10px")}>
                 {wage.nearby.map(n =>
                   <div key={n.name} style={css("display:flex;align-items:baseline;gap:10px")}>
@@ -3057,7 +3160,7 @@ function App(){
                 )}
               </div>
               <button onClick={() => setCity('')} className="hoverfx"
-                style={css("margin-top:12px;min-height:44px;padding:11px 14px;border-radius:11px;border:2px solid #14181F;background:#fff;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer")}>Tell us which one you work in</button>
+                style={css("margin-top:12px;min-height:44px;padding:11px 14px;border-radius:11px;border:2px solid #14181F;background:#fff;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer")}>{t('pay.more.pick')}</button>
             </div> : null}
 
           {tools.length ?
@@ -3077,7 +3180,7 @@ function App(){
               identical yellow cards a few lines apart. Scope the wording instead. */}
           {(stateData && !stReviewed) || localHere.length ?
             <DraftChip label={'Not yet lawyer-checked'}>
-              These {stName} items{localHere.length ? ' and the local ordinances below' : ''} are compiled from official government sources but have not yet been verified by an attorney.{localHere.length ? ' Local rates also change on a set date each year, so check the official source before relying on a figure.' : ''}
+              {t(localHere.length ? 'draft.stateLocal' : 'draft.state', { state: stName })}
             </DraftChip> : null}
 
           {/* Local first: it is the most specific law we hold, and where it exists it
@@ -3085,11 +3188,11 @@ function App(){
               (local -> state -> federal) so the most likely answer is read first. */}
           {localHere.length ?
             <div style={css("display:flex;flex-direction:column;gap:12px")}>
-              <p style={css("margin:2px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em")}>IN AND AROUND {(county && county !== '—' ? county : stName).toUpperCase()}</p>
+              <p style={css("margin:2px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em")}>{t('pay.local.kicker', { where: (county && county !== '—' ? county : stName).toUpperCase() })}</p>
               {/* One line, because it governs how to read every card below it:
                   these are different places with different rules, not one number
                   with variations. The rest is behind the chip. */}
-              <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>Different places here set different rates, and they often disagree. Which one you are owed depends on where your worksite actually is — read what each says it covers.</p>
+              <p style={css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{t('pay.local.sub')}</p>
               {localHere.map(({ loc, facts }, i) =>
                 /* A left rule rather than a full card. A bordered locality card
                    wrapping a bordered fact card wrapping the bordered "THE LAW"
@@ -3131,10 +3234,10 @@ function App(){
           <p style={css("margin:10px 0 0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>Federal law applies everywhere; {stName} rules layer on top. Pick a topic.</p>
         </div>
 
-        {contentErr ? <p role="alert" style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load the law dataset. Check your connection and reopen.</p> : null}
-        {!federal && !contentErr ? <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Loading…</p> : null}
-        {stateData === undefined ? <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Loading {stName} rules…</p> : null}
-        {stateErr ? <p role="alert" style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load {stName} rules. Check your connection and reopen — this is not a confirmation that no extra state protections apply.{fedFacts.length ? ' Federal law still applies nationwide.' : ''}</p> : null}
+        {contentErr ? <p role="alert" style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>{t('err.law')}</p> : null}
+        {!federal && !contentErr ? <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{t('loading')}</p> : null}
+        {stateData === undefined ? <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{t('loading.state', { state: stName })}</p> : null}
+        {stateErr ? <p role="alert" style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>{t(fedFacts.length ? 'err.stateFed' : 'err.state', { state: stName })}</p> : null}
 
         {(federal || stateData) ?
           <div className="catgrid">
@@ -3168,14 +3271,14 @@ function App(){
                   <span style={css("display:flex;flex-direction:column;gap:4px;min-width:0")}>
                     <span style={css("font:700 18px/1.22 'Atkinson Hyperlegible',sans-serif;text-wrap:pretty;color:" + cat.on)}>{cat.label}</span>
                     <span style={css("font:500 14px/1.4 'Atkinson Hyperlegible',sans-serif;text-wrap:pretty;opacity:.84;color:" + cat.on)}>{cat.blurb}</span>
-                    <span style={css("font:700 12.5px 'Atkinson Hyperlegible',sans-serif;letter-spacing:.02em;opacity:.7;color:" + cat.on)}>{n} {n === 1 ? 'RULE REACHES' : 'RULES REACH'} YOU</span>
+                    <span style={css("font:700 12.5px 'Atkinson Hyperlegible',sans-serif;letter-spacing:.02em;opacity:.7;color:" + cat.on)}>{t(n === 1 ? 'topic.reach.one' : 'topic.reach.many', { n })}</span>
                   </span>
                 </button>
               );
             })}
           </div> : null}
 
-        <p style={css("margin:4px 0 0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Legal information for {stName}, not legal advice, and laws change. Confirm anything important with an attorney.</p>
+        <p style={css("margin:4px 0 0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{t('disclaimer.state', { state: stName })}</p>
       </div>
     );
   };
@@ -3255,14 +3358,14 @@ function App(){
                   <p style={css("margin:0 0 10px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>What applies in {stateLabel}</p>
                   <p style={css("margin:0 0 4px;font:700 13px 'IBM Plex Mono',monospace;color:#1B2778;letter-spacing:.04em")}>FEDERAL</p>
                   {fedOT.length ? fedOT.map(line) : contentErr ?
-                    <p style={css("margin:0 0 8px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load federal rules. Check your connection and reopen.</p> :
-                    <p style={css("margin:0 0 8px;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>Loading…</p>}
+                    <p style={css("margin:0 0 8px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>{t('err.federal')}</p> :
+                    <p style={css("margin:0 0 8px;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{t('loading')}</p>}
                   <p style={css("margin:10px 0 4px;font:700 13px 'IBM Plex Mono',monospace;color:#1B2778;letter-spacing:.04em")}>{stateSel ? stateSel.toUpperCase() : stateLabel.toUpperCase()}{stRev ? '' : ' (DRAFT)'}</p>
                   {stateData && !stRev && <div style={css("margin:0 0 8px")}><DraftStateNotice stName={stateLabel} /></div>}
                   {stOT.length ? stOT.map(line) : stateErr ?
-                    <p style={css("margin:0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load {stateLabel} rules. Check your connection and reopen — this is not a confirmation that no extra state rule applies.</p> :
+                    <p style={css("margin:0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>{t('err.stateRule', { state: stateLabel })}</p> :
                     stateData === undefined ?
-                    <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>Loading…</p> :
+                    <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{t('loading')}</p> :
                     <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{stateLabel} follows the federal overtime standard.</p>}
                 </div>
               );
@@ -3288,17 +3391,17 @@ function App(){
                   <p style={css("margin:0 0 10px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>What applies in {stateLabel}</p>
                   <p style={css("margin:0 0 4px;font:700 13px 'IBM Plex Mono',monospace;color:#1B2778;letter-spacing:.04em")}>FEDERAL</p>
                   {fedFacts.length ? fedFacts.map(line) : contentErr ?
-                    <p style={css("margin:0 0 8px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load federal rules. Check your connection and reopen.</p> :
-                    <p style={css("margin:0 0 8px;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>Loading…</p>}
+                    <p style={css("margin:0 0 8px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>{t('err.federal')}</p> :
+                    <p style={css("margin:0 0 8px;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{t('loading')}</p>}
                   <p style={css("margin:10px 0 4px;font:700 13px 'IBM Plex Mono',monospace;color:#1B2778;letter-spacing:.04em")}>{stateSel ? stateSel.toUpperCase() : stateLabel.toUpperCase()}{stRev ? '' : ' (DRAFT)'}</p>
                   {stateData && !stRev && <div style={css("margin:0 0 8px")}><DraftStateNotice stName={stateLabel} /></div>}
                   {wkey === 'harassment' && stFacts.length > 0 &&
                     <p style={css("margin:0 0 8px;font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>No state file here has a separate “harassment” entry — shown below is {stateLabel}’s own anti-discrimination law, which generally also covers harassment claims.</p>
                   }
                   {stFacts.length ? stFacts.map(line) : stateErr ?
-                    <p style={css("margin:0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load {stateLabel} rules. Check your connection and reopen — this is not a confirmation that no extra state rule applies.</p> :
+                    <p style={css("margin:0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>{t('err.stateRule', { state: stateLabel })}</p> :
                     stateData === undefined ?
-                    <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>Loading…</p> :
+                    <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{t('loading')}</p> :
                     <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#1B2778")}>{stateLabel} generally follows the federal standard here.</p>}
                 </div>
               );
@@ -3389,7 +3492,7 @@ function App(){
       <h1 style={css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>Is my non-compete enforceable?</h1>
       <p style={css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Non-compete law varies a lot by state, and several states have changed their rules recently. This is general information for {stName}, not an opinion on your specific agreement — only an attorney can tell you that.</p>
 
-      {contentErr ? <p style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load the rights dataset. Check your connection and reopen.</p> : null}
+      {contentErr ? <p style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>{t('err.rights')}</p> : null}
 
       {ncFact ? (
         <>
@@ -3397,9 +3500,9 @@ function App(){
           {factCard(ncFact, 0, stateAbbr || stName.toUpperCase(), '#EEF1FF')}
         </>
       ) : stateErr ? (
-        <p style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load {stName} rules. Check your connection and reopen — this is not a confirmation that {stName} has no non-compete rule.</p>
+        <p style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>{t('err.stateNoncompete', { state: stName })}</p>
       ) : stateData === undefined ? (
-        <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Loading {stName} rules…</p>
+        <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{t('loading.state', { state: stName })}</p>
       ) : (
         <div style={css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#F0EDE5")}>
           <p style={css("margin:0;font:400 16px/1.5 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>We don’t have a sourced answer for {stName} yet. Non-compete law varies a lot by state and is changing — talk to an employment attorney before assuming your non-compete is (un)enforceable.</p>
@@ -3564,10 +3667,10 @@ function App(){
           <p style={css("margin:10px 0 0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>The same rules the Laws tab explains — here with no explanation, just the citation, the figure and the official source. {total ? total + ' on file for ' + stName + '.' : ''}</p>
         </div>
 
-        {contentErr ? <p role="alert" style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load the law dataset. Check your connection and reopen.</p> : null}
-        {!federal && !contentErr ? <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Loading…</p> : null}
-        {stateData === undefined ? <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Loading {stName} rules…</p> : null}
-        {stateErr ? <p role="alert" style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load {stName} rules. Check your connection and reopen — this is not a confirmation that no extra state protections apply.</p> : null}
+        {contentErr ? <p role="alert" style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>{t('err.law')}</p> : null}
+        {!federal && !contentErr ? <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{t('loading')}</p> : null}
+        {stateData === undefined ? <p style={css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{t('loading.state', { state: stName })}</p> : null}
+        {stateErr ? <p role="alert" style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>{t('err.state', { state: stName })}</p> : null}
         {stateData && !stReviewed ? <DraftStateNotice stName={stName} extra="" /> : null}
 
         {groups.map(([cat, rows]) =>
@@ -3577,7 +3680,7 @@ function App(){
           </div>
         )}
 
-        <p style={css("margin:4px 0 0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>Legal information for {stName}, not legal advice, and laws change. Confirm anything important with an attorney.</p>
+        <p style={css("margin:4px 0 0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{t('disclaimer.state', { state: stName })}</p>
       </div>
     );
   };
@@ -3637,7 +3740,7 @@ function App(){
               "180 days (general); 300 days for sexual harassment" — a real
               Texas value. A label framing survives every value shape while
               staying in second person. */}
-          <span style={css("font:700 14px/1.35 'Atkinson Hyperlegible',sans-serif;color:#7A1F1F")}>Your deadline to file: {factValStr(f.value)}</span>
+          <span style={css("font:700 14px/1.35 'Atkinson Hyperlegible',sans-serif;color:#7A1F1F")}>{t('pay.deadline', { value: factValStr(f.value) })}</span>
           {f.citation ? <span style={css("font:400 12.5px/1.4 'Atkinson Hyperlegible',sans-serif;color:#5C3030")}>{f.citation}</span> : null}
           {/* Each agency runs its own clock, so the elapsed line is repeated
               per row rather than stated once at the top: 180 days at the EEOC
@@ -3686,7 +3789,7 @@ function App(){
             <p style={css("margin:2px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em")}>{stLabel.toUpperCase()}</p>
             {stateLinks.map(([covers, a, topics]) => row(a.name, covers, safeUrl(a.url), '#EEF1FF', deadlineFor(topics)))}
           </div> : null}
-        {stateErr ? <p role="alert" style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load {stLabel} agency links. Check your connection and reopen — the federal agencies below are not the only ones that may apply.</p> : null}
+        {stateErr ? <p role="alert" style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>{t('err.agencies', { state: stLabel })}</p> : null}
 
         <div style={css("display:flex;flex-direction:column;gap:10px")}>
           <p style={css("margin:6px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em")}>FEDERAL — ANYWHERE IN THE US</p>
