@@ -123,6 +123,10 @@ async function seedPlace(page, place) {
        county" unless it says otherwise. Suites testing the city step itself
        pass city: '' to leave it unanswered. */
     city: place.city === undefined ? '—' : place.city,
+    /* When the reader says their problem happened, 'YYYY-MM'. Empty unless a
+       suite is exercising the elapsed-time line beside a deadline: every
+       screen has to work without it. */
+    when: place.when || '',
   }));
 }
 
@@ -133,6 +137,7 @@ async function seedPlace(page, place) {
  *   { place: { state, county } }      — start already located, on the topic grid
  *   { place: { state, county, city } } — ...and in a named city; city:'' stops
  *                                        on the city step instead
+ *   { place: { ..., when: 'YYYY-MM' } } — ...having said when it happened
  */
 export async function gotoApp(page, url, opts = {}) {
   const { freshVisitor, place, ...gotoOpts } = opts;

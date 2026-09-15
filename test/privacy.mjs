@@ -103,11 +103,14 @@ try {
   const place = await pg.evaluate(k => JSON.parse(localStorage.getItem(k) || '{}'), PLACE_KEY);
   const fields = Object.keys(place).sort();
   /* A closed allowlist, deliberately. The city was added because a municipal
-     ordinance is what decides a wage, and it is MORE identifying than a county
-     — so it is named here and in the on-screen promise, not slipped in. Any
-     field beyond these three is a regression this assertion exists to catch. */
-  ok(fields.join(',') === 'city,county,stateSel',
-     `the stored place carries exactly a state, county and city (got: ${fields.join(', ') || 'nothing'})`);
+     ordinance is what decides a wage, and it is MORE identifying than a county;
+     `when` is a month the reader gives for when their problem happened, which
+     is the first stored field that is about their situation rather than their
+     geography. Both are named here and in the on-screen promise, not slipped
+     in. Any field beyond these four is a regression this assertion exists to
+     catch. */
+  ok(fields.join(',') === 'city,county,stateSel,when',
+     `the stored place carries exactly a state, county, city and month (got: ${fields.join(', ') || 'nothing'})`);
   ok(place.stateSel === 'California' && place.county === 'Alameda County',
      'the stored place is the one the reader actually picked');
   const blob = JSON.stringify(place);

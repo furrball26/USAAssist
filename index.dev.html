@@ -1471,6 +1471,9 @@ function sanitizePrefs(raw){
     // county and all pay differently. Without this the app cannot say which
     // rate a reader is owed, only list several and leave them to guess.
     city:     typeof c.city     === 'string' ? c.city     : '',
+    // 'YYYY-MM', or '' when the reader has not said. Compared against the
+    // filing clock, never used to re-price history — see deadlineElapsed.
+    when:     typeof c.when     === 'string' ? c.when     : '',
   };
 }
 function loadPrefs(){
@@ -1521,6 +1524,109 @@ function findDeadline(topics, stFacts, fedFacts) {
   }
   return null;
 }
+
+/* ── How long ago, and whether that is a problem ───────────────────────────
+   The dataset holds ONE value per fact — today's. There is no effectiveFrom
+   anywhere in content/, so this app cannot say what the minimum wage was in
+   March 2024 and must never pretend to. What a date DOES let us do is compare
+   the reader's own elapsed time against the filing clock we already show them,
+   which is the one fact on any of these screens that cannot be recovered once
+   it runs out.
+
+   A month is the right grain. Nobody filing a wage claim remembers the day,
+   and day precision would put a false sharpness on a number we then hold up
+   against a statute. */
+const MONTH_NAMES = ['January','February','March','April','May','June',
+                     'July','August','September','October','November','December'];
+
+function parseYM(ym){
+  if (typeof ym !== 'string') return null;
+  const m = /^(\d{4})-(\d{2})$/.exec(ym);
+  if (!m) return null;
+  const y = +m[1], mo = +m[2];
+  if (mo < 1 || mo > 12 || y < 1900 || y > 2200) return null;
+  return { y: y, m: mo };
+}
+
+// `now` is injectable so the tests can assert against fixed dates instead of
+// whatever day they happen to run on.
+function monthsSince(ym, now){
+  const p = parseYM(ym);
+  if (!p) return null;
+  const d = now || new Date();
+  const diff = (d.getFullYear() * 12 + d.getMonth()) - (p.y * 12 + (p.m - 1));
+  return diff < 0 ? null : diff;   // a date in the future is not elapsed time
+}
+
+function elapsedLabel(months){
+  if (months == null) return null;
+  if (months === 0) return 'this month';
+  if (months === 1) return 'about a month ago';
+  if (months < 12) return 'about ' + months + ' months ago';
+  const years = Math.floor(months / 12), rem = months % 12;
+  const y = years === 1 ? 'a year' : years + ' years';
+  if (rem === 0) return 'about ' + y + ' ago';
+  return 'about ' + y + ' and ' + (rem === 1 ? 'a month' : rem + ' months') + ' ago';
+}
+
+const DURATION_DAYS = { day: 1, week: 7, month: 30, year: 365 };
+
+/* The shortest span of time named anywhere in a deadline value, in days.
+
+   Deadline values are prose with conditions we cannot resolve — Colorado's is
+   "2 years (3 years for willful violations)", Texas's is "180 days (general);
+   300 days for sexual harassment" — so this takes the SHORTEST of them. That
+   asymmetry is the whole point: the error this function is allowed to make is
+   warning someone who still has time; the error it must never make is
+   reassuring someone who does not.
+
+   A bare number is not a duration. Arkansas's value reads "claims of $2,000 or
+   less", so a unit word has to follow or the number is ignored. Returns null
+   when nothing parses — Arkansas's discrimination value names no span at all —
+   and every caller must then say nothing about time. */
+function shortestDeadlineDays(value){
+  const s = factValStr(value);
+  if (!s) return null;
+  let best = null, m;
+  const re = /(\d+(?:\.\d+)?)\s*(day|week|month|year)s?\b/gi;
+  while ((m = re.exec(s))) {
+    const n = parseFloat(m[1]);
+    if (!(n > 0)) continue;
+    const days = n * DURATION_DAYS[m[2].toLowerCase()];
+    if (best === null || days < best) best = days;
+  }
+  return best;
+}
+
+/* What to tell a reader who has told us when their problem happened.
+   Returns null when we know nothing useful; otherwise a label for the elapsed
+   time and, only where a span actually parsed, an urgency tier.
+
+   Never "you are out of time". Deadlines run from different dates depending on
+   the claim, some can be paused, and an administrative clock is not the court
+   clock — so the copy this drives points at urgency, never at a verdict. */
+function deadlineElapsed(value, ym, now){
+  const months = monthsSince(ym, now);
+  if (months === null) return null;
+  const shortest = shortestDeadlineDays(value);
+  const ratio = shortest === null ? null : (months * 30) / shortest;
+  return {
+    months: months,
+    label: elapsedLabel(months),
+    urgency: ratio === null ? null : ratio >= 1 ? 'past' : ratio >= 0.75 ? 'soon' : null,
+  };
+}
+
+/* Short, because it is said once per deadline card and the Agencies tab
+   carries five. The first version put the whole caveat on every card, which
+   printed the same forty words five times down one screen — a reader scrolls
+   past that, which is the opposite of what a deadline warning is for. The
+   verdict is per card; the caveat below is said once, by the picker. */
+const ELAPSED_COPY = {
+  past: 'That is past this deadline.',
+  soon: 'That is most of this deadline — do not wait.',
+};
+const ELAPSED_CAVEAT = 'Deadlines run from different dates, and some can be paused, so a date past one is not necessarily the end of it — but check today, not next week.';
 
 /* The arithmetic, done for the reader rather than described to them. A third of
    US adults score at or below Level 1 numeracy, and this app's whole subject is
@@ -2071,6 +2177,98 @@ const CAUSATION_CLOSE_GAP_DAYS = 30;
 
 /* ── App ──────────────────────────────────────────────────────────── */
 
+/* ── The date question ─────────────────────────────────────────────────────
+   Asked at the deadline rather than at the door. Putting it in the entry flow
+   would charge every reader a question before they have seen a single line of
+   law, and would not show them why it mattered; here the answer lands on the
+   same card, next to the clock it changes the reading of.
+
+   Two native <select>s, not a text field or a calendar. They work on every
+   phone, with a screen reader, and with a keyboard, and there is no format to
+   get wrong. Month and year only — see monthsSince for why day precision
+   would be a false promise.
+
+   `tone` is 'dark' on the next-step card and 'light' on the agency list; the
+   two differ only in colour, never in what they ask or what they claim. */
+function WhenPicker({ value, onPick, tone }) {
+  const dark = tone === 'dark';
+  const ink   = dark ? '#FFFDF8' : '#14181F';
+  const quiet = dark ? '#C6D3CE' : '#3A4150';
+  const thisYear = new Date().getFullYear();
+  const years = [];
+  for (let y = thisYear; y >= thisYear - 10; y--) years.push(y);
+  const parsed = parseYM(value);
+  const field = ("min-height:44px;padding:10px 11px;border-radius:10px;border:2px solid " +
+    (dark ? 'rgba(255,253,248,.45)' : 'rgba(20,24,31,.28)') +
+    ";background:" + (dark ? '#0C1016' : '#fff') +
+    ";font:600 15px 'Atkinson Hyperlegible',sans-serif;color:" + ink +
+    ";cursor:pointer;appearance:menulist;-webkit-appearance:menulist");
+  const set = (y, m) => onPick(y && m ? y + '-' + String(m).padStart(2, '0') : '');
+  return (
+    <div style={css("margin-top:11px;display:flex;flex-direction:column;gap:8px")}>
+      <p style={css("margin:0;font:700 14px/1.35 'Atkinson Hyperlegible',sans-serif;color:" + ink)}>When did this happen?</p>
+      <p style={css("margin:0;font:400 13.5px/1.45 'Atkinson Hyperlegible',sans-serif;color:" + quiet + ";text-wrap:pretty")}>Optional — every deadline shows either way. If you tell us, we will say how long ago that was, beside each one.</p>
+      <div style={css("display:flex;gap:8px;flex-wrap:wrap")}>
+        {/* The visible "When did this happen?" line above labels the pair, but
+            each control also carries its own name: a screen-reader user landing
+            on the second <select> alone still hears which half it is. */}
+        <select aria-label="Month it happened" value={parsed ? parsed.m : ''}
+          style={css("flex:1 1 130px;min-width:0;" + field)}
+          onChange={e => set(parsed ? parsed.y : thisYear, e.target.value)}>
+          <option value="">Month</option>
+          {MONTH_NAMES.map((n, i) => <option key={n} value={i + 1}>{n}</option>)}
+        </select>
+        <select aria-label="Year it happened" value={parsed ? parsed.y : ''}
+          style={css("flex:1 1 110px;min-width:0;" + field)}
+          onChange={e => set(e.target.value, parsed ? parsed.m : '')}>
+          <option value="">Year</option>
+          {years.map(y => <option key={y} value={y}>{y}</option>)}
+        </select>
+        {/* Never a one-way door: a reader who mistypes, or who decides they
+            would rather not say, can take it back. */}
+        {/* Announced once, here, rather than by each card that shows a reading:
+            the Agencies tab carries five of those and they would all fire on a
+            single change of the year. Visually hidden because the reading is
+            already on screen for anyone who can see it. */}
+        <span role="status" style={css("position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap")}>
+          {parsed ? 'You said this happened ' + elapsedLabel(monthsSince(value)) + '.' : ''}
+        </span>
+        {parsed ?
+          <button onClick={() => onPick('')} className="hoverfx"
+            style={css("min-height:44px;padding:10px 14px;border-radius:10px;border:2px solid " + (dark ? 'rgba(255,253,248,.45)' : 'rgba(20,24,31,.28)') + ";background:transparent;font:700 14px 'Atkinson Hyperlegible',sans-serif;color:" + ink + ";cursor:pointer")}>Clear</button>
+          : null}
+      </div>
+      {/* Said once, here, rather than on every card that shows a verdict. It is
+          true of any deadline on any screen, so it does not need repeating
+          beside each one — and repeated, it stopped being read. */}
+      {parsed ?
+        <p style={css("margin:2px 0 0;font:400 13px/1.5 'Atkinson Hyperlegible',sans-serif;color:" + quiet + ";text-wrap:pretty")}>{ELAPSED_CAVEAT}</p>
+        : null}
+    </div>
+  );
+}
+
+/* The line the date buys: elapsed time, and a warning that only ever points
+   one way. There is no "you are still in time" branch anywhere in this app,
+   deliberately — a false reassurance is the one error here that ends a claim,
+   while a needless warning only makes someone act sooner than they had to. */
+function ElapsedNote({ value, when, tone }) {
+  const e = deadlineElapsed(value, when);
+  if (!e) return null;
+  const dark = tone === 'dark';
+  const urgent = !!e.urgency;
+  /* Plain text, not a card. This already sits inside the red deadline strip
+     inside an agency card; a third nested box turned the warning into
+     decoration and pushed the agency's own name off the screen. */
+  return (
+    <span style={css("display:block;margin-top:7px;text-wrap:pretty;font:" +
+      (urgent ? '700' : '400') + " 13.5px/1.45 'Atkinson Hyperlegible',sans-serif;color:" +
+      (dark ? (urgent ? '#FFC9C9' : '#C6D3CE') : (urgent ? '#7A1F1F' : '#4A5162')))}>
+      You said this happened {e.label}.{e.urgency ? ' ' + ELAPSED_COPY[e.urgency] : ''}
+    </span>
+  );
+}
+
 function App(){
   const [saved] = useState(loadPrefs); // one-time read of the two things we remember
 
@@ -2095,6 +2293,10 @@ function App(){
   // carrying its own `covers` sentence. [] means "we hold none for this county", which
   // is not the same as "none exist"; the UI says so.
   const [city, setCity] = useState(() => loadPrefs().city || '');
+  // When the reader says their problem happened, as 'YYYY-MM'. Optional
+  // everywhere: every deadline still shows without it, just without the
+  // elapsed-time line beside it.
+  const [when, setWhen] = useState(() => loadPrefs().when || '');
   const [localData, setLocalData] = useState([]);
   // Which counties in the selected state we hold ANY local ordinance for. Drives the
   // county step's coverage note: telling someone up front whether picking their county
@@ -2165,9 +2367,9 @@ function App(){
   // remember. A visitor who never picks a state leaves nothing behind at all,
   // rather than an empty record announcing they were here.
   useEffect(() => {
-    if (stateSel) savePrefs({ stateSel, county, city });
+    if (stateSel) savePrefs({ stateSel, county, city, when });
     else forgetPlace();
-  }, [stateSel, county, city]);
+  }, [stateSel, county, city, when]);
   // Clear the old case blob once, on first mount. See dropLegacyCase.
   useEffect(() => { dropLegacyCase(); }, []);
 
@@ -2631,6 +2833,14 @@ function App(){
                     {wageDeadline.citation ? <span style={css("font:400 12.5px/1.4 'Atkinson Hyperlegible',sans-serif;color:#F3C9C9")}>{wageDeadline.citation}</span> : null}
                   </span>
                 </div> : null}
+              {/* The clock above is a span of time; this turns it into the
+                  reader's own. Only offered where there IS a deadline on
+                  file — asking when it happened next to nothing at all would
+                  collect an answer we could say nothing about. */}
+              {wageDeadline ? <>
+                <WhenPicker value={when} onPick={setWhen} tone="dark" />
+                <ElapsedNote value={wageDeadline.value} when={when} tone="dark" />
+              </> : null}
               <a href={safeUrl(wageAgency.url)} target="_blank" rel="noopener noreferrer"
                 style={css("display:flex;align-items:center;justify-content:center;margin-top:14px;min-height:54px;padding:15px;border-radius:12px;background:#8FE3C6;color:#06332B;text-decoration:none;font:800 17px 'Atkinson Hyperlegible',sans-serif")}>Start a wage claim ↗</a>
             </div> : null}
@@ -3191,6 +3401,13 @@ function App(){
        most harmful thing this app could do. */
     const deadlineFor = (topics) => findDeadline(topics, stFacts, fedFacts);
 
+    // Only ask when there is at least one clock on the page to read the answer
+    // against. A state whose facts have not loaded, or for which we hold no
+    // filing deadline at all, gets no question — collecting a date we could
+    // say nothing about would be taking something for nothing.
+    const anyDeadline = stateLinks.some(([, , t]) => deadlineFor(t)) ||
+      FEDERAL_AGENCIES.some(a => deadlineFor(a.deadlineTopics));
+
     /* Deliberately not collapsible, and never behind a tap. A filing deadline is
        the one fact on this screen that cannot be recovered once it passes. */
     const deadlineStrip = (f) => f ? (
@@ -3203,6 +3420,12 @@ function App(){
               staying in second person. */}
           <span style={css("font:700 14px/1.35 'Atkinson Hyperlegible',sans-serif;color:#7A1F1F")}>Your deadline to file: {factValStr(f.value)}</span>
           {f.citation ? <span style={css("font:400 12.5px/1.4 'Atkinson Hyperlegible',sans-serif;color:#5C3030")}>{f.citation}</span> : null}
+          {/* Each agency runs its own clock, so the elapsed line is repeated
+              per row rather than stated once at the top: 180 days at the EEOC
+              and three years in court are the same elapsed time and two very
+              different situations. The QUESTION is asked once, above the list;
+              only the reading of it is per agency. */}
+          <ElapsedNote value={f.value} when={when} tone="light" />
         </span>
       </span>
     ) : null;
@@ -3229,6 +3452,15 @@ function App(){
           <p style={css("margin:0;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>You are protected from retaliation for speaking up</p>
           <p style={css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>It is illegal for an employer to punish you — fire, demote, cut your hours — for asking about, complaining about, or filing a claim over your rights at work. That protection covers internal and verbal complaints too, not only formal filings.</p>
         </div>
+
+        {/* Asked once, read on every card below. Each agency runs a different
+            clock — 180 days at the EEOC and three years in court are the same
+            elapsed time and two very different situations — so the reading is
+            per card even though the question is not. */}
+        {anyDeadline ?
+          <div style={css("padding:15px 17px;border-radius:14px;border:2px solid rgba(20,24,31,.22);background:#fff")}>
+            <WhenPicker value={when} onPick={setWhen} tone="light" />
+          </div> : null}
 
         {stateLinks.length ?
           <div style={css("display:flex;flex-direction:column;gap:10px")}>
@@ -3324,7 +3556,7 @@ function App(){
 }
 
 // Last-resort catch for a render-time exception that reaches here despite
-// loadPrefs()'s shape sanitizing (sanitizePrefs covers the two fields that are
+// loadPrefs()'s shape sanitizing (sanitizePrefs covers the four fields that are
 // actually persisted, not necessarily every field a future
 // bug or a hand-edited devtools change could corrupt). Without this, ANY
 // uncaught render error takes the whole app to a permanently blank #root — the
@@ -3352,7 +3584,7 @@ class ErrorBoundary extends React.Component {
           <button onClick={reloadOnly} style={css("min-height:44px;padding:14px 18px;border-radius:12px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Try reloading</button>
           <button onClick={clearAndReload} style={css("min-height:44px;padding:14px 18px;border-radius:12px;border:2px solid #B3264F;background:#fff;color:#B3264F;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")}>Reset and start over</button>
         </div>
-        <p style={css("font:400 13px/1.5 'Atkinson Hyperlegible',sans-serif;color:#4A5162;margin:16px 0 0")}>Resetting forgets the state and county you picked — the only things WorkLaw stores — and starts you again at the map. That is all it holds, and it holds it only in this browser.</p>
+        <p style={css("font:400 13px/1.5 'Atkinson Hyperlegible',sans-serif;color:#4A5162;margin:16px 0 0")}>Resetting forgets the state, county and city you picked, and the month you gave for when your problem happened — the only things WorkLaw stores — and starts you again at the map. That is all it holds, and it holds it only in this browser.</p>
       </div>
     );
   }

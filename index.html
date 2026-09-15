@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-JjnTNDB4PUKL4rbev/qF5xMdGfsmJcyaEOdIjDvbIFE='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-Ik5hhfg5dTWkhpUKhcKuEUxtmqPXRAm0dCr+h+BkiIs='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14181F">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232B3AA8'/%3E%3Ctext x='32' y='47' font-size='42' text-anchor='middle' fill='white' font-family='Georgia,serif'%3E%C2%A7%3C/text%3E%3C/svg%3E">
@@ -1546,7 +1546,10 @@ function sanitizePrefs(raw) {
     // Angeles, West Hollywood and unincorporated LA County all sit inside one
     // county and all pay differently. Without this the app cannot say which
     // rate a reader is owed, only list several and leave them to guess.
-    city: typeof c.city === "string" ? c.city : ""
+    city: typeof c.city === "string" ? c.city : "",
+    // 'YYYY-MM', or '' when the reader has not said. Compared against the
+    // filing clock, never used to re-price history — see deadlineElapsed.
+    when: typeof c.when === "string" ? c.when : ""
   };
 }
 function loadPrefs() {
@@ -1600,6 +1603,75 @@ function findDeadline(topics, stFacts, fedFacts) {
   }
   return null;
 }
+const MONTH_NAMES = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December"
+];
+function parseYM(ym) {
+  if (typeof ym !== "string") return null;
+  const m = /^(\d{4})-(\d{2})$/.exec(ym);
+  if (!m) return null;
+  const y = +m[1], mo = +m[2];
+  if (mo < 1 || mo > 12 || y < 1900 || y > 2200) return null;
+  return { y, m: mo };
+}
+function monthsSince(ym, now) {
+  const p = parseYM(ym);
+  if (!p) return null;
+  const d = now || /* @__PURE__ */ new Date();
+  const diff = d.getFullYear() * 12 + d.getMonth() - (p.y * 12 + (p.m - 1));
+  return diff < 0 ? null : diff;
+}
+function elapsedLabel(months) {
+  if (months == null) return null;
+  if (months === 0) return "this month";
+  if (months === 1) return "about a month ago";
+  if (months < 12) return "about " + months + " months ago";
+  const years = Math.floor(months / 12), rem = months % 12;
+  const y = years === 1 ? "a year" : years + " years";
+  if (rem === 0) return "about " + y + " ago";
+  return "about " + y + " and " + (rem === 1 ? "a month" : rem + " months") + " ago";
+}
+const DURATION_DAYS = { day: 1, week: 7, month: 30, year: 365 };
+function shortestDeadlineDays(value) {
+  const s = factValStr(value);
+  if (!s) return null;
+  let best = null, m;
+  const re = /(\d+(?:\.\d+)?)\s*(day|week|month|year)s?\b/gi;
+  while (m = re.exec(s)) {
+    const n = parseFloat(m[1]);
+    if (!(n > 0)) continue;
+    const days = n * DURATION_DAYS[m[2].toLowerCase()];
+    if (best === null || days < best) best = days;
+  }
+  return best;
+}
+function deadlineElapsed(value, ym, now) {
+  const months = monthsSince(ym, now);
+  if (months === null) return null;
+  const shortest = shortestDeadlineDays(value);
+  const ratio = shortest === null ? null : months * 30 / shortest;
+  return {
+    months,
+    label: elapsedLabel(months),
+    urgency: ratio === null ? null : ratio >= 1 ? "past" : ratio >= 0.75 ? "soon" : null
+  };
+}
+const ELAPSED_COPY = {
+  past: "That is past this deadline.",
+  soon: "That is most of this deadline \u2014 do not wait."
+};
+const ELAPSED_CAVEAT = "Deadlines run from different dates, and some can be paused, so a date past one is not necessarily the end of it \u2014 but check today, not next week.";
 function workedExample(rate, hours) {
   if (typeof rate !== "number" || !(rate > 0)) return null;
   const NORMAL = 40;
@@ -1962,6 +2034,53 @@ function causationPairs(entries) {
   return pairs;
 }
 const CAUSATION_CLOSE_GAP_DAYS = 30;
+function WhenPicker({ value, onPick, tone }) {
+  const dark = tone === "dark";
+  const ink = dark ? "#FFFDF8" : "#14181F";
+  const quiet = dark ? "#C6D3CE" : "#3A4150";
+  const thisYear = (/* @__PURE__ */ new Date()).getFullYear();
+  const years = [];
+  for (let y = thisYear; y >= thisYear - 10; y--) years.push(y);
+  const parsed = parseYM(value);
+  const field = "min-height:44px;padding:10px 11px;border-radius:10px;border:2px solid " + (dark ? "rgba(255,253,248,.45)" : "rgba(20,24,31,.28)") + ";background:" + (dark ? "#0C1016" : "#fff") + ";font:600 15px 'Atkinson Hyperlegible',sans-serif;color:" + ink + ";cursor:pointer;appearance:menulist;-webkit-appearance:menulist";
+  const set = (y, m) => onPick(y && m ? y + "-" + String(m).padStart(2, "0") : "");
+  return /* @__PURE__ */ React.createElement("div", { style: css("margin-top:11px;display:flex;flex-direction:column;gap:8px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 14px/1.35 'Atkinson Hyperlegible',sans-serif;color:" + ink) }, "When did this happen?"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 13.5px/1.45 'Atkinson Hyperlegible',sans-serif;color:" + quiet + ";text-wrap:pretty") }, "Optional \u2014 every deadline shows either way. If you tell us, we will say how long ago that was, beside each one."), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;gap:8px;flex-wrap:wrap") }, /* @__PURE__ */ React.createElement(
+    "select",
+    {
+      "aria-label": "Month it happened",
+      value: parsed ? parsed.m : "",
+      style: css("flex:1 1 130px;min-width:0;" + field),
+      onChange: (e) => set(parsed ? parsed.y : thisYear, e.target.value)
+    },
+    /* @__PURE__ */ React.createElement("option", { value: "" }, "Month"),
+    MONTH_NAMES.map((n, i) => /* @__PURE__ */ React.createElement("option", { key: n, value: i + 1 }, n))
+  ), /* @__PURE__ */ React.createElement(
+    "select",
+    {
+      "aria-label": "Year it happened",
+      value: parsed ? parsed.y : "",
+      style: css("flex:1 1 110px;min-width:0;" + field),
+      onChange: (e) => set(e.target.value, parsed ? parsed.m : "")
+    },
+    /* @__PURE__ */ React.createElement("option", { value: "" }, "Year"),
+    years.map((y) => /* @__PURE__ */ React.createElement("option", { key: y, value: y }, y))
+  ), /* @__PURE__ */ React.createElement("span", { role: "status", style: css("position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap") }, parsed ? "You said this happened " + elapsedLabel(monthsSince(value)) + "." : ""), parsed ? /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => onPick(""),
+      className: "hoverfx",
+      style: css("min-height:44px;padding:10px 14px;border-radius:10px;border:2px solid " + (dark ? "rgba(255,253,248,.45)" : "rgba(20,24,31,.28)") + ";background:transparent;font:700 14px 'Atkinson Hyperlegible',sans-serif;color:" + ink + ";cursor:pointer")
+    },
+    "Clear"
+  ) : null), parsed ? /* @__PURE__ */ React.createElement("p", { style: css("margin:2px 0 0;font:400 13px/1.5 'Atkinson Hyperlegible',sans-serif;color:" + quiet + ";text-wrap:pretty") }, ELAPSED_CAVEAT) : null);
+}
+function ElapsedNote({ value, when, tone }) {
+  const e = deadlineElapsed(value, when);
+  if (!e) return null;
+  const dark = tone === "dark";
+  const urgent = !!e.urgency;
+  return /* @__PURE__ */ React.createElement("span", { style: css("display:block;margin-top:7px;text-wrap:pretty;font:" + (urgent ? "700" : "400") + " 13.5px/1.45 'Atkinson Hyperlegible',sans-serif;color:" + (dark ? urgent ? "#FFC9C9" : "#C6D3CE" : urgent ? "#7A1F1F" : "#4A5162")) }, "You said this happened ", e.label, ".", e.urgency ? " " + ELAPSED_COPY[e.urgency] : "");
+}
 function App() {
   const [saved] = useState(loadPrefs);
   const [screen, setScreen] = useState(() => {
@@ -1974,6 +2093,7 @@ function App() {
   const [federal, setFederal] = useState(null);
   const [stateData, setStateData] = useState(void 0);
   const [city, setCity] = useState(() => loadPrefs().city || "");
+  const [when, setWhen] = useState(() => loadPrefs().when || "");
   const [localData, setLocalData] = useState([]);
   const [localCounties, setLocalCounties] = useState([]);
   const [contentErr, setContentErr] = useState(false);
@@ -2024,9 +2144,9 @@ function App() {
     window.history.pushState({ screen, lawCat }, "");
   }, [screen, lawCat]);
   useEffect(() => {
-    if (stateSel) savePrefs({ stateSel, county, city });
+    if (stateSel) savePrefs({ stateSel, county, city, when });
     else forgetPlace();
-  }, [stateSel, county, city]);
+  }, [stateSel, county, city, when]);
   useEffect(() => {
     dropLegacyCase();
   }, []);
@@ -2293,7 +2413,7 @@ function App() {
         " All topics"
       ), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { style: css("font:600 13px 'IBM Plex Mono',monospace;letter-spacing:.05em;color:#4A5162") }, locationLabel.toUpperCase()), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;align-items:center;gap:11px;margin:10px 0 0") }, /* @__PURE__ */ React.createElement("span", { style: css("flex:none;display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:12px;border:2px solid " + cat.edge + ";background:" + cat.fill + ";color:" + cat.on) }, /* @__PURE__ */ React.createElement(Icon, { name: cat.icon, size: 24 })), /* @__PURE__ */ React.createElement("h1", { style: css("margin:0;font:700 26px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty") }, cat.label)), /* @__PURE__ */ React.createElement("p", { style: css("margin:8px 0 0;font:400 16px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, cat.blurb)), stateData && !st.length && fed.length ? /* @__PURE__ */ React.createElement("div", { style: css("padding:14px 15px;border-radius:14px;border:2px dashed rgba(20,24,31,.3)") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 15px/1.4 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty") }, "Everything below is federal law. We hold no ", stName, " rules on this yet."), /* @__PURE__ */ React.createElement("p", { style: css("margin:6px 0 0;font:400 14px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty") }, "That is a gap in what we have compiled, not a finding that ", stName, " has none \u2014 many states add their own rules on top of the federal floor. Your state labor agency on the Agencies tab is the place to check.")) : null, wage ? /* @__PURE__ */ React.createElement("div", { style: css("border:2px solid " + cat.edge + ";border-radius:16px;overflow:hidden;background:#fff") }, /* @__PURE__ */ React.createElement("div", { style: css("padding:15px 16px 14px;background:" + cat.fill) }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:500 15px/1.35 'Atkinson Hyperlegible',sans-serif;color:" + cat.on) }, "The least you can legally be paid", wage.winner.key === "city" ? " in " + wage.winner.name : ""), /* @__PURE__ */ React.createElement("p", { style: css("margin:4px 0 0;font:800 46px/1.05 'Atkinson Hyperlegible',sans-serif;letter-spacing:-.03em;color:" + cat.on) }, money(wage.winner.fact.value)), /* @__PURE__ */ React.createElement("p", { style: css("margin:2px 0 0;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:" + cat.on) }, "an hour, before tax")), /* @__PURE__ */ React.createElement("div", null, wage.layers.map(
         (l, i) => /* @__PURE__ */ React.createElement("div", { key: l.key, style: css("display:flex;align-items:center;gap:11px;padding:11px 14px;min-height:56px;" + (i ? "border-top:1px solid rgba(20,24,31,.12);" : "") + (l.winner ? "background:#F3FBF8" : "")) }, /* @__PURE__ */ React.createElement("span", { style: css("flex:1;min-width:0;display:flex;flex-direction:column;gap:1px") }, /* @__PURE__ */ React.createElement("span", { style: css("font:" + (l.winner ? "800" : "500") + " 16px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty") }, l.name), /* @__PURE__ */ React.createElement("span", { style: css("font:400 13px 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, l.kind, l.tied ? " \u2014 the same amount" : "")), /* @__PURE__ */ React.createElement("span", { style: css("flex:none;font:" + (l.winner ? "800 21px" : "500 17px") + " 'Atkinson Hyperlegible',sans-serif;color:" + (l.winner ? cat.edge : l.tied ? "#3A4150" : "#6B7280") + (l.beaten ? ";text-decoration:line-through" : "")) }, money(l.fact.value)))
-      )), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;padding:12px 14px 13px;border-top:2px solid " + cat.edge + ";font:500 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty") }, wage.anyBeaten ? "You must be paid the highest minimum wage that reaches where you work. The others are struck through because a higher one applies to you, not because they are wrong." : "Every minimum wage that reaches your worksite is the same amount, so this is what you are owed either way.")) : null, example ? /* @__PURE__ */ React.createElement("div", { style: css("border-radius:16px;background:#FFF8DF;border:2px solid #544D00;padding:16px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 17px/1.35 'Atkinson Hyperlegible',sans-serif;color:#3D3800;text-wrap:pretty") }, "If you were paid the minimum and worked 45 hours last week"), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:8px;margin-top:13px") }, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;align-items:baseline;gap:10px") }, /* @__PURE__ */ React.createElement("span", { style: css("flex:1;font:500 16px 'Atkinson Hyperlegible',sans-serif;color:#3D3800") }, example.normalHours, " hours \xD7 ", money(example.rate)), /* @__PURE__ */ React.createElement("span", { style: css("flex:none;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#3D3800") }, money(example.base))), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;align-items:baseline;gap:10px") }, /* @__PURE__ */ React.createElement("span", { style: css("flex:1;font:500 16px 'Atkinson Hyperlegible',sans-serif;color:#3D3800") }, example.otHours, " overtime hours at 1.5\xD7"), /* @__PURE__ */ React.createElement("span", { style: css("flex:none;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#3D3800") }, money(example.otPay)))), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;align-items:baseline;gap:10px;margin-top:12px;padding-top:12px;border-top:2px solid #544D00") }, /* @__PURE__ */ React.createElement("span", { style: css("flex:1;font:800 17px 'Atkinson Hyperlegible',sans-serif;color:#3D3800") }, "Your employer owes you"), /* @__PURE__ */ React.createElement("span", { style: css("flex:none;font:800 26px 'Atkinson Hyperlegible',sans-serif;color:#3D3800") }, money(example.total))), /* @__PURE__ */ React.createElement("p", { style: css("margin:12px 0 0;font:400 13.5px/1.5 'Atkinson Hyperlegible',sans-serif;color:#5C5200;text-wrap:pretty") }, "An illustration at the minimum wage, using the federal rule that overtime starts after 40 hours in a week. If you are paid more than the minimum, or your state counts overtime by the day, your own figure is higher.")) : null, wage && wageAgency && safeUrl(wageAgency.url) ? /* @__PURE__ */ React.createElement("div", { style: css("border-radius:16px;background:#14181F;padding:17px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 13px 'Atkinson Hyperlegible',sans-serif;letter-spacing:.04em;color:#8FE3C6") }, "IF YOU WERE PAID LESS THAN THIS"), /* @__PURE__ */ React.createElement("p", { style: css("margin:8px 0 0;font:800 19px/1.3 'Atkinson Hyperlegible',sans-serif;color:#FFFDF8;text-wrap:pretty") }, "File a wage claim. It is free, and you do not need a lawyer."), /* @__PURE__ */ React.createElement("p", { style: css("margin:8px 0 0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#C6D3CE;text-wrap:pretty") }, wageAgency.name, " takes the claim directly."), wageDeadline ? /* @__PURE__ */ React.createElement("div", { style: css("display:flex;align-items:flex-start;gap:10px;margin-top:13px;padding:11px 12px;border-radius:10px;background:#7A1F1F") }, /* @__PURE__ */ React.createElement("span", { style: css("flex:none;margin-top:1px;color:#FFC9C9;display:flex") }, /* @__PURE__ */ React.createElement(Icon, { name: "alarm", size: 18 })), /* @__PURE__ */ React.createElement("span", { style: css("flex:1;min-width:0;display:flex;flex-direction:column;gap:2px") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 14px/1.35 'Atkinson Hyperlegible',sans-serif;color:#FFE8E8") }, "Your deadline to file: ", factValStr(wageDeadline.value)), wageDeadline.citation ? /* @__PURE__ */ React.createElement("span", { style: css("font:400 12.5px/1.4 'Atkinson Hyperlegible',sans-serif;color:#F3C9C9") }, wageDeadline.citation) : null)) : null, /* @__PURE__ */ React.createElement(
+      )), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;padding:12px 14px 13px;border-top:2px solid " + cat.edge + ";font:500 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty") }, wage.anyBeaten ? "You must be paid the highest minimum wage that reaches where you work. The others are struck through because a higher one applies to you, not because they are wrong." : "Every minimum wage that reaches your worksite is the same amount, so this is what you are owed either way.")) : null, example ? /* @__PURE__ */ React.createElement("div", { style: css("border-radius:16px;background:#FFF8DF;border:2px solid #544D00;padding:16px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 17px/1.35 'Atkinson Hyperlegible',sans-serif;color:#3D3800;text-wrap:pretty") }, "If you were paid the minimum and worked 45 hours last week"), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:8px;margin-top:13px") }, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;align-items:baseline;gap:10px") }, /* @__PURE__ */ React.createElement("span", { style: css("flex:1;font:500 16px 'Atkinson Hyperlegible',sans-serif;color:#3D3800") }, example.normalHours, " hours \xD7 ", money(example.rate)), /* @__PURE__ */ React.createElement("span", { style: css("flex:none;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#3D3800") }, money(example.base))), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;align-items:baseline;gap:10px") }, /* @__PURE__ */ React.createElement("span", { style: css("flex:1;font:500 16px 'Atkinson Hyperlegible',sans-serif;color:#3D3800") }, example.otHours, " overtime hours at 1.5\xD7"), /* @__PURE__ */ React.createElement("span", { style: css("flex:none;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#3D3800") }, money(example.otPay)))), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;align-items:baseline;gap:10px;margin-top:12px;padding-top:12px;border-top:2px solid #544D00") }, /* @__PURE__ */ React.createElement("span", { style: css("flex:1;font:800 17px 'Atkinson Hyperlegible',sans-serif;color:#3D3800") }, "Your employer owes you"), /* @__PURE__ */ React.createElement("span", { style: css("flex:none;font:800 26px 'Atkinson Hyperlegible',sans-serif;color:#3D3800") }, money(example.total))), /* @__PURE__ */ React.createElement("p", { style: css("margin:12px 0 0;font:400 13.5px/1.5 'Atkinson Hyperlegible',sans-serif;color:#5C5200;text-wrap:pretty") }, "An illustration at the minimum wage, using the federal rule that overtime starts after 40 hours in a week. If you are paid more than the minimum, or your state counts overtime by the day, your own figure is higher.")) : null, wage && wageAgency && safeUrl(wageAgency.url) ? /* @__PURE__ */ React.createElement("div", { style: css("border-radius:16px;background:#14181F;padding:17px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 13px 'Atkinson Hyperlegible',sans-serif;letter-spacing:.04em;color:#8FE3C6") }, "IF YOU WERE PAID LESS THAN THIS"), /* @__PURE__ */ React.createElement("p", { style: css("margin:8px 0 0;font:800 19px/1.3 'Atkinson Hyperlegible',sans-serif;color:#FFFDF8;text-wrap:pretty") }, "File a wage claim. It is free, and you do not need a lawyer."), /* @__PURE__ */ React.createElement("p", { style: css("margin:8px 0 0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#C6D3CE;text-wrap:pretty") }, wageAgency.name, " takes the claim directly."), wageDeadline ? /* @__PURE__ */ React.createElement("div", { style: css("display:flex;align-items:flex-start;gap:10px;margin-top:13px;padding:11px 12px;border-radius:10px;background:#7A1F1F") }, /* @__PURE__ */ React.createElement("span", { style: css("flex:none;margin-top:1px;color:#FFC9C9;display:flex") }, /* @__PURE__ */ React.createElement(Icon, { name: "alarm", size: 18 })), /* @__PURE__ */ React.createElement("span", { style: css("flex:1;min-width:0;display:flex;flex-direction:column;gap:2px") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 14px/1.35 'Atkinson Hyperlegible',sans-serif;color:#FFE8E8") }, "Your deadline to file: ", factValStr(wageDeadline.value)), wageDeadline.citation ? /* @__PURE__ */ React.createElement("span", { style: css("font:400 12.5px/1.4 'Atkinson Hyperlegible',sans-serif;color:#F3C9C9") }, wageDeadline.citation) : null)) : null, wageDeadline ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(WhenPicker, { value: when, onPick: setWhen, tone: "dark" }), /* @__PURE__ */ React.createElement(ElapsedNote, { value: wageDeadline.value, when, tone: "dark" })) : null, /* @__PURE__ */ React.createElement(
         "a",
         {
           href: safeUrl(wageAgency.url),
@@ -2512,7 +2632,8 @@ function App() {
       ag.labor && ["Labor standards", ag.labor, ["deadlines.wageClaim"]]
     ].filter(Boolean).filter(([, a]) => a && safeUrl(a.url));
     const deadlineFor = (topics) => findDeadline(topics, stFacts, fedFacts);
-    const deadlineStrip = (f) => f ? /* @__PURE__ */ React.createElement("span", { style: css("display:flex;align-items:flex-start;gap:9px;margin-top:9px;padding:10px 12px;border-radius:10px;background:#FFE9E9;border:2px solid #7A1F1F") }, /* @__PURE__ */ React.createElement("span", { style: css("flex:none;margin-top:1px;color:#7A1F1F;display:flex") }, /* @__PURE__ */ React.createElement(Icon, { name: "alarm", size: 18 })), /* @__PURE__ */ React.createElement("span", { style: css("flex:1;min-width:0;display:flex;flex-direction:column;gap:2px") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 14px/1.35 'Atkinson Hyperlegible',sans-serif;color:#7A1F1F") }, "Your deadline to file: ", factValStr(f.value)), f.citation ? /* @__PURE__ */ React.createElement("span", { style: css("font:400 12.5px/1.4 'Atkinson Hyperlegible',sans-serif;color:#5C3030") }, f.citation) : null)) : null;
+    const anyDeadline = stateLinks.some(([, , t]) => deadlineFor(t)) || FEDERAL_AGENCIES.some((a) => deadlineFor(a.deadlineTopics));
+    const deadlineStrip = (f) => f ? /* @__PURE__ */ React.createElement("span", { style: css("display:flex;align-items:flex-start;gap:9px;margin-top:9px;padding:10px 12px;border-radius:10px;background:#FFE9E9;border:2px solid #7A1F1F") }, /* @__PURE__ */ React.createElement("span", { style: css("flex:none;margin-top:1px;color:#7A1F1F;display:flex") }, /* @__PURE__ */ React.createElement(Icon, { name: "alarm", size: 18 })), /* @__PURE__ */ React.createElement("span", { style: css("flex:1;min-width:0;display:flex;flex-direction:column;gap:2px") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 14px/1.35 'Atkinson Hyperlegible',sans-serif;color:#7A1F1F") }, "Your deadline to file: ", factValStr(f.value)), f.citation ? /* @__PURE__ */ React.createElement("span", { style: css("font:400 12.5px/1.4 'Atkinson Hyperlegible',sans-serif;color:#5C3030") }, f.citation) : null, /* @__PURE__ */ React.createElement(ElapsedNote, { value: f.value, when, tone: "light" }))) : null;
     const row = (title, covers, url, tone, dl) => /* @__PURE__ */ React.createElement(
       "a",
       {
@@ -2527,7 +2648,7 @@ function App() {
       /* @__PURE__ */ React.createElement("span", { style: css("font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, covers),
       deadlineStrip(dl)
     );
-    return /* @__PURE__ */ React.createElement("div", { style: css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px") }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", { style: css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Who enforces this"), /* @__PURE__ */ React.createElement("p", { style: css("margin:10px 0 0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "Government agencies you can contact yourself, for free, without a lawyer.")), /* @__PURE__ */ React.createElement("div", { style: css("padding:16px 18px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F;display:flex;flex-direction:column;gap:6px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "You are protected from retaliation for speaking up"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "It is illegal for an employer to punish you \u2014 fire, demote, cut your hours \u2014 for asking about, complaining about, or filing a claim over your rights at work. That protection covers internal and verbal complaints too, not only formal filings.")), stateLinks.length ? /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:10px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:2px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em") }, stLabel.toUpperCase()), stateLinks.map(([covers, a, topics]) => row(a.name, covers, safeUrl(a.url), "#EEF1FF", deadlineFor(topics)))) : null, stateErr ? /* @__PURE__ */ React.createElement("p", { role: "alert", style: css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F") }, "Couldn\u2019t load ", stLabel, " agency links. Check your connection and reopen \u2014 the federal agencies below are not the only ones that may apply.") : null, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:10px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:6px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em") }, "FEDERAL \u2014 ANYWHERE IN THE US"), FEDERAL_AGENCIES.map((a) => row(a.name, a.covers, a.url, "#F0EDE5", deadlineFor(a.deadlineTopics)))), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;gap:14px;padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff") }, /* @__PURE__ */ React.createElement("span", { style: css("flex:none;width:44px;height:44px;border-radius:12px;background:#EEF1FF;border:2px solid #14181F;display:flex;align-items:center;justify-content:center;color:#2B3AA8") }, /* @__PURE__ */ React.createElement(Icon, { name: "scale", size: 22 })), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:6px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Find an employment lawyer"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "You may also want an employment attorney licensed in ", stLabel, ". WorkLaw does not operate a referral service or recommend firms \u2014 your state or local bar association\u2019s lawyer-referral service is a reliable place to start."))), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "This is legal information, not legal advice. Where a deadline is shown it comes from the source named on that card, and it is the shortest thing standing between you and a claim \u2014 a day late is usually the whole case."));
+    return /* @__PURE__ */ React.createElement("div", { style: css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px") }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", { style: css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Who enforces this"), /* @__PURE__ */ React.createElement("p", { style: css("margin:10px 0 0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "Government agencies you can contact yourself, for free, without a lawyer.")), /* @__PURE__ */ React.createElement("div", { style: css("padding:16px 18px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F;display:flex;flex-direction:column;gap:6px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "You are protected from retaliation for speaking up"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "It is illegal for an employer to punish you \u2014 fire, demote, cut your hours \u2014 for asking about, complaining about, or filing a claim over your rights at work. That protection covers internal and verbal complaints too, not only formal filings.")), anyDeadline ? /* @__PURE__ */ React.createElement("div", { style: css("padding:15px 17px;border-radius:14px;border:2px solid rgba(20,24,31,.22);background:#fff") }, /* @__PURE__ */ React.createElement(WhenPicker, { value: when, onPick: setWhen, tone: "light" })) : null, stateLinks.length ? /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:10px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:2px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em") }, stLabel.toUpperCase()), stateLinks.map(([covers, a, topics]) => row(a.name, covers, safeUrl(a.url), "#EEF1FF", deadlineFor(topics)))) : null, stateErr ? /* @__PURE__ */ React.createElement("p", { role: "alert", style: css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F") }, "Couldn\u2019t load ", stLabel, " agency links. Check your connection and reopen \u2014 the federal agencies below are not the only ones that may apply.") : null, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:10px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:6px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em") }, "FEDERAL \u2014 ANYWHERE IN THE US"), FEDERAL_AGENCIES.map((a) => row(a.name, a.covers, a.url, "#F0EDE5", deadlineFor(a.deadlineTopics)))), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;gap:14px;padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff") }, /* @__PURE__ */ React.createElement("span", { style: css("flex:none;width:44px;height:44px;border-radius:12px;background:#EEF1FF;border:2px solid #14181F;display:flex;align-items:center;justify-content:center;color:#2B3AA8") }, /* @__PURE__ */ React.createElement(Icon, { name: "scale", size: 22 })), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:6px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Find an employment lawyer"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "You may also want an employment attorney licensed in ", stLabel, ". WorkLaw does not operate a referral service or recommend firms \u2014 your state or local bar association\u2019s lawyer-referral service is a reliable place to start."))), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "This is legal information, not legal advice. Where a deadline is shown it comes from the source named on that card, and it is the shortest thing standing between you and a claim \u2014 a day late is usually the whole case."));
   };
   const SCREENS = {
     welcome: Welcome,
@@ -2578,7 +2699,7 @@ class ErrorBoundary extends React.Component {
       }
       if (typeof window !== "undefined") window.location.reload();
     };
-    return /* @__PURE__ */ React.createElement("div", { style: css("max-width:480px;margin:60px auto;padding:28px;font-family:'Atkinson Hyperlegible',sans-serif;color:#14181F") }, /* @__PURE__ */ React.createElement("h1", { style: css("font:700 22px 'Atkinson Hyperlegible',sans-serif;margin:0 0 12px") }, "Something went wrong"), /* @__PURE__ */ React.createElement("p", { style: css("font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;margin:0 0 16px") }, "WorkLaw hit an unexpected error. This is usually caused by a saved setting that got corrupted. Your options:"), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:10px") }, /* @__PURE__ */ React.createElement("button", { onClick: reloadOnly, style: css("min-height:44px;padding:14px 18px;border-radius:12px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, "Try reloading"), /* @__PURE__ */ React.createElement("button", { onClick: clearAndReload, style: css("min-height:44px;padding:14px 18px;border-radius:12px;border:2px solid #B3264F;background:#fff;color:#B3264F;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, "Reset and start over")), /* @__PURE__ */ React.createElement("p", { style: css("font:400 13px/1.5 'Atkinson Hyperlegible',sans-serif;color:#4A5162;margin:16px 0 0") }, "Resetting forgets the state and county you picked \u2014 the only things WorkLaw stores \u2014 and starts you again at the map. That is all it holds, and it holds it only in this browser."));
+    return /* @__PURE__ */ React.createElement("div", { style: css("max-width:480px;margin:60px auto;padding:28px;font-family:'Atkinson Hyperlegible',sans-serif;color:#14181F") }, /* @__PURE__ */ React.createElement("h1", { style: css("font:700 22px 'Atkinson Hyperlegible',sans-serif;margin:0 0 12px") }, "Something went wrong"), /* @__PURE__ */ React.createElement("p", { style: css("font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;margin:0 0 16px") }, "WorkLaw hit an unexpected error. This is usually caused by a saved setting that got corrupted. Your options:"), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:10px") }, /* @__PURE__ */ React.createElement("button", { onClick: reloadOnly, style: css("min-height:44px;padding:14px 18px;border-radius:12px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, "Try reloading"), /* @__PURE__ */ React.createElement("button", { onClick: clearAndReload, style: css("min-height:44px;padding:14px 18px;border-radius:12px;border:2px solid #B3264F;background:#fff;color:#B3264F;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, "Reset and start over")), /* @__PURE__ */ React.createElement("p", { style: css("font:400 13px/1.5 'Atkinson Hyperlegible',sans-serif;color:#4A5162;margin:16px 0 0") }, "Resetting forgets the state, county and city you picked, and the month you gave for when your problem happened \u2014 the only things WorkLaw stores \u2014 and starts you again at the map. That is all it holds, and it holds it only in this browser."));
   }
 }
 ReactDOM.createRoot(document.getElementById("root")).render(/* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(App, null)));</script>
