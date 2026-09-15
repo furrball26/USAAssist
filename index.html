@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-bQ9p2at61iF/Bjhi5IXxtVhhh7aaTkLFD/OMnX3EoTA='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-6kDsmUatLGBIzpTJRe/wrSrpb7gFU8KygNU34PN31Vk='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14181F">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232B3AA8'/%3E%3Ctext x='32' y='47' font-size='42' text-anchor='middle' fill='white' font-family='Georgia,serif'%3E%C2%A7%3C/text%3E%3C/svg%3E">
@@ -684,6 +684,276 @@ function fetchContentJson(path) {
 }
 const STRINGS = {
   en: {
+    // ── The last of it: the wage layer names and three lone headings ──
+    "pay.layer.local": "Local ordinance",
+    "pay.layer.state": "State law",
+    "pay.layer.federal": "The national floor (FLSA)",
+    "pay.layer.federalName": "Federal",
+    "pay.layer.tied": "{kind} \u2014 the same amount",
+    "fact.theLaw": "THE LAW",
+    "source.short": "source \u2197",
+    "wiz.followsFedOt": "{state} follows the federal overtime standard.",
+    "wiz.followsFed": "{state} generally follows the federal standard here.",
+    // ── Non-compete checker, the last self-check panels, and the shell ──
+    "nc.intro": "Non-compete law varies a lot by state, and several states have changed their rules recently. This is general information for {state}, not an opinion on your specific agreement \u2014 only an attorney can tell you that.",
+    "nc.ftc": "FEDERAL \u2014 FTC RULE STATUS",
+    "nc.weigh.h": "What courts generally weigh (general information, not applied to your facts)",
+    // One sentence with four emphasised terms held as holes, so a translator
+    // can move them: English puts the adjective before the noun and plenty of
+    // languages do not, and the bold spans have to travel with the words.
+    "nc.weigh.body": "In states that test non-competes for \u201Creasonableness\u201D rather than banning them outright, courts commonly look at: how narrow the {scope} is, how long the {duration} runs, whether the employer has a genuine {interest} to protect (like real trade secrets, not just avoiding competition), and whether you received real {consideration} (something of value, like a new job offer or a raise) in exchange for signing. This is a general description of common factors, not a scoring of your specific agreement.",
+    "nc.weigh.scope": "geographic scope",
+    "nc.weigh.duration": "duration",
+    "nc.weigh.interest": "legitimate business interest",
+    "nc.weigh.consideration": "consideration",
+    "nc.foot": "This is legal information, not legal advice, and it is not an opinion on whether your specific non-compete is enforceable. An employment attorney licensed in {state} can review your actual agreement.",
+    "nc.findLawyer": "Find a lawyer",
+    "wiz.flsa.kicker": "SEPARATE CLOCK \xB7 FEDERAL LAWSUIT DEADLINE",
+    "wiz.deadlineWatch": "DEADLINE WATCH",
+    "wiz.reporting": "REPORTING & RETALIATION",
+    "wiz.salaryFloor.kicker": "CHECK THIS AGAINST YOUR OWN SALARY",
+    "wiz.salaryFloor.h": "{state} requires at least {amount} a week for this exemption \u2014 more than the federal $684.",
+    "wiz.salaryFloor.sub": "If your salary works out to less than that per week, you are owed overtime under {state} law whatever your duties are. {citation}The answer above only applied the federal test.",
+    "wiz.readRules": "Read the {domain} rules",
+    "wiz.domain.pay": "pay and overtime",
+    "wiz.domain.discrim": "discrimination and harassment",
+    "wiz.again": "Run the check again",
+    "scope.federal": "FEDERAL",
+    "scope.draft": "{scope} (DRAFT)",
+    "source.inline": "[source \u2197]",
+    "source.inlineAria": "Official source for {rule}",
+    "home.promise": "Free, and private by design: everything you enter stays on this device. This is legal information, not legal advice.",
+    "nav.primary": "Primary",
+    "crash.reload": "Try reloading",
+    "crash.reset": "Reset and start over",
+    "foot.reset": "Resetting forgets the state, county and city you picked, and the month you gave for when your problem happened \u2014 the only things WorkLaw stores \u2014 and starts you again at the map. That is all it holds, and it holds it only in this browser.",
+    // ── The three self-checks: questions, help and results ──
+    "wiz.complete": "COMPLETE",
+    "wiz.question": "QUESTION {n}",
+    "wiz.result": "RESULT",
+    "wiz.back": "Back to the law",
+    "wiz.wage.r.r_hce.title": "Possibly exempt \u2014 highly compensated employee",
+    "wiz.wage.r.r_hce.body": "At $107,432 or more a year with at least one exempt-type duty, the highly-compensated-employee test uses a relaxed duties standard \u2014 you do not need to meet the full duties test that ordinary executive, administrative or professional exemptions require. If your total-pay figure or duty description overstated things, revisit this.",
+    "wiz.wage.r.r_commission.title": "It depends \u2014 commissioned sales rules",
+    "wiz.wage.r.r_commission.body": "Commission and piece-rate workers are usually overtime-eligible, but retail/service employees earning over half their pay in commissions at more than 1.5\xD7 minimum wage fall under a special exception. Log your hours and pay so the math can be checked.",
+    "wiz.wage.r.r_outside.title": "Possibly exempt \u2014 outside sales",
+    "wiz.wage.r.r_outside.body": "Regularly making sales away from the employer\u2019s place of business qualifies, with no salary requirement. Time spent on deliveries or service work counts against the exemption.",
+    "wiz.wage.r.r_comp.title": "Possibly exempt \u2014 computer employee",
+    "wiz.wage.r.r_comp.body": "Systems analysis, design and programming duties can qualify, salaried or at $27.63+/hour. Some states set a much higher pay floor for this exemption than federal law \u2014 check the state-specific rules below; you may still be owed overtime there.",
+    "wiz.wage.r.r_creative.title": "Possibly exempt \u2014 creative professional",
+    "wiz.wage.r.r_creative.body": "Work requiring invention, imagination, originality or talent in a recognized artistic or creative field can qualify. Routine or formulaic creative work usually does not.",
+    "wiz.wage.r.r_prof.title": "Possibly exempt \u2014 learned professional",
+    "wiz.wage.r.r_prof.body": "Work requiring advanced knowledge in a field of science or learning, acquired through prolonged specialized instruction (law, medicine, engineering, accounting), can qualify when salaried above the threshold.",
+    "wiz.wage.r.r_admin.title": "Possibly exempt \u2014 administrative",
+    "wiz.wage.r.r_admin.body": 'Office or business-operations work involving discretion and independent judgment on significant matters can qualify. This is the most-litigated exemption \u2014 "independent judgment" means real authority, not following guidelines.',
+    "wiz.wage.r.r_exec.title": "Possibly exempt \u2014 executive",
+    "wiz.wage.r.r_exec.body": "You appear to meet the executive exemption: salaried above the threshold, managing two or more employees, with real hiring/firing input. If any answer overstated your actual authority, revisit it \u2014 actual duties control, not titles.",
+    "wiz.wage.r.r_outside_no.title": "Likely non-exempt \u2014 overtime is owed",
+    "wiz.wage.r.r_outside_no.body": "The outside-sales exemption only covers people customarily working away from the employer\u2019s place of business making sales. Inside sales \u2014 phone, email, at a desk \u2014 does not qualify.",
+    "wiz.wage.r.r_hourly_comp_no.title": "Likely non-exempt \u2014 overtime is owed",
+    "wiz.wage.r.r_hourly_comp_no.body": "The hourly computer-employee exemption requires both qualifying duties (systems analysis, design, programming) and at least $27.63/hour. Missing either means overtime is owed.",
+    "wiz.wage.r.r_exec_no.title": "Likely non-exempt \u2014 overtime is owed",
+    "wiz.wage.r.r_exec_no.body": "Supervising alone is not enough for the executive exemption. Without real authority over hiring, firing or promotion \u2014 or recommendations that carry particular weight \u2014 the duties test fails.",
+    "wiz.wage.r.r_duties_none.title": "Likely non-exempt \u2014 overtime is owed",
+    "wiz.wage.r.r_duties_none.body": "Your salary clears the federal threshold, but exemption also requires exempt duties. Following set procedures and tasks is not executive, administrative or professional work under the regulations.",
+    "wiz.wage.r.r_hourly.title": "Likely non-exempt \u2014 overtime is owed",
+    "wiz.wage.r.r_hourly.body": "Hourly pay fails the salary-basis test for the executive, administrative and professional exemptions. Outside of a few narrow carve-outs, hourly workers must be paid overtime.",
+    "wiz.wage.r.r_salary_low.title": "Likely non-exempt \u2014 overtime is owed",
+    "wiz.wage.r.r_salary_low.body": "A salary under $684 per week ($35,568/year) fails the federal salary-level test automatically. No duties test can make you exempt below that line, whatever your title says.",
+    "wiz.har.r.r_h_hostile.title": "This may rise to a hostile work environment",
+    "wiz.har.r.r_h_hostile.body": "Your answers have the shape courts generally look for: conduct unwelcome to you, tied to a protected characteristic, and either severe on its own or repeated over time. This is general information about the legal standard, not a legal opinion about your situation \u2014 an attorney would still need to review the specifics.",
+    "wiz.har.r.r_h_isolated.title": "This may not meet the \u201Csevere or pervasive\u201D bar yet",
+    "wiz.har.r.r_h_isolated.body": "Courts generally look for conduct that is either one severe incident or a pattern repeated over time. A few isolated, minor comments \u2014 on their own \u2014 may not clear that bar, even when tied to a protected characteristic. That does not mean nothing is wrong: keep documenting dates, words and witnesses. A pattern that continues can change this answer.",
+    "wiz.har.r.r_h_not_unwelcome.title": "An element may be missing \u2014 \u201Cunwelcome\u201D conduct",
+    "wiz.har.r.r_h_not_unwelcome.body": "Harassment law also generally requires that the conduct be unwelcome to you. If it was not, this specific legal theory may not apply. If this answer does not reflect what actually happened, or the situation has changed, run the check again.",
+    "wiz.har.r.r_h_no_link.title": "This may not be legally protected harassment",
+    "wiz.har.r.r_h_no_link.body": "Harassment law generally requires that the conduct be tied to a protected characteristic \u2014 race, sex, religion, national origin, age 40+, disability, or similar. General rudeness or a personality conflict, on its own, usually is not enough, even if it feels the same day to day. If you notice a pattern tied to who you are, run this check again \u2014 and a workplace policy can still prohibit conduct that is not illegal.",
+    "wiz.dis.r.r_d_shape.title": "This has the shape of a discrimination claim",
+    "wiz.dis.r.r_d_shape.body": "Your situation may have the elements courts generally look for: a protected characteristic, a real adverse action, and a comparator or pretext signal connecting them. This is general information about the legal framework, not a legal opinion about your situation \u2014 an attorney would still need to review the specifics, and the deadline below is real.",
+    "wiz.dis.r.r_d_thin.title": "An adverse action alone may not be enough yet",
+    "wiz.dis.r.r_d_thin.body": "A protected characteristic plus an adverse action is a start, but courts generally also look for something connecting the two \u2014 a comparator treated better, or a stated reason that looks false or keeps shifting. Document the details: who else was in a similar spot, what you were told, and whether that explanation changed over time.",
+    "wiz.dis.r.r_d_coverage_gap.title": "Federal coverage may not reach this employer",
+    "wiz.dis.r.r_d_coverage_gap.body": "Title VII and the ADA generally apply to employers with 15 or more employees (the ADEA, 20 or more) \u2014 under that size, federal discrimination law may not apply. Many states set a lower threshold or have their own law that reaches smaller employers; check what applies in your state below before assuming there is no claim.",
+    "wiz.wage.n.outsideSales.q": "Do you regularly make sales away from your employer\u2019s place of business?",
+    "wiz.wage.n.outsideSales.help": "Customer sites, door-to-door, the field. Selling by phone or email from home or an office does not count.",
+    "wiz.wage.n.outsideSales.opt0": "Yes, mostly in the field",
+    "wiz.wage.n.outsideSales.trail0": "Mostly sells in the field",
+    "wiz.wage.n.outsideSales.opt1": "No, mostly from a desk",
+    "wiz.wage.n.outsideSales.trail1": "Mostly sells from a desk",
+    "wiz.wage.n.hourlyType.q": "Is your main job computer systems work \u2014 like software development or IT systems analysis \u2014 paid at $27.63/hour or more?",
+    "wiz.wage.n.hourlyType.help": "Hourly workers are almost always owed overtime \u2014 the one big exception is computer employees at or above $27.63/hour.",
+    "wiz.wage.n.hourlyType.opt0": "Yes, both of those",
+    "wiz.wage.n.hourlyType.trail0": "Computer work at $27.63+/hour",
+    "wiz.wage.n.hourlyType.opt1": "No",
+    "wiz.wage.n.hourlyType.trail1": "Hourly, other work",
+    "wiz.wage.n.execAuth.q": "Can you hire or fire \u2014 or do your recommendations carry real weight?",
+    "wiz.wage.n.execAuth.help": "The executive exemption requires genuine authority over other employees\u2019 jobs, not just scheduling shifts.",
+    "wiz.wage.n.execAuth.opt0": "Yes, I have that authority",
+    "wiz.wage.n.execAuth.trail0": "Has hire/fire authority",
+    "wiz.wage.n.execAuth.opt1": "No, I just supervise the work",
+    "wiz.wage.n.execAuth.trail1": "No hire/fire authority",
+    "wiz.wage.n.duties.q": "What do you mainly do all day?",
+    "wiz.wage.n.duties.help": "The duties test looks at your real work, not your job title. Pick the closest.",
+    "wiz.wage.n.duties.opt0": "Manage two or more employees",
+    "wiz.wage.n.duties.trail0": "Manages two or more employees",
+    "wiz.wage.n.duties.opt1": "Office work with independent judgment on significant matters",
+    "wiz.wage.n.duties.trail1": "Office work with independent judgment",
+    "wiz.wage.n.duties.opt2": "Work requiring an advanced degree (law, engineering, medicine\u2026)",
+    "wiz.wage.n.duties.trail2": "Advanced-degree professional work",
+    "wiz.wage.n.duties.opt3": "Original creative or artistic work",
+    "wiz.wage.n.duties.trail3": "Creative or artistic work",
+    "wiz.wage.n.duties.opt4": "Systems analysis, software design or programming",
+    "wiz.wage.n.duties.trail4": "Computer systems work",
+    "wiz.wage.n.duties.opt5": "Follow set procedures and tasks",
+    "wiz.wage.n.duties.trail5": "Follows set procedures",
+    "wiz.wage.n.hceDuty.q": "Do you regularly perform at least one exempt-type duty \u2014 for example directing the work of other employees, or office/business work involving discretion on significant matters?",
+    "wiz.wage.n.hceDuty.help": "The highly-compensated test only requires ONE such duty, not the full executive/administrative/professional duties test.",
+    "wiz.wage.n.hceDuty.opt0": "Yes, at least one of those",
+    "wiz.wage.n.hceDuty.trail0": "Performs an exempt-type duty",
+    "wiz.wage.n.hceDuty.opt1": "No, mostly routine tasks",
+    "wiz.wage.n.hceDuty.trail1": "Mostly routine tasks",
+    "wiz.wage.n.hceCheck.q": "Is your total annual pay at least $107,432 \u2014 including salary, commissions and nondiscretionary bonuses?",
+    "wiz.wage.n.hceCheck.help": "That is the highly-compensated-employee threshold. It relaxes the duties test but does not remove it \u2014 you still need at least one exempt-type duty, checked next.",
+    "wiz.wage.n.hceCheck.opt0": "Yes, $107,432/year or more",
+    "wiz.wage.n.hceCheck.trail0": "Meets the $107,432/year HCE threshold",
+    "wiz.wage.n.hceCheck.opt1": "No, or not sure",
+    "wiz.wage.n.hceCheck.trail1": "Below the $107,432/year HCE threshold",
+    "wiz.wage.n.salaryLevel.q": "Is your salary at least $684 per week?",
+    "wiz.wage.n.salaryLevel.help": "That is $35,568/year \u2014 the federal salary-level test. Some states set a higher salary floor; your state\u2019s figure alongside the federal one will be shown on your result.",
+    "wiz.wage.n.salaryLevel.opt0": "Yes, $684/week or more",
+    "wiz.wage.n.salaryLevel.trail0": "Meets the $684/week federal floor",
+    "wiz.wage.n.salaryLevel.opt1": "No, less than that",
+    "wiz.wage.n.salaryLevel.trail1": "Below the $684/week federal floor",
+    "wiz.wage.n.salaryLevel.opt2": "Not sure",
+    "wiz.wage.n.salaryLevel.trail2": "Not sure of salary amount",
+    "wiz.wage.n.start.q": "How are you paid?",
+    "wiz.wage.n.start.help": "Most exemptions require a fixed salary \u2014 this is the salary-basis test.",
+    "wiz.wage.n.start.opt0": "A fixed salary every period",
+    "wiz.wage.n.start.trail0": "Paid a salary",
+    "wiz.wage.n.start.opt1": "Hourly",
+    "wiz.wage.n.start.trail1": "Paid hourly",
+    "wiz.wage.n.start.opt2": "Commission or piece rate",
+    "wiz.wage.n.start.trail2": "Paid by commission or piece rate",
+    "wiz.wage.n.start.opt3": "I am an outside salesperson",
+    "wiz.wage.n.start.trail3": "Outside salesperson",
+    "wiz.har.n.reported.q": "Did you report it internally, and what happened?",
+    "wiz.har.n.reported.help": "Reporting is not required to have a claim, but it can matter for what an employer can be held liable for.",
+    "wiz.har.n.reported.opt0": "I reported it and nothing changed",
+    "wiz.har.n.reported.trail0": "Reported, nothing changed",
+    "wiz.har.n.reported.opt1": "I reported it and it was addressed",
+    "wiz.har.n.reported.trail1": "Reported and addressed",
+    "wiz.har.n.reported.opt2": "I have not reported it",
+    "wiz.har.n.reported.trail2": "Not reported",
+    "wiz.har.n.who.q": "Who did this?",
+    "wiz.har.n.who.help": "Who was involved can change how an employer is held responsible \u2014 not whether the conduct counts as harassment in the first place.",
+    "wiz.har.n.who.opt0": "My supervisor or manager",
+    "wiz.har.n.who.trail0": "Done by a supervisor",
+    "wiz.har.n.who.opt1": "A coworker",
+    "wiz.har.n.who.trail1": "Done by a coworker",
+    "wiz.har.n.who.opt2": "A customer or other third party",
+    "wiz.har.n.who.trail2": "Done by a customer or third party",
+    "wiz.har.n.severity.q": "How often did it happen, and how severe was it?",
+    "wiz.har.n.severity.help": "Courts generally treat a single incident as enough only if it is severe (for example an assault or a serious threat) \u2014 otherwise they look for a pattern over time.",
+    "wiz.har.n.severity.opt0": "One severe incident (assault, a slur, a serious threat)",
+    "wiz.har.n.severity.trail0": "One severe incident",
+    "wiz.har.n.severity.opt1": "Repeated over time",
+    "wiz.har.n.severity.trail1": "Repeated over time",
+    "wiz.har.n.severity.opt2": "A few isolated, minor comments",
+    "wiz.har.n.severity.trail2": "Isolated, minor comments",
+    "wiz.har.n.unwelcome.q": "Was the conduct unwelcome to you \u2014 you did not invite or welcome it?",
+    "wiz.har.n.unwelcome.help": "This is usually straightforward, but it is a required element of the legal standard.",
+    "wiz.har.n.unwelcome.opt0": "Yes, it was unwelcome",
+    "wiz.har.n.unwelcome.trail0": "Conduct was unwelcome",
+    "wiz.har.n.unwelcome.opt1": "No, or it was mutual",
+    "wiz.har.n.unwelcome.trail1": "Conduct was not unwelcome",
+    "wiz.har.n.start.q": "Is the conduct tied to a protected characteristic \u2014 race, sex (including pregnancy, sexual orientation or gender identity), religion, national origin, age 40+, disability, or genetic information?",
+    "wiz.har.n.start.help": "Harassment law only covers conduct connected to who you are in one of these ways \u2014 not rudeness in general.",
+    "wiz.har.n.start.opt0": "Yes, it is tied to one of those",
+    "wiz.har.n.start.trail0": "Tied to a protected characteristic",
+    "wiz.har.n.start.opt1": "No, it feels like general rudeness or a personality conflict",
+    "wiz.har.n.start.trail1": "Not tied to a protected characteristic",
+    "wiz.har.n.start.opt2": "Not sure",
+    "wiz.har.n.start.trail2": "Not sure if protected",
+    "wiz.dis.n.comparator.q": "Was someone NOT in your protected group treated better in a similar situation \u2014 or did the employer\u2019s stated reason seem false or keep shifting?",
+    "wiz.dis.n.comparator.help": "Courts generally look for a comparator (someone similarly situated treated better) or a pretext signal (a reason that does not hold up) connecting the adverse action to the protected characteristic.",
+    "wiz.dis.n.comparator.opt0": "Yes, someone was treated better (a comparator)",
+    "wiz.dis.n.comparator.trail0": "A comparator was treated better",
+    "wiz.dis.n.comparator.opt1": "The stated reason seems false or has changed",
+    "wiz.dis.n.comparator.trail1": "Stated reason seems false",
+    "wiz.dis.n.comparator.opt2": "No",
+    "wiz.dis.n.comparator.trail2": "No comparator identified",
+    "wiz.dis.n.comparator.opt3": "Not sure",
+    "wiz.dis.n.comparator.trail3": "Not sure about a comparator",
+    "wiz.dis.n.adverseAction.q": "What adverse action was taken?",
+    "wiz.dis.n.adverseAction.help": "An adverse action is a real, tangible change \u2014 not just an uncomfortable conversation.",
+    "wiz.dis.n.adverseAction.opt0": "Fired",
+    "wiz.dis.n.adverseAction.trail0": "Fired",
+    "wiz.dis.n.adverseAction.opt1": "Not hired or not promoted",
+    "wiz.dis.n.adverseAction.trail1": "Not hired or promoted",
+    "wiz.dis.n.adverseAction.opt2": "Demoted or pay cut",
+    "wiz.dis.n.adverseAction.trail2": "Demoted or pay cut",
+    "wiz.dis.n.adverseAction.opt3": "Disciplined",
+    "wiz.dis.n.adverseAction.trail3": "Disciplined",
+    "wiz.dis.n.adverseAction.opt4": "Other",
+    "wiz.dis.n.adverseAction.trail4": "Other adverse action",
+    "wiz.dis.n.employerSize.q": "How many employees does your employer have?",
+    "wiz.dis.n.employerSize.help": "Title VII and the ADA generally cover employers with 15+ employees (the ADEA, 20+). Some states cover smaller employers too \u2014 check the panel on your result.",
+    "wiz.dis.n.employerSize.opt0": "15 or more",
+    "wiz.dis.n.employerSize.trail0": "15 or more employees",
+    "wiz.dis.n.employerSize.opt1": "Fewer than 15",
+    "wiz.dis.n.employerSize.trail1": "Fewer than 15 employees",
+    "wiz.dis.n.employerSize.opt2": "Not sure",
+    "wiz.dis.n.employerSize.trail2": "Not sure of employer size",
+    "wiz.dis.n.start.q": "Which protected characteristic is involved?",
+    "wiz.dis.n.start.help": "Federal law covers race, color, religion, sex (including pregnancy, sexual orientation and gender identity), national origin, age 40+, disability, and genetic information.",
+    "wiz.dis.n.start.opt0": "One of those is involved",
+    "wiz.dis.n.start.trail0": "Protected characteristic named",
+    "wiz.dis.n.start.opt1": "Not sure",
+    "wiz.dis.n.start.trail1": "Not sure which characteristic",
+    "wiz.cfg.discrimination.tag": "DISCRIMINATION IDENTIFIER",
+    "wiz.cfg.discrimination.doneTitle": "What this may mean",
+    "wiz.cfg.discrimination.qDisclaimer": "This is general information about how discrimination law generally works, not a legal opinion about your situation \u2014 talk to an attorney.",
+    "wiz.cfg.discrimination.doneDisclaimer": "This is general information, not a legal opinion about your situation \u2014 talk to an attorney.",
+    "wiz.cfg.harassment.tag": "HARASSMENT IDENTIFIER",
+    "wiz.cfg.harassment.doneTitle": "What this may mean",
+    "wiz.cfg.harassment.qDisclaimer": "This is general information about how harassment law generally works, not a legal opinion about your situation \u2014 talk to an attorney.",
+    "wiz.cfg.harassment.doneDisclaimer": "This is general information, not a legal opinion about your situation \u2014 talk to an attorney.",
+    "wiz.cfg.wage.tag": "OVERTIME EXEMPTION CHECK",
+    "wiz.cfg.wage.doneTitle": "Your overtime status",
+    "wiz.cfg.wage.qDisclaimer": "This is a plain-language reading of published rules, not legal advice about your specific job.",
+    "wiz.cfg.wage.doneDisclaimer": "This is a plain-language reading of published rules, not a legal opinion about your job.",
+    // ── The six domains a reader chooses between ──
+    "cat.pay.label": "Pay & overtime",
+    "cat.pay.blurb": "Minimum wage, overtime, tips, equal pay, and when you must be paid.",
+    "cat.discrim.label": "Discrimination & harassment",
+    "cat.discrim.blurb": "Who is protected, what counts, and disability accommodations.",
+    "cat.retaliation.label": "Retaliation & speaking up",
+    "cat.retaliation.blurb": "Being punished for complaining, whistleblowing, or discussing pay.",
+    "cat.timeoff.label": "Time off & breaks",
+    "cat.timeoff.blurb": "Family and medical leave, sick time, and meal breaks.",
+    "cat.leaving.label": "Leaving a job",
+    "cat.leaving.blurb": "Final paycheck timing, severance agreements, and non-competes.",
+    "cat.deadlines.label": "Deadlines & what you can recover",
+    "cat.deadlines.blurb": "How long you have before a claim expires, and what you can win. These are unforgiving.",
+    "cat._other.label": "Everything else",
+    // ── The self-checks a reader can open from a domain ──
+    "tool.wage.label": "Am I exempt from overtime?",
+    "tool.wage.desc": "A short Q&A on the federal and state rules for your job.",
+    "tool.harassment.label": "Is this harassment?",
+    "tool.harassment.desc": "Check what happened against the hostile-work-environment standard.",
+    "tool.discrimination.label": "Is this discrimination?",
+    "tool.discrimination.desc": "Check what happened against the elements of a discrimination claim.",
+    "tool.noncompete.label": "Is my non-compete enforceable?",
+    "tool.noncompete.desc": "How your state treats non-competes, with the sourced rule behind it.",
+    // ── Federal agencies, and what each one actually takes ──
+    "agency.dol.covers": "Unpaid wages, overtime, minimum wage, family and medical leave.",
+    "agency.eeoc.covers": "Discrimination and harassment based on race, sex, religion, national origin, age, disability or genetic information.",
+    "agency.osha.covers": "Unsafe working conditions, and retaliation for reporting them.",
+    "agency.nlrb.covers": "Being punished for organizing, or for discussing pay and conditions with coworkers.",
+    "tool.aria": "{name} \u2014 {desc}",
+    "agency.state.wageHour": "Wage & hour",
+    "agency.state.discrim": "Discrimination & harassment",
+    "agency.state.labor": "Labor standards",
     // ── Every rule in the dataset, named in plain English ──
     "topic.deadlines.discriminationComplaint": "Deadline to file a discrimination complaint",
     "topic.deadlines.eeocCharge": "Deadline to file with the EEOC",
@@ -984,8 +1254,8 @@ const LAW_CATEGORIES = [
     fill: "#009E73",
     edge: "#004532",
     on: "#14181F",
-    label: "Pay & overtime",
-    blurb: "Minimum wage, overtime, tips, equal pay, and when you must be paid.",
+    label: "cat.pay.label",
+    blurb: "cat.pay.blurb",
     prefixes: ["minimumWage", "overtime", "wagePayment", "equalPay"]
   },
   {
@@ -994,8 +1264,8 @@ const LAW_CATEGORIES = [
     fill: "#D55E00",
     edge: "#7A3600",
     on: "#14181F",
-    label: "Discrimination & harassment",
-    blurb: "Who is protected, what counts, and disability accommodations.",
+    label: "cat.discrim.label",
+    blurb: "cat.discrim.blurb",
     prefixes: ["discrimination", "harassment", "disability"]
   },
   {
@@ -1004,8 +1274,8 @@ const LAW_CATEGORIES = [
     fill: "#CC79A7",
     edge: "#6E2F50",
     on: "#14181F",
-    label: "Retaliation & speaking up",
-    blurb: "Being punished for complaining, whistleblowing, or discussing pay.",
+    label: "cat.retaliation.label",
+    blurb: "cat.retaliation.blurb",
     prefixes: ["retaliation", "whistleblower", "payDiscussion"]
   },
   {
@@ -1014,8 +1284,8 @@ const LAW_CATEGORIES = [
     fill: "#56B4E9",
     edge: "#10506F",
     on: "#14181F",
-    label: "Time off & breaks",
-    blurb: "Family and medical leave, sick time, and meal breaks.",
+    label: "cat.timeoff.label",
+    blurb: "cat.timeoff.blurb",
     prefixes: ["leave", "mealBreak"]
   },
   {
@@ -1024,8 +1294,8 @@ const LAW_CATEGORIES = [
     fill: "#F0E442",
     edge: "#544D00",
     on: "#14181F",
-    label: "Leaving a job",
-    blurb: "Final paycheck timing, severance agreements, and non-competes.",
+    label: "cat.leaving.label",
+    blurb: "cat.leaving.blurb",
     prefixes: ["final-pay", "severance", "nonCompete"]
   },
   {
@@ -1034,8 +1304,8 @@ const LAW_CATEGORIES = [
     fill: "#0072B2",
     edge: "#004B75",
     on: "#FFFFFF",
-    label: "Deadlines & what you can recover",
-    blurb: "How long you have before a claim expires, and what you can win. These are unforgiving.",
+    label: "cat.deadlines.label",
+    blurb: "cat.deadlines.blurb",
     prefixes: ["deadlines", "remedies", "enforcement"]
   }
 ];
@@ -1553,23 +1823,23 @@ function WelcomeArt() {
   );
 }
 const RESULTS_WAGE = {
-  r_salary_low: { v: "non", title: "Likely non-exempt \u2014 overtime is owed", body: "A salary under $684 per week ($35,568/year) fails the federal salary-level test automatically. No duties test can make you exempt below that line, whatever your title says.", cites: ["29 C.F.R. \xA7541.600", "29 U.S.C. \xA7207"] },
-  r_hourly: { v: "non", title: "Likely non-exempt \u2014 overtime is owed", body: "Hourly pay fails the salary-basis test for the executive, administrative and professional exemptions. Outside of a few narrow carve-outs, hourly workers must be paid overtime.", cites: ["29 C.F.R. \xA7541.602", "29 U.S.C. \xA7207"] },
-  r_duties_none: { v: "non", title: "Likely non-exempt \u2014 overtime is owed", body: "Your salary clears the federal threshold, but exemption also requires exempt duties. Following set procedures and tasks is not executive, administrative or professional work under the regulations.", cites: ["29 C.F.R. \xA7541"] },
-  r_exec_no: { v: "non", title: "Likely non-exempt \u2014 overtime is owed", body: "Supervising alone is not enough for the executive exemption. Without real authority over hiring, firing or promotion \u2014 or recommendations that carry particular weight \u2014 the duties test fails.", cites: ["29 C.F.R. \xA7541.100", "29 C.F.R. \xA7541.105"] },
-  r_hourly_comp_no: { v: "non", title: "Likely non-exempt \u2014 overtime is owed", body: "The hourly computer-employee exemption requires both qualifying duties (systems analysis, design, programming) and at least $27.63/hour. Missing either means overtime is owed.", cites: ["29 U.S.C. \xA7213(a)(17)", "29 C.F.R. \xA7541.400"] },
-  r_outside_no: { v: "non", title: "Likely non-exempt \u2014 overtime is owed", body: "The outside-sales exemption only covers people customarily working away from the employer\u2019s place of business making sales. Inside sales \u2014 phone, email, at a desk \u2014 does not qualify.", cites: ["29 C.F.R. \xA7541.500"] },
-  r_exec: { v: "ex", title: "Possibly exempt \u2014 executive", body: "You appear to meet the executive exemption: salaried above the threshold, managing two or more employees, with real hiring/firing input. If any answer overstated your actual authority, revisit it \u2014 actual duties control, not titles.", cites: ["29 C.F.R. \xA7541.100", "29 U.S.C. \xA7213(a)(1)"] },
-  r_admin: { v: "ex", title: "Possibly exempt \u2014 administrative", body: 'Office or business-operations work involving discretion and independent judgment on significant matters can qualify. This is the most-litigated exemption \u2014 "independent judgment" means real authority, not following guidelines.', cites: ["29 C.F.R. \xA7541.200", "29 C.F.R. \xA7541.202"] },
-  r_prof: { v: "ex", title: "Possibly exempt \u2014 learned professional", body: "Work requiring advanced knowledge in a field of science or learning, acquired through prolonged specialized instruction (law, medicine, engineering, accounting), can qualify when salaried above the threshold.", cites: ["29 C.F.R. \xA7541.301"] },
-  r_creative: { v: "ex", title: "Possibly exempt \u2014 creative professional", body: "Work requiring invention, imagination, originality or talent in a recognized artistic or creative field can qualify. Routine or formulaic creative work usually does not.", cites: ["29 C.F.R. \xA7541.302"] },
-  r_comp: { v: "ex", title: "Possibly exempt \u2014 computer employee", body: "Systems analysis, design and programming duties can qualify, salaried or at $27.63+/hour. Some states set a much higher pay floor for this exemption than federal law \u2014 check the state-specific rules below; you may still be owed overtime there.", cites: ["29 U.S.C. \xA7213(a)(17)"] },
-  r_outside: { v: "ex", title: "Possibly exempt \u2014 outside sales", body: "Regularly making sales away from the employer\u2019s place of business qualifies, with no salary requirement. Time spent on deliveries or service work counts against the exemption.", cites: ["29 C.F.R. \xA7541.500"] },
-  r_commission: { v: "maybe", title: "It depends \u2014 commissioned sales rules", body: "Commission and piece-rate workers are usually overtime-eligible, but retail/service employees earning over half their pay in commissions at more than 1.5\xD7 minimum wage fall under a special exception. Log your hours and pay so the math can be checked.", cites: ["29 U.S.C. \xA7207(i)"] },
+  r_salary_low: { v: "non", title: "wiz.wage.r.r_salary_low.title", body: "wiz.wage.r.r_salary_low.body", cites: ["29 C.F.R. \xA7541.600", "29 U.S.C. \xA7207"] },
+  r_hourly: { v: "non", title: "wiz.wage.r.r_hourly.title", body: "wiz.wage.r.r_hourly.body", cites: ["29 C.F.R. \xA7541.602", "29 U.S.C. \xA7207"] },
+  r_duties_none: { v: "non", title: "wiz.wage.r.r_duties_none.title", body: "wiz.wage.r.r_duties_none.body", cites: ["29 C.F.R. \xA7541"] },
+  r_exec_no: { v: "non", title: "wiz.wage.r.r_exec_no.title", body: "wiz.wage.r.r_exec_no.body", cites: ["29 C.F.R. \xA7541.100", "29 C.F.R. \xA7541.105"] },
+  r_hourly_comp_no: { v: "non", title: "wiz.wage.r.r_hourly_comp_no.title", body: "wiz.wage.r.r_hourly_comp_no.body", cites: ["29 U.S.C. \xA7213(a)(17)", "29 C.F.R. \xA7541.400"] },
+  r_outside_no: { v: "non", title: "wiz.wage.r.r_outside_no.title", body: "wiz.wage.r.r_outside_no.body", cites: ["29 C.F.R. \xA7541.500"] },
+  r_exec: { v: "ex", title: "wiz.wage.r.r_exec.title", body: "wiz.wage.r.r_exec.body", cites: ["29 C.F.R. \xA7541.100", "29 U.S.C. \xA7213(a)(1)"] },
+  r_admin: { v: "ex", title: "wiz.wage.r.r_admin.title", body: "wiz.wage.r.r_admin.body", cites: ["29 C.F.R. \xA7541.200", "29 C.F.R. \xA7541.202"] },
+  r_prof: { v: "ex", title: "wiz.wage.r.r_prof.title", body: "wiz.wage.r.r_prof.body", cites: ["29 C.F.R. \xA7541.301"] },
+  r_creative: { v: "ex", title: "wiz.wage.r.r_creative.title", body: "wiz.wage.r.r_creative.body", cites: ["29 C.F.R. \xA7541.302"] },
+  r_comp: { v: "ex", title: "wiz.wage.r.r_comp.title", body: "wiz.wage.r.r_comp.body", cites: ["29 U.S.C. \xA7213(a)(17)"] },
+  r_outside: { v: "ex", title: "wiz.wage.r.r_outside.title", body: "wiz.wage.r.r_outside.body", cites: ["29 C.F.R. \xA7541.500"] },
+  r_commission: { v: "maybe", title: "wiz.wage.r.r_commission.title", body: "wiz.wage.r.r_commission.body", cites: ["29 U.S.C. \xA7207(i)"] },
   // G7 (docs/flsa-process-gap.md) — a high earner with just one exempt-type duty can be
   // exempt via the relaxed highly-compensated-employee test even if they would fail the
   // FULL duties test the ordinary executive/admin/professional routes require.
-  r_hce: { v: "ex", title: "Possibly exempt \u2014 highly compensated employee", body: "At $107,432 or more a year with at least one exempt-type duty, the highly-compensated-employee test uses a relaxed duties standard \u2014 you do not need to meet the full duties test that ordinary executive, administrative or professional exemptions require. If your total-pay figure or duty description overstated things, revisit this.", cites: ["29 C.F.R. \xA7541.601", "29 U.S.C. \xA7213(a)(1)"] }
+  r_hce: { v: "ex", title: "wiz.wage.r.r_hce.title", body: "wiz.wage.r.r_hce.body", cites: ["29 C.F.R. \xA7541.601", "29 U.S.C. \xA7213(a)(1)"] }
 };
 const SALARY_BASIS_EXEMPT_RESULTS = /* @__PURE__ */ new Set(["r_exec", "r_admin", "r_prof", "r_creative", "r_comp"]);
 function stateSalaryFloorFact(result, wizNode, stateData) {
@@ -1578,68 +1848,68 @@ function stateSalaryFloorFact(result, wizNode, stateData) {
   return f && Number(f.value) > 0 ? f : null;
 }
 const RESULTS_HARASSMENT = {
-  r_h_no_link: { v: "non", title: "This may not be legally protected harassment", body: "Harassment law generally requires that the conduct be tied to a protected characteristic \u2014 race, sex, religion, national origin, age 40+, disability, or similar. General rudeness or a personality conflict, on its own, usually is not enough, even if it feels the same day to day. If you notice a pattern tied to who you are, run this check again \u2014 and a workplace policy can still prohibit conduct that is not illegal.", cites: ["42 U.S.C. \xA72000e-2(a)(1)"] },
-  r_h_not_unwelcome: { v: "maybe", title: "An element may be missing \u2014 \u201Cunwelcome\u201D conduct", body: "Harassment law also generally requires that the conduct be unwelcome to you. If it was not, this specific legal theory may not apply. If this answer does not reflect what actually happened, or the situation has changed, run the check again.", cites: ["Meritor Savings Bank v. Vinson, 477 U.S. 57 (1986)"] },
-  r_h_isolated: { v: "maybe", title: "This may not meet the \u201Csevere or pervasive\u201D bar yet", body: "Courts generally look for conduct that is either one severe incident or a pattern repeated over time. A few isolated, minor comments \u2014 on their own \u2014 may not clear that bar, even when tied to a protected characteristic. That does not mean nothing is wrong: keep documenting dates, words and witnesses. A pattern that continues can change this answer.", cites: ["Harris v. Forklift Systems, Inc., 510 U.S. 17 (1993)"] },
-  r_h_hostile: { v: "ex", title: "This may rise to a hostile work environment", body: "Your answers have the shape courts generally look for: conduct unwelcome to you, tied to a protected characteristic, and either severe on its own or repeated over time. This is general information about the legal standard, not a legal opinion about your situation \u2014 an attorney would still need to review the specifics.", cites: ["Meritor Savings Bank v. Vinson, 477 U.S. 57 (1986)", "Harris v. Forklift Systems, Inc., 510 U.S. 17 (1993)"] }
+  r_h_no_link: { v: "non", title: "wiz.har.r.r_h_no_link.title", body: "wiz.har.r.r_h_no_link.body", cites: ["42 U.S.C. \xA72000e-2(a)(1)"] },
+  r_h_not_unwelcome: { v: "maybe", title: "wiz.har.r.r_h_not_unwelcome.title", body: "wiz.har.r.r_h_not_unwelcome.body", cites: ["Meritor Savings Bank v. Vinson, 477 U.S. 57 (1986)"] },
+  r_h_isolated: { v: "maybe", title: "wiz.har.r.r_h_isolated.title", body: "wiz.har.r.r_h_isolated.body", cites: ["Harris v. Forklift Systems, Inc., 510 U.S. 17 (1993)"] },
+  r_h_hostile: { v: "ex", title: "wiz.har.r.r_h_hostile.title", body: "wiz.har.r.r_h_hostile.body", cites: ["Meritor Savings Bank v. Vinson, 477 U.S. 57 (1986)", "Harris v. Forklift Systems, Inc., 510 U.S. 17 (1993)"] }
 };
 const TREE_HARASSMENT = {
-  start: { q: "Is the conduct tied to a protected characteristic \u2014 race, sex (including pregnancy, sexual orientation or gender identity), religion, national origin, age 40+, disability, or genetic information?", help: "Harassment law only covers conduct connected to who you are in one of these ways \u2014 not rudeness in general.", opts: [["Yes, it is tied to one of those", "unwelcome", "Tied to a protected characteristic"], ["No, it feels like general rudeness or a personality conflict", "r_h_no_link", "Not tied to a protected characteristic"], ["Not sure", "unwelcome", "Not sure if protected"]] },
-  unwelcome: { q: "Was the conduct unwelcome to you \u2014 you did not invite or welcome it?", help: "This is usually straightforward, but it is a required element of the legal standard.", opts: [["Yes, it was unwelcome", "severity", "Conduct was unwelcome"], ["No, or it was mutual", "r_h_not_unwelcome", "Conduct was not unwelcome"]] },
-  severity: { q: "How often did it happen, and how severe was it?", help: "Courts generally treat a single incident as enough only if it is severe (for example an assault or a serious threat) \u2014 otherwise they look for a pattern over time.", opts: [["One severe incident (assault, a slur, a serious threat)", "who", "One severe incident"], ["Repeated over time", "who", "Repeated over time"], ["A few isolated, minor comments", "r_h_isolated", "Isolated, minor comments"]] },
-  who: { q: "Who did this?", help: "Who was involved can change how an employer is held responsible \u2014 not whether the conduct counts as harassment in the first place.", opts: [["My supervisor or manager", "reported", "Done by a supervisor"], ["A coworker", "reported", "Done by a coworker"], ["A customer or other third party", "reported", "Done by a customer or third party"]] },
-  reported: { q: "Did you report it internally, and what happened?", help: "Reporting is not required to have a claim, but it can matter for what an employer can be held liable for.", opts: [["I reported it and nothing changed", "r_h_hostile", "Reported, nothing changed"], ["I reported it and it was addressed", "r_h_hostile", "Reported and addressed"], ["I have not reported it", "r_h_hostile", "Not reported"]] }
+  start: { q: "wiz.har.n.start.q", help: "wiz.har.n.start.help", opts: [["wiz.har.n.start.opt0", "unwelcome", "wiz.har.n.start.trail0"], ["wiz.har.n.start.opt1", "r_h_no_link", "wiz.har.n.start.trail1"], ["wiz.har.n.start.opt2", "unwelcome", "wiz.har.n.start.trail2"]] },
+  unwelcome: { q: "wiz.har.n.unwelcome.q", help: "wiz.har.n.unwelcome.help", opts: [["wiz.har.n.unwelcome.opt0", "severity", "wiz.har.n.unwelcome.trail0"], ["wiz.har.n.unwelcome.opt1", "r_h_not_unwelcome", "wiz.har.n.unwelcome.trail1"]] },
+  severity: { q: "wiz.har.n.severity.q", help: "wiz.har.n.severity.help", opts: [["wiz.har.n.severity.opt0", "who", "wiz.har.n.severity.trail0"], ["wiz.har.n.severity.opt1", "who", "wiz.har.n.severity.trail1"], ["wiz.har.n.severity.opt2", "r_h_isolated", "wiz.har.n.severity.trail2"]] },
+  who: { q: "wiz.har.n.who.q", help: "wiz.har.n.who.help", opts: [["wiz.har.n.who.opt0", "reported", "wiz.har.n.who.trail0"], ["wiz.har.n.who.opt1", "reported", "wiz.har.n.who.trail1"], ["wiz.har.n.who.opt2", "reported", "wiz.har.n.who.trail2"]] },
+  reported: { q: "wiz.har.n.reported.q", help: "wiz.har.n.reported.help", opts: [["wiz.har.n.reported.opt0", "r_h_hostile", "wiz.har.n.reported.trail0"], ["wiz.har.n.reported.opt1", "r_h_hostile", "wiz.har.n.reported.trail1"], ["wiz.har.n.reported.opt2", "r_h_hostile", "wiz.har.n.reported.trail2"]] }
 };
 const RESULTS_DISCRIMINATION = {
-  r_d_coverage_gap: { v: "maybe", title: "Federal coverage may not reach this employer", body: "Title VII and the ADA generally apply to employers with 15 or more employees (the ADEA, 20 or more) \u2014 under that size, federal discrimination law may not apply. Many states set a lower threshold or have their own law that reaches smaller employers; check what applies in your state below before assuming there is no claim.", cites: ["42 U.S.C. \xA72000e(b)", "42 U.S.C. \xA712111(5)"] },
-  r_d_thin: { v: "maybe", title: "An adverse action alone may not be enough yet", body: "A protected characteristic plus an adverse action is a start, but courts generally also look for something connecting the two \u2014 a comparator treated better, or a stated reason that looks false or keeps shifting. Document the details: who else was in a similar spot, what you were told, and whether that explanation changed over time.", cites: ["42 U.S.C. \xA72000e-2 (Title VII)"] },
-  r_d_shape: { v: "ex", title: "This has the shape of a discrimination claim", body: "Your situation may have the elements courts generally look for: a protected characteristic, a real adverse action, and a comparator or pretext signal connecting them. This is general information about the legal framework, not a legal opinion about your situation \u2014 an attorney would still need to review the specifics, and the deadline below is real.", cites: ["42 U.S.C. \xA72000e-2 (Title VII)", "Bostock v. Clayton County (2020)"] }
+  r_d_coverage_gap: { v: "maybe", title: "wiz.dis.r.r_d_coverage_gap.title", body: "wiz.dis.r.r_d_coverage_gap.body", cites: ["42 U.S.C. \xA72000e(b)", "42 U.S.C. \xA712111(5)"] },
+  r_d_thin: { v: "maybe", title: "wiz.dis.r.r_d_thin.title", body: "wiz.dis.r.r_d_thin.body", cites: ["42 U.S.C. \xA72000e-2 (Title VII)"] },
+  r_d_shape: { v: "ex", title: "wiz.dis.r.r_d_shape.title", body: "wiz.dis.r.r_d_shape.body", cites: ["42 U.S.C. \xA72000e-2 (Title VII)", "Bostock v. Clayton County (2020)"] }
 };
 const TREE_DISCRIMINATION = {
-  start: { q: "Which protected characteristic is involved?", help: "Federal law covers race, color, religion, sex (including pregnancy, sexual orientation and gender identity), national origin, age 40+, disability, and genetic information.", opts: [["One of those is involved", "employerSize", "Protected characteristic named"], ["Not sure", "employerSize", "Not sure which characteristic"]] },
-  employerSize: { q: "How many employees does your employer have?", help: "Title VII and the ADA generally cover employers with 15+ employees (the ADEA, 20+). Some states cover smaller employers too \u2014 check the panel on your result.", opts: [["15 or more", "adverseAction", "15 or more employees"], ["Fewer than 15", "r_d_coverage_gap", "Fewer than 15 employees"], ["Not sure", "adverseAction", "Not sure of employer size"]] },
-  adverseAction: { q: "What adverse action was taken?", help: "An adverse action is a real, tangible change \u2014 not just an uncomfortable conversation.", opts: [["Fired", "comparator", "Fired"], ["Not hired or not promoted", "comparator", "Not hired or promoted"], ["Demoted or pay cut", "comparator", "Demoted or pay cut"], ["Disciplined", "comparator", "Disciplined"], ["Other", "comparator", "Other adverse action"]] },
-  comparator: { q: "Was someone NOT in your protected group treated better in a similar situation \u2014 or did the employer\u2019s stated reason seem false or keep shifting?", help: "Courts generally look for a comparator (someone similarly situated treated better) or a pretext signal (a reason that does not hold up) connecting the adverse action to the protected characteristic.", opts: [["Yes, someone was treated better (a comparator)", "r_d_shape", "A comparator was treated better"], ["The stated reason seems false or has changed", "r_d_shape", "Stated reason seems false"], ["No", "r_d_thin", "No comparator identified"], ["Not sure", "r_d_thin", "Not sure about a comparator"]] }
+  start: { q: "wiz.dis.n.start.q", help: "wiz.dis.n.start.help", opts: [["wiz.dis.n.start.opt0", "employerSize", "wiz.dis.n.start.trail0"], ["wiz.dis.n.start.opt1", "employerSize", "wiz.dis.n.start.trail1"]] },
+  employerSize: { q: "wiz.dis.n.employerSize.q", help: "wiz.dis.n.employerSize.help", opts: [["wiz.dis.n.employerSize.opt0", "adverseAction", "wiz.dis.n.employerSize.trail0"], ["wiz.dis.n.employerSize.opt1", "r_d_coverage_gap", "wiz.dis.n.employerSize.trail1"], ["wiz.dis.n.employerSize.opt2", "adverseAction", "wiz.dis.n.employerSize.trail2"]] },
+  adverseAction: { q: "wiz.dis.n.adverseAction.q", help: "wiz.dis.n.adverseAction.help", opts: [["wiz.dis.n.adverseAction.opt0", "comparator", "wiz.dis.n.adverseAction.trail0"], ["wiz.dis.n.adverseAction.opt1", "comparator", "wiz.dis.n.adverseAction.trail1"], ["wiz.dis.n.adverseAction.opt2", "comparator", "wiz.dis.n.adverseAction.trail2"], ["wiz.dis.n.adverseAction.opt3", "comparator", "wiz.dis.n.adverseAction.trail3"], ["wiz.dis.n.adverseAction.opt4", "comparator", "wiz.dis.n.adverseAction.trail4"]] },
+  comparator: { q: "wiz.dis.n.comparator.q", help: "wiz.dis.n.comparator.help", opts: [["wiz.dis.n.comparator.opt0", "r_d_shape", "wiz.dis.n.comparator.trail0"], ["wiz.dis.n.comparator.opt1", "r_d_shape", "wiz.dis.n.comparator.trail1"], ["wiz.dis.n.comparator.opt2", "r_d_thin", "wiz.dis.n.comparator.trail2"], ["wiz.dis.n.comparator.opt3", "r_d_thin", "wiz.dis.n.comparator.trail3"]] }
 };
 const HARASSMENT_FACT_TOPICS = ["harassment.hostileEnvironmentStandard", "harassment.employerLiability", "harassment.reporting"];
 const DISCRIMINATION_FACT_TOPICS = ["discrimination.protectedClasses", "discrimination.coverageTitleVII"];
 const TREE_WAGE = {
-  start: { q: "How are you paid?", help: "Most exemptions require a fixed salary \u2014 this is the salary-basis test.", opts: [["A fixed salary every period", "salaryLevel", "Paid a salary"], ["Hourly", "hourlyType", "Paid hourly"], ["Commission or piece rate", "r_commission", "Paid by commission or piece rate"], ["I am an outside salesperson", "outsideSales", "Outside salesperson"]] },
-  salaryLevel: { q: "Is your salary at least $684 per week?", help: "That is $35,568/year \u2014 the federal salary-level test. Some states set a higher salary floor; your state\u2019s figure alongside the federal one will be shown on your result.", opts: [["Yes, $684/week or more", "hceCheck", "Meets the $684/week federal floor"], ["No, less than that", "r_salary_low", "Below the $684/week federal floor"], ["Not sure", "duties", "Not sure of salary amount"]] },
+  start: { q: "wiz.wage.n.start.q", help: "wiz.wage.n.start.help", opts: [["wiz.wage.n.start.opt0", "salaryLevel", "wiz.wage.n.start.trail0"], ["wiz.wage.n.start.opt1", "hourlyType", "wiz.wage.n.start.trail1"], ["wiz.wage.n.start.opt2", "r_commission", "wiz.wage.n.start.trail2"], ["wiz.wage.n.start.opt3", "outsideSales", "wiz.wage.n.start.trail3"]] },
+  salaryLevel: { q: "wiz.wage.n.salaryLevel.q", help: "wiz.wage.n.salaryLevel.help", opts: [["wiz.wage.n.salaryLevel.opt0", "hceCheck", "wiz.wage.n.salaryLevel.trail0"], ["wiz.wage.n.salaryLevel.opt1", "r_salary_low", "wiz.wage.n.salaryLevel.trail1"], ["wiz.wage.n.salaryLevel.opt2", "duties", "wiz.wage.n.salaryLevel.trail2"]] },
   // G7 — asked only after the salary floor is cleared, before the ordinary duties
   // question, so a high earner who would otherwise land in "routine tasks" (or another
   // duty that fails the FULL duties test) still gets a shot at the relaxed HCE test.
-  hceCheck: { q: "Is your total annual pay at least $107,432 \u2014 including salary, commissions and nondiscretionary bonuses?", help: "That is the highly-compensated-employee threshold. It relaxes the duties test but does not remove it \u2014 you still need at least one exempt-type duty, checked next.", opts: [["Yes, $107,432/year or more", "hceDuty", "Meets the $107,432/year HCE threshold"], ["No, or not sure", "duties", "Below the $107,432/year HCE threshold"]] },
-  hceDuty: { q: "Do you regularly perform at least one exempt-type duty \u2014 for example directing the work of other employees, or office/business work involving discretion on significant matters?", help: "The highly-compensated test only requires ONE such duty, not the full executive/administrative/professional duties test.", opts: [["Yes, at least one of those", "r_hce", "Performs an exempt-type duty"], ["No, mostly routine tasks", "duties", "Mostly routine tasks"]] },
-  duties: { q: "What do you mainly do all day?", help: "The duties test looks at your real work, not your job title. Pick the closest.", opts: [["Manage two or more employees", "execAuth", "Manages two or more employees"], ["Office work with independent judgment on significant matters", "r_admin", "Office work with independent judgment"], ["Work requiring an advanced degree (law, engineering, medicine\u2026)", "r_prof", "Advanced-degree professional work"], ["Original creative or artistic work", "r_creative", "Creative or artistic work"], ["Systems analysis, software design or programming", "r_comp", "Computer systems work"], ["Follow set procedures and tasks", "r_duties_none", "Follows set procedures"]] },
-  execAuth: { q: "Can you hire or fire \u2014 or do your recommendations carry real weight?", help: "The executive exemption requires genuine authority over other employees\u2019 jobs, not just scheduling shifts.", opts: [["Yes, I have that authority", "r_exec", "Has hire/fire authority"], ["No, I just supervise the work", "r_exec_no", "No hire/fire authority"]] },
-  hourlyType: { q: "Is your main job computer systems work \u2014 like software development or IT systems analysis \u2014 paid at $27.63/hour or more?", help: "Hourly workers are almost always owed overtime \u2014 the one big exception is computer employees at or above $27.63/hour.", opts: [["Yes, both of those", "r_comp", "Computer work at $27.63+/hour"], ["No", "r_hourly", "Hourly, other work"]] },
-  outsideSales: { q: "Do you regularly make sales away from your employer\u2019s place of business?", help: "Customer sites, door-to-door, the field. Selling by phone or email from home or an office does not count.", opts: [["Yes, mostly in the field", "r_outside", "Mostly sells in the field"], ["No, mostly from a desk", "r_outside_no", "Mostly sells from a desk"]] }
+  hceCheck: { q: "wiz.wage.n.hceCheck.q", help: "wiz.wage.n.hceCheck.help", opts: [["wiz.wage.n.hceCheck.opt0", "hceDuty", "wiz.wage.n.hceCheck.trail0"], ["wiz.wage.n.hceCheck.opt1", "duties", "wiz.wage.n.hceCheck.trail1"]] },
+  hceDuty: { q: "wiz.wage.n.hceDuty.q", help: "wiz.wage.n.hceDuty.help", opts: [["wiz.wage.n.hceDuty.opt0", "r_hce", "wiz.wage.n.hceDuty.trail0"], ["wiz.wage.n.hceDuty.opt1", "duties", "wiz.wage.n.hceDuty.trail1"]] },
+  duties: { q: "wiz.wage.n.duties.q", help: "wiz.wage.n.duties.help", opts: [["wiz.wage.n.duties.opt0", "execAuth", "wiz.wage.n.duties.trail0"], ["wiz.wage.n.duties.opt1", "r_admin", "wiz.wage.n.duties.trail1"], ["wiz.wage.n.duties.opt2", "r_prof", "wiz.wage.n.duties.trail2"], ["wiz.wage.n.duties.opt3", "r_creative", "wiz.wage.n.duties.trail3"], ["wiz.wage.n.duties.opt4", "r_comp", "wiz.wage.n.duties.trail4"], ["wiz.wage.n.duties.opt5", "r_duties_none", "wiz.wage.n.duties.trail5"]] },
+  execAuth: { q: "wiz.wage.n.execAuth.q", help: "wiz.wage.n.execAuth.help", opts: [["wiz.wage.n.execAuth.opt0", "r_exec", "wiz.wage.n.execAuth.trail0"], ["wiz.wage.n.execAuth.opt1", "r_exec_no", "wiz.wage.n.execAuth.trail1"]] },
+  hourlyType: { q: "wiz.wage.n.hourlyType.q", help: "wiz.wage.n.hourlyType.help", opts: [["wiz.wage.n.hourlyType.opt0", "r_comp", "wiz.wage.n.hourlyType.trail0"], ["wiz.wage.n.hourlyType.opt1", "r_hourly", "wiz.wage.n.hourlyType.trail1"]] },
+  outsideSales: { q: "wiz.wage.n.outsideSales.q", help: "wiz.wage.n.outsideSales.help", opts: [["wiz.wage.n.outsideSales.opt0", "r_outside", "wiz.wage.n.outsideSales.trail0"], ["wiz.wage.n.outsideSales.opt1", "r_outside_no", "wiz.wage.n.outsideSales.trail1"]] }
 };
 const WIZARD_CONFIG = {
   wage: {
     tree: TREE_WAGE,
     results: RESULTS_WAGE,
-    tag: "OVERTIME EXEMPTION CHECK",
-    doneTitle: "Your overtime status",
-    qDisclaimer: "This is a plain-language reading of published rules, not legal advice about your specific job.",
-    doneDisclaimer: "This is a plain-language reading of published rules, not a legal opinion about your job."
+    tag: "wiz.cfg.wage.tag",
+    doneTitle: "wiz.cfg.wage.doneTitle",
+    qDisclaimer: "wiz.cfg.wage.qDisclaimer",
+    doneDisclaimer: "wiz.cfg.wage.doneDisclaimer"
   },
   harassment: {
     tree: TREE_HARASSMENT,
     results: RESULTS_HARASSMENT,
-    tag: "HARASSMENT IDENTIFIER",
-    doneTitle: "What this may mean",
-    qDisclaimer: "This is general information about how harassment law generally works, not a legal opinion about your situation \u2014 talk to an attorney.",
-    doneDisclaimer: "This is general information, not a legal opinion about your situation \u2014 talk to an attorney."
+    tag: "wiz.cfg.harassment.tag",
+    doneTitle: "wiz.cfg.harassment.doneTitle",
+    qDisclaimer: "wiz.cfg.harassment.qDisclaimer",
+    doneDisclaimer: "wiz.cfg.harassment.doneDisclaimer"
   },
   discrimination: {
     tree: TREE_DISCRIMINATION,
     results: RESULTS_DISCRIMINATION,
-    tag: "DISCRIMINATION IDENTIFIER",
-    doneTitle: "What this may mean",
-    qDisclaimer: "This is general information about how discrimination law generally works, not a legal opinion about your situation \u2014 talk to an attorney.",
-    doneDisclaimer: "This is general information, not a legal opinion about your situation \u2014 talk to an attorney."
+    tag: "wiz.cfg.discrimination.tag",
+    doneTitle: "wiz.cfg.discrimination.doneTitle",
+    qDisclaimer: "wiz.cfg.discrimination.qDisclaimer",
+    doneDisclaimer: "wiz.cfg.discrimination.doneDisclaimer"
   }
 };
 function wizardConfigFor(issueKey) {
@@ -1882,12 +2152,12 @@ function resolveMinimumWage({ cityFacts, otherLocal, stateFacts, fedFacts, stNam
   const layers = [];
   const cityFact = rate(cityFacts);
   if (cityFact && cityName) {
-    layers.push({ key: "city", name: cityName, kind: "Local ordinance", fact: cityFact, applies: true });
+    layers.push({ key: "city", name: cityName, kind: "pay.layer.local", fact: cityFact, applies: true });
   }
   const stFact = rate(stateFacts);
-  if (stFact) layers.push({ key: "state", name: stName, kind: "State law", fact: stFact, applies: true });
+  if (stFact) layers.push({ key: "state", name: stName, kind: "pay.layer.state", fact: stFact, applies: true });
   const fedFact = rate(fedFacts);
-  if (fedFact) layers.push({ key: "federal", name: "Federal", kind: "The national floor (FLSA)", fact: fedFact, applies: true });
+  if (fedFact) layers.push({ key: "federal", name: t("pay.layer.federalName"), kind: "pay.layer.federal", fact: fedFact, applies: true });
   if (layers.length < 2) return null;
   const winner = layers.reduce((a, b) => b.fact.value > a.fact.value ? b : a);
   layers.forEach((l) => {
@@ -2459,13 +2729,13 @@ function App() {
   const nav = useCallback((k) => () => setScreen(k), []);
   const locationLabel = [city && city !== "\u2014" ? city : "", county && county !== "\u2014" ? county : "", stateSel].filter(Boolean).join(", ") || "Nowhere set yet";
   const showTabs = screen !== "welcome";
-  const FlsaSolNote = () => /* @__PURE__ */ React.createElement("div", { style: css("padding:10px 12px;border-radius:0 8px 8px 0;border:none;border-left:4px solid #14181F;background:#FFF4D6;display:flex;flex-direction:column;gap:3px") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 12px 'IBM Plex Mono',monospace;color:#8A5A00;letter-spacing:.04em") }, "SEPARATE CLOCK \xB7 FEDERAL LAWSUIT DEADLINE"), /* @__PURE__ */ React.createElement("span", { style: css("font:700 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#6B4B00") }, FLSA_SOL_TIMING_NOTE));
+  const FlsaSolNote = () => /* @__PURE__ */ React.createElement("div", { style: css("padding:10px 12px;border-radius:0 8px 8px 0;border:none;border-left:4px solid #14181F;background:#FFF4D6;display:flex;flex-direction:column;gap:3px") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 12px 'IBM Plex Mono',monospace;color:#8A5A00;letter-spacing:.04em") }, t("wiz.flsa.kicker")), /* @__PURE__ */ React.createElement("span", { style: css("font:700 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#6B4B00") }, FLSA_SOL_TIMING_NOTE));
   const Welcome = () => {
     const enter = () => {
       markWelcomeSeen();
       setScreen("home");
     };
-    return /* @__PURE__ */ React.createElement("div", { style: css("padding:14px 24px 40px;display:flex;flex-direction:column;gap:18px;min-height:100%") }, /* @__PURE__ */ React.createElement(WelcomeArt, null), /* @__PURE__ */ React.createElement("h1", { style: css("margin:0;font:700 30px/1.12 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty") }, t("home.h1")), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 18px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty") }, t("welcome.sub")), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Free, and private by design: everything you enter stays on this device. This is legal information, not legal advice."), /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { style: css("padding:14px 24px 40px;display:flex;flex-direction:column;gap:18px;min-height:100%") }, /* @__PURE__ */ React.createElement(WelcomeArt, null), /* @__PURE__ */ React.createElement("h1", { style: css("margin:0;font:700 30px/1.12 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty") }, t("home.h1")), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 18px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty") }, t("welcome.sub")), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, t("home.promise")), /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: enter,
@@ -2498,12 +2768,12 @@ function App() {
   };
   const DraftStateNotice = ({ stName, extra }) => /* @__PURE__ */ React.createElement(DraftChip, { label: t("draft.chip") }, t("draft.state", { state: stName }), extra ? " " + extra : "");
   const EXPLAINERS_BY_CAT = {
-    pay: [{ label: "Am I exempt from overtime?", desc: "A short Q&A on the federal and state rules for your job.", key: "wage" }],
+    pay: [{ label: "tool.wage.label", desc: "tool.wage.desc", key: "wage" }],
     discrim: [
-      { label: "Is this harassment?", desc: "Check what happened against the hostile-work-environment standard.", key: "harassment" },
-      { label: "Is this discrimination?", desc: "Check what happened against the elements of a discrimination claim.", key: "discrimination" }
+      { label: "tool.harassment.label", desc: "tool.harassment.desc", key: "harassment" },
+      { label: "tool.discrimination.label", desc: "tool.discrimination.desc", key: "discrimination" }
     ],
-    leaving: [{ label: "Is my non-compete enforceable?", desc: "How your state treats non-competes, with the sourced rule behind it.", screen: "noncompete" }]
+    leaving: [{ label: "tool.noncompete.label", desc: "tool.noncompete.desc", screen: "noncompete" }]
   };
   const LawsHome = () => {
     const pickState = (st) => {
@@ -2640,8 +2910,8 @@ function App() {
         /* @__PURE__ */ React.createElement(Icon, { name: "back", size: 18 }),
         " ",
         t("chrome.backTopics")
-      ), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { style: css("font:600 13px 'IBM Plex Mono',monospace;letter-spacing:.05em;color:#4A5162") }, locationLabel.toUpperCase()), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;align-items:center;gap:11px;margin:10px 0 0") }, /* @__PURE__ */ React.createElement("span", { style: css("flex:none;display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:12px;border:2px solid " + cat.edge + ";background:" + cat.fill + ";color:" + cat.on) }, /* @__PURE__ */ React.createElement(Icon, { name: cat.icon, size: 24 })), /* @__PURE__ */ React.createElement("h1", { style: css("margin:0;font:700 26px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty") }, cat.label)), /* @__PURE__ */ React.createElement("p", { style: css("margin:8px 0 0;font:400 16px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, cat.blurb)), stateData && !st.length && fed.length ? /* @__PURE__ */ React.createElement("div", { style: css("padding:14px 15px;border-radius:14px;border:2px dashed rgba(20,24,31,.3)") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 15px/1.4 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty") }, t("gap.topic.h", { state: stName })), /* @__PURE__ */ React.createElement("p", { style: css("margin:6px 0 0;font:400 14px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty") }, t("gap.topic.sub", { state: stName }))) : null, wage ? /* @__PURE__ */ React.createElement("div", { style: css("border:2px solid " + cat.edge + ";border-radius:16px;overflow:hidden;background:#fff") }, /* @__PURE__ */ React.createElement("div", { style: css("padding:15px 16px 14px;background:" + cat.fill) }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:500 15px/1.35 'Atkinson Hyperlegible',sans-serif;color:" + cat.on) }, wage.winner.key === "city" ? t("pay.leastIn", { city: wage.winner.name }) : t("pay.least")), /* @__PURE__ */ React.createElement("p", { style: css("margin:4px 0 0;font:800 46px/1.05 'Atkinson Hyperlegible',sans-serif;letter-spacing:-.03em;color:" + cat.on) }, money(wage.winner.fact.value)), /* @__PURE__ */ React.createElement("p", { style: css("margin:2px 0 0;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:" + cat.on) }, t("pay.perHour"))), /* @__PURE__ */ React.createElement("div", null, wage.layers.map(
-        (l, i) => /* @__PURE__ */ React.createElement("div", { key: l.key, style: css("display:flex;align-items:center;gap:11px;padding:11px 14px;min-height:56px;" + (i ? "border-top:1px solid rgba(20,24,31,.12);" : "") + (l.winner ? "background:#F3FBF8" : "")) }, /* @__PURE__ */ React.createElement("span", { style: css("flex:1;min-width:0;display:flex;flex-direction:column;gap:1px") }, /* @__PURE__ */ React.createElement("span", { style: css("font:" + (l.winner ? "800" : "500") + " 16px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty") }, l.name), /* @__PURE__ */ React.createElement("span", { style: css("font:400 13px 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, l.kind, l.tied ? " \u2014 the same amount" : "")), /* @__PURE__ */ React.createElement("span", { style: css("flex:none;font:" + (l.winner ? "800 21px" : "500 17px") + " 'Atkinson Hyperlegible',sans-serif;color:" + (l.winner ? cat.edge : l.tied ? "#3A4150" : "#6B7280") + (l.beaten ? ";text-decoration:line-through" : "")) }, money(l.fact.value)))
+      ), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { style: css("font:600 13px 'IBM Plex Mono',monospace;letter-spacing:.05em;color:#4A5162") }, locationLabel.toUpperCase()), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;align-items:center;gap:11px;margin:10px 0 0") }, /* @__PURE__ */ React.createElement("span", { style: css("flex:none;display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:12px;border:2px solid " + cat.edge + ";background:" + cat.fill + ";color:" + cat.on) }, /* @__PURE__ */ React.createElement(Icon, { name: cat.icon, size: 24 })), /* @__PURE__ */ React.createElement("h1", { style: css("margin:0;font:700 26px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty") }, t(cat.label))), /* @__PURE__ */ React.createElement("p", { style: css("margin:8px 0 0;font:400 16px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, t(cat.blurb))), stateData && !st.length && fed.length ? /* @__PURE__ */ React.createElement("div", { style: css("padding:14px 15px;border-radius:14px;border:2px dashed rgba(20,24,31,.3)") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 15px/1.4 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty") }, t("gap.topic.h", { state: stName })), /* @__PURE__ */ React.createElement("p", { style: css("margin:6px 0 0;font:400 14px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty") }, t("gap.topic.sub", { state: stName }))) : null, wage ? /* @__PURE__ */ React.createElement("div", { style: css("border:2px solid " + cat.edge + ";border-radius:16px;overflow:hidden;background:#fff") }, /* @__PURE__ */ React.createElement("div", { style: css("padding:15px 16px 14px;background:" + cat.fill) }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:500 15px/1.35 'Atkinson Hyperlegible',sans-serif;color:" + cat.on) }, wage.winner.key === "city" ? t("pay.leastIn", { city: wage.winner.name }) : t("pay.least")), /* @__PURE__ */ React.createElement("p", { style: css("margin:4px 0 0;font:800 46px/1.05 'Atkinson Hyperlegible',sans-serif;letter-spacing:-.03em;color:" + cat.on) }, money(wage.winner.fact.value)), /* @__PURE__ */ React.createElement("p", { style: css("margin:2px 0 0;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:" + cat.on) }, t("pay.perHour"))), /* @__PURE__ */ React.createElement("div", null, wage.layers.map(
+        (l, i) => /* @__PURE__ */ React.createElement("div", { key: l.key, style: css("display:flex;align-items:center;gap:11px;padding:11px 14px;min-height:56px;" + (i ? "border-top:1px solid rgba(20,24,31,.12);" : "") + (l.winner ? "background:#F3FBF8" : "")) }, /* @__PURE__ */ React.createElement("span", { style: css("flex:1;min-width:0;display:flex;flex-direction:column;gap:1px") }, /* @__PURE__ */ React.createElement("span", { style: css("font:" + (l.winner ? "800" : "500") + " 16px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty") }, l.name), /* @__PURE__ */ React.createElement("span", { style: css("font:400 13px 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, l.tied ? t("pay.layer.tied", { kind: t(l.kind) }) : t(l.kind))), /* @__PURE__ */ React.createElement("span", { style: css("flex:none;font:" + (l.winner ? "800 21px" : "500 17px") + " 'Atkinson Hyperlegible',sans-serif;color:" + (l.winner ? cat.edge : l.tied ? "#3A4150" : "#6B7280") + (l.beaten ? ";text-decoration:line-through" : "")) }, money(l.fact.value)))
       )), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;padding:12px 14px 13px;border-top:2px solid " + cat.edge + ";font:500 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty") }, wage.anyBeaten ? t("pay.rule.beaten") : t("pay.rule.tied"))) : null, example ? /* @__PURE__ */ React.createElement("div", { style: css("border-radius:16px;background:#FFF8DF;border:2px solid #544D00;padding:16px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 17px/1.35 'Atkinson Hyperlegible',sans-serif;color:#3D3800;text-wrap:pretty") }, t("pay.example.h")), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:8px;margin-top:13px") }, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;align-items:baseline;gap:10px") }, /* @__PURE__ */ React.createElement("span", { style: css("flex:1;font:500 16px 'Atkinson Hyperlegible',sans-serif;color:#3D3800") }, t("pay.example.base", { hours: example.normalHours, rate: money(example.rate) })), /* @__PURE__ */ React.createElement("span", { style: css("flex:none;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#3D3800") }, money(example.base))), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;align-items:baseline;gap:10px") }, /* @__PURE__ */ React.createElement("span", { style: css("flex:1;font:500 16px 'Atkinson Hyperlegible',sans-serif;color:#3D3800") }, t("pay.example.ot", { hours: example.otHours })), /* @__PURE__ */ React.createElement("span", { style: css("flex:none;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#3D3800") }, money(example.otPay)))), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;align-items:baseline;gap:10px;margin-top:12px;padding-top:12px;border-top:2px solid #544D00") }, /* @__PURE__ */ React.createElement("span", { style: css("flex:1;font:800 17px 'Atkinson Hyperlegible',sans-serif;color:#3D3800") }, t("pay.example.total")), /* @__PURE__ */ React.createElement("span", { style: css("flex:none;font:800 26px 'Atkinson Hyperlegible',sans-serif;color:#3D3800") }, money(example.total))), /* @__PURE__ */ React.createElement("p", { style: css("margin:12px 0 0;font:400 13.5px/1.5 'Atkinson Hyperlegible',sans-serif;color:#5C5200;text-wrap:pretty") }, t("pay.example.note"))) : null, wage && wageAgency && safeUrl(wageAgency.url) ? /* @__PURE__ */ React.createElement("div", { style: css("border-radius:16px;background:#14181F;padding:17px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 13px 'Atkinson Hyperlegible',sans-serif;letter-spacing:.04em;color:#8FE3C6") }, t("pay.cta.kicker")), /* @__PURE__ */ React.createElement("p", { style: css("margin:8px 0 0;font:800 19px/1.3 'Atkinson Hyperlegible',sans-serif;color:#FFFDF8;text-wrap:pretty") }, t("pay.cta.h")), /* @__PURE__ */ React.createElement("p", { style: css("margin:8px 0 0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#C6D3CE;text-wrap:pretty") }, t("pay.cta.agency", { agency: wageAgency.name })), wageDeadline ? /* @__PURE__ */ React.createElement("div", { style: css("display:flex;align-items:flex-start;gap:10px;margin-top:13px;padding:11px 12px;border-radius:10px;background:#7A1F1F") }, /* @__PURE__ */ React.createElement("span", { style: css("flex:none;margin-top:1px;color:#FFC9C9;display:flex") }, /* @__PURE__ */ React.createElement(Icon, { name: "alarm", size: 18 })), /* @__PURE__ */ React.createElement("span", { style: css("flex:1;min-width:0;display:flex;flex-direction:column;gap:2px") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 14px/1.35 'Atkinson Hyperlegible',sans-serif;color:#FFE8E8") }, t("pay.deadline", { value: factValStr(wageDeadline.value) })), wageDeadline.citation ? /* @__PURE__ */ React.createElement("span", { style: css("font:400 12.5px/1.4 'Atkinson Hyperlegible',sans-serif;color:#F3C9C9") }, wageDeadline.citation) : null)) : null, wageDeadline ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(WhenPicker, { value: when, onPick: setWhen, tone: "dark" }), /* @__PURE__ */ React.createElement(ElapsedNote, { value: wageDeadline.value, when, tone: "dark" })) : null, /* @__PURE__ */ React.createElement(
         "a",
         {
@@ -2662,25 +2932,25 @@ function App() {
         },
         t("pay.more.pick")
       )) : null, tools.length ? /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:10px") }, tools.map(
-        (t2) => /* @__PURE__ */ React.createElement(
+        (tool) => /* @__PURE__ */ React.createElement(
           "button",
           {
-            key: t2.label,
+            key: tool.label,
             className: "hoverfx",
             onClick: () => {
-              if (t2.screen) {
-                setScreen(t2.screen);
+              if (tool.screen) {
+                setScreen(tool.screen);
               } else {
-                setWizKey(t2.key);
+                setWizKey(tool.key);
                 setWizNode("start");
                 setWizPath([]);
                 setScreen("wizard");
               }
             },
-            "aria-label": t2.label + " \u2014 " + t2.desc,
+            "aria-label": t("tool.aria", { name: t(tool.label), desc: t(tool.desc) }),
             style: css("text-align:left;padding:12px 14px;border-radius:12px;border:2px solid #2B3AA8;background:#EEF1FF;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:44px")
           },
-          /* @__PURE__ */ React.createElement("span", { style: css("flex:1;min-width:0;font:700 16px/1.3 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, t2.label),
+          /* @__PURE__ */ React.createElement("span", { style: css("flex:1;min-width:0;font:700 16px/1.3 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, t(tool.label)),
           /* @__PURE__ */ React.createElement(Icon, { name: "chevron-forward", size: 16 })
         )
       )) : null, stateData && !stReviewed || localHere.length ? /* @__PURE__ */ React.createElement(DraftChip, { label: "Not yet lawyer-checked" }, t(localHere.length ? "draft.stateLocal" : "draft.state", { state: stName })) : null, localHere.length ? /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:12px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:2px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em") }, t("pay.local.kicker", { where: (county && county !== "\u2014" ? county : stName).toUpperCase() })), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, t("pay.local.sub")), localHere.map(
@@ -2692,11 +2962,11 @@ function App() {
              groups just as well and reads as a section, not a container. */
           /* @__PURE__ */ React.createElement("div", { key: loc.name + i, style: css("display:flex;flex-direction:column;gap:10px;padding:2px 0 2px 14px;border-left:4px solid #2B3AA8") }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 18px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty") }, loc.name), /* @__PURE__ */ React.createElement("p", { style: css("margin:5px 0 0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, loc.covers)), facts.map((f, fi) => factCard(f, loc.name + fi, "LOCAL", "#FFF4D6")))
         )
-      )) : null, st.length ? /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:12px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:2px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em") }, stName.toUpperCase(), stReviewed ? "" : " (DRAFT)"), st.map((f, i) => factCard(f, i, stAbbr || stName.toUpperCase(), "#EEF1FF"))) : null, fed.length ? /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:12px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:6px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em") }, t("scope.fedNationwide")), fed.map((f, i) => factCard(f, i, "FEDERAL", "#F0EDE5"))) : null, !st.length && !fed.length ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, t("gap.rights", { state: stName })) : null);
+      )) : null, st.length ? /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:12px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:2px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em") }, stReviewed ? stName.toUpperCase() : t("scope.draft", { scope: stName.toUpperCase() })), st.map((f, i) => factCard(f, i, stAbbr || stName.toUpperCase(), "#EEF1FF"))) : null, fed.length ? /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:12px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:6px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em") }, t("scope.fedNationwide")), fed.map((f, i) => factCard(f, i, "FEDERAL", "#F0EDE5"))) : null, !st.length && !fed.length ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, t("gap.rights", { state: stName })) : null);
     }
     return /* @__PURE__ */ React.createElement("div", { style: css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px") }, /* @__PURE__ */ React.createElement(LocationPill, null), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", { style: css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty") }, t("grid.h1", { state: stName })), /* @__PURE__ */ React.createElement("p", { style: css("margin:10px 0 0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, t("grid.sub", { state: stName }))), contentErr ? /* @__PURE__ */ React.createElement("p", { role: "alert", style: css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F") }, t("err.law")) : null, !federal && !contentErr ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, t("loading")) : null, stateData === void 0 ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, t("loading.state", { state: stName })) : null, stateErr ? /* @__PURE__ */ React.createElement("p", { role: "alert", style: css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F") }, t(fedFacts.length ? "err.stateFed" : "err.state", { state: stName })) : null, federal || stateData ? /* @__PURE__ */ React.createElement("div", { className: "catgrid" }, LAW_CATEGORIES.map((cat) => {
       const n = factsInCategory(stFacts, cat.key).length + factsInCategory(fedFacts, cat.key).length;
-      if (!n) return /* @__PURE__ */ React.createElement("div", { key: cat.key, style: css("padding:15px 16px;border-radius:16px;border:2px dashed rgba(20,24,31,.22);background:transparent;display:flex;flex-direction:column;gap:6px") }, /* @__PURE__ */ React.createElement("span", { style: css("display:flex;align-items:center;gap:10px;color:#4A5162") }, /* @__PURE__ */ React.createElement(Icon, { name: cat.icon, size: 24 }), /* @__PURE__ */ React.createElement("span", { style: css("font:700 18px/1.2 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, cat.label)), /* @__PURE__ */ React.createElement("span", { style: css("font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, t("gap.grid", { state: stName })));
+      if (!n) return /* @__PURE__ */ React.createElement("div", { key: cat.key, style: css("padding:15px 16px;border-radius:16px;border:2px dashed rgba(20,24,31,.22);background:transparent;display:flex;flex-direction:column;gap:6px") }, /* @__PURE__ */ React.createElement("span", { style: css("display:flex;align-items:center;gap:10px;color:#4A5162") }, /* @__PURE__ */ React.createElement(Icon, { name: cat.icon, size: 24 }), /* @__PURE__ */ React.createElement("span", { style: css("font:700 18px/1.2 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, t(cat.label))), /* @__PURE__ */ React.createElement("span", { style: css("font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, t("gap.grid", { state: stName })));
       return (
         /* surfacefx, not hoverfx: hoverfx swaps the background outright,
            which would wipe the domain colour on hover. surfacefx darkens
@@ -2710,7 +2980,7 @@ function App() {
             style: css("text-align:left;padding:14px;border-radius:16px;cursor:pointer;display:flex;align-items:flex-start;gap:13px;min-height:44px;border:2px solid " + cat.edge + ";background:" + cat.fill)
           },
           /* @__PURE__ */ React.createElement("span", { style: css("flex:none;display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.42);color:" + cat.on + ";border:2px solid " + cat.edge) }, /* @__PURE__ */ React.createElement(Icon, { name: cat.icon, size: 24 })),
-          /* @__PURE__ */ React.createElement("span", { style: css("display:flex;flex-direction:column;gap:4px;min-width:0") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 18px/1.22 'Atkinson Hyperlegible',sans-serif;text-wrap:pretty;color:" + cat.on) }, cat.label), /* @__PURE__ */ React.createElement("span", { style: css("font:500 14px/1.4 'Atkinson Hyperlegible',sans-serif;text-wrap:pretty;opacity:.84;color:" + cat.on) }, cat.blurb), /* @__PURE__ */ React.createElement("span", { style: css("font:700 12.5px 'Atkinson Hyperlegible',sans-serif;letter-spacing:.02em;opacity:.7;color:" + cat.on) }, t(n === 1 ? "grid.reach.one" : "grid.reach.many", { n })))
+          /* @__PURE__ */ React.createElement("span", { style: css("display:flex;flex-direction:column;gap:4px;min-width:0") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 18px/1.22 'Atkinson Hyperlegible',sans-serif;text-wrap:pretty;color:" + cat.on) }, t(cat.label)), /* @__PURE__ */ React.createElement("span", { style: css("font:500 14px/1.4 'Atkinson Hyperlegible',sans-serif;text-wrap:pretty;opacity:.84;color:" + cat.on) }, t(cat.blurb)), /* @__PURE__ */ React.createElement("span", { style: css("font:700 12.5px 'Atkinson Hyperlegible',sans-serif;letter-spacing:.02em;opacity:.7;color:" + cat.on) }, t(n === 1 ? "grid.reach.one" : "grid.reach.many", { n })))
         )
       );
     })) : null, /* @__PURE__ */ React.createElement("p", { style: css("margin:4px 0 0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, t("disclaimer.state", { state: stName })));
@@ -2725,12 +2995,12 @@ function App() {
     const cur = wcfg.tree[wizNode] || wcfg.tree.start;
     const depth = wizPath.length + 1;
     const isIdentifier = wkey === "harassment" || wkey === "discrimination";
-    return /* @__PURE__ */ React.createElement("div", { style: css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:20px") }, /* @__PURE__ */ React.createElement("button", { onClick: nav("home"), style: css("align-self:flex-start;display:flex;align-items:center;gap:4px;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer") }, /* @__PURE__ */ React.createElement(Icon, { name: "back", size: 18 }), " Back to the law"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { style: css("font:700 13px 'IBM Plex Mono',monospace;color:#4A5162;letter-spacing:.05em") }, wcfg.tag, " \xB7 ", wizDone ? "COMPLETE" : "QUESTION " + depth), /* @__PURE__ */ React.createElement("h1", { style: css("margin:8px 0 0;font:700 26px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty") }, wizDone ? wcfg.doneTitle : cur.q)), !wizDone && /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:12px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, cur.help), cur.opts.map(
+    return /* @__PURE__ */ React.createElement("div", { style: css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:20px") }, /* @__PURE__ */ React.createElement("button", { onClick: nav("home"), style: css("align-self:flex-start;display:flex;align-items:center;gap:4px;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer") }, /* @__PURE__ */ React.createElement(Icon, { name: "back", size: 18 }), " ", t("wiz.back")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { style: css("font:700 13px 'IBM Plex Mono',monospace;color:#4A5162;letter-spacing:.05em") }, t(wcfg.tag), " \xB7 ", wizDone ? t("wiz.complete") : t("wiz.question", { n: depth })), /* @__PURE__ */ React.createElement("h1", { style: css("margin:8px 0 0;font:700 26px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty") }, wizDone ? t(wcfg.doneTitle) : t(cur.q))), !wizDone && /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:12px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, t(cur.help)), cur.opts.map(
       ([label, next, tag]) => /* @__PURE__ */ React.createElement("button", { key: label, className: "hoverfx", onClick: () => {
         setWizNode(next);
         setWizPath((p) => p.concat([tag]));
-      }, style: css("text-align:left;padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff;font:700 18px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer") }, label)
-    ), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, wcfg.qDisclaimer)), wizDone && /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:24px") }, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:12px") }, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-wrap:wrap;gap:8px") }, wizPath.map((a, ai) => /* @__PURE__ */ React.createElement("span", { key: ai, style: css("padding:8px 12px;border-radius:999px;background:#F0EDE5;border:2px solid rgba(20,24,31,.25);font:600 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, a))), /* @__PURE__ */ React.createElement("div", { style: css("padding:22px;border-radius:18px;border:3px solid #14181F;background:" + (result.v === "non" ? "#E8F6EE" : result.v === "ex" ? "#FFE7EC" : "#FFF4D6")) }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 8px;font:700 14px 'IBM Plex Mono',monospace;letter-spacing:.05em;color:" + (result.v === "non" ? "#136B3C" : result.v === "ex" ? "#B3264F" : "#8A5A00")) }, "RESULT"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 12px;font:700 26px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, result.title), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#25302B") }, result.body))), wkey === "wage" && (() => {
+      }, style: css("text-align:left;padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff;font:700 18px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer") }, t(label))
+    ), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, t(wcfg.qDisclaimer))), wizDone && /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:24px") }, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:12px") }, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-wrap:wrap;gap:8px") }, wizPath.map((a, ai) => /* @__PURE__ */ React.createElement("span", { key: ai, style: css("padding:8px 12px;border-radius:999px;background:#F0EDE5;border:2px solid rgba(20,24,31,.25);font:600 14px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, t(a)))), /* @__PURE__ */ React.createElement("div", { style: css("padding:22px;border-radius:18px;border:3px solid #14181F;background:" + (result.v === "non" ? "#E8F6EE" : result.v === "ex" ? "#FFE7EC" : "#FFF4D6")) }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 8px;font:700 14px 'IBM Plex Mono',monospace;letter-spacing:.05em;color:" + (result.v === "non" ? "#136B3C" : result.v === "ex" ? "#B3264F" : "#8A5A00")) }, t("wiz.result")), /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 12px;font:700 26px/1.2 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, t(result.title)), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#25302B") }, t(result.body)))), wkey === "wage" && (() => {
       const fedF = federal && federal.facts || [];
       const stF = stateData && stateData.facts || [];
       const stRev = !!(stateData && stateData.reviewed === true);
@@ -2738,9 +3008,12 @@ function App() {
       const stOT = factsByPrefix(stF, "overtime").concat([factByTopic(stF, "minimumWage.hourly")].filter(Boolean));
       const line = (f) => {
         const u = safeUrl(f.sourceUrl);
-        return /* @__PURE__ */ React.createElement("p", { key: f.topic, style: css("margin:0 0 8px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, f.summary, " ", u ? /* @__PURE__ */ React.createElement("a", { href: u, target: "_blank", rel: "noopener noreferrer", className: "hoverfx", "aria-label": "Official source for " + (f.citation || f.topic), style: css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none") }, "[source \u2197]") : null);
+        return /* @__PURE__ */ React.createElement("p", { key: f.topic, style: css("margin:0 0 8px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, f.summary, " ", u ? /* @__PURE__ */ React.createElement("a", { href: u, target: "_blank", rel: "noopener noreferrer", className: "hoverfx", "aria-label": t("source.inlineAria", { rule: f.citation || f.topic }), style: css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none") }, t("source.inline")) : null);
       };
-      return /* @__PURE__ */ React.createElement("div", { style: css("padding:18px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 10px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, t("wizard.applies", { state: stateLabel })), /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 4px;font:700 13px 'IBM Plex Mono',monospace;color:#1B2778;letter-spacing:.04em") }, "FEDERAL"), fedOT.length ? fedOT.map(line) : contentErr ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 8px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#B3264F") }, t("err.federal")) : /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 8px;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, t("loading")), /* @__PURE__ */ React.createElement("p", { style: css("margin:10px 0 4px;font:700 13px 'IBM Plex Mono',monospace;color:#1B2778;letter-spacing:.04em") }, stateSel ? stateSel.toUpperCase() : stateLabel.toUpperCase(), stRev ? "" : " (DRAFT)"), stateData && !stRev && /* @__PURE__ */ React.createElement("div", { style: css("margin:0 0 8px") }, /* @__PURE__ */ React.createElement(DraftStateNotice, { stName: stateLabel })), stOT.length ? stOT.map(line) : stateErr ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#B3264F") }, t("err.stateRule", { state: stateLabel })) : stateData === void 0 ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, t("loading")) : /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, stateLabel, " follows the federal overtime standard."));
+      return /* @__PURE__ */ React.createElement("div", { style: css("padding:18px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 10px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, t("wizard.applies", { state: stateLabel })), /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 4px;font:700 13px 'IBM Plex Mono',monospace;color:#1B2778;letter-spacing:.04em") }, t("scope.federal")), fedOT.length ? fedOT.map(line) : contentErr ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 8px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#B3264F") }, t("err.federal")) : /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 8px;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, t("loading")), /* @__PURE__ */ React.createElement("p", { style: css("margin:10px 0 4px;font:700 13px 'IBM Plex Mono',monospace;color:#1B2778;letter-spacing:.04em") }, (() => {
+        const nm = (stateSel || stateLabel).toUpperCase();
+        return stRev ? nm : t("scope.draft", { scope: nm });
+      })()), stateData && !stRev && /* @__PURE__ */ React.createElement("div", { style: css("margin:0 0 8px") }, /* @__PURE__ */ React.createElement(DraftStateNotice, { stName: stateLabel })), stOT.length ? stOT.map(line) : stateErr ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#B3264F") }, t("err.stateRule", { state: stateLabel })) : stateData === void 0 ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, t("loading")) : /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, t("wiz.followsFedOt", { state: stateLabel })));
     })(), isIdentifier && (() => {
       const fedF = federal && federal.facts || [];
       const stF = stateData && stateData.facts || [];
@@ -2750,9 +3023,12 @@ function App() {
       const stFacts = factsByPrefix(stF, "discrimination");
       const line = (f) => {
         const u = safeUrl(f.sourceUrl);
-        return /* @__PURE__ */ React.createElement("p", { key: f.topic, style: css("margin:0 0 8px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, f.summary, " ", u ? /* @__PURE__ */ React.createElement("a", { href: u, target: "_blank", rel: "noopener noreferrer", className: "hoverfx", style: css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none") }, "[source \u2197]") : null);
+        return /* @__PURE__ */ React.createElement("p", { key: f.topic, style: css("margin:0 0 8px;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, f.summary, " ", u ? /* @__PURE__ */ React.createElement("a", { href: u, target: "_blank", rel: "noopener noreferrer", className: "hoverfx", style: css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none") }, t("source.inline")) : null);
       };
-      return /* @__PURE__ */ React.createElement("div", { style: css("padding:18px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 10px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, t("wizard.applies", { state: stateLabel })), /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 4px;font:700 13px 'IBM Plex Mono',monospace;color:#1B2778;letter-spacing:.04em") }, "FEDERAL"), fedFacts.length ? fedFacts.map(line) : contentErr ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 8px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#B3264F") }, t("err.federal")) : /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 8px;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, t("loading")), /* @__PURE__ */ React.createElement("p", { style: css("margin:10px 0 4px;font:700 13px 'IBM Plex Mono',monospace;color:#1B2778;letter-spacing:.04em") }, stateSel ? stateSel.toUpperCase() : stateLabel.toUpperCase(), stRev ? "" : " (DRAFT)"), stateData && !stRev && /* @__PURE__ */ React.createElement("div", { style: css("margin:0 0 8px") }, /* @__PURE__ */ React.createElement(DraftStateNotice, { stName: stateLabel })), wkey === "harassment" && stFacts.length > 0 && /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 8px;font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, t("gap.harassment", { state: stateLabel })), stFacts.length ? stFacts.map(line) : stateErr ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#B3264F") }, t("err.stateRule", { state: stateLabel })) : stateData === void 0 ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, t("loading")) : /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, stateLabel, " generally follows the federal standard here."));
+      return /* @__PURE__ */ React.createElement("div", { style: css("padding:18px;border-radius:16px;border:2px solid #2B3AA8;background:#EEF1FF") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 10px;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, t("wizard.applies", { state: stateLabel })), /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 4px;font:700 13px 'IBM Plex Mono',monospace;color:#1B2778;letter-spacing:.04em") }, t("scope.federal")), fedFacts.length ? fedFacts.map(line) : contentErr ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 8px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#B3264F") }, t("err.federal")) : /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 8px;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, t("loading")), /* @__PURE__ */ React.createElement("p", { style: css("margin:10px 0 4px;font:700 13px 'IBM Plex Mono',monospace;color:#1B2778;letter-spacing:.04em") }, (() => {
+        const nm = (stateSel || stateLabel).toUpperCase();
+        return stRev ? nm : t("scope.draft", { scope: nm });
+      })()), stateData && !stRev && /* @__PURE__ */ React.createElement("div", { style: css("margin:0 0 8px") }, /* @__PURE__ */ React.createElement(DraftStateNotice, { stName: stateLabel })), wkey === "harassment" && stFacts.length > 0 && /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 8px;font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, t("gap.harassment", { state: stateLabel })), stFacts.length ? stFacts.map(line) : stateErr ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#B3264F") }, t("err.stateRule", { state: stateLabel })) : stateData === void 0 ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, t("loading")) : /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, t("wiz.followsFed", { state: stateLabel })));
     })(), isIdentifier && (() => {
       const fedF = federal && federal.facts || [];
       const stF = stateData && stateData.facts || [];
@@ -2761,18 +3037,18 @@ function App() {
       return /* @__PURE__ */ React.createElement("button", { onClick: () => {
         setLawCat("deadlines");
         setScreen("home");
-      }, className: "surfacefx", style: css("text-align:left;padding:16px 18px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;flex-direction:column;gap:4px") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 13px 'IBM Plex Mono',monospace;color:#14181F;letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px") }, /* @__PURE__ */ React.createElement(Icon, { name: "deadline-clock", size: 14 }), " DEADLINE WATCH"), /* @__PURE__ */ React.createElement("span", { style: css("font:700 18px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, dl.value || dl.summary), /* @__PURE__ */ React.createElement("span", { style: css("font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, dl.summary));
+      }, className: "surfacefx", style: css("text-align:left;padding:16px 18px;border-radius:14px;border:2px solid #14181F;background:#F0EDE5;cursor:pointer;display:flex;flex-direction:column;gap:4px") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 13px 'IBM Plex Mono',monospace;color:#14181F;letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px") }, /* @__PURE__ */ React.createElement(Icon, { name: "deadline-clock", size: 14 }), " ", t("wiz.deadlineWatch")), /* @__PURE__ */ React.createElement("span", { style: css("font:700 18px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, dl.value || dl.summary), /* @__PURE__ */ React.createElement("span", { style: css("font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, dl.summary));
     })(), isIdentifier && (() => {
       const fedF = federal && federal.facts || [];
       const f = factByTopic(fedF, wkey === "harassment" ? "harassment.reporting" : "retaliation.protected");
       if (!f) return null;
       const u = safeUrl(f.sourceUrl);
-      return /* @__PURE__ */ React.createElement("div", { style: css("padding:14px 16px;border-radius:12px;border:2px solid #2B3AA8;background:#EEF1FF;display:flex;flex-direction:column;gap:4px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 13px 'IBM Plex Mono',monospace;color:#1B2778;letter-spacing:.04em") }, "REPORTING & RETALIATION"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, f.summary, " ", u ? /* @__PURE__ */ React.createElement("a", { href: u, target: "_blank", rel: "noopener noreferrer", className: "hoverfx", style: css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none") }, "[source \u2197]") : null));
+      return /* @__PURE__ */ React.createElement("div", { style: css("padding:14px 16px;border-radius:12px;border:2px solid #2B3AA8;background:#EEF1FF;display:flex;flex-direction:column;gap:4px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 13px 'IBM Plex Mono',monospace;color:#1B2778;letter-spacing:.04em") }, t("wiz.reporting")), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, f.summary, " ", u ? /* @__PURE__ */ React.createElement("a", { href: u, target: "_blank", rel: "noopener noreferrer", className: "hoverfx", style: css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none") }, t("source.inline")) : null));
     })(), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:16px") }, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-wrap:wrap;gap:8px") }, result.cites.map((c, ci) => /* @__PURE__ */ React.createElement("span", { key: ci, style: css("padding:8px 12px;border-radius:8px;background:#fff;border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace") }, c))), (() => {
       const ff = stateSalaryFloorFact(result, wizNode, stateData);
       if (!ff) return null;
       const stNm = stateData && stateData.name || stateSel;
-      return /* @__PURE__ */ React.createElement("div", { style: css("padding:15px 17px;border-radius:14px;border:2px solid #14181F;background:#FFF4D6;display:flex;flex-direction:column;gap:6px") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 12px 'IBM Plex Mono',monospace;letter-spacing:.05em;color:#8A5A00") }, "CHECK THIS AGAINST YOUR OWN SALARY"), /* @__PURE__ */ React.createElement("span", { style: css("font:700 17px/1.35 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, stNm, " requires at least ", money(Number(ff.value)), " a week for this exemption \u2014 more than the federal $684."), /* @__PURE__ */ React.createElement("span", { style: css("font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "If your salary works out to less than that per week, you are owed overtime under ", stNm, " law whatever your duties are. ", ff.citation ? ff.citation + ". " : "", "The answer above only applied the federal test."));
+      return /* @__PURE__ */ React.createElement("div", { style: css("padding:15px 17px;border-radius:14px;border:2px solid #14181F;background:#FFF4D6;display:flex;flex-direction:column;gap:6px") }, /* @__PURE__ */ React.createElement("span", { style: css("font:700 12px 'IBM Plex Mono',monospace;letter-spacing:.05em;color:#8A5A00") }, t("wiz.salaryFloor.kicker")), /* @__PURE__ */ React.createElement("span", { style: css("font:700 17px/1.35 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, t("wiz.salaryFloor.h", { state: stNm, amount: money(Number(ff.value)) })), /* @__PURE__ */ React.createElement("span", { style: css("font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, t("wiz.salaryFloor.sub", { state: stNm, citation: ff.citation ? ff.citation + ". " : "" })));
     })(), result.v === "non" && wkey === "wage" && /* @__PURE__ */ React.createElement(FlsaSolNote, null), /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -2783,13 +3059,11 @@ function App() {
         className: "hoverfx",
         style: css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer")
       },
-      "Read the ",
-      wkey === "wage" ? "pay and overtime" : "discrimination and harassment",
-      " rules"
+      t("wiz.readRules", { domain: t(wkey === "wage" ? "wiz.domain.pay" : "wiz.domain.discrim") })
     ), /* @__PURE__ */ React.createElement("button", { onClick: nav("agencies"), style: css("padding:18px;border-radius:16px;border:none;background:#2B3AA8;color:#fff;font:700 18px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, t("agencies.h1")), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       setWizNode("start");
       setWizPath([]);
-    }, style: css("padding:16px;border-radius:16px;border:2px solid #14181F;background:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer") }, "Run the check again"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, wcfg.doneDisclaimer))));
+    }, style: css("padding:16px;border-radius:16px;border:2px solid #14181F;background:#fff;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer") }, t("wiz.again")), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, t(wcfg.doneDisclaimer)))));
   };
   const NonCompeteChecker = () => {
     const stName = stateSel || "your state";
@@ -2801,18 +3075,23 @@ function App() {
     const ftcFact = factByTopic(fedF, "nonCompete.ftcRuleStatus");
     const src = (f) => {
       const u = f && safeUrl(f.sourceUrl);
-      return u ? /* @__PURE__ */ React.createElement("a", { href: u, target: "_blank", rel: "noopener noreferrer", className: "hoverfx", style: css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none") }, "[source \u2197]") : null;
+      return u ? /* @__PURE__ */ React.createElement("a", { href: u, target: "_blank", rel: "noopener noreferrer", className: "hoverfx", style: css("display:inline-flex;align-items:center;min-height:44px;padding:2px 6px;vertical-align:middle;color:#2B3AA8;font:600 12px 'IBM Plex Mono',monospace;text-decoration:none") }, t("source.inline")) : null;
     };
     return /* @__PURE__ */ React.createElement("div", { style: css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px") }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
       setLawCat("leaving");
       setScreen("home");
-    }, style: css("align-self:flex-start;display:flex;align-items:center;gap:4px;min-height:44px;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer") }, /* @__PURE__ */ React.createElement(Icon, { name: "back", size: 18 }), " Leaving a job"), /* @__PURE__ */ React.createElement("h1", { style: css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Is my non-compete enforceable?"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, "Non-compete law varies a lot by state, and several states have changed their rules recently. This is general information for ", stName, ", not an opinion on your specific agreement \u2014 only an attorney can tell you that."), contentErr ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F") }, t("err.rights")) : null, ncFact ? /* @__PURE__ */ React.createElement(React.Fragment, null, !stReviewed && /* @__PURE__ */ React.createElement(DraftStateNotice, { stName }), factCard(ncFact, 0, stateAbbr || stName.toUpperCase(), "#EEF1FF")) : stateErr ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F") }, t("err.stateNoncompete", { state: stName })) : stateData === void 0 ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, t("loading.state", { state: stName })) : /* @__PURE__ */ React.createElement("div", { style: css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#F0EDE5") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 16px/1.5 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, t("gap.noncompete", { state: stName }))), ftcFact && /* @__PURE__ */ React.createElement("div", { style: css("padding:16px 18px;border-radius:14px;border:2px solid #2B3AA8;background:#EEF1FF;display:flex;flex-direction:column;gap:4px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 13px 'IBM Plex Mono',monospace;color:#1B2778;letter-spacing:.04em") }, "FEDERAL \u2014 FTC RULE STATUS"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, ftcFact.summary, " ", src(ftcFact))), /* @__PURE__ */ React.createElement("div", { style: css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 8px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "What courts generally weigh (general information, not applied to your facts)"), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "In states that test non-competes for \u201Creasonableness\u201D rather than banning them outright, courts commonly look at: how narrow the ", /* @__PURE__ */ React.createElement("strong", null, "geographic scope"), " is, how long the ", /* @__PURE__ */ React.createElement("strong", null, "duration"), " runs, whether the employer has a genuine ", /* @__PURE__ */ React.createElement("strong", null, "legitimate business interest"), " to protect (like real trade secrets, not just avoiding competition), and whether you received real ", /* @__PURE__ */ React.createElement("strong", null, "consideration"), " (something of value, like a new job offer or a raise) in exchange for signing. This is a general description of common factors, not a scoring of your specific agreement.")), /* @__PURE__ */ React.createElement("div", { style: css("padding:16px;border-radius:14px;background:#F0EDE5;border:2px solid #14181F") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "This is legal information, not legal advice, and it is not an opinion on whether your specific non-compete is enforceable. An employment attorney licensed in ", stName, " can review your actual agreement.")), /* @__PURE__ */ React.createElement("button", { onClick: nav("agencies"), className: "hoverfx", style: css("align-self:flex-start;min-height:44px;padding:12px 16px;border-radius:12px;border:2px solid #2B3AA8;background:#fff;color:#2B3AA8;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:6px") }, "Find a lawyer ", /* @__PURE__ */ React.createElement(Icon, { name: "chevron-forward", size: 15 })));
+    }, style: css("align-self:flex-start;display:flex;align-items:center;gap:4px;min-height:44px;background:none;border:none;padding:12px 8px;margin-left:-8px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer") }, /* @__PURE__ */ React.createElement(Icon, { name: "back", size: 18 }), " ", t("cat.leaving.label")), /* @__PURE__ */ React.createElement("h1", { style: css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, t("tool.noncompete.label")), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 16px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, t("nc.intro", { state: stName })), contentErr ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F") }, t("err.rights")) : null, ncFact ? /* @__PURE__ */ React.createElement(React.Fragment, null, !stReviewed && /* @__PURE__ */ React.createElement(DraftStateNotice, { stName }), factCard(ncFact, 0, stateAbbr || stName.toUpperCase(), "#EEF1FF")) : stateErr ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F") }, t("err.stateNoncompete", { state: stName })) : stateData === void 0 ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, t("loading.state", { state: stName })) : /* @__PURE__ */ React.createElement("div", { style: css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#F0EDE5") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 16px/1.5 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, t("gap.noncompete", { state: stName }))), ftcFact && /* @__PURE__ */ React.createElement("div", { style: css("padding:16px 18px;border-radius:14px;border:2px solid #2B3AA8;background:#EEF1FF;display:flex;flex-direction:column;gap:4px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 13px 'IBM Plex Mono',monospace;color:#1B2778;letter-spacing:.04em") }, t("nc.ftc")), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, ftcFact.summary, " ", src(ftcFact))), /* @__PURE__ */ React.createElement("div", { style: css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 8px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, t("nc.weigh.h")), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, t("nc.weigh.body", {
+      scope: /* @__PURE__ */ React.createElement("strong", null, t("nc.weigh.scope")),
+      duration: /* @__PURE__ */ React.createElement("strong", null, t("nc.weigh.duration")),
+      interest: /* @__PURE__ */ React.createElement("strong", null, t("nc.weigh.interest")),
+      consideration: /* @__PURE__ */ React.createElement("strong", null, t("nc.weigh.consideration"))
+    }))), /* @__PURE__ */ React.createElement("div", { style: css("padding:16px;border-radius:14px;background:#F0EDE5;border:2px solid #14181F") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, t("nc.foot", { state: stName }))), /* @__PURE__ */ React.createElement("button", { onClick: nav("agencies"), className: "hoverfx", style: css("align-self:flex-start;min-height:44px;padding:12px 16px;border-radius:12px;border:2px solid #2B3AA8;background:#fff;color:#2B3AA8;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:6px") }, t("nc.findLawyer"), " ", /* @__PURE__ */ React.createElement(Icon, { name: "chevron-forward", size: 15 })));
   };
   const factCard = (f, i, scopeLabel, scopeTone) => {
     const isNum = typeof f.value === "number";
     const val = isNum && isMoneyTopic(f.topic) ? money(f.value) : factValStr(f.value);
     const showVal = val && isNum;
-    return /* @__PURE__ */ React.createElement("div", { key: scopeLabel + i, style: css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 6px;font:700 14px/1.3 'Atkinson Hyperlegible',sans-serif;color:#4A5162;text-wrap:pretty") }, topicLabel(f.topic)), /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 14px;font:400 17px/1.55 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, f.summary), /* @__PURE__ */ React.createElement("div", { style: css("padding:13px 14px;border-radius:12px;background:#F0EDE5;border:2px solid rgba(20,24,31,.14)") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 8px;font:700 12px 'IBM Plex Mono',monospace;color:#4A5162;letter-spacing:.06em") }, "THE LAW"), showVal ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 8px;font:700 19px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, val) : null, f.citation ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 4px;font:600 14px/1.45 'IBM Plex Mono',monospace;color:#1B2778;overflow-wrap:anywhere") }, f.citation) : null, f.sourceAgency || formatChecked(f.lastChecked) ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 13px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, formatChecked(f.lastChecked) ? t("source.checkedLong", { agency: f.sourceAgency || t("source.unnamed"), date: formatChecked(f.lastChecked) }) : f.sourceAgency || t("source.unnamed")) : null, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px") }, /* @__PURE__ */ React.createElement("span", { style: css("padding:7px 11px;border-radius:8px;background:" + scopeTone + ";border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace;color:#14181F") }, scopeLabel)), safeUrl(f.sourceUrl) ? /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { key: scopeLabel + i, style: css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 6px;font:700 14px/1.3 'Atkinson Hyperlegible',sans-serif;color:#4A5162;text-wrap:pretty") }, topicLabel(f.topic)), /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 14px;font:400 17px/1.55 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, f.summary), /* @__PURE__ */ React.createElement("div", { style: css("padding:13px 14px;border-radius:12px;background:#F0EDE5;border:2px solid rgba(20,24,31,.14)") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 8px;font:700 12px 'IBM Plex Mono',monospace;color:#4A5162;letter-spacing:.06em") }, t("fact.theLaw")), showVal ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 8px;font:700 19px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, val) : null, f.citation ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 4px;font:600 14px/1.45 'IBM Plex Mono',monospace;color:#1B2778;overflow-wrap:anywhere") }, f.citation) : null, f.sourceAgency || formatChecked(f.lastChecked) ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 13px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, formatChecked(f.lastChecked) ? t("source.checkedLong", { agency: f.sourceAgency || t("source.unnamed"), date: formatChecked(f.lastChecked) }) : f.sourceAgency || t("source.unnamed")) : null, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px") }, /* @__PURE__ */ React.createElement("span", { style: css("padding:7px 11px;border-radius:8px;background:" + scopeTone + ";border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace;color:#14181F") }, scopeLabel)), safeUrl(f.sourceUrl) ? /* @__PURE__ */ React.createElement(
       "a",
       {
         href: safeUrl(f.sourceUrl),
@@ -2834,7 +3113,7 @@ function App() {
     const fedFacts = federal && federal.facts || [];
     const stFacts = stateData && stateData.facts || [];
     const stReviewed = !!(stateData && stateData.reviewed === true);
-    const ruleRow = (f, i, scope, tone) => /* @__PURE__ */ React.createElement("div", { key: scope + i, style: css("display:flex;flex-direction:column;gap:6px;padding:14px 16px;border-radius:12px;border:2px solid rgba(20,24,31,.16);background:#fff") }, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;align-items:baseline;gap:8px;flex-wrap:wrap") }, /* @__PURE__ */ React.createElement("span", { style: css("flex:none;padding:3px 8px;border-radius:6px;background:" + tone + ";font:600 11px 'IBM Plex Mono',monospace;color:#14181F") }, scope), /* @__PURE__ */ React.createElement("span", { title: f.topic, style: css("font:700 15px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty") }, topicLabel(f.topic))), factValStr(f.value) ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 17px/1.35 'Atkinson Hyperlegible',sans-serif;color:#14181F;overflow-wrap:anywhere") }, typeof f.value === "number" && isMoneyTopic(f.topic) ? money(f.value) : factValStr(f.value)) : null, f.citation ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:600 14px/1.45 'IBM Plex Mono',monospace;color:#1B2778;overflow-wrap:anywhere") }, f.citation) : null, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;gap:10px;flex-wrap:wrap;align-items:center") }, f.sourceAgency || formatChecked(f.lastChecked) ? /* @__PURE__ */ React.createElement("span", { style: css("font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, formatChecked(f.lastChecked) ? t("source.checkedShort", { agency: f.sourceAgency || t("source.unnamed"), date: formatChecked(f.lastChecked) }) : f.sourceAgency || t("source.unnamed")) : null, safeUrl(f.sourceUrl) ? /* @__PURE__ */ React.createElement("a", { href: safeUrl(f.sourceUrl), target: "_blank", rel: "noopener noreferrer", className: "hoverfx", "aria-label": t("rights.sourceAria", { rule: f.citation || f.topic }), style: css("display:inline-flex;align-items:center;min-height:44px;font:600 13px 'IBM Plex Mono',monospace;color:#2B3AA8;text-decoration:none") }, "source \u2197") : null));
+    const ruleRow = (f, i, scope, tone) => /* @__PURE__ */ React.createElement("div", { key: scope + i, style: css("display:flex;flex-direction:column;gap:6px;padding:14px 16px;border-radius:12px;border:2px solid rgba(20,24,31,.16);background:#fff") }, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;align-items:baseline;gap:8px;flex-wrap:wrap") }, /* @__PURE__ */ React.createElement("span", { style: css("flex:none;padding:3px 8px;border-radius:6px;background:" + tone + ";font:600 11px 'IBM Plex Mono',monospace;color:#14181F") }, scope), /* @__PURE__ */ React.createElement("span", { title: f.topic, style: css("font:700 15px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty") }, topicLabel(f.topic))), factValStr(f.value) ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 17px/1.35 'Atkinson Hyperlegible',sans-serif;color:#14181F;overflow-wrap:anywhere") }, typeof f.value === "number" && isMoneyTopic(f.topic) ? money(f.value) : factValStr(f.value)) : null, f.citation ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:600 14px/1.45 'IBM Plex Mono',monospace;color:#1B2778;overflow-wrap:anywhere") }, f.citation) : null, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;gap:10px;flex-wrap:wrap;align-items:center") }, f.sourceAgency || formatChecked(f.lastChecked) ? /* @__PURE__ */ React.createElement("span", { style: css("font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, formatChecked(f.lastChecked) ? t("source.checkedShort", { agency: f.sourceAgency || t("source.unnamed"), date: formatChecked(f.lastChecked) }) : f.sourceAgency || t("source.unnamed")) : null, safeUrl(f.sourceUrl) ? /* @__PURE__ */ React.createElement("a", { href: safeUrl(f.sourceUrl), target: "_blank", rel: "noopener noreferrer", className: "hoverfx", "aria-label": t("rights.sourceAria", { rule: f.citation || f.topic }), style: css("display:inline-flex;align-items:center;min-height:44px;font:600 13px 'IBM Plex Mono',monospace;color:#2B3AA8;text-decoration:none") }, t("source.short")) : null));
     const groups = (() => {
       const byCat = /* @__PURE__ */ new Map();
       const push = (f, scope, tone) => {
@@ -2849,20 +3128,20 @@ function App() {
         if (byCat.has(c.key)) out.push([c, byCat.get(c.key)]);
       });
       if (byCat.has("_other")) {
-        out.push([{ key: "_other", label: "Everything else", fill: "#F0EDE5", edge: "#14181F", on: "#14181F" }, byCat.get("_other")]);
+        out.push([{ key: "_other", label: "cat._other.label", fill: "#F0EDE5", edge: "#14181F", on: "#14181F" }, byCat.get("_other")]);
       }
       return out;
     })();
     const total = stFacts.length + fedFacts.length;
     return /* @__PURE__ */ React.createElement("div", { style: css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px") }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", { style: css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, t("rights.h1")), /* @__PURE__ */ React.createElement("p", { style: css("margin:10px 0 0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, t("rights.sub"), total ? " " + t("rights.count", { n: total, state: stName }) : "")), contentErr ? /* @__PURE__ */ React.createElement("p", { role: "alert", style: css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F") }, t("err.law")) : null, !federal && !contentErr ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, t("loading")) : null, stateData === void 0 ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, t("loading.state", { state: stName })) : null, stateErr ? /* @__PURE__ */ React.createElement("p", { role: "alert", style: css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F") }, t("err.state", { state: stName })) : null, stateData && !stReviewed ? /* @__PURE__ */ React.createElement(DraftStateNotice, { stName, extra: "" }) : null, groups.map(
-      ([cat, rows]) => /* @__PURE__ */ React.createElement("div", { key: cat.key, style: css("display:flex;flex-direction:column;gap:8px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:8px 0 0;padding:7px 12px;border-radius:999px;align-self:flex-start;font:700 14px 'Atkinson Hyperlegible',sans-serif;border:2px solid " + cat.edge + ";background:" + cat.fill + ";color:" + cat.on) }, cat.label), rows.map(([f, scope, tone], i) => ruleRow(f, cat.key + i, scope, tone)))
+      ([cat, rows]) => /* @__PURE__ */ React.createElement("div", { key: cat.key, style: css("display:flex;flex-direction:column;gap:8px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:8px 0 0;padding:7px 12px;border-radius:999px;align-self:flex-start;font:700 14px 'Atkinson Hyperlegible',sans-serif;border:2px solid " + cat.edge + ";background:" + cat.fill + ";color:" + cat.on) }, t(cat.label)), rows.map(([f, scope, tone], i) => ruleRow(f, cat.key + i, scope, tone)))
     ), /* @__PURE__ */ React.createElement("p", { style: css("margin:4px 0 0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, t("disclaimer.state", { state: stName })));
   };
   const FEDERAL_AGENCIES = [
-    { name: "U.S. Department of Labor \u2014 Wage & Hour Division", covers: "Unpaid wages, overtime, minimum wage, family and medical leave.", url: "https://www.dol.gov/agencies/whd/contact/local-offices", deadlineTopics: ["deadlines.flsaWageClaim"] },
-    { name: "Equal Employment Opportunity Commission (EEOC)", covers: "Discrimination and harassment based on race, sex, religion, national origin, age, disability or genetic information.", url: "https://www.eeoc.gov/filing-charge-discrimination", deadlineTopics: ["deadlines.eeocCharge"] },
-    { name: "OSHA", covers: "Unsafe working conditions, and retaliation for reporting them.", url: "https://www.osha.gov/workers/file-complaint", deadlineTopics: ["deadlines.oshaWhistleblower"] },
-    { name: "National Labor Relations Board (NLRB)", covers: "Being punished for organizing, or for discussing pay and conditions with coworkers.", url: "https://www.nlrb.gov/about-nlrb/what-we-do/investigate-charges", deadlineTopics: [] }
+    { name: "U.S. Department of Labor \u2014 Wage & Hour Division", covers: "agency.dol.covers", url: "https://www.dol.gov/agencies/whd/contact/local-offices", deadlineTopics: ["deadlines.flsaWageClaim"] },
+    { name: "Equal Employment Opportunity Commission (EEOC)", covers: "agency.eeoc.covers", url: "https://www.eeoc.gov/filing-charge-discrimination", deadlineTopics: ["deadlines.eeocCharge"] },
+    { name: "OSHA", covers: "agency.osha.covers", url: "https://www.osha.gov/workers/file-complaint", deadlineTopics: ["deadlines.oshaWhistleblower"] },
+    { name: "National Labor Relations Board (NLRB)", covers: "agency.nlrb.covers", url: "https://www.nlrb.gov/about-nlrb/what-we-do/investigate-charges", deadlineTopics: [] }
   ];
   const Agencies = () => {
     const stLabel = stateSel || "your state";
@@ -2870,9 +3149,9 @@ function App() {
     const stFacts = stateData && stateData.facts || [];
     const fedFacts = federal && federal.facts || [];
     const stateLinks = [
-      ag.wageHour && ["Wage & hour", ag.wageHour, ["deadlines.wageClaim"]],
-      ag.discrimination && ["Discrimination & harassment", ag.discrimination, ["deadlines.discriminationComplaint", "deadlines.fehaComplaint"]],
-      ag.labor && ["Labor standards", ag.labor, ["deadlines.wageClaim"]]
+      ag.wageHour && ["agency.state.wageHour", ag.wageHour, ["deadlines.wageClaim"]],
+      ag.discrimination && ["agency.state.discrim", ag.discrimination, ["deadlines.discriminationComplaint", "deadlines.fehaComplaint"]],
+      ag.labor && ["agency.state.labor", ag.labor, ["deadlines.wageClaim"]]
     ].filter(Boolean).filter(([, a]) => a && safeUrl(a.url));
     const deadlineFor = (topics) => findDeadline(topics, stFacts, fedFacts);
     const anyDeadline = stateLinks.some(([, , t2]) => deadlineFor(t2)) || FEDERAL_AGENCIES.some((a) => deadlineFor(a.deadlineTopics));
@@ -2891,7 +3170,7 @@ function App() {
       /* @__PURE__ */ React.createElement("span", { style: css("font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, covers),
       deadlineStrip(dl)
     );
-    return /* @__PURE__ */ React.createElement("div", { style: css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px") }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", { style: css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, t("agencies.h1")), /* @__PURE__ */ React.createElement("p", { style: css("margin:10px 0 0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, t("agencies.sub"))), /* @__PURE__ */ React.createElement("div", { style: css("padding:16px 18px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F;display:flex;flex-direction:column;gap:6px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, t("agencies.retal.h")), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, t("agencies.retal.sub"))), anyDeadline ? /* @__PURE__ */ React.createElement("div", { style: css("padding:15px 17px;border-radius:14px;border:2px solid rgba(20,24,31,.22);background:#fff") }, /* @__PURE__ */ React.createElement(WhenPicker, { value: when, onPick: setWhen, tone: "light" })) : null, stateLinks.length ? /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:10px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:2px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em") }, stLabel.toUpperCase()), stateLinks.map(([covers, a, topics]) => row(a.name, covers, safeUrl(a.url), "#EEF1FF", deadlineFor(topics)))) : null, stateErr ? /* @__PURE__ */ React.createElement("p", { role: "alert", style: css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F") }, t("err.agencies", { state: stLabel })) : null, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:10px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:6px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em") }, t("scope.fedAnywhere")), FEDERAL_AGENCIES.map((a) => row(a.name, a.covers, a.url, "#F0EDE5", deadlineFor(a.deadlineTopics)))), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;gap:14px;padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff") }, /* @__PURE__ */ React.createElement("span", { style: css("flex:none;width:44px;height:44px;border-radius:12px;background:#EEF1FF;border:2px solid #14181F;display:flex;align-items:center;justify-content:center;color:#2B3AA8") }, /* @__PURE__ */ React.createElement(Icon, { name: "scale", size: 22 })), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:6px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, t("agencies.lawyer.h")), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, t("agencies.lawyer.sub", { state: stLabel })))), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, t("agencies.foot")));
+    return /* @__PURE__ */ React.createElement("div", { style: css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px") }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", { style: css("margin:0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, t("agencies.h1")), /* @__PURE__ */ React.createElement("p", { style: css("margin:10px 0 0;font:400 17px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, t("agencies.sub"))), /* @__PURE__ */ React.createElement("div", { style: css("padding:16px 18px;border-radius:14px;background:#FFF4D6;border:2px solid #14181F;display:flex;flex-direction:column;gap:6px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, t("agencies.retal.h")), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, t("agencies.retal.sub"))), anyDeadline ? /* @__PURE__ */ React.createElement("div", { style: css("padding:15px 17px;border-radius:14px;border:2px solid rgba(20,24,31,.22);background:#fff") }, /* @__PURE__ */ React.createElement(WhenPicker, { value: when, onPick: setWhen, tone: "light" })) : null, stateLinks.length ? /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:10px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:2px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em") }, stLabel.toUpperCase()), stateLinks.map(([covers, a, topics]) => row(a.name, t(covers), safeUrl(a.url), "#EEF1FF", deadlineFor(topics)))) : null, stateErr ? /* @__PURE__ */ React.createElement("p", { role: "alert", style: css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F") }, t("err.agencies", { state: stLabel })) : null, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:10px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:6px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em") }, t("scope.fedAnywhere")), FEDERAL_AGENCIES.map((a) => row(a.name, t(a.covers), a.url, "#F0EDE5", deadlineFor(a.deadlineTopics)))), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;gap:14px;padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff") }, /* @__PURE__ */ React.createElement("span", { style: css("flex:none;width:44px;height:44px;border-radius:12px;background:#EEF1FF;border:2px solid #14181F;display:flex;align-items:center;justify-content:center;color:#2B3AA8") }, /* @__PURE__ */ React.createElement(Icon, { name: "scale", size: 22 })), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:6px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, t("agencies.lawyer.h")), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, t("agencies.lawyer.sub", { state: stLabel })))), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, t("agencies.foot")));
   };
   const SCREENS = {
     welcome: Welcome,
@@ -2904,7 +3183,7 @@ function App() {
   const Current = SCREENS[screen] || HomeScreen;
   const screenBg = "#FFFDF8";
   const statusColor = "#14181F";
-  return /* @__PURE__ */ React.createElement("div", { className: "device" }, /* @__PURE__ */ React.createElement("div", { className: "screen" + (showTabs ? "" : " no-tabbar"), style: Object.assign(css("background:" + screenBg), { "--mode-bg": screenBg }) }, /* @__PURE__ */ React.createElement("div", { className: "statusbar", "aria-hidden": "true", style: css("color:" + statusColor) }, /* @__PURE__ */ React.createElement("span", null, "9:41"), /* @__PURE__ */ React.createElement("span", { style: css("letter-spacing:2px") }, "\u25AE\u25AE\u25AE \u1BE4 \u25B0")), showTabs && /* @__PURE__ */ React.createElement("nav", { "aria-label": "Primary", className: "tabbar" }, TAB_DEFS.map(
+  return /* @__PURE__ */ React.createElement("div", { className: "device" }, /* @__PURE__ */ React.createElement("div", { className: "screen" + (showTabs ? "" : " no-tabbar"), style: Object.assign(css("background:" + screenBg), { "--mode-bg": screenBg }) }, /* @__PURE__ */ React.createElement("div", { className: "statusbar", "aria-hidden": "true", style: css("color:" + statusColor) }, /* @__PURE__ */ React.createElement("span", null, "9:41"), /* @__PURE__ */ React.createElement("span", { style: css("letter-spacing:2px") }, "\u25AE\u25AE\u25AE \u1BE4 \u25B0")), showTabs && /* @__PURE__ */ React.createElement("nav", { "aria-label": t("nav.primary"), className: "tabbar" }, TAB_DEFS.map(
     ([k, name, label]) => /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -2942,7 +3221,7 @@ class ErrorBoundary extends React.Component {
       }
       if (typeof window !== "undefined") window.location.reload();
     };
-    return /* @__PURE__ */ React.createElement("div", { style: css("max-width:480px;margin:60px auto;padding:28px;font-family:'Atkinson Hyperlegible',sans-serif;color:#14181F") }, /* @__PURE__ */ React.createElement("h1", { style: css("font:700 22px 'Atkinson Hyperlegible',sans-serif;margin:0 0 12px") }, t("crash.h")), /* @__PURE__ */ React.createElement("p", { style: css("font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;margin:0 0 16px") }, t("crash.sub")), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:10px") }, /* @__PURE__ */ React.createElement("button", { onClick: reloadOnly, style: css("min-height:44px;padding:14px 18px;border-radius:12px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, "Try reloading"), /* @__PURE__ */ React.createElement("button", { onClick: clearAndReload, style: css("min-height:44px;padding:14px 18px;border-radius:12px;border:2px solid #B3264F;background:#fff;color:#B3264F;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, "Reset and start over")), /* @__PURE__ */ React.createElement("p", { style: css("font:400 13px/1.5 'Atkinson Hyperlegible',sans-serif;color:#4A5162;margin:16px 0 0") }, "Resetting forgets the state, county and city you picked, and the month you gave for when your problem happened \u2014 the only things WorkLaw stores \u2014 and starts you again at the map. That is all it holds, and it holds it only in this browser."));
+    return /* @__PURE__ */ React.createElement("div", { style: css("max-width:480px;margin:60px auto;padding:28px;font-family:'Atkinson Hyperlegible',sans-serif;color:#14181F") }, /* @__PURE__ */ React.createElement("h1", { style: css("font:700 22px 'Atkinson Hyperlegible',sans-serif;margin:0 0 12px") }, t("crash.h")), /* @__PURE__ */ React.createElement("p", { style: css("font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;margin:0 0 16px") }, t("crash.sub")), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:10px") }, /* @__PURE__ */ React.createElement("button", { onClick: reloadOnly, style: css("min-height:44px;padding:14px 18px;border-radius:12px;border:2px solid #14181F;background:#fff;color:#14181F;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, t("crash.reload")), /* @__PURE__ */ React.createElement("button", { onClick: clearAndReload, style: css("min-height:44px;padding:14px 18px;border-radius:12px;border:2px solid #B3264F;background:#fff;color:#B3264F;font:700 15px 'Atkinson Hyperlegible',sans-serif;cursor:pointer") }, t("crash.reset"))), /* @__PURE__ */ React.createElement("p", { style: css("font:400 13px/1.5 'Atkinson Hyperlegible',sans-serif;color:#4A5162;margin:16px 0 0") }, t("foot.reset")));
   }
 }
 ReactDOM.createRoot(document.getElementById("root")).render(/* @__PURE__ */ React.createElement(ErrorBoundary, null, /* @__PURE__ */ React.createElement(App, null)));</script>

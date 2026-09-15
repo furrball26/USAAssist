@@ -25,6 +25,7 @@ import { extname, join, normalize } from 'node:path';
 import puppeteer from 'puppeteer-core';
 import { resolveChromePath } from './lib/chrome.mjs';
 import { gotoApp } from './lib/nav.mjs';
+import { catalogue, translator } from './lib/appsrc.mjs';
 
 const ROOT = new URL('..', import.meta.url).pathname;
 let fails = 0;
@@ -36,7 +37,12 @@ const fnSrc = dev.match(/function resolveMinimumWage\([\s\S]*?\n\}\n/);
 if (!fnSrc) { console.log('❌ could not find resolveMinimumWage in index.dev.html'); process.exit(1); }
 // Pull the real function out of the source rather than reimplementing it here:
 // a copy in the test would happily agree with itself while the app drifted.
-const resolveMinimumWage = (0, eval)(fnSrc[0] + '; resolveMinimumWage');
+/* resolveMinimumWage names the federal layer through the catalogue now, so the
+   real function needs a real t() to run. Both come out of the source, so this
+   still measures what ships rather than a copy. */
+const CAT = catalogue(dev);
+const withT = 'const t = ' + translator.toString() + '(' + JSON.stringify(CAT) + ');\n';
+const resolveMinimumWage = (0, eval)(withT + fnSrc[0] + '; resolveMinimumWage');
 
 const F = (v) => [{ topic: 'minimumWage.hourly', value: v }];
 const L = (n, v) => ({ loc: { name: n, covers: 'x' }, facts: F(v) });
@@ -49,7 +55,7 @@ const CA = { stateFacts: F(16.90), fedFacts: F(7.25), stName: 'California' };
    equal the amount the unrounded law actually gives. Those can conflict —
    rounding 1.5 x $20.25 to $30.38 and multiplying by 5 prints $151.90 for an
    amount that is really $151.875 — so both are asserted on every case. */
-const workedExample = (0, eval)(dev.match(/function workedExample\([\s\S]*?\n\}\n/)[0] + '; workedExample');
+const workedExample = (0, eval)(withT + dev.match(/function workedExample\([\s\S]*?\n\}\n/)[0] + '; workedExample');
 {
   let bad = 0;
   for (const [rate, hours] of [[20.25, 45], [7.25, 45], [16.90, 50], [13.33, 43], [11.00, 41], [15.50, 60]]) {

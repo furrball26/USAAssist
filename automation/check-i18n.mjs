@@ -103,6 +103,15 @@ function scan(src) {
   let prev = '';
   const canStartRegex = () => !/[A-Za-z0-9_$)\]]$/.test(prev);
 
+  /* Is the string spanning [from, to) one side of an equality test? Looks at
+     the non-whitespace text immediately before it and immediately after it. */
+  const isComparisonOperand = (from, to) => {
+    const before = src.slice(Math.max(0, from - 8), from).replace(/\s+$/, '');
+    if (/[=!]==?$/.test(before)) return true;
+    const after = src.slice(to, to + 8).replace(/^\s+/, '');
+    return /^[=!]==?/.test(after);
+  };
+
   while (i < src.length) {
     const c = src[i];
 
@@ -126,8 +135,16 @@ function scan(src) {
       const s = readString(i);
       if (!s) { i++; continue; }
       const top = stack[stack.length - 1];
-      // A child: an argument from the third onward, at this call's own depth.
-      if (top && depth === top.depth && top.argIndex >= 2) {
+      /* A child: an argument from the third onward, at this call's own depth.
+
+         ...unless it is a COMPARISON OPERAND. An argument can be an expression
+         rather than a text node, and `wage.winner.key === "city"` puts "city"
+         in exactly the same position a text node occupies. Six such literals —
+         "city", "home", "wage", "non", "number", "harassment", all of them
+         screen ids, topic prefixes or typeof tests — were being reported as
+         untranslated copy, which is how a checker loses its authority.
+         A ternary's RESULT is still counted: those are real text. */
+      if (top && depth === top.depth && top.argIndex >= 2 && !isComparisonOperand(i, s.next)) {
         found.push({ kind: 'child', value: s.value });
       }
       // A prop: inside the props object, which sits one level deeper. Only the
@@ -187,7 +204,10 @@ const isProse = (v) => {
    migrated; a value that is a sentence has not. */
 const PROSE_KEYS = ['label', 'blurb', 'desc', 'summary', 'help', 'note', 'covers',
                     'doneTitle', 'qDisclaimer', 'tag', 'heading', 'title', 'q'];
-const looksLikeKey = (v) => /^[a-z][A-Za-z0-9]*(\.[A-Za-z0-9_]+)+$/.test(v.trim());
+/* A value that is already a catalogue key, or the literal PREFIX of one built
+   by concatenation — `label: 'entry.sit.' + k + '.label'` puts 'entry.sit.' in
+   a label position, and reporting that as untranslated copy is noise. */
+const looksLikeKey = (v) => /^[a-z][A-Za-z0-9]*(\.[A-Za-z0-9_]*)+$/.test(v.trim());
 const inData = [];
 for (const key of PROSE_KEYS) {
   // One quoted string, either quote style, escapes allowed: the backreference
