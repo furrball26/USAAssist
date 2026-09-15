@@ -395,3 +395,47 @@ console.log(`i18n: ${defined.length} strings in the catalogue, ${distinct.length
     process.exit(1);
   }
 }
+
+/* ── Catalogue entries nothing can reach ───────────────────────────────────
+   A key left behind after its call site was reworded or deleted is dead
+   weight a translator will be asked to translate. 470 entries is already a
+   lot to hand someone; none of it should be for text no reader can see.
+
+   A key counts as reachable if its literal appears anywhere in the app source
+   outside the catalogue — that covers both t('key') and the data structures
+   that hold keys as values, like ENTRY_SITUATIONS and the wizard trees.
+
+   Keys built by concatenation (`'topic.' + k`, `'entry.sit.' + k + '.label'`)
+   never appear whole, so any literal that ends in a dot is treated as a
+   prefix and everything under it counts as reached. That is deliberately
+   narrow: it only forgives families the source actually names, not a blanket
+   allowlist. */
+{
+  /* The catalogue's own span, by balancing braces from its declaration.
+     Slicing by catBlock.length instead was wrong — catBlock is the INNER text
+     of `en: { ... }`, so the offset landed mid-file and cut out live call
+     sites, reporting five keys as unreached that are used every render. */
+  const catStart = jsx.indexOf('const STRINGS = {');
+  let catEnd = catStart, d = 0;
+  for (let k = jsx.indexOf('{', catStart); k < jsx.length; k++) {
+    if (jsx[k] === '{') d++;
+    else if (jsx[k] === '}') { d--; if (d === 0) { catEnd = k + 1; break; } }
+  }
+  const outside = jsx.slice(0, catStart) + jsx.slice(catEnd);
+  /* `[^']*` and not `[^']+`: an empty literal is still a literal, and
+     `setStateSel('')` on the same line as a t('key') call would otherwise
+     leave the regex pairing quotes one apart from then on — three keys that
+     are used on every render were reported as unreached because of it. */
+  const literals = new Set([...outside.matchAll(/'([^'\n]*)'/g)].map(m => m[1]).filter(Boolean));
+  const prefixes = [...literals].filter(l => /^[a-z][A-Za-z0-9]*(\.[A-Za-z0-9]+)*\.$/.test(l));
+
+  const unreached = defined.filter(k =>
+    !literals.has(k) && !prefixes.some(p => k.startsWith(p)));
+
+  if (unreached.length) {
+    console.error('i18n FAILED: ' + unreached.length + ' catalogue key(s) nothing reaches:');
+    unreached.forEach(k => console.error('   ' + k));
+    console.error('   Delete them, or point the call site at them.');
+    process.exit(1);
+  }
+}
