@@ -2031,8 +2031,20 @@ function formatChecked(iso){
   if (typeof iso !== 'string') return '';
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso.trim());
   if (!m) return '';
-  const mo = +m[2], d = +m[3];
-  if (mo < 1 || mo > 12 || d < 1 || d > 31) return '';
+  const y = +m[1], mo = +m[2], d = +m[3];
+  /* Round-tripped through Date, not just range-checked. 2026 is not a leap
+     year, so 2026-02-29 is not a day that happened — but every field is in
+     range, and the app would have printed "29 Feb 2026" as a claim about when
+     we verified something. Date rolls a bad day forward instead of rejecting
+     it, so the only way to catch it is to build the date and see whether the
+     parts come back unchanged.
+
+     automation/validate-content.mjs fails the build on this, but content is
+     fetched at runtime and the validator only guards what is in the repo. */
+  const dt = new Date(Date.UTC(y, mo - 1, d));
+  if (Number.isNaN(dt.getTime())) return '';
+  if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== mo - 1 || dt.getUTCDate() !== d) return '';
+  if (y < 2000 || y > 2100) return '';
   return d + ' ' + CHECKED_MONTHS[mo - 1] + ' ' + m[1];
 }
 

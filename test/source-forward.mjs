@@ -41,6 +41,17 @@ const formatChecked = (0, eval)(
     if (formatChecked(junk) !== '') { ok(false, 'junk date rendered: ' + JSON.stringify(junk)); break; }
   }
   ok(true, 'anything that is not an ISO date renders as nothing, never as "Invalid Date"');
+  /* A day that never happened is the dangerous case, because every field is
+     in range and Date rolls it forward rather than rejecting it. Printing
+     "29 Feb 2026" would be a claim about a verification on a date that does
+     not exist. */
+  ok(formatChecked('2026-02-29') === '' && formatChecked('2025-02-29') === '',
+     'a 29th of February in a non-leap year renders as nothing, not as a real-looking day');
+  ok(formatChecked('2024-02-29') === '29 Feb 2024', 'and a real leap day still renders');
+  ok(formatChecked('2026-04-31') === '' && formatChecked('2026-06-31') === '',
+     'a 31st of a thirty-day month likewise');
+  ok(formatChecked('0000-01-01') === '' && formatChecked('9999-01-01') === '',
+     'and a year outside any plausible range');
 }
 
 {

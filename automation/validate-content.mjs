@@ -145,12 +145,32 @@ function checkFacts(relPath, facts, scope) {
       }
     }
 
-    // (f) staleness warning — unparseable or older than STALE_DAYS. Not a hard fail: this
-    // is a hygiene signal for wl-content to re-verify, not a legal-accuracy judgment.
+    /* (f) lastChecked. The app SHOWS this to readers now — "California Civil
+       Rights Department · we last checked this 30 Jul 2026" — so it stopped
+       being internal hygiene and became a claim about our own diligence.
+       Two shapes of it are a lie and therefore hard failures:
+
+         - a date that is not a real calendar date. `new Date('2026-02-29')`
+           does not reject; it rolls forward to 1 March, so the old parse check
+           passed it and the app rendered "29 Feb 2026" for a day that did not
+           happen. The round-trip below is what catches that.
+         - a date in the future, which claims we checked something we cannot
+           have checked. The old age test only looked for dates too OLD, so a
+           typo'd year sailed through.
+
+       Staleness stays a WARNING: an out-of-date check is a hygiene signal for
+       re-verification, not a false statement. */
     if (typeof fact.lastChecked === 'string' && fact.lastChecked) {
-      const parsed = new Date(fact.lastChecked);
-      if (Number.isNaN(parsed.getTime())) {
-        warn(`${label}: lastChecked "${fact.lastChecked}" is not a parseable date`);
+      const raw = fact.lastChecked.trim();
+      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);
+      const parsed = m ? new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])) : null;
+      const realDate = !!parsed && !Number.isNaN(parsed.getTime()) &&
+        parsed.getUTCFullYear() === +m[1] && parsed.getUTCMonth() === +m[2] - 1 && parsed.getUTCDate() === +m[3];
+
+      if (!realDate) {
+        err(`${label}: lastChecked "${fact.lastChecked}" is not a real calendar date in YYYY-MM-DD form — it is shown to readers as when we last verified this`);
+      } else if (parsed.getTime() > Date.now() + 86400000) {
+        err(`${label}: lastChecked "${fact.lastChecked}" is in the future — that claims a verification that has not happened`);
       } else {
         const ageDays = Math.floor((Date.now() - parsed.getTime()) / 86400000);
         if (ageDays > STALE_DAYS) {
