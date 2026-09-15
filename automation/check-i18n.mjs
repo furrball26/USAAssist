@@ -303,3 +303,95 @@ if (distinct.length < base.distinct) {
   process.exit(1);
 }
 console.log(`i18n: ${defined.length} strings in the catalogue, ${distinct.length} still to extract (baseline held; target 0)`);
+
+/* ── Placeholders must match what the call site passes ─────────────────────
+   A string carrying {state} that is called with no arguments renders the
+   literal "{state}" to a reader — t() substitutes nothing and leaves the hole
+   sitting in the sentence. The reverse, an argument passed for a placeholder
+   the string does not have, is silently dropped, which is how a value quietly
+   stops appearing when copy is reworded.
+
+   Neither shows up in a test unless a suite happens to assert the exact
+   sentence, and most sentences are not asserted. So both are checked here,
+   across every t('literal', {...}) call in the app.
+
+   Only calls with a literal key can be checked; t(cat.label) and
+   t('topic.' + k) resolve at runtime and the rendering suites cover those. */
+{
+  const placeholdersOf = (s) => new Set([...String(s).matchAll(/\{([A-Za-z0-9_]+)\}/g)].map(m => m[1]));
+  const problems = [];
+
+  // Walk every t( ... ) call, balancing brackets so a nested t() or an object
+  // argument does not end the match early.
+  for (const m of jsx.matchAll(/\bt\(\s*'([^']+)'/g)) {
+    const key = m[1];
+    if (!definedSet.has(key)) continue;           // already reported above
+    let i = m.index + m[0].length;
+    while (/\s/.test(jsx[i])) i++;
+    const wants = placeholdersOf(defined.includes(key) ? catBlock.match(
+      new RegExp("'" + key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "'\\s*:\\s*'((?:[^'\\\\]|\\\\.)*)'"))?.[1] ?? '' : '');
+
+    if (jsx[i] !== ',') {                          // a bare t('key')
+      if (wants.size) problems.push(key + ': string has {' + [...wants].join('}, {') + '} but the call passes nothing');
+      continue;
+    }
+    // Read the argument object, balancing brackets and skipping strings.
+    let d = 0, j = i, arg = '';
+    for (; j < jsx.length; j++) {
+      const c = jsx[j];
+      if (c === '"' || c === "'" || c === '`') {
+        const q = c; let k = j + 1;
+        while (k < jsx.length) { if (jsx[k] === '\\') { k += 2; continue; } if (jsx[k] === q) { k++; break; } k++; }
+        arg += jsx.slice(j, k); j = k - 1; continue;
+      }
+      if (c === '(' || c === '{' || c === '[') d++;
+      else if (c === ')' || c === '}' || c === ']') { d--; if (d < 0) break; }
+      arg += c;
+    }
+    /* Top-level keys of the argument object only: `{ state: stName }` gives
+       "state", and a nested t('k', { x: y }) inside it must not contribute.
+
+       Walked rather than matched with one regex. The first version alternated
+       `([{}])` with `(?:^|[{,])\s*(key)\s*:`, and the second branch CONSUMED
+       the brace the first branch needed to count — so the depth never left
+       nought, every argument object looked empty, and the check reported
+       twenty mismatches that were not there. */
+    const gives = new Set();
+    let dd = 0, expectKey = false;
+    for (let k = 0; k < arg.length; k++) {
+      const c = arg[k];
+      if (c === '"' || c === "'" || c === '`') {
+        const q = c; k++;
+        while (k < arg.length) { if (arg[k] === '\\') { k += 2; continue; } if (arg[k] === q) break; k++; }
+        continue;
+      }
+      if (c === '{' || c === '[' || c === '(') { dd++; if (dd === 1) expectKey = true; continue; }
+      if (c === '}' || c === ']' || c === ')') { dd--; continue; }
+      if (dd === 1 && c === ',') { expectKey = true; continue; }
+      if (dd === 1 && expectKey && /[A-Za-z_$]/.test(c)) {
+        let n = k;
+        while (n < arg.length && /[\w$]/.test(arg[n])) n++;
+        let after = n;
+        while (after < arg.length && /\s/.test(arg[after])) after++;
+        /* A key is an identifier in KEY POSITION — at the start of the object
+           or just after a top-level comma. Without that state, the value half
+           of `{ state: stName }` also looked like a key and the check reported
+           "call passes stName and the string has no {stName}" for a call that
+           was perfectly correct. `{ word }` shorthand still counts. */
+        if (after >= arg.length || arg[after] === ':' || arg[after] === ',' || arg[after] === '}') {
+          gives.add(arg.slice(k, n));
+        }
+        expectKey = false;
+        k = n - 1;
+      }
+    }
+    for (const w of wants) if (!gives.has(w)) problems.push(key + ': string wants {' + w + '} and the call does not pass it');
+    for (const g of gives) if (!wants.has(g)) problems.push(key + ': call passes ' + g + ' and the string has no {' + g + '}');
+  }
+
+  if (problems.length) {
+    console.error('i18n FAILED: ' + problems.length + ' placeholder mismatch(es):');
+    [...new Set(problems)].forEach(p => console.error('   ' + p));
+    process.exit(1);
+  }
+}
