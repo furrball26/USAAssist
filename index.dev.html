@@ -2177,6 +2177,25 @@ const CAUSATION_CLOSE_GAP_DAYS = 30;
 
 /* ── App ──────────────────────────────────────────────────────────── */
 
+/* When we last read the source with our own eyes, from the fact's lastChecked.
+   Every one of the 496 facts carries this and none of them showed it, which
+   left the reader no way to judge staleness — and staleness is the failure
+   mode that matters here: minimum wages are indexed and reset every January,
+   so a correct-when-written figure goes wrong on a schedule.
+
+   Parsed by hand rather than through Date. new Date('2026-08-08') is midnight
+   UTC, and getDate() on that returns the 7th anywhere west of Greenwich — an
+   off-by-one-day provenance stamp on a site whose whole claim is provenance. */
+const CHECKED_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function formatChecked(iso){
+  if (typeof iso !== 'string') return '';
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso.trim());
+  if (!m) return '';
+  const mo = +m[2], d = +m[3];
+  if (mo < 1 || mo > 12 || d < 1 || d > 31) return '';
+  return d + ' ' + CHECKED_MONTHS[mo - 1] + ' ' + m[1];
+}
+
 /* ── Where the map cannot reach ────────────────────────────────────────────
    State, then county, then city assumes one fixed worksite. Four common
    working lives do not have one, and a reader who cannot honestly answer
@@ -3327,13 +3346,28 @@ function App(){
           <p style={css("margin:0 0 8px;font:700 12px 'IBM Plex Mono',monospace;color:#4A5162;letter-spacing:.06em")}>THE LAW</p>
           {showVal ? <p style={css("margin:0 0 8px;font:700 19px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{val}</p> : null}
           {f.citation ? <p style={css("margin:0 0 4px;font:600 14px/1.45 'IBM Plex Mono',monospace;color:#1B2778;overflow-wrap:anywhere")}>{f.citation}</p> : null}
-          {f.sourceAgency ? <p style={css("margin:0;font:400 13px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{f.sourceAgency}</p> : null}
+          {/* Who said it and when we last looked. The date is the part that was
+              missing: an indexed minimum wage resets every January, so a figure
+              that was right when it was written goes wrong on a schedule, and
+              without a date the reader has no way to weigh that. */}
+          {f.sourceAgency || formatChecked(f.lastChecked) ?
+            <p style={css("margin:0;font:400 13px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>
+              {f.sourceAgency || 'Official source'}{formatChecked(f.lastChecked) ? ' · we last checked this ' + formatChecked(f.lastChecked) : ''}
+            </p> : null}
           <div style={css("display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px")}>
             <span style={css('padding:7px 11px;border-radius:8px;background:' + scopeTone + ";border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace;color:#14181F")}>{scopeLabel}</span>
-            {safeUrl(f.sourceUrl)
-              ? <a href={safeUrl(f.sourceUrl)} target="_blank" rel="noopener noreferrer" className="hoverfx" aria-label={'Read the official text of ' + (f.citation || f.topic) + ' (opens in a new tab)'} style={css("display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:7px 11px;border-radius:8px;background:#fff;border:2px solid #2B3AA8;font:600 13px 'IBM Plex Mono',monospace;color:#2B3AA8;text-decoration:none")}>Read the official text ↗</a>
-              : null}
           </div>
+          {/* The source is the primary action on this card, not a footnote
+              beside the scope chip. No attorney has checked any of the 496
+              facts in this dataset, so the official text is the only authority
+              on the screen — and a 13px outlined pill is not what a reader
+              taps. The reason is given once, by the notice at the top of the
+              list; repeating it per card would make it wallpaper. */}
+          {safeUrl(f.sourceUrl)
+            ? <a href={safeUrl(f.sourceUrl)} target="_blank" rel="noopener noreferrer" className="hoverfx" aria-label={'Check the official text of ' + (f.citation || topicLabel(f.topic)) + ' (opens in a new tab)'}
+                style={css("display:flex;align-items:center;justify-content:center;gap:7px;margin-top:10px;min-height:48px;padding:12px 14px;border-radius:10px;background:#1B2778;border:2px solid #1B2778;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#FFFDF8;text-decoration:none;text-wrap:pretty")}>Check the official text ↗</a>
+            : /* Silence here would read as "nothing to check". Say the gap. */
+              <p style={css("margin:10px 0 0;font:600 13.5px/1.45 'Atkinson Hyperlegible',sans-serif;color:#7A3600")}>We hold no link to the official text for this one — treat it as a lead, not an answer.</p>}
         </div>
       </div>
     );
@@ -3371,7 +3405,10 @@ function App(){
         {factValStr(f.value) ? <p style={css("margin:0;font:700 17px/1.35 'Atkinson Hyperlegible',sans-serif;color:#14181F;overflow-wrap:anywhere")}>{typeof f.value === 'number' && isMoneyTopic(f.topic) ? money(f.value) : factValStr(f.value)}</p> : null}
         {f.citation ? <p style={css("margin:0;font:600 14px/1.45 'IBM Plex Mono',monospace;color:#1B2778;overflow-wrap:anywhere")}>{f.citation}</p> : null}
         <div style={css("display:flex;gap:10px;flex-wrap:wrap;align-items:center")}>
-          {f.sourceAgency ? <span style={css("font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{f.sourceAgency}</span> : null}
+          {f.sourceAgency || formatChecked(f.lastChecked) ?
+            <span style={css("font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>
+              {f.sourceAgency || 'Official source'}{formatChecked(f.lastChecked) ? ' · checked ' + formatChecked(f.lastChecked) : ''}
+            </span> : null}
           {safeUrl(f.sourceUrl)
             ? <a href={safeUrl(f.sourceUrl)} target="_blank" rel="noopener noreferrer" className="hoverfx" aria-label={'Official source for ' + (f.citation || f.topic) + ' (opens in a new tab)'} style={css("display:inline-flex;align-items:center;min-height:44px;font:600 13px 'IBM Plex Mono',monospace;color:#2B3AA8;text-decoration:none")}>source ↗</a>
             : null}
