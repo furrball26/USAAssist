@@ -2177,6 +2177,58 @@ const CAUSATION_CLOSE_GAP_DAYS = 30;
 
 /* ── App ──────────────────────────────────────────────────────────── */
 
+/* ── Where the map cannot reach ────────────────────────────────────────────
+   State, then county, then city assumes one fixed worksite. Four common
+   working lives do not have one, and a reader who cannot honestly answer
+   "which county?" has nowhere to go on that screen except away.
+
+   Every note says what to DO with this app, and says plainly where we cannot
+   resolve it. None of them states a rule about which jurisdiction's law
+   governs: for remote and for driving work that question is genuinely
+   unsettled, and we hold no sourced answer to it, so the notes point at
+   reading both rather than at picking one. */
+const ENTRY_SITUATIONS = [
+  { key: 'home', label: 'I work from home',
+    note: 'Pick where you sit when you work, not where the company is. Which state’s law reaches a remote worker is not always settled, so if those are two different states it is worth reading both.' },
+  { key: 'many', label: 'More than one place',
+    note: 'Start with the place you work most. Rules and rates can differ at each one and we cannot combine them — come back and change your place to read the others.' },
+  { key: 'drive', label: 'I drive or deliver',
+    note: 'Pick where your route usually starts. Which local rate reaches driving and delivery work can turn on where you are based as much as on where you actually drive, and if you cross city lines more than one may apply. We cannot resolve that for you.' },
+  { key: 'past', label: 'I left that job',
+    note: 'Pick where you worked, not where you are now. Every figure on this site is today’s — we do not hold what it was on an earlier date. The filing clock has been running since it happened, though, and the deadline cards will tell you how long that has been.' },
+];
+
+/* Offered on both "where do you work" steps, because either can be the one a
+   reader gets stuck on. Deliberately NOT persisted: it is guidance for getting
+   through the entry flow, a returning reader skips that flow entirely, and
+   "I drive or deliver" says more about someone than the county they picked. */
+function EntrySituations({ value, onPick }) {
+  return (
+    <div style={css("display:flex;flex-direction:column;gap:10px")}>
+      <p style={css("margin:0;font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#4A5162;letter-spacing:.03em")}>NONE OF THOSE FIT?</p>
+      <div style={css("display:flex;flex-wrap:wrap;gap:8px")}>
+        {ENTRY_SITUATIONS.map(s => {
+          const on = value === s.key;
+          return (
+            /* Content-sized, min-height rather than height: these labels are
+               the first thing a translation will make longer, and a clipped
+               one is worse than a tall one. */
+            <button key={s.key} onClick={() => onPick(on ? null : s.key)} aria-pressed={on} className="hoverfx"
+              style={css("min-height:44px;padding:9px 14px;border-radius:999px;cursor:pointer;text-wrap:pretty;font:700 15px 'Atkinson Hyperlegible',sans-serif;" +
+                (on ? 'border:2px solid #004532;background:#B9F0DD;color:#00291E'
+                    : 'border:2px solid rgba(20,24,31,.28);background:#fff;color:#3A4150'))}>{s.label}</button>
+          );
+        })}
+      </div>
+      {value ?
+        <p role="status" style={css("margin:0;padding:12px 13px;border-radius:12px;background:#E7F6F1;border-left:5px solid #004532;font:500 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#00382A;text-wrap:pretty")}>
+          {(ENTRY_SITUATIONS.find(s => s.key === value) || {}).note}
+        </p>
+        : null}
+    </div>
+  );
+}
+
 /* ── The date question ─────────────────────────────────────────────────────
    Asked at the deadline rather than at the door. Putting it in the entry flow
    would charge every reader a question before they have seen a single line of
@@ -2297,6 +2349,9 @@ function App(){
   // everywhere: every deadline still shows without it, just without the
   // elapsed-time line beside it.
   const [when, setWhen] = useState(() => loadPrefs().when || '');
+  // Which of the four working lives the map cannot express, if the reader said.
+  // Component state only — see EntrySituations for why it is not persisted.
+  const [situation, setSituation] = useState(null);
   const [localData, setLocalData] = useState([]);
   // Which counties in the selected state we hold ANY local ordinance for. Drives the
   // county step's coverage note: telling someone up front whether picking their county
@@ -2634,6 +2689,11 @@ function App(){
             </>
           );
         })()}
+        {/* Offered before the coverage note and the skip, because a reader who
+            cannot answer "which county?" is stuck on the question above, not on
+            what we hold. */}
+        <EntrySituations value={situation} onPick={setSituation} />
+
         {/* States our coverage as a fact about US, not about the law. Plenty of
             counties have their own ordinances we simply have not compiled, and
             an empty result must never read as "no local law exists here". */}
@@ -2688,6 +2748,11 @@ function App(){
             <span style={css("font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty")}>Or you are not sure. You will see {stName} and federal law, and every local rule we hold for this county underneath.</span>
           </button>
         </div>
+        {/* Offered here too. This screen insists on "not where you live", which
+            is exactly the instruction a remote worker needs corrected, and a
+            driver may only realise the question is wrong for them once it is
+            asked about a city rather than a county. */}
+        <EntrySituations value={situation} onPick={setSituation} />
       </div>
     );
 

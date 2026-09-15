@@ -108,6 +108,12 @@ async function seedWelcomeSeen(page) {
  * `county` is a plain string and may be '—', which is what the app writes when
  * someone skips the county step. Seeded, like the welcome flag, rather than
  * clicked, so the history stack stays identical to a direct visit.
+ *
+ * It follows the same convention as `city`: omit it to skip the county step,
+ * pass '' to STOP on it. It used to coerce '' to '—' as well, which read as
+ * "no county" and behaved as "county skipped" — so a suite asking to land on
+ * the county step silently landed past it, and every assertion about that
+ * screen passed or failed against the wrong one.
  */
 export const PLACE_KEY = 'worklaw.place.v1';
 
@@ -116,7 +122,7 @@ async function seedPlace(page, place) {
     try { localStorage.setItem(key, value); } catch (e) { /* about:blank / blocked storage */ }
   }, PLACE_KEY, JSON.stringify({
     stateSel: place.state || '',
-    county: place.county || '—',
+    county: place.county === undefined ? '—' : place.county,
     /* A county we hold several localities for now asks which city, because a
        municipal ordinance is what decides a wage. A suite that wants to land on
        the topic grid has to answer that, so default to "somewhere else in the
@@ -134,7 +140,9 @@ async function seedPlace(page, place) {
  * page.goto with a raised timeout + one retry-on-timeout.
  *
  *   { freshVisitor: true }            — opt out of the seen-welcome flag
- *   { place: { state, county } }      — start already located, on the topic grid
+ *   { place: { state } }              — start already located, on the topic grid
+ *   { place: { state, county } }      — ...in a named county; county:'' stops
+ *                                        on the county step instead
  *   { place: { state, county, city } } — ...and in a named city; city:'' stops
  *                                        on the city step instead
  *   { place: { ..., when: 'YYYY-MM' } } — ...having said when it happened

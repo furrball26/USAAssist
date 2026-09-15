@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-Ik5hhfg5dTWkhpUKhcKuEUxtmqPXRAm0dCr+h+BkiIs='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-qpZJjdnnPZXAogtIWjg3QUKnvPkE6gcDMY2Co6vsusM='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14181F">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232B3AA8'/%3E%3Ctext x='32' y='47' font-size='42' text-anchor='middle' fill='white' font-family='Georgia,serif'%3E%C2%A7%3C/text%3E%3C/svg%3E">
@@ -2034,6 +2034,49 @@ function causationPairs(entries) {
   return pairs;
 }
 const CAUSATION_CLOSE_GAP_DAYS = 30;
+const ENTRY_SITUATIONS = [
+  {
+    key: "home",
+    label: "I work from home",
+    note: "Pick where you sit when you work, not where the company is. Which state\u2019s law reaches a remote worker is not always settled, so if those are two different states it is worth reading both."
+  },
+  {
+    key: "many",
+    label: "More than one place",
+    note: "Start with the place you work most. Rules and rates can differ at each one and we cannot combine them \u2014 come back and change your place to read the others."
+  },
+  {
+    key: "drive",
+    label: "I drive or deliver",
+    note: "Pick where your route usually starts. Which local rate reaches driving and delivery work can turn on where you are based as much as on where you actually drive, and if you cross city lines more than one may apply. We cannot resolve that for you."
+  },
+  {
+    key: "past",
+    label: "I left that job",
+    note: "Pick where you worked, not where you are now. Every figure on this site is today\u2019s \u2014 we do not hold what it was on an earlier date. The filing clock has been running since it happened, though, and the deadline cards will tell you how long that has been."
+  }
+];
+function EntrySituations({ value, onPick }) {
+  return /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:10px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:700 14px 'Atkinson Hyperlegible',sans-serif;color:#4A5162;letter-spacing:.03em") }, "NONE OF THOSE FIT?"), /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-wrap:wrap;gap:8px") }, ENTRY_SITUATIONS.map((s) => {
+    const on = value === s.key;
+    return (
+      /* Content-sized, min-height rather than height: these labels are
+         the first thing a translation will make longer, and a clipped
+         one is worse than a tall one. */
+      /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          key: s.key,
+          onClick: () => onPick(on ? null : s.key),
+          "aria-pressed": on,
+          className: "hoverfx",
+          style: css("min-height:44px;padding:9px 14px;border-radius:999px;cursor:pointer;text-wrap:pretty;font:700 15px 'Atkinson Hyperlegible',sans-serif;" + (on ? "border:2px solid #004532;background:#B9F0DD;color:#00291E" : "border:2px solid rgba(20,24,31,.28);background:#fff;color:#3A4150"))
+        },
+        s.label
+      )
+    );
+  })), value ? /* @__PURE__ */ React.createElement("p", { role: "status", style: css("margin:0;padding:12px 13px;border-radius:12px;background:#E7F6F1;border-left:5px solid #004532;font:500 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#00382A;text-wrap:pretty") }, (ENTRY_SITUATIONS.find((s) => s.key === value) || {}).note) : null);
+}
 function WhenPicker({ value, onPick, tone }) {
   const dark = tone === "dark";
   const ink = dark ? "#FFFDF8" : "#14181F";
@@ -2094,6 +2137,7 @@ function App() {
   const [stateData, setStateData] = useState(void 0);
   const [city, setCity] = useState(() => loadPrefs().city || "");
   const [when, setWhen] = useState(() => loadPrefs().when || "");
+  const [situation, setSituation] = useState(null);
   const [localData, setLocalData] = useState([]);
   const [localCounties, setLocalCounties] = useState([]);
   const [contentErr, setContentErr] = useState(false);
@@ -2329,7 +2373,7 @@ function App() {
       ), /* @__PURE__ */ React.createElement("select", { id: "onb-county", value: county && county !== "\u2014" ? county : "", onChange: (e) => {
         if (e.target.value) pickCounty(e.target.value);
       }, style: css("width:100%;padding:12px 13px;border-radius:11px;border:2px solid rgba(20,24,31,.28);background:#fff;font:600 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F;cursor:pointer;appearance:menulist;-webkit-appearance:menulist") }, /* @__PURE__ */ React.createElement("option", { value: "" }, "Select a " + word + " (" + shown.length + (shown.length !== counties.length ? " of " + counties.length : "") + ")"), shown.map((n) => /* @__PURE__ */ React.createElement("option", { key: n, value: n }, n))), q && shown.length === 0 && /* @__PURE__ */ React.createElement("p", { role: "status", style: css("margin:0;font:600 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#B3264F") }, "No ", word, " matches \u201C", countyQuery.trim(), "\u201D."));
-    })(), localCounties.length ? /* @__PURE__ */ React.createElement("div", { style: css("padding:15px 17px;border-radius:14px;border:2px solid #136B3C;background:#E8F6EE") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 6px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "We hold local ordinances for ", localCounties.length === 1 ? localCounties[0] : localCounties.slice(0, -1).join(", ") + " and " + localCounties[localCounties.length - 1], "."), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 14px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "Pick one of those and you will see the city and county minimum wages on top of ", stName, " and federal law. For any other county here we only hold ", stName, " and federal law \u2014 that does not mean your county has no ordinance, only that we have not compiled it. Check your county and city sites too.")) : /* @__PURE__ */ React.createElement("div", { style: css("padding:15px 17px;border-radius:14px;border:2px dashed rgba(20,24,31,.22)") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "We hold no county or city ordinances for ", stName, " yet \u2014 only federal and ", stName, " law. Many places add their own minimum wage, sick leave or scheduling rules on top, so check your county and city sites too.")), /* @__PURE__ */ React.createElement(
+    })(), /* @__PURE__ */ React.createElement(EntrySituations, { value: situation, onPick: setSituation }), localCounties.length ? /* @__PURE__ */ React.createElement("div", { style: css("padding:15px 17px;border-radius:14px;border:2px solid #136B3C;background:#E8F6EE") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 6px;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "We hold local ordinances for ", localCounties.length === 1 ? localCounties[0] : localCounties.slice(0, -1).join(", ") + " and " + localCounties[localCounties.length - 1], "."), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 14px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "Pick one of those and you will see the city and county minimum wages on top of ", stName, " and federal law. For any other county here we only hold ", stName, " and federal law \u2014 that does not mean your county has no ordinance, only that we have not compiled it. Check your county and city sites too.")) : /* @__PURE__ */ React.createElement("div", { style: css("padding:15px 17px;border-radius:14px;border:2px dashed rgba(20,24,31,.22)") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, "We hold no county or city ordinances for ", stName, " yet \u2014 only federal and ", stName, " law. Many places add their own minimum wage, sick leave or scheduling rules on top, so check your county and city sites too.")), /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: () => setCounty("\u2014"),
@@ -2380,7 +2424,7 @@ function App() {
       },
       /* @__PURE__ */ React.createElement("span", { style: css("font:700 17px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, "Somewhere else in ", county),
       /* @__PURE__ */ React.createElement("span", { style: css("font:400 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty") }, "Or you are not sure. You will see ", stName, " and federal law, and every local rule we hold for this county underneath.")
-    )));
+    )), /* @__PURE__ */ React.createElement(EntrySituations, { value: situation, onPick: setSituation }));
     if (lawCat) {
       const cat = LAW_CATEGORIES.find((c) => c.key === lawCat);
       if (!cat) return null;
