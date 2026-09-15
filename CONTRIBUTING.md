@@ -22,6 +22,103 @@ Keep `auto/agents` and `main` aligned — reconcile onto `auto/agents`, then fas
 - **Legal content** (`content/**`) stays `reviewed:false` until counsel signs off. Don't flip `reviewed` flags.
 - Run `npm run verify` before every push; it's the real gate (the `test` script is only a subset).
 
+## Copy goes through `t()` — all of it
+
+Every word a reader meets lives in the `STRINGS` catalogue in `index.dev.html`
+and is fetched with `t('some.key')`. `node automation/check-i18n.mjs` (part of
+`npm run verify`) fails the build on a bare string, so this is enforced rather
+than remembered.
+
+It checks five things:
+
+| Failure | What it means |
+| --- | --- |
+| *N un-extracted strings, up from 0* | New copy is baked into the JSX. Move it to the catalogue. |
+| *used but not in the catalogue* | A `t('typo')`. On screen that renders the key itself. |
+| *duplicate catalogue keys* | Two entries for one key: JS keeps the last silently, so one is dead. |
+| *placeholder mismatch* | The string wants `{state}` and the call does not pass it (or the reverse). An unfilled hole renders as a literal `{state}`. |
+| *catalogue key nothing reaches* | A leftover. Delete it, or point a call site at it. |
+
+### Writing a string
+
+**Whole sentences with named holes, never fragments glued together.**
+
+```js
+// no — a translator cannot reorder these, and German and Japanese need to
+'about ' + years + ' and ' + months + ' ago'
+
+// yes
+'when.elapsed.yearsAnd': 'about {years} and {months} ago'
+t('when.elapsed.yearsAnd', { years: y, months: m })
+```
+
+The same goes for plurals: branch on the whole sentence
+(`pay.more.one` / `pay.more.many`), don't splice a word into one template.
+Splicing works in English and in almost nothing else.
+
+A hole can carry a React element, not just text — `t()` returns a fragment
+when one does, which is how `nc.weigh.body` keeps four emphasised terms inside
+one translatable sentence.
+
+Data structures hold **keys**, not prose: `ENTRY_SITUATIONS`, `LAW_CATEGORIES`
+and the wizard trees all store `'cat.pay.label'` and the component calls
+`t()` on it. `topic.*` is reserved for dataset topic names — a UI string in
+that namespace is read as a rule the dataset covers and breaks
+`check-topic-labels.mjs`.
+
+### Adding a language
+
+**Spanish ships.** `LOCALES` in `index.dev.html` is the list; adding a locale
+means adding an entry there and a sibling table in `STRINGS` with the same
+keys. `automation/check-i18n.mjs` fails the build on a missing key, an extra
+one, or a `{hole}` set that differs from English, so a half-finished
+translation cannot land — and `test/language-toggle.mjs` reads the strings back
+off the rendered page, which is what catches copy that never went through
+`t()` at all (the three tab labels sat in a data array as English literals and
+were invisible to the checker).
+
+Mark a new locale `reviewed: false` and leave it there. That is not modesty:
+it is what makes `lang.unreviewed` render, and that notice — in the reader's
+own language, on every screen — is the app's only defence against someone
+acting on a sentence no attorney who speaks their language has read. Only
+counsel flips it.
+
+**Fonts are the open problem**, and they are the larger half of what a reader
+downloads:
+
+| | gzipped |
+| --- | --- |
+| `index.html` as shipped | **221 KB** |
+| ...of which the 16 inlined faces | **117 KB (53%)** |
+| ...app, markup and CSS | 104 KB (47%) |
+| plus, at runtime: manifest + federal + one state | ~8 KB |
+
+So a first load is about 230 KB over the wire, in one request, and it caches.
+That is light — but scripts are not a rounding error on it. They are the
+majority component, and a face that covers CJK is an order of magnitude
+heavier than the whole Latin set above even after subsetting.
+
+The faces are inlined so the app stays a single self-contained file that makes
+no off-origin request (`test/privacy.mjs` asserts that), and Atkinson
+Hyperlegible is a deliberate choice for this audience — it is designed for low
+vision — but it covers no Arabic, CJK or Korean.
+
+Adding a Latin-script language (Spanish, Vietnamese, Tagalog) needs no new
+fonts and no decision. Anything else needs one of: system fonts for non-Latin
+scripts (no weight, no hyperlegible face for those readers), subsetted faces
+served same-origin and loaded on demand (keeps offline and no-egress, but the
+page stops being one file), or a heavier single file. Measure before choosing:
+`gzip -9 -c index.html | wc -c`.
+
+The machinery around the catalogue is built: `lang` state assigned to
+`CURRENT_LANG` at the top of `App()`'s render, `worklaw.lang.v1` in
+localStorage (named in the on-screen privacy promise and allowlisted in
+`test/privacy.mjs` — a fourth key would need both updated), `<html lang>` kept
+in step so a screen reader changes voice, and `LangBar` above every screen,
+including the welcome one. It is on the welcome screen deliberately: someone
+who cannot read English cannot go looking for a settings menu labelled in
+English. It hides itself when `LOCALES` has one entry.
+
 ## Two gotchas
 
 - **`workflow` OAuth scope:** pushing any change to `.github/workflows/*` requires the GitHub token to have `workflow` scope (`gh auth refresh -s workflow`). Without it the push is rejected outright.

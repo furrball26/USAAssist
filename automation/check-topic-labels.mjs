@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
- * Every shipping rule has a human name (index.dev.html: TOPIC_LABELS).
+ * Every shipping rule has a human name (index.dev.html: STRINGS, topic.<key>).
  *
  * Topic keys are internal identifiers — `overtime.salaryFloorWeekly`,
  * `minimumWage.tippedCashWage`. The All rights tab printed them straight to
@@ -24,11 +24,14 @@ import { join } from 'node:path';
 const ROOT = new URL('..', import.meta.url).pathname;
 const dev = readFileSync(join(ROOT, 'index.dev.html'), 'utf8');
 
-const block = dev.match(/const TOPIC_LABELS = \{([\s\S]*?)\n\};/);
-if (!block) { console.log('❌ CHECK-TOPIC-LABELS: could not find TOPIC_LABELS in index.dev.html'); process.exit(1); }
+/* The names moved into the string catalogue, under topic.<key>, so a
+   translation can reach them. This reads them from there — TOPIC_LABELS is now
+   only the list of topics we hold a name for, derived from these same keys. */
+const catAt = dev.indexOf('const STRINGS = {');
+if (catAt < 0) { console.log('❌ CHECK-TOPIC-LABELS: could not find the STRINGS catalogue in index.dev.html'); process.exit(1); }
 const labels = {};
-for (const m of block[1].matchAll(/'([^']+)':\s*'((?:[^'\\]|\\.)*)'/g)) labels[m[1]] = m[2];
-if (!Object.keys(labels).length) { console.log('❌ CHECK-TOPIC-LABELS: parsed no labels'); process.exit(1); }
+for (const m of dev.slice(catAt).matchAll(/^\s*'topic\.([^']+)':\s*'((?:[^'\\]|\\.)*)'/gm)) labels[m[1]] = m[2];
+if (!Object.keys(labels).length) { console.log('❌ CHECK-TOPIC-LABELS: parsed no topic names out of the catalogue'); process.exit(1); }
 
 /* Collect every topic key that actually ships. */
 const keys = new Set();
@@ -53,7 +56,7 @@ if (missing.length) {
   bad++;
   console.log(`❌ ${missing.length} shipping topic key(s) have no plain-language label:`);
   missing.forEach(k => console.log(`     ${k}`));
-  console.log('   Add each to TOPIC_LABELS in index.dev.html. Without one, the raw key');
+  console.log('   Add each to the STRINGS catalogue as topic.<key>. Without one, the raw key');
   console.log('   is what the reader sees in the All rights tab.');
 } else {
   console.log(`✅ all ${keys.size} shipping topic keys have a plain-language label`);
