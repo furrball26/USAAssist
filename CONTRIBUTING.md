@@ -68,12 +68,32 @@ that namespace is read as a rule the dataset covers and breaks
 
 ### Adding a language
 
-The catalogue is ready; **fonts are the open problem.** `index.html` inlines
-sixteen base64 faces so the app is a single self-contained file that makes no
-off-origin request (`test/privacy.mjs` asserts that), and Atkinson
-Hyperlegible covers no Arabic, CJK or Korean. Adding a Latin-script language
-(Spanish, Vietnamese, Tagalog) needs no new fonts; anything else needs that
-decision made first.
+The catalogue is ready; **fonts are the open problem**, and they are the
+larger half of what a reader downloads:
+
+| | gzipped |
+| --- | --- |
+| `index.html` as shipped | **221 KB** |
+| ...of which the 16 inlined faces | **117 KB (53%)** |
+| ...app, markup and CSS | 104 KB (47%) |
+| plus, at runtime: manifest + federal + one state | ~8 KB |
+
+So a first load is about 230 KB over the wire, in one request, and it caches.
+That is light — but scripts are not a rounding error on it. They are the
+majority component, and a face that covers CJK is an order of magnitude
+heavier than the whole Latin set above even after subsetting.
+
+The faces are inlined so the app stays a single self-contained file that makes
+no off-origin request (`test/privacy.mjs` asserts that), and Atkinson
+Hyperlegible is a deliberate choice for this audience — it is designed for low
+vision — but it covers no Arabic, CJK or Korean.
+
+Adding a Latin-script language (Spanish, Vietnamese, Tagalog) needs no new
+fonts and no decision. Anything else needs one of: system fonts for non-Latin
+scripts (no weight, no hyperlegible face for those readers), subsetted faces
+served same-origin and loaded on demand (keeps offline and no-egress, but the
+page stops being one file), or a heavier single file. Measure before choosing:
+`gzip -9 -c index.html | wc -c`.
 
 When a second locale lands it also needs: a `lang` state assigned to
 `CURRENT_LANG` at the top of `App()`'s render, somewhere to store the choice,
