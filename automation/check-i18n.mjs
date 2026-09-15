@@ -267,6 +267,70 @@ if (missing.length) {
   process.exit(1);
 }
 
+/* ── The scanner proves itself before it is believed ───────────────────────
+   A checker that reports nothing is indistinguishable from a checker that
+   FINDS nothing, and this one has been broken four separate ways during its
+   short life — an apostrophe in a comment swallowing the file, template holes
+   blanked as if they were text, a regex that consumed the brace it needed to
+   count depth, a strip pattern that wanted `src:url(` where the file says
+   `src: url(`. Every one of those failed silently and plausibly.
+
+   So: run the walk against a fixture whose answer is known, and refuse to
+   grade anything if it comes back wrong. A baseline of 0 only means something
+   if the instrument can still find a 1.
+
+   Each line of the fixture is a real failure that happened. */
+{
+  /* TWO apostrophes in comments, with a real call BETWEEN them. That is what
+     the live failure looked like: esbuild keeps line comments inside the
+     catalogue object, one of them reads "so it doesn't just read as a
+     courthouse", the next "so it's replaced rather than kept" — and without
+     comment handling the first apostrophe opens a string that the second one
+     closes, eating every call in between.
+
+     A single apostrophe proves nothing, because an unterminated string is
+     abandoned and the walk carries on. The first version of this fixture had
+     exactly one, and deleting the comment handling still passed it while the
+     real app silently fell from 22 findings to nought. */
+  const FIXTURE = [
+    "// the reader's own question, and a /* not-a-comment inside one",
+    'const A = () => /* @__PURE__ */ React.createElement("p", {',
+    '  style: css("margin:0"), "aria-label": "Close this panel", title: "ignored"',
+    '}, "Where do you work?", n, " left");',
+    "// ...and it's closed here, which is what makes the gap swallow A",
+    // a regex holding brackets and a slash must not be read as structure
+    'const C = /[(){}"]\\/+/g;',
+    // a comparison operand sits exactly where a text node does
+    'const B = () => React.createElement("p", null, x.key === "city" ? "Yes it is" : "No");',
+    // a template hole is code; the literal around it is copy
+    'const D = () => React.createElement("p", null, `pad ${MAP_PAD} end`);',
+  ].join('\n');
+
+  const got = scan(FIXTURE).filter(f => isProse(f.value)).map(f => f.kind + '|' + f.value.trim());
+  const want = [
+    'aria-label|Close this panel',
+    'title|ignored',
+    'child|Where do you work?',
+    'child|left',
+    // BOTH arms of the ternary are text. Only the operand being compared
+    // against ("city") is excluded; what the branch RESOLVES to is copy.
+    'child|Yes it is',
+    'child|No',
+    // A template literal in child position is un-extracted copy like any
+    // other — `{`Hello ${name}`}` is a sentence a reader reads, and it is
+    // reported so it gets a catalogue key with a named hole.
+    'child|pad ${MAP_PAD} end',
+  ];
+  const missing = want.filter(w => !got.includes(w));
+  const surplus = got.filter(g => !want.includes(g));
+  if (missing.length || surplus.length) {
+    console.error('i18n FAILED: the scanner does not agree with its own fixture, so nothing it reports can be trusted.');
+    missing.forEach(m => console.error('   expected but not found: ' + m));
+    surplus.forEach(x => console.error('   found but not expected: ' + x));
+    process.exit(1);
+  }
+}
+
 const all = scan(code).filter(f => isProse(f.value)).concat(inData);
 // One entry per distinct string: the same label in three places is one thing
 // to translate, not three.
