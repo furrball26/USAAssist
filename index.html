@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-r0i2axgHpr/+Y+QRp2bm2gj9MBQghFvtC4243iajxFw='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-2Unxw2h67a3O2shSYYZfKbF80nOZfn9rK/xTsvnUxN0=' 'sha256-NfT5dPSyvNRNpzljNH+JUuNB+DkJ5EmCJ9Tia5j2bw0=' 'sha256-JML+OauQ7cZ6SX51dO/ANYJn8R1zj/a7yAHNtVh1/Go='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14181F">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232B3AA8'/%3E%3Ctext x='32' y='47' font-size='42' text-anchor='middle' fill='white' font-family='Georgia,serif'%3E%C2%A7%3C/text%3E%3C/svg%3E">
@@ -1169,7 +1169,6 @@ const STRINGS = {
     "when.yearAria": "Year it happened",
     "when.clear": "Clear",
     "when.said": "You said this happened {elapsed}.",
-    "when.saidUrgent": "You said this happened {elapsed}. {verdict}",
     "when.past": "That is past this deadline.",
     "when.soon": "That is most of this deadline \u2014 do not wait.",
     "when.caveat": "Deadlines run from different dates, and some can be paused, so a date past one is not necessarily the end of it \u2014 but check today, not next week.",
@@ -2037,7 +2036,7 @@ function WhenPicker({ value, onPick, tone }) {
     },
     /* @__PURE__ */ React.createElement("option", { value: "" }, t("when.year")),
     years.map((y) => /* @__PURE__ */ React.createElement("option", { key: y, value: y }, y))
-  ), /* @__PURE__ */ React.createElement("span", { role: "status", style: css("position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap") }, parsed ? t("when.said", { elapsed: elapsedLabel(monthsSince(value)) }) : ""), parsed ? /* @__PURE__ */ React.createElement(
+  ), parsed ? /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => onPick(""),
@@ -2045,14 +2044,14 @@ function WhenPicker({ value, onPick, tone }) {
       style: css("min-height:44px;padding:10px 14px;border-radius:10px;border:2px solid " + (dark ? "rgba(255,253,248,.45)" : "rgba(20,24,31,.28)") + ";background:transparent;font:700 14px 'Atkinson Hyperlegible',sans-serif;color:" + ink + ";cursor:pointer")
     },
     t("when.clear")
-  ) : null), parsed ? /* @__PURE__ */ React.createElement("p", { style: css("margin:2px 0 0;font:400 13px/1.5 'Atkinson Hyperlegible',sans-serif;color:" + quiet + ";text-wrap:pretty") }, t("when.caveat")) : null);
+  ) : null), parsed ? /* @__PURE__ */ React.createElement("span", { role: "status", style: css("display:block;margin-top:2px;font:700 13.5px/1.45 'Atkinson Hyperlegible',sans-serif;color:" + ink) }, t("when.said", { elapsed: elapsedLabel(monthsSince(value)) })) : null, parsed ? /* @__PURE__ */ React.createElement("p", { style: css("margin:2px 0 0;font:400 13px/1.5 'Atkinson Hyperlegible',sans-serif;color:" + quiet + ";text-wrap:pretty") }, t("when.caveat")) : null);
 }
 function ElapsedNote({ value, when, tone }) {
   const e = deadlineElapsed(value, when);
   if (!e) return null;
+  if (!e.urgency) return null;
   const dark = tone === "dark";
-  const urgent = !!e.urgency;
-  return /* @__PURE__ */ React.createElement("span", { style: css("display:block;margin-top:7px;text-wrap:pretty;font:" + (urgent ? "700" : "400") + " 13.5px/1.45 'Atkinson Hyperlegible',sans-serif;color:" + (dark ? urgent ? "#FFC9C9" : "#C6D3CE" : urgent ? "#7A1F1F" : "#4A5162")) }, e.urgency ? t("when.saidUrgent", { elapsed: e.label, verdict: t(ELAPSED_COPY[e.urgency]) }) : t("when.said", { elapsed: e.label }));
+  return /* @__PURE__ */ React.createElement("span", { style: css("display:block;margin-top:7px;text-wrap:pretty;font:700 13.5px/1.45 'Atkinson Hyperlegible',sans-serif;color:" + (dark ? "#FFC9C9" : "#7A1F1F")) }, t(ELAPSED_COPY[e.urgency]));
 }
 function App() {
   const [saved] = useState(loadPrefs);
@@ -2428,7 +2427,7 @@ function App() {
           /* @__PURE__ */ React.createElement("span", { style: css("flex:1;min-width:0;font:700 16px/1.3 'Atkinson Hyperlegible',sans-serif;color:#1B2778") }, t(tool.label)),
           /* @__PURE__ */ React.createElement(Icon, { name: "chevron-forward", size: 16 })
         )
-      )) : null, stateData && !stReviewed || localHere.length ? /* @__PURE__ */ React.createElement(DraftChip, { label: "Not yet lawyer-checked" }, t(localHere.length ? "draft.stateLocal" : "draft.state", { state: stName })) : null, localHere.length ? /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:12px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:2px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em") }, t("pay.local.kicker", { where: (county && county !== "\u2014" ? county : stName).toUpperCase() })), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, t("pay.local.sub")), localHere.map(
+      )) : null, stateData && !stReviewed || localHere.length ? /* @__PURE__ */ React.createElement(DraftChip, { label: t("draft.chip") }, t(localHere.length ? "draft.stateLocal" : "draft.state", { state: stName })) : null, cat.key === "deadlines" && (st.length || fed.length) ? /* @__PURE__ */ React.createElement("div", { style: css("padding:15px 17px;border-radius:14px;border:2px solid rgba(20,24,31,.22);background:#fff") }, /* @__PURE__ */ React.createElement(WhenPicker, { value: when, onPick: setWhen, tone: "light" })) : null, localHere.length ? /* @__PURE__ */ React.createElement("div", { style: css("display:flex;flex-direction:column;gap:12px") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:2px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em") }, t("pay.local.kicker", { where: (county && county !== "\u2014" ? county : stName).toUpperCase() })), /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150") }, t("pay.local.sub")), localHere.map(
         ({ loc, facts }, i) => (
           /* A left rule rather than a full card. A bordered locality card
              wrapping a bordered fact card wrapping the bordered "THE LAW"
@@ -2566,7 +2565,7 @@ function App() {
     const isNum = typeof f.value === "number";
     const val = isNum && isMoneyTopic(f.topic) ? money(f.value) : factValStr(f.value);
     const showVal = val && isNum;
-    return /* @__PURE__ */ React.createElement("div", { key: scopeLabel + i, style: css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 6px;font:700 14px/1.3 'Atkinson Hyperlegible',sans-serif;color:#4A5162;text-wrap:pretty") }, topicLabel(f.topic)), /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 14px;font:400 17px/1.55 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, f.summary), /* @__PURE__ */ React.createElement("div", { style: css("padding:13px 14px;border-radius:12px;background:#F0EDE5;border:2px solid rgba(20,24,31,.14)") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 8px;font:700 12px 'IBM Plex Mono',monospace;color:#4A5162;letter-spacing:.06em") }, t("fact.theLaw")), showVal ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 8px;font:700 19px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, val) : null, f.citation ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 4px;font:600 14px/1.45 'IBM Plex Mono',monospace;color:#1B2778;overflow-wrap:anywhere") }, f.citation) : null, f.sourceAgency || formatChecked(f.lastChecked) ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 13px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, formatChecked(f.lastChecked) ? t("source.checkedLong", { agency: f.sourceAgency || t("source.unnamed"), date: formatChecked(f.lastChecked) }) : f.sourceAgency || t("source.unnamed")) : null, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px") }, /* @__PURE__ */ React.createElement("span", { style: css("padding:7px 11px;border-radius:8px;background:" + scopeTone + ";border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace;color:#14181F") }, scopeLabel)), safeUrl(f.sourceUrl) ? /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { key: scopeLabel + i, style: css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 6px;font:700 14px/1.3 'Atkinson Hyperlegible',sans-serif;color:#4A5162;text-wrap:pretty") }, topicLabel(f.topic)), /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 14px;font:400 17px/1.55 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, f.summary), /* @__PURE__ */ React.createElement("div", { style: css("padding:13px 14px;border-radius:12px;background:#F0EDE5;border:2px solid rgba(20,24,31,.14)") }, /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 8px;font:700 12px 'IBM Plex Mono',monospace;color:#4A5162;letter-spacing:.06em") }, t("fact.theLaw")), showVal ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 8px;font:700 19px 'Atkinson Hyperlegible',sans-serif;color:#14181F") }, val) : null, f.citation ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0 0 4px;font:600 14px/1.45 'IBM Plex Mono',monospace;color:#1B2778;overflow-wrap:anywhere") }, f.citation) : null, f.sourceAgency || formatChecked(f.lastChecked) ? /* @__PURE__ */ React.createElement("p", { style: css("margin:0;font:400 13px/1.45 'Atkinson Hyperlegible',sans-serif;color:#4A5162") }, formatChecked(f.lastChecked) ? t("source.checkedLong", { agency: f.sourceAgency || t("source.unnamed"), date: formatChecked(f.lastChecked) }) : f.sourceAgency || t("source.unnamed")) : null, String(f.topic || "").indexOf("deadlines") === 0 ? /* @__PURE__ */ React.createElement(ElapsedNote, { value: f.value, when, tone: "light" }) : null, /* @__PURE__ */ React.createElement("div", { style: css("display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px") }, /* @__PURE__ */ React.createElement("span", { style: css("padding:7px 11px;border-radius:8px;background:" + scopeTone + ";border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace;color:#14181F") }, scopeLabel)), safeUrl(f.sourceUrl) ? /* @__PURE__ */ React.createElement(
       "a",
       {
         href: safeUrl(f.sourceUrl),

@@ -801,7 +801,6 @@ const STRINGS = {
     'when.yearAria':     'Year it happened',
     'when.clear':        'Clear',
     'when.said':         'You said this happened {elapsed}.',
-    'when.saidUrgent':   'You said this happened {elapsed}. {verdict}',
     'when.past':         'That is past this deadline.',
     'when.soon':         'That is most of this deadline \u2014 do not wait.',
     'when.caveat':       'Deadlines run from different dates, and some can be paused, so a date past one is not necessarily the end of it \u2014 but check today, not next week.',
@@ -2142,18 +2141,23 @@ function WhenPicker({ value, onPick, tone }) {
         </select>
         {/* Never a one-way door: a reader who mistypes, or who decides they
             would rather not say, can take it back. */}
-        {/* Announced once, here, rather than by each card that shows a reading:
-            the Agencies tab carries five of those and they would all fire on a
-            single change of the year. Visually hidden because the reading is
-            already on screen for anyone who can see it. */}
-        <span role="status" style={css("position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap")}>
-          {parsed ? t('when.said', { elapsed: elapsedLabel(monthsSince(value)) }) : ''}
-        </span>
         {parsed ?
           <button onClick={() => onPick('')} className="hoverfx"
             style={css("min-height:44px;padding:10px 14px;border-radius:10px;border:2px solid " + (dark ? 'rgba(255,253,248,.45)' : 'rgba(20,24,31,.28)') + ";background:transparent;font:700 14px 'Atkinson Hyperlegible',sans-serif;color:" + ink + ";cursor:pointer")}>{t('when.clear')}</button>
           : null}
       </div>
+      {/* The one place the elapsed time is STATED. It used to be visually
+          hidden, with every deadline card repeating the sentence — which on
+          the Deadlines screen printed the identical "You said this happened
+          about a year ago." four times, once per clock with nothing to say.
+          The cards carry only a verdict now, so this has to be seen as well as
+          announced. Below the control row rather than inside it: at full width
+          it wrapped the line and pushed Clear away from the two selects it
+          clears. */}
+      {parsed ?
+        <span role="status" style={css("display:block;margin-top:2px;font:700 13.5px/1.45 'Atkinson Hyperlegible',sans-serif;color:" + ink)}>
+          {t('when.said', { elapsed: elapsedLabel(monthsSince(value)) })}
+        </span> : null}
       {/* Said once, here, rather than on every card that shows a verdict. It is
           true of any deadline on any screen, so it does not need repeating
           beside each one — and repeated, it stopped being read. */}
@@ -2171,18 +2175,23 @@ function WhenPicker({ value, onPick, tone }) {
 function ElapsedNote({ value, when, tone }) {
   const e = deadlineElapsed(value, when);
   if (!e) return null;
+  /* Only where there is something to say. A bare restatement of the elapsed
+     time adds nothing beside a clock that has not run out, and the Deadlines
+     screen holds nine rules — four of which produced the identical sentence
+     with no verdict attached. The elapsed time is stated once, by the picker.
+
+     Silence here is not "you are fine": the caveat under the picker says
+     deadlines run from different dates and some can be paused, and that is the
+     sentence carrying that weight. */
+  if (!e.urgency) return null;
   const dark = tone === 'dark';
-  const urgent = !!e.urgency;
   /* Plain text, not a card. This already sits inside the red deadline strip
      inside an agency card; a third nested box turned the warning into
      decoration and pushed the agency's own name off the screen. */
   return (
-    <span style={css("display:block;margin-top:7px;text-wrap:pretty;font:" +
-      (urgent ? '700' : '400') + " 13.5px/1.45 'Atkinson Hyperlegible',sans-serif;color:" +
-      (dark ? (urgent ? '#FFC9C9' : '#C6D3CE') : (urgent ? '#7A1F1F' : '#4A5162')))}>
-      {e.urgency
-        ? t('when.saidUrgent', { elapsed: e.label, verdict: t(ELAPSED_COPY[e.urgency]) })
-        : t('when.said', { elapsed: e.label })}
+    <span style={css("display:block;margin-top:7px;text-wrap:pretty;font:700 13.5px/1.45 'Atkinson Hyperlegible',sans-serif;color:" +
+      (dark ? '#FFC9C9' : '#7A1F1F'))}>
+      {t(ELAPSED_COPY[e.urgency])}
     </span>
   );
 }
@@ -2814,9 +2823,17 @@ function App(){
               both unreviewed and were each announcing it, which put two nearly
               identical yellow cards a few lines apart. Scope the wording instead. */}
           {(stateData && !stReviewed) || localHere.length ?
-            <DraftChip label={'Not yet lawyer-checked'}>
+            <DraftChip label={t('draft.chip')}>
               {t(localHere.length ? 'draft.stateLocal' : 'draft.state', { state: stName })}
             </DraftChip> : null}
+
+          {/* Asked here as well as on the Agencies tab: the rule is that the
+              question lives wherever deadlines are the SUBJECT, and this
+              category is named after them. Every card below reads the answer. */}
+          {cat.key === 'deadlines' && (st.length || fed.length) ?
+            <div style={css("padding:15px 17px;border-radius:14px;border:2px solid rgba(20,24,31,.22);background:#fff")}>
+              <WhenPicker value={when} onPick={setWhen} tone="light" />
+            </div> : null}
 
           {/* Local first: it is the most specific law we hold, and where it exists it
               usually pays more than the state floor. Ordered most-specific-outward
@@ -3207,6 +3224,12 @@ function App(){
           <p style={css("margin:0 0 8px;font:700 12px 'IBM Plex Mono',monospace;color:#4A5162;letter-spacing:.06em")}>{t('fact.theLaw')}</p>
           {showVal ? <p style={css("margin:0 0 8px;font:700 19px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{val}</p> : null}
           {f.citation ? <p style={css("margin:0 0 4px;font:600 14px/1.45 'IBM Plex Mono',monospace;color:#1B2778;overflow-wrap:anywhere")}>{f.citation}</p> : null}
+          {/* The reader's own elapsed time, on a card whose value IS a filing
+              clock. Gated on the topic rather than on the screen, so a deadline
+              fact carries its reading wherever it is rendered — the Pay screen,
+              the Agencies tab and the self-check results all do this, and this
+              card was the last one that did not, on the screen literally
+              called "Deadlines". */}
           {/* Who said it and when we last looked. The date is the part that was
               missing: an indexed minimum wage resets every January, so a figure
               that was right when it was written goes wrong on a schedule, and
@@ -3217,6 +3240,9 @@ function App(){
                 ? t('source.checkedLong', { agency: f.sourceAgency || t('source.unnamed'), date: formatChecked(f.lastChecked) })
                 : (f.sourceAgency || t('source.unnamed'))}
             </p> : null}
+          {String(f.topic || '').indexOf('deadlines') === 0
+            ? <ElapsedNote value={f.value} when={when} tone="light" />
+            : null}
           <div style={css("display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px")}>
             <span style={css('padding:7px 11px;border-radius:8px;background:' + scopeTone + ";border:2px solid #14181F;font:600 13px 'IBM Plex Mono',monospace;color:#14181F")}>{scopeLabel}</span>
           </div>

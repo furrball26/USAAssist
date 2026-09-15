@@ -239,13 +239,25 @@ try {
        180-day EEOC clock and well inside the multi-year wage-claim one, and
        the same screen has to say both. */
     const { text } = await open({ ...TX, when: '2026-03' }, toAgencies);
+    /* The elapsed time is STATED once, by the picker; the VERDICT is per card,
+       because 180 days at the EEOC and three years in court are the same
+       elapsed time and two different situations.
+
+       It used to be the other way round — every card restated the elapsed time
+       — and on the Deadlines screen that printed the identical "You said this
+       happened about a year ago." four times, once per clock that had nothing
+       to say about it. */
     const saidCount = (text.match(/You said this happened/g) || []).length;
-    ok(saidCount > 1, 'the elapsed line is repeated per agency, since each runs its own clock (' + saidCount + ' cards)');
+    ok(saidCount === 1, 'the elapsed time is stated once for the screen (' + saidCount + ')');
+    const verdicts = (text.match(/past this deadline|most of this deadline/g) || []).length;
+    ok(verdicts > 1, 'and a verdict lands per clock, not once (' + verdicts + ')');
     ok(/That is past this deadline/.test(text),
        'six months reads as past on the 180-day card');
-    const lines = text.split('\n').filter(l => /You said this happened/.test(l));
-    ok(lines.some(l => !/this deadline/.test(l)),
-       'and as bare elapsed time on a card whose clock is years long');
+    /* A card whose clock is years long carries no verdict — and that silence is
+       not "you are fine": the caveat under the picker says deadlines run from
+       different dates and some can be paused. */
+    ok(/some can be paused/.test(text),
+       'the caveat that stops silence reading as reassurance is on the screen');
     /* The caveat is said once, by the picker, not by every card. Repeated on
        five cards it was forty words printed five times down one screen, which
        a reader scrolls past — the exact failure a deadline warning cannot
@@ -292,10 +304,12 @@ try {
     const text = await pg.evaluate(() => document.body.innerText);
     rendered.push(text);
     ok(/DEADLINE WATCH/.test(text), 'the harassment identifier ends on a filing-deadline card');
-    ok(/You said this happened about a year ago/.test(text),
-       'which reads the date the reader already gave, like every other deadline surface');
+    /* This screen has no picker — the question lives where deadlines are the
+       subject — so it carries the verdict alone, which is the actionable half. */
     ok(/That is past this deadline/.test(text),
-       'and says plainly that a year is past a 180-day clock');
+       'which reads the date the reader gave elsewhere and says a year is past a 180-day clock');
+    ok(!/When did this happen/.test(text),
+       'and does not ask again on a result screen that already carries a trail, a verdict and three calls to action');
     await pg.close();
   }
   {
