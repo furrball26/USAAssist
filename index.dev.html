@@ -259,6 +259,100 @@ function fetchContentJson(path){
     .catch(() => fetch(CONTENT_FALLBACK_BASE + path).then(r => { if (!r.ok) throw new Error('http ' + r.status); return r.json(); }));
 }
 
+/* ── Plain-language names for every rule ───────────────────────────────────
+   Topic keys are internal identifiers: `overtime.salaryFloorWeekly`,
+   `minimumWage.tippedCashWage`. The All rights tab was printing them straight
+   to the reader, which is developer vocabulary shown to someone under stress
+   who may be reading in a second language. Nobody searches for "salaryFloor
+   Weekly"; they want to know what the row is.
+
+   Every key that ships in content/ has an entry here, and
+   automation/check-topic-labels.mjs fails the build if one does not — so a
+   newly added fact cannot quietly leak its key into the interface. The
+   humanising fallback below exists only so a missing label degrades to
+   something readable rather than to a crash; it is not the safety net, the
+   gate is. */
+const TOPIC_LABELS = {
+  'deadlines.discriminationComplaint': 'Deadline to file a discrimination complaint',
+  'deadlines.eeocCharge': 'Deadline to file with the EEOC',
+  'deadlines.equalPayAct': 'Deadline for an equal pay claim',
+  'deadlines.fehaComplaint': 'Deadline to file a state civil rights complaint',
+  'deadlines.flsaWageClaim': 'Deadline to sue for unpaid wages (federal)',
+  'deadlines.oshaWhistleblower': 'Deadline to report safety retaliation',
+  'deadlines.wageClaim': 'Deadline to claim unpaid wages',
+  'disability.accommodation': 'Adjustments for a disability',
+  'disability.interactiveProcess': 'Working out an adjustment with your employer',
+  'disability.pregnancyLeave': 'Pregnancy-related leave',
+  'disability.reasonableAccommodation': 'What counts as a reasonable adjustment',
+  'discrimination.age': 'Age discrimination',
+  'discrimination.ageCoverage': 'Which employers the age rules cover',
+  'discrimination.ageDiscrimination': 'Age discrimination',
+  'discrimination.coverage': 'Which employers the discrimination rules cover',
+  'discrimination.coverageTitleVII': 'Which employers Title VII covers',
+  'discrimination.protectedClasses': 'Who is protected from discrimination',
+  'discrimination.protectedClasses.age': 'Age as a protected characteristic',
+  'discrimination.retaliation': 'Punishment for a discrimination complaint',
+  'discrimination.sexualHarassment': 'Sexual harassment',
+  'discrimination.sexualHarassmentPolicy': 'What your employer must do about harassment',
+  'enforcement.paths': 'Where you can file',
+  'equalPay': 'Equal pay for equal work',
+  'final-pay': 'Your final paycheck',
+  'final-pay.timing': 'When your final paycheck is due',
+  'final-pay.wageClaim': 'Claiming a final paycheck you never got',
+  'final-pay.wageRecoveryLimitations': 'How far back unpaid wages can be claimed',
+  'harassment.employerLiability': 'When an employer is on the hook for harassment',
+  'harassment.hostileEnvironmentStandard': 'What counts as a hostile work environment',
+  'harassment.reporting': 'Reporting harassment',
+  'leave.earnedPaidSickTime': 'Paid sick time you earn as you work',
+  'leave.fmla': 'Family and medical leave',
+  'leave.paidSickTime': 'Paid sick time',
+  'mealBreak': 'Meal and rest breaks',
+  'minimumWage.adjustment': 'How the minimum wage changes each year',
+  'minimumWage.coverage': 'Who the minimum wage covers',
+  'minimumWage.hotelWorker': 'Minimum wage for hotel workers',
+  'minimumWage.hourly': 'Minimum wage',
+  'minimumWage.localPreemption': 'Whether cities can set their own minimum wage',
+  'minimumWage.tipped': 'Minimum wage when you earn tips',
+  'minimumWage.tippedCash': 'Cash wage when you earn tips',
+  'minimumWage.tippedCashWage': 'Cash wage when you earn tips',
+  'minimumWage.tippedFoodService': 'Minimum wage for tipped food service work',
+  'minimumWage.tippedService': 'Minimum wage for tipped service work',
+  'minimumWage.youth': 'Minimum wage for young workers',
+  'nonCompete.enforceability': 'Whether a non-compete can be enforced',
+  'nonCompete.ftcRuleStatus': 'Where the federal non-compete rule stands',
+  'overtime.basicRule': 'When overtime pay starts',
+  'overtime.computerEmployeeHourly': 'Hourly rate that exempts computer roles from overtime',
+  'overtime.computerExemption': 'Overtime exemption for computer roles',
+  'overtime.daily': 'Overtime counted by the day',
+  'overtime.highlyCompensatedAnnual': 'Earnings that exempt high earners from overtime',
+  'overtime.salaryFloorWeekly': 'Salary you must clear to be exempt from overtime',
+  'overtime.salaryLevelWeekly': 'Salary you must clear to be exempt from overtime',
+  'overtime.salaryLevelWeekly.nycLIWestchester': 'Exempt salary — New York City, Long Island and Westchester',
+  'overtime.salaryLevelWeekly.restOfState': 'Exempt salary — rest of the state',
+  'overtime.salaryThreshold': 'Salary you must clear to be exempt from overtime',
+  'payDiscussion.protected': 'Your right to discuss your pay',
+  'remedies.attorneysFees': 'Getting your legal costs paid',
+  'remedies.liquidatedDamages': 'Double damages for unpaid wages',
+  'remedies.minimumWageDamages': 'What you can recover if you were underpaid',
+  'remedies.trebleDamages': 'Triple damages',
+  'retaliation': 'Being punished for speaking up',
+  'retaliation.flsa': 'Being punished for a wage complaint',
+  'retaliation.protected': 'Which kinds of punishment are illegal',
+  'retaliation.whistleblower': 'Whistleblower protection',
+  'severance.adeaWaiver': 'Signing away an age discrimination claim',
+  'severance.wageWaiver': 'Signing away unpaid wages',
+  'wagePayment.frequency': 'How often you must be paid',
+  'whistleblower': 'Whistleblower protection',
+};
+function topicLabel(topic){
+  const k = String(topic || '');
+  if (TOPIC_LABELS[k]) return TOPIC_LABELS[k];
+  // Degrade to something readable rather than a raw key. The build gate is
+  // what actually prevents this from being reached in shipped content.
+  const tail = k.split('.').slice(1).join(' ') || k;
+  return tail.replace(/([A-Z])/g, ' $1').replace(/[-_]/g, ' ')
+    .replace(/\s+/g, ' ').trim().replace(/^./, c => c.toUpperCase()) || k;
+}
 function topicKicker(topic){
   const p = String(topic || '').split('.')[0];
   const m = { overtime:'OVERTIME', minimumWage:'MINIMUM WAGE', discrimination:'DISCRIMINATION',
@@ -1450,7 +1544,17 @@ function resolveMinimumWage({ cityFacts, otherLocal, stateFacts, fedFacts, stNam
   if (layers.length < 2) return null;
 
   const winner = layers.reduce((a, b) => (b.fact.value > a.fact.value ? b : a));
-  layers.forEach(l => { l.winner = l === winner; });
+  /* `tied` matters as much as `winner`. Nineteen states set a minimum wage
+     exactly EQUAL to the federal floor, and the first version struck the
+     federal row through and explained that "a higher one applies to you" —
+     false in every one of those states, because nothing higher applies. A
+     layer is only beaten if something actually pays more than it. */
+  layers.forEach(l => {
+    l.winner = l === winner;
+    l.tied = !l.winner && l.fact.value === winner.fact.value;
+    l.beaten = l.fact.value < winner.fact.value;
+  });
+  const anyBeaten = layers.some(l => l.beaten);
 
   /* Localities we hold for this county that are NOT the reader's, and that pay
      MORE than the figure we resolved. Only those are worth interrupting for:
@@ -1461,7 +1565,7 @@ function resolveMinimumWage({ cityFacts, otherLocal, stateFacts, fedFacts, stNam
     .filter(x => x.fact && x.fact.value > winner.fact.value)
     .sort((a, b) => b.fact.value - a.fact.value);
 
-  return { layers, winner, nearby, unresolvedLocal: !cityFact && nearby.length > 0 };
+  return { layers, winner, nearby, anyBeaten, unresolvedLocal: !cityFact && nearby.length > 0 };
 }
 
 function money(n){ return '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 }); }
@@ -2371,11 +2475,36 @@ function App(){
         <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
           <button onClick={() => setLawCat(null)} aria-label="Back to all topics"
             style={css("align-self:flex-start;display:flex;align-items:center;gap:4px;min-height:44px;background:none;border:none;padding:10px 12px;margin:-8px 0 -8px -10px;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2B3AA8;cursor:pointer")}><Icon name="back" size={18} /> All topics</button>
+          {/* The domain's colour follows the reader in from the grid. Without it
+              the six-colour system was a property of one screen rather than a
+              way to know where you are. */}
           <div>
             <span style={css("font:600 13px 'IBM Plex Mono',monospace;letter-spacing:.05em;color:#4A5162")}>{locationLabel.toUpperCase()}</span>
-            <h1 style={css("margin:8px 0 0;font:700 28px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{cat.label}</h1>
+            {/* The icon carries the domain colour beside the heading rather than
+                in a pill above it — a coloured chip repeating the same words as
+                the h1 underneath is the label twice, which is the duplication
+                this redesign has been removing everywhere else. Colour + icon +
+                word, once (SC 1.4.1). */}
+            <div style={css("display:flex;align-items:center;gap:11px;margin:10px 0 0")}>
+              <span style={css('flex:none;display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:12px;border:2px solid ' + cat.edge + ';background:' + cat.fill + ';color:' + cat.on)}>
+                <Icon name={cat.icon} size={24} />
+              </span>
+              <h1 style={css("margin:0;font:700 26px/1.15 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{cat.label}</h1>
+            </div>
             <p style={css("margin:8px 0 0;font:400 16px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{cat.blurb}</p>
           </div>
+
+          {/* Coverage, stated as a fact about US rather than about the law.
+              "Time off & breaks" carries one federal rule (FMLA) and no state
+              rule at all in 47 of 50 states, so "1 rule reaches you" can read
+              as "only one rule exists" — which for paid sick leave and meal
+              breaks is usually false. Say which layer is missing from OUR data,
+              the same way the county step already does for local ordinances. */}
+          {stateData && !st.length && fed.length ?
+            <div style={css("padding:14px 15px;border-radius:14px;border:2px dashed rgba(20,24,31,.3)")}>
+              <p style={css("margin:0;font:700 15px/1.4 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>Everything below is federal law. We hold no {stName} rules on this yet.</p>
+              <p style={css("margin:6px 0 0;font:400 14px/1.5 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty")}>That is a gap in what we have compiled, not a finding that {stName} has none — many states add their own rules on top of the federal floor. Your state labor agency on the Agencies tab is the place to check.</p>
+            </div> : null}
 
           {/* The answer, before the evidence for it. Only minimum wage resolves
               this way — see resolveMinimumWage for why that limit is load-bearing. */}
@@ -2391,14 +2520,19 @@ function App(){
                   <div key={l.key} style={css("display:flex;align-items:center;gap:11px;padding:11px 14px;min-height:56px;" + (i ? 'border-top:1px solid rgba(20,24,31,.12);' : '') + (l.winner ? 'background:#F3FBF8' : ''))}>
                     <span style={css("flex:1;min-width:0;display:flex;flex-direction:column;gap:1px")}>
                       <span style={css("font:" + (l.winner ? '800' : '500') + " 16px/1.25 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{l.name}</span>
-                      <span style={css("font:400 13px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{l.kind}</span>
+                      <span style={css("font:400 13px 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{l.kind}{l.tied ? ' — the same amount' : ''}</span>
                     </span>
-                    <span style={css("flex:none;font:" + (l.winner ? "800 21px" : "500 17px") + " 'Atkinson Hyperlegible',sans-serif;color:" + (l.winner ? cat.edge : '#6B7280') + (l.winner ? '' : ';text-decoration:line-through'))}>{money(l.fact.value)}</span>
+                    {/* Struck through only if something genuinely pays more. A
+                        tied figure is not a loser, and marking it as one told
+                        19 states' readers something untrue. */}
+                    <span style={css("flex:none;font:" + (l.winner ? "800 21px" : "500 17px") + " 'Atkinson Hyperlegible',sans-serif;color:" + (l.winner ? cat.edge : (l.tied ? '#3A4150' : '#6B7280')) + (l.beaten ? ';text-decoration:line-through' : ''))}>{money(l.fact.value)}</span>
                   </div>
                 )}
               </div>
               <p style={css("margin:0;padding:12px 14px 13px;border-top:2px solid " + cat.edge + ";font:500 14px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150;text-wrap:pretty")}>
-                You must be paid the highest minimum wage that reaches where you work. The others are struck through because a higher one applies to you, not because they are wrong.
+                {wage.anyBeaten
+                  ? 'You must be paid the highest minimum wage that reaches where you work. The others are struck through because a higher one applies to you, not because they are wrong.'
+                  : 'Every minimum wage that reaches your worksite is the same amount, so this is what you are owed either way.'}
               </p>
             </div> : null}
 
@@ -2809,7 +2943,11 @@ function App(){
     const showVal = val && isNum;
     return (
       <div key={scopeLabel + i} style={css("padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff")}>
-        <p style={css("margin:0 0 6px;font:600 13px 'IBM Plex Mono',monospace;color:#4A5162;letter-spacing:.04em")}>{topicKicker(f.topic)}</p>
+        {/* The rule's own name. This used to be topicKicker(), which returns the
+            topic PREFIX — so every card under Discrimination read
+            "DISCRIMINATION" and two different rules were labelled identically.
+            The reader could not tell which card answered which question. */}
+        <p style={css("margin:0 0 6px;font:700 14px/1.3 'Atkinson Hyperlegible',sans-serif;color:#4A5162;text-wrap:pretty")}>{topicLabel(f.topic)}</p>
         <p style={css("margin:0 0 14px;font:400 17px/1.55 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{f.summary}</p>
         <div style={css("padding:13px 14px;border-radius:12px;background:#F0EDE5;border:2px solid rgba(20,24,31,.14)")}>
           <p style={css("margin:0 0 8px;font:700 12px 'IBM Plex Mono',monospace;color:#4A5162;letter-spacing:.06em")}>THE LAW</p>
@@ -2849,9 +2987,14 @@ function App(){
       <div key={scope + i} style={css("display:flex;flex-direction:column;gap:6px;padding:14px 16px;border-radius:12px;border:2px solid rgba(20,24,31,.16);background:#fff")}>
         <div style={css("display:flex;align-items:baseline;gap:8px;flex-wrap:wrap")}>
           <span style={css('flex:none;padding:3px 8px;border-radius:6px;background:' + tone + ";font:600 11px 'IBM Plex Mono',monospace;color:#14181F")}>{scope}</span>
-          <span style={css("font:600 13px 'IBM Plex Mono',monospace;color:#4A5162;overflow-wrap:anywhere")}>{f.topic}</span>
+          {/* The rule's name in words. The raw key still rides along as a title
+              attribute for anyone cross-referencing the dataset, but it is not
+              what the reader is asked to parse. */}
+          <span title={f.topic} style={css("font:700 15px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{topicLabel(f.topic)}</span>
         </div>
-        {factValStr(f.value) ? <p style={css("margin:0;font:700 17px/1.35 'Atkinson Hyperlegible',sans-serif;color:#14181F;overflow-wrap:anywhere")}>{factValStr(f.value)}</p> : null}
+        {/* Same money treatment as the Laws tab: a salary floor rendered as a
+            bare "1352" is a number the reader has to guess the units of. */}
+        {factValStr(f.value) ? <p style={css("margin:0;font:700 17px/1.35 'Atkinson Hyperlegible',sans-serif;color:#14181F;overflow-wrap:anywhere")}>{typeof f.value === 'number' && isMoneyTopic(f.topic) ? money(f.value) : factValStr(f.value)}</p> : null}
         {f.citation ? <p style={css("margin:0;font:600 14px/1.45 'IBM Plex Mono',monospace;color:#1B2778;overflow-wrap:anywhere")}>{f.citation}</p> : null}
         <div style={css("display:flex;gap:10px;flex-wrap:wrap;align-items:center")}>
           {f.sourceAgency ? <span style={css("font:400 13px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>{f.sourceAgency}</span> : null}
@@ -2862,19 +3005,27 @@ function App(){
       </div>
     );
 
-    // Every rule on file for this reader, state first, grouped by topic prefix
-    // in the dataset's own order rather than re-sorted into our categories.
+    /* Grouped by the same six domains the Laws tab uses, in the same order and
+       the same colours. Previously this grouped by raw topic prefix, which
+       meant the colour system died at the topic grid and a reader who had just
+       learned that green is pay found none of it here. Anything whose prefix
+       maps to no domain lands in a clearly-named tail group rather than being
+       dropped — an unreachable rule is worse than an untidy one. */
     const groups = (() => {
-      const seen = [];
-      const byPrefix = new Map();
+      const byCat = new Map();
       const push = (f, scope, tone) => {
-        const p = topicPrefix(f.topic);
-        if (!byPrefix.has(p)) { byPrefix.set(p, []); seen.push(p); }
-        byPrefix.get(p).push([f, scope, tone]);
+        const key = categoryOfTopic(f.topic) || '_other';
+        if (!byCat.has(key)) byCat.set(key, []);
+        byCat.get(key).push([f, scope, tone]);
       };
       stFacts.forEach(f => push(f, stAbbr || stName.toUpperCase(), '#EEF1FF'));
       fedFacts.forEach(f => push(f, 'FED', '#F0EDE5'));
-      return seen.map(p => [p, byPrefix.get(p)]);
+      const out = [];
+      LAW_CATEGORIES.forEach(c => { if (byCat.has(c.key)) out.push([c, byCat.get(c.key)]); });
+      if (byCat.has('_other')) {
+        out.push([{ key: '_other', label: 'Everything else', fill: '#F0EDE5', edge: '#14181F', on: '#14181F' }, byCat.get('_other')]);
+      }
+      return out;
     })();
     const total = stFacts.length + fedFacts.length;
 
@@ -2891,10 +3042,10 @@ function App(){
         {stateErr ? <p role="alert" style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load {stName} rules. Check your connection and reopen — this is not a confirmation that no extra state protections apply.</p> : null}
         {stateData && !stReviewed ? <DraftStateNotice stName={stName} extra="" /> : null}
 
-        {groups.map(([prefix, rows]) =>
-          <div key={prefix} style={css("display:flex;flex-direction:column;gap:8px")}>
-            <p style={css("margin:6px 0 0;font:700 14px 'IBM Plex Mono',monospace;letter-spacing:.05em;color:#14181F")}>{topicKicker(prefix + '.x')}</p>
-            {rows.map(([f, scope, tone], i) => ruleRow(f, prefix + i, scope, tone))}
+        {groups.map(([cat, rows]) =>
+          <div key={cat.key} style={css("display:flex;flex-direction:column;gap:8px")}>
+            <p style={css('margin:8px 0 0;padding:7px 12px;border-radius:999px;align-self:flex-start;font:700 14px \'Atkinson Hyperlegible\',sans-serif;border:2px solid ' + cat.edge + ';background:' + cat.fill + ';color:' + cat.on)}>{cat.label}</p>
+            {rows.map(([f, scope, tone], i) => ruleRow(f, cat.key + i, scope, tone))}
           </div>
         )}
 
@@ -2912,27 +3063,66 @@ function App(){
      federal ones are constant. Both are shown, always: a state agency never
      replaces the federal route, and which one is the better door depends on
      facts this site does not ask for. */
+  /* `deadlineTopics` names the sourced clock that governs filing with each one.
+     The NLRB has none listed because no NLRB deadline ships in content/ — and
+     a filing deadline is the last thing in this app worth guessing at, so that
+     card shows no clock rather than a plausible one. */
   const FEDERAL_AGENCIES = [
-    { name:'U.S. Department of Labor — Wage & Hour Division', covers:'Unpaid wages, overtime, minimum wage, family and medical leave.', url:'https://www.dol.gov/agencies/whd/contact/local-offices' },
-    { name:'Equal Employment Opportunity Commission (EEOC)', covers:'Discrimination and harassment based on race, sex, religion, national origin, age, disability or genetic information.', url:'https://www.eeoc.gov/filing-charge-discrimination' },
-    { name:'OSHA', covers:'Unsafe working conditions, and retaliation for reporting them.', url:'https://www.osha.gov/workers/file-complaint' },
-    { name:'National Labor Relations Board (NLRB)', covers:'Being punished for organising, or for discussing pay and conditions with coworkers.', url:'https://www.nlrb.gov/about-nlrb/what-we-do/investigate-charges' },
+    { name:'U.S. Department of Labor — Wage & Hour Division', covers:'Unpaid wages, overtime, minimum wage, family and medical leave.', url:'https://www.dol.gov/agencies/whd/contact/local-offices', deadlineTopics:['deadlines.flsaWageClaim'] },
+    { name:'Equal Employment Opportunity Commission (EEOC)', covers:'Discrimination and harassment based on race, sex, religion, national origin, age, disability or genetic information.', url:'https://www.eeoc.gov/filing-charge-discrimination', deadlineTopics:['deadlines.eeocCharge'] },
+    { name:'OSHA', covers:'Unsafe working conditions, and retaliation for reporting them.', url:'https://www.osha.gov/workers/file-complaint', deadlineTopics:['deadlines.oshaWhistleblower'] },
+    { name:'National Labor Relations Board (NLRB)', covers:'Being punished for organizing, or for discussing pay and conditions with coworkers.', url:'https://www.nlrb.gov/about-nlrb/what-we-do/investigate-charges', deadlineTopics:[] },
   ];
 
   const Agencies = () => {
     const stLabel = stateSel || 'your state';
     const ag = (stateData && stateData.agencies) || {};
+    const stFacts = (stateData && stateData.facts) || [];
+    const fedFacts = (federal && federal.facts) || [];
     const stateLinks = [
-      ag.wageHour && ['Wage & hour', ag.wageHour],
-      ag.discrimination && ['Discrimination & harassment', ag.discrimination],
-      ag.labor && ['Labor standards', ag.labor],
+      ag.wageHour && ['Wage & hour', ag.wageHour, ['deadlines.wageClaim']],
+      ag.discrimination && ['Discrimination & harassment', ag.discrimination, ['deadlines.discriminationComplaint', 'deadlines.fehaComplaint']],
+      ag.labor && ['Labor standards', ag.labor, ['deadlines.wageClaim']],
     ].filter(Boolean).filter(([, a]) => a && safeUrl(a.url));
 
-    const row = (title, covers, url, tone) => (
+    /* The clock that governs filing with this agency, taken from the dataset —
+       state facts first, because a state deadline is the one that binds a state
+       filing, then federal. Returns null when nothing is on file, and the card
+       then shows no deadline at all: inventing one here would be the single
+       most harmful thing this app could do. */
+    const deadlineFor = (topics) => {
+      if (!topics || !topics.length) return null;
+      for (const src of [stFacts, fedFacts]) {
+        for (const t of topics) {
+          const f = src.find(x => String(x.topic) === t && factValStr(x.value));
+          if (f) return f;
+        }
+      }
+      return null;
+    };
+
+    /* Deliberately not collapsible, and never behind a tap. A filing deadline is
+       the one fact on this screen that cannot be recovered once it passes. */
+    const deadlineStrip = (f) => f ? (
+      <span style={css("display:flex;align-items:flex-start;gap:9px;margin-top:9px;padding:10px 12px;border-radius:10px;background:#FFE9E9;border:2px solid #7A1F1F")}>
+        <span style={css("flex:none;margin-top:1px;color:#7A1F1F;display:flex")}><Icon name="alarm" size={18} /></span>
+        <span style={css("flex:1;min-width:0;display:flex;flex-direction:column;gap:2px")}>
+          {/* "You have {x} to file" reads fine for "180 days" and badly for
+              "180 days (general); 300 days for sexual harassment" — a real
+              Texas value. A label framing survives every value shape while
+              staying in second person. */}
+          <span style={css("font:700 14px/1.35 'Atkinson Hyperlegible',sans-serif;color:#7A1F1F")}>Your deadline to file: {factValStr(f.value)}</span>
+          {f.citation ? <span style={css("font:400 12.5px/1.4 'Atkinson Hyperlegible',sans-serif;color:#5C3030")}>{f.citation}</span> : null}
+        </span>
+      </span>
+    ) : null;
+
+    const row = (title, covers, url, tone, dl) => (
       <a key={url} href={url} target="_blank" rel="noopener noreferrer" className="hoverfx"
         style={css('display:flex;flex-direction:column;gap:5px;padding:16px 18px;border-radius:14px;border:2px solid #14181F;background:' + tone + ';text-decoration:none;min-height:44px')}>
         <span style={css("font:700 17px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F;text-wrap:pretty")}>{title} ↗</span>
         <span style={css("font:400 15px/1.45 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{covers}</span>
+        {deadlineStrip(dl)}
       </a>
     );
 
@@ -2953,13 +3143,13 @@ function App(){
         {stateLinks.length ?
           <div style={css("display:flex;flex-direction:column;gap:10px")}>
             <p style={css("margin:2px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em")}>{stLabel.toUpperCase()}</p>
-            {stateLinks.map(([covers, a]) => row(a.name, covers, safeUrl(a.url), '#EEF1FF'))}
+            {stateLinks.map(([covers, a, topics]) => row(a.name, covers, safeUrl(a.url), '#EEF1FF', deadlineFor(topics)))}
           </div> : null}
         {stateErr ? <p role="alert" style={css("margin:0;font:700 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#B3264F")}>Couldn’t load {stLabel} agency links. Check your connection and reopen — the federal agencies below are not the only ones that may apply.</p> : null}
 
         <div style={css("display:flex;flex-direction:column;gap:10px")}>
           <p style={css("margin:6px 0 0;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#14181F;letter-spacing:.02em")}>FEDERAL — ANYWHERE IN THE US</p>
-          {FEDERAL_AGENCIES.map(a => row(a.name, a.covers, a.url, '#F0EDE5'))}
+          {FEDERAL_AGENCIES.map(a => row(a.name, a.covers, a.url, '#F0EDE5', deadlineFor(a.deadlineTopics)))}
         </div>
 
         <div style={css("display:flex;gap:14px;padding:18px;border-radius:16px;border:2px solid #14181F;background:#fff")}>
@@ -2970,7 +3160,10 @@ function App(){
           </div>
         </div>
 
-        <p style={css("margin:0;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>This is legal information, not legal advice. Deadlines to file are short and unforgiving — check the Deadlines topic before you wait.</p>
+        {/* This used to end "check the Deadlines topic before you wait", which
+            sent someone to another screen for the most time-critical fact on
+            this one. The deadlines are on the cards now. */}
+        <p style={css("margin:0;font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#4A5162")}>This is legal information, not legal advice. Where a deadline is shown it comes from the source named on that card, and it is the shortest thing standing between you and a claim — a day late is usually the whole case.</p>
       </div>
     );
   };
