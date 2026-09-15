@@ -272,10 +272,37 @@ try {
        'no screen claims to know what the rate was on the reader’s date');
   }
   {
+    /* A self-check ends on a DEADLINE WATCH card carrying a filing clock. The
+       Pay screen and the Agencies tab both read the reader's date against the
+       clock beside it; this card used to ignore an answer they had already
+       given. It does not ask — the picker lives where deadlines are the
+       subject — it only reads. */
+    const pg = await browser.newPage();
+    await pg.setViewport({ width: 390, height: 900 });
+    await gotoApp(pg, BASE, { place: { state: 'Texas', county: 'Harris County', when: '2025-09' } });
+    await new Promise(r => setTimeout(r, 1200));
+    for (const step of ['^Discrimination & harassment', 'Is this harassment', 'tied to one of those',
+                        'it was unwelcome', 'One severe incident', 'supervisor or manager', 'nothing changed']) {
+      await pg.evaluate(sel => {
+        const b = [...document.querySelectorAll('button,a')].find(e => new RegExp(sel).test((e.textContent || '').trim()));
+        if (b) b.click();
+      }, step);
+      await new Promise(r => setTimeout(r, 450));
+    }
+    const text = await pg.evaluate(() => document.body.innerText);
+    rendered.push(text);
+    ok(/DEADLINE WATCH/.test(text), 'the harassment identifier ends on a filing-deadline card');
+    ok(/You said this happened about a year ago/.test(text),
+       'which reads the date the reader already gave, like every other deadline surface');
+    ok(/That is past this deadline/.test(text),
+       'and says plainly that a year is past a 180-day clock');
+    await pg.close();
+  }
+  {
     // The source check above reads the file; this reads the screens, including
     // the four urgency states Part 2 has just walked through.
     const guilty = rendered.filter(t => REASSURING.test(t));
-    ok(rendered.length >= 5 && guilty.length === 0,
+    ok(rendered.length >= 6 && guilty.length === 0,
        'across every screen this suite rendered, nothing reassured the reader about time (' + rendered.length + ' screens)');
   }
 } finally {

@@ -3055,6 +3055,11 @@ function App(){
                   <span style={css("font:700 13px 'IBM Plex Mono',monospace;color:#14181F;letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px")}><Icon name="deadline-clock" size={14} /> {t('wiz.deadlineWatch')}</span>
                   <span style={css("font:700 18px/1.3 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{dl.value || dl.summary}</span>
                   <span style={css("font:400 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#3A4150")}>{dl.summary}</span>
+                  {/* The Pay screen and the Agencies tab both read the reader's
+                      date against the clock beside it. This card showed the
+                      same kind of clock and ignored an answer they had already
+                      given, which is the one place a self-check ends. */}
+                  <ElapsedNote value={dl.value || dl.summary} when={when} tone="light" />
                 </button>
               );
             })()}
