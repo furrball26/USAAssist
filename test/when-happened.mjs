@@ -313,10 +313,49 @@ try {
     await pg.close();
   }
   {
+    /* ── The surface inventory ───────────────────────────────────────────
+       Four screens show a reader a filing deadline, and this feature was
+       wired into them one at a time: the Pay screen first, then Agencies,
+       then the self-check result, then the Deadlines category — each one
+       found by hand, after shipping, because nothing listed them together.
+       Three separate commits fixing the same class of bug.
+
+       So they are listed here. A Texas reader who says September 2025 is a
+       year past the 180-day clocks every one of these shows, so every one of
+       them must say so. A fifth surface will not be caught automatically, but
+       the inventory is now written down and a change that breaks one of the
+       four fails here. */
+    const SURFACES = [
+      ['the Pay screen',        ['^Pay & overtime']],
+      ['the Agencies tab',      ['Agencies']],
+      ['the Deadlines category', ['^Deadlines']],
+      ['a self-check result',   ['^Discrimination & harassment', 'Is this harassment', 'tied to one of those',
+                                 'it was unwelcome', 'One severe incident', 'supervisor or manager', 'nothing changed']],
+    ];
+    for (const [label, steps] of SURFACES) {
+      const pg = await browser.newPage();
+      await pg.setViewport({ width: 390, height: 900 });
+      await gotoApp(pg, BASE, { place: { state: 'Texas', county: 'Harris County', when: '2025-09' } });
+      await new Promise(r => setTimeout(r, 1200));
+      for (const step of steps) {
+        await pg.evaluate(sel => {
+          const b = [...document.querySelectorAll('button,a')].find(e => new RegExp(sel).test((e.textContent || '').trim()));
+          if (b) b.click();
+        }, step);
+        await new Promise(r => setTimeout(r, 450));
+      }
+      const text = await pg.evaluate(() => document.body.innerText);
+      rendered.push(text);
+      ok(/Your deadline to file|DEADLINE WATCH|Deadline to /.test(text), label + ' shows a filing deadline');
+      ok(/past this deadline/.test(text), '...and tells a reader a year out that it has passed');
+      await pg.close();
+    }
+  }
+  {
     // The source check above reads the file; this reads the screens, including
     // the four urgency states Part 2 has just walked through.
     const guilty = rendered.filter(t => REASSURING.test(t));
-    ok(rendered.length >= 6 && guilty.length === 0,
+    ok(rendered.length >= 10 && guilty.length === 0,
        'across every screen this suite rendered, nothing reassured the reader about time (' + rendered.length + ' screens)');
   }
 } finally {
