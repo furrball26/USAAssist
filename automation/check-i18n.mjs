@@ -21,11 +21,16 @@
  *     aria-label is the quietest possible failure, since only a screen-reader
  *     user ever meets it.
  *
- * The count is a RATCHET, not a gate: index.dev.html has hundreds of these and
- * they come out screen by screen. The build fails if the number goes UP, which
- * is what keeps a migration like this from sliding backwards while it is
- * half-done. Lowering i18n-baseline.json is the only way it moves, and the
- * target is nought.
+ * The count is a RATCHET. It was built while index.dev.html still held hundreds
+ * of these and they came out screen by screen; the build failed if the number
+ * went up, which is what kept the migration from sliding backwards while it was
+ * half-done.
+ *
+ * THE BASELINE IS NOW NOUGHT, so the ratchet has become a plain gate: any new
+ * user-facing string that does not go through t() fails the build. Nothing here
+ * changes for that — a baseline of 0 is just the last tightening — but it means
+ * the next person to add copy will be told at once rather than discovering it
+ * when a translation lands half-finished.
  *
  * Run: node automation/check-i18n.mjs            (check against the baseline)
  *      node automation/check-i18n.mjs --list     (print what is left)
