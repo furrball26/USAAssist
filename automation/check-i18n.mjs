@@ -503,3 +503,68 @@ console.log(`i18n: ${defined.length} strings in the catalogue, ${distinct.length
     process.exit(1);
   }
 }
+
+/* ── Every locale must be COMPLETE, and its holes must still fit ────────────
+   This is the check the whole string layer exists for. A translation missing
+   a key falls back to English silently — which is the half-translated app
+   that is worse than no translation at all, and it fails quietly, on exactly
+   the screens nobody thought to open in that language.
+
+   Two things are mechanically checkable and both are fatal:
+
+     - KEY PARITY. Every locale carries every key. Extra keys are caught too:
+       a key that exists only in Spanish is a rename that half-landed.
+     - PLACEHOLDER PARITY. 'Where in {state}?' translated without its hole
+       prints a sentence with the state silently missing; translated with a
+       hole the call site does not pass prints a literal {estado} to a reader.
+       The names must match exactly, not just the count.
+
+   What no check can do is tell whether the Spanish is GOOD. That is why a
+   locale marked reviewed:false says so on screen, in its own language. */
+{
+  const localeBlock = (code) => {
+    const at = jsx.indexOf('const STRINGS = {');
+    const start = jsx.indexOf("\n  " + code + ": {", at);
+    if (start < 0) return null;
+    let d = 0;
+    const open = jsx.indexOf('{', start);
+    for (let i = open; i < jsx.length; i++) {
+      if (jsx[i] === '{') d++;
+      else if (jsx[i] === '}') { d--; if (d === 0) return jsx.slice(open + 1, i); }
+    }
+    return null;
+  };
+  const entriesOf = (block) => {
+    const out = new Map();
+    for (const m of block.matchAll(/^\s*'([^']+)'\s*:\s*'((?:[^'\\]|\\.)*)'/gm)) out.set(m[1], m[2]);
+    return out;
+  };
+  const holesOf = (v) => [...new Set([...String(v).matchAll(/\{([A-Za-z0-9_]+)\}/g)].map(m => m[1]))].sort();
+
+  const declared = [...jsx.matchAll(/\{ code: '([a-z-]+)', name: '[^']*', reviewed: (true|false) \}/g)].map(m => m[1]);
+  if (!declared.length) { console.error('i18n FAILED: could not read the LOCALES list'); process.exit(1); }
+
+  const en = entriesOf(catBlock);
+  const problems = [];
+  for (const code of declared) {
+    if (code === 'en') continue;
+    const block = localeBlock(code);
+    if (block === null) { problems.push(code + ': declared in LOCALES but has no catalogue'); continue; }
+    const other = entriesOf(block);
+    for (const k of en.keys()) if (!other.has(k)) problems.push(code + ': missing ' + k);
+    for (const k of other.keys()) if (!en.has(k)) problems.push(code + ': has ' + k + ', which English does not');
+    for (const [k, v] of other) {
+      if (!en.has(k)) continue;
+      const a = holesOf(en.get(k)).join(','), b = holesOf(v).join(',');
+      if (a !== b) problems.push(code + ': ' + k + ' holes are {' + (b || '—') + '}, English has {' + (a || '—') + '}');
+    }
+  }
+  if (problems.length) {
+    console.error('i18n FAILED: ' + problems.length + ' locale problem(s):');
+    problems.slice(0, 25).forEach(p => console.error('   ' + p));
+    if (problems.length > 25) console.error('   ...and ' + (problems.length - 25) + ' more');
+    process.exit(1);
+  }
+  const extra = declared.filter(c => c !== 'en');
+  if (extra.length) console.log('i18n: ' + extra.length + ' translated locale(s) complete and hole-compatible: ' + extra.join(', '));
+}
