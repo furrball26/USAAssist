@@ -42,6 +42,31 @@ const F = (v) => [{ topic: 'minimumWage.hourly', value: v }];
 const L = (n, v) => ({ loc: { name: n, covers: 'x' }, facts: F(v) });
 const CA = { stateFacts: F(16.90), fedFacts: F(7.25), stName: 'California' };
 
+/* The worked example exists because a third of US adults score at or below
+   Level 1 numeracy and this app's subject is money and multipliers. Two
+   properties make it trustworthy rather than decorative: the figures on screen
+   must ADD UP when someone checks them with a calculator, and the total must
+   equal the amount the unrounded law actually gives. Those can conflict —
+   rounding 1.5 x $20.25 to $30.38 and multiplying by 5 prints $151.90 for an
+   amount that is really $151.875 — so both are asserted on every case. */
+const workedExample = (0, eval)(dev.match(/function workedExample\([\s\S]*?\n\}\n/)[0] + '; workedExample');
+{
+  let bad = 0;
+  for (const [rate, hours] of [[20.25, 45], [7.25, 45], [16.90, 50], [13.33, 43], [11.00, 41], [15.50, 60]]) {
+    const e = workedExample(rate, hours);
+    const sumsOnScreen = Math.round((e.base + e.otPay) * 100) / 100 === e.total;
+    const matchesLaw = Math.round((e.normalHours * rate + e.otHours * rate * 1.5) * 100) / 100 === e.total;
+    if (!sumsOnScreen || !matchesLaw) bad++;
+  }
+  ok(bad === 0, 'every worked example both adds up on screen and matches the unrounded legal amount');
+  ok(workedExample(20.25, 45).total === 961.88, 'the canonical case totals $961.88');
+  ok(workedExample(20.25, 40).otHours === 0, 'a 40-hour week produces no overtime line');
+  ok(workedExample('x', 45) === null && workedExample(0, 45) === null,
+     'a missing or zero rate produces no example rather than a $0.00 one');
+  ok(workedExample(20.25, 45).otRate === undefined,
+     'no per-hour overtime rate is exposed — a rounded one would not multiply out');
+}
+
 {
   const r = resolveMinimumWage({ ...CA, cityFacts: F(20.25), otherLocal: [], cityName: 'West Hollywood' });
   ok(r && r.winner.name === 'West Hollywood' && r.winner.fact.value === 20.25,
@@ -139,6 +164,16 @@ try {
        'the rates it beat are still shown as evidence, not hidden');
     ok(/highest minimum wage that reaches where you work/i.test(text),
        'the rule that decides it is stated, so the number is not magic');
+    ok(/40 hours × \$20\.25/.test(text) && /\$810\.00/.test(text),
+       'the worked example does the base-pay arithmetic rather than describing it');
+    ok(/5 overtime hours at 1\.5/.test(text) && /\$151\.88/.test(text),
+       'and the overtime, at the legally precise amount');
+    ok(/Your employer owes you/.test(text) && /\$961\.88/.test(text),
+       'and totals it');
+    ok(/File a wage claim/.test(text) && /Division of Labor Standards Enforcement/.test(text),
+       'the next step names the free remedy and the agency that takes it');
+    ok(/Your deadline to file: 3 years/.test(text),
+       'with the state deadline beside it, not on another screen');
     ok(!/You may be owed more/i.test(text),
        'no "you may be owed more" warning when the answer is actually resolved');
     ok(errs.length === 0, 'no console/page errors on the resolved wage screen' + (errs.length ? ': ' + errs[0] : ''));

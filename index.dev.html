@@ -1505,6 +1505,54 @@ function hasSeenWelcome(){
 function markWelcomeSeen(){
   try { localStorage.setItem(SEEN_WELCOME_KEY, '1'); } catch(e){ /* best-effort; a repeat intro is harmless */ }
 }
+/* The sourced filing clock for a remedy, state first because a state deadline
+   is what binds a state filing. Used by BOTH the Agencies tab and the wage
+   screen's next step — one implementation, so the two can never drift into
+   quoting different deadlines for the same claim. Returns null when nothing is
+   on file, and every caller must then show nothing: a guessed filing deadline
+   is the most harmful thing this app could produce. */
+function findDeadline(topics, stFacts, fedFacts) {
+  if (!topics || !topics.length) return null;
+  for (const src of [stFacts || [], fedFacts || []]) {
+    for (const t of topics) {
+      const f = src.find(x => String(x.topic) === t && factValStr(x.value));
+      if (f) return f;
+    }
+  }
+  return null;
+}
+
+/* The arithmetic, done for the reader rather than described to them. A third of
+   US adults score at or below Level 1 numeracy, and this app's whole subject is
+   money, hours and multipliers — so "1.5x your rate after 40 hours" is the part
+   most likely to be nodded at and not computed.
+
+   Deliberately conservative about what it claims:
+   - it illustrates AT the resolved minimum wage; it does not claim to be the
+     reader's own pay,
+   - it uses the FEDERAL 40-hour rule, which applies everywhere, rather than a
+     state daily rule that only some states have,
+   - every displayed component is rounded BEFORE the total is summed, so the
+     figures on screen actually add up when someone checks them with a
+     calculator. Summing unrounded values and rounding last can print
+     810.00 + 151.87 = 961.88, which looks like a mistake and destroys trust in
+     every other number on the page. */
+function workedExample(rate, hours) {
+  if (typeof rate !== 'number' || !(rate > 0)) return null;
+  const NORMAL = 40;
+  const round = (n) => Math.round(n * 100) / 100;
+  const ot = Math.max(0, hours - NORMAL);
+  const base = round(Math.min(hours, NORMAL) * rate);
+  /* No per-hour overtime rate is displayed, deliberately. Rounding 1.5 x $20.25
+     to $30.38 and then multiplying by 5 gives $151.90; the amount actually owed
+     is $151.875. Showing the rounded rate would either overstate the pay by
+     tuppence or print a line that does not multiply out. Computing the overtime
+     pay from the unrounded rate and showing only the total for those hours is
+     both legally precise and checkable. */
+  const otPay = round(ot * rate * 1.5);
+  return { hours, normalHours: Math.min(hours, NORMAL), otHours: ot, rate, base, otPay, total: round(base + otPay) };
+}
+
 /* ── Which minimum wage is actually owed ───────────────────────────────────
    Several minimum wages reach any one worksite — federal, state, county and
    city — and the app used to print all of them and leave the reader to work
@@ -2471,6 +2519,13 @@ function App(){
         stName: stName,
         cityName: city && city !== '—' ? city : '',
       }) : null;
+      /* Illustrated at the resolved minimum, using the FEDERAL 40-hour rule that
+         applies everywhere — not a state daily rule only some states have. */
+      const example = wage ? workedExample(wage.winner.fact.value, 45) : null;
+      /* Same sourced lookup the Agencies tab uses, so the two screens can never
+         quote different deadlines for the same claim. */
+      const wageDeadline = wage ? findDeadline(['deadlines.wageClaim', 'deadlines.flsaWageClaim'], stFacts, fedFacts) : null;
+      const wageAgency = (stateData && stateData.agencies && stateData.agencies.wageHour) || null;
       return (
         <div style={css("padding:6px 22px 34px;display:flex;flex-direction:column;gap:16px")}>
           <button onClick={() => setLawCat(null)} aria-label="Back to all topics"
@@ -2534,6 +2589,50 @@ function App(){
                   ? 'You must be paid the highest minimum wage that reaches where you work. The others are struck through because a higher one applies to you, not because they are wrong.'
                   : 'Every minimum wage that reaches your worksite is the same amount, so this is what you are owed either way.'}
               </p>
+            </div> : null}
+
+          {/* The arithmetic, done rather than described. A third of US adults
+              score at or below Level 1 numeracy and this app's subject is money
+              and multipliers, so "1.5x after 40 hours" is the sentence most
+              likely to be nodded at and not computed. */}
+          {example ?
+            <div style={css("border-radius:16px;background:#FFF8DF;border:2px solid #544D00;padding:16px")}>
+              <p style={css("margin:0;font:700 17px/1.35 'Atkinson Hyperlegible',sans-serif;color:#3D3800;text-wrap:pretty")}>If you were paid the minimum and worked 45 hours last week</p>
+              <div style={css("display:flex;flex-direction:column;gap:8px;margin-top:13px")}>
+                <div style={css("display:flex;align-items:baseline;gap:10px")}>
+                  <span style={css("flex:1;font:500 16px 'Atkinson Hyperlegible',sans-serif;color:#3D3800")}>{example.normalHours} hours × {money(example.rate)}</span>
+                  <span style={css("flex:none;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#3D3800")}>{money(example.base)}</span>
+                </div>
+                <div style={css("display:flex;align-items:baseline;gap:10px")}>
+                  <span style={css("flex:1;font:500 16px 'Atkinson Hyperlegible',sans-serif;color:#3D3800")}>{example.otHours} overtime hours at 1.5×</span>
+                  <span style={css("flex:none;font:700 17px 'Atkinson Hyperlegible',sans-serif;color:#3D3800")}>{money(example.otPay)}</span>
+                </div>
+              </div>
+              <div style={css("display:flex;align-items:baseline;gap:10px;margin-top:12px;padding-top:12px;border-top:2px solid #544D00")}>
+                <span style={css("flex:1;font:800 17px 'Atkinson Hyperlegible',sans-serif;color:#3D3800")}>Your employer owes you</span>
+                <span style={css("flex:none;font:800 26px 'Atkinson Hyperlegible',sans-serif;color:#3D3800")}>{money(example.total)}</span>
+              </div>
+              <p style={css("margin:12px 0 0;font:400 13.5px/1.5 'Atkinson Hyperlegible',sans-serif;color:#5C5200;text-wrap:pretty")}>An illustration at the minimum wage, using the federal rule that overtime starts after 40 hours in a week. If you are paid more than the minimum, or your state counts overtime by the day, your own figure is higher.</p>
+            </div> : null}
+
+          {/* The remedy, named, with its clock beside it. "Consult an attorney"
+              is not a next step for most people reading this; a free claim with
+              the agency that takes it is. */}
+          {wage && wageAgency && safeUrl(wageAgency.url) ?
+            <div style={css("border-radius:16px;background:#14181F;padding:17px")}>
+              <p style={css("margin:0;font:700 13px 'Atkinson Hyperlegible',sans-serif;letter-spacing:.04em;color:#8FE3C6")}>IF YOU WERE PAID LESS THAN THIS</p>
+              <p style={css("margin:8px 0 0;font:800 19px/1.3 'Atkinson Hyperlegible',sans-serif;color:#FFFDF8;text-wrap:pretty")}>File a wage claim. It is free, and you do not need a lawyer.</p>
+              <p style={css("margin:8px 0 0;font:400 15px/1.5 'Atkinson Hyperlegible',sans-serif;color:#C6D3CE;text-wrap:pretty")}>{wageAgency.name} takes the claim directly.</p>
+              {wageDeadline ?
+                <div style={css("display:flex;align-items:flex-start;gap:10px;margin-top:13px;padding:11px 12px;border-radius:10px;background:#7A1F1F")}>
+                  <span style={css("flex:none;margin-top:1px;color:#FFC9C9;display:flex")}><Icon name="alarm" size={18} /></span>
+                  <span style={css("flex:1;min-width:0;display:flex;flex-direction:column;gap:2px")}>
+                    <span style={css("font:700 14px/1.35 'Atkinson Hyperlegible',sans-serif;color:#FFE8E8")}>Your deadline to file: {factValStr(wageDeadline.value)}</span>
+                    {wageDeadline.citation ? <span style={css("font:400 12.5px/1.4 'Atkinson Hyperlegible',sans-serif;color:#F3C9C9")}>{wageDeadline.citation}</span> : null}
+                  </span>
+                </div> : null}
+              <a href={safeUrl(wageAgency.url)} target="_blank" rel="noopener noreferrer"
+                style={css("display:flex;align-items:center;justify-content:center;margin-top:14px;min-height:54px;padding:15px;border-radius:12px;background:#8FE3C6;color:#06332B;text-decoration:none;font:800 17px 'Atkinson Hyperlegible',sans-serif")}>Start a wage claim ↗</a>
             </div> : null}
 
           {/* Say plainly when we CANNOT resolve it, rather than showing a
@@ -3090,16 +3189,7 @@ function App(){
        filing, then federal. Returns null when nothing is on file, and the card
        then shows no deadline at all: inventing one here would be the single
        most harmful thing this app could do. */
-    const deadlineFor = (topics) => {
-      if (!topics || !topics.length) return null;
-      for (const src of [stFacts, fedFacts]) {
-        for (const t of topics) {
-          const f = src.find(x => String(x.topic) === t && factValStr(x.value));
-          if (f) return f;
-        }
-      }
-      return null;
-    };
+    const deadlineFor = (topics) => findDeadline(topics, stFacts, fedFacts);
 
     /* Deliberately not collapsible, and never behind a tap. A filing deadline is
        the one fact on this screen that cannot be recovered once it passes. */
