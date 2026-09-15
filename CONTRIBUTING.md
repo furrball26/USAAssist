@@ -68,8 +68,23 @@ that namespace is read as a rule the dataset covers and breaks
 
 ### Adding a language
 
-The catalogue is ready; **fonts are the open problem**, and they are the
-larger half of what a reader downloads:
+**Spanish ships.** `LOCALES` in `index.dev.html` is the list; adding a locale
+means adding an entry there and a sibling table in `STRINGS` with the same
+keys. `automation/check-i18n.mjs` fails the build on a missing key, an extra
+one, or a `{hole}` set that differs from English, so a half-finished
+translation cannot land — and `test/language-toggle.mjs` reads the strings back
+off the rendered page, which is what catches copy that never went through
+`t()` at all (the three tab labels sat in a data array as English literals and
+were invisible to the checker).
+
+Mark a new locale `reviewed: false` and leave it there. That is not modesty:
+it is what makes `lang.unreviewed` render, and that notice — in the reader's
+own language, on every screen — is the app's only defence against someone
+acting on a sentence no attorney who speaks their language has read. Only
+counsel flips it.
+
+**Fonts are the open problem**, and they are the larger half of what a reader
+downloads:
 
 | | gzipped |
 | --- | --- |
@@ -95,11 +110,14 @@ served same-origin and loaded on demand (keeps offline and no-egress, but the
 page stops being one file), or a heavier single file. Measure before choosing:
 `gzip -9 -c index.html | wc -c`.
 
-When a second locale lands it also needs: a `lang` state assigned to
-`CURRENT_LANG` at the top of `App()`'s render, somewhere to store the choice,
-and a visible control. None of those exist yet, deliberately — with one locale
-they would be code no path reaches, and a stored preference would widen the
-privacy promise for nothing.
+The machinery around the catalogue is built: `lang` state assigned to
+`CURRENT_LANG` at the top of `App()`'s render, `worklaw.lang.v1` in
+localStorage (named in the on-screen privacy promise and allowlisted in
+`test/privacy.mjs` — a fourth key would need both updated), `<html lang>` kept
+in step so a screen reader changes voice, and `LangBar` above every screen,
+including the welcome one. It is on the welcome screen deliberately: someone
+who cannot read English cannot go looking for a settings menu labelled in
+English. It hides itself when `LOCALES` has one entry.
 
 ## Two gotchas
 

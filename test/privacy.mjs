@@ -11,7 +11,8 @@
  * stored"), so it needs a test that would fail the moment it stops being true:
  *
  *   1. After a full walk through the site, the ONLY app keys in localStorage
- *      are the remembered place and the seen-welcome flag.
+ *      are the remembered place, the seen-welcome flag, and the reading
+ *      language.
  *   2. The stored place contains a state and a county and nothing else — no
  *      free text, no identifiers.
  *   3. A leftover case blob from the old app is deleted on first load rather
@@ -46,6 +47,11 @@ const ok = (cond, msg) => { if (!cond) fails++; console.log((cond ? '✅ ' : '�
 const LEGACY_CASE_KEY = 'worklaw.case.v2';
 const PLACE_KEY = 'worklaw.place.v1';
 const WELCOME_KEY = 'worklaw.seenWelcome.v1';
+/* Which language the reader picked. Its own key rather than a field on the
+   place blob, because the pick can happen on the welcome screen before there
+   is any place — so it is a third key, and it is named here rather than
+   quietly widening the assertion below. */
+const LANG_KEY = 'worklaw.lang.v1';
 
 const b = await puppeteer.launch({ executablePath: resolveChromePath(), headless: true, args: ['--no-sandbox'] });
 try {
@@ -89,15 +95,24 @@ try {
   await click('All rights');
   await click('Agencies');
   await click('Laws');
+  // Pick the other language, so the key this suite is asserting about actually
+  // exists. Last, because every click above finds its button by English text.
+  await click('Español');
   await reloadApp(pg);
   await new Promise(r => setTimeout(r, 700));
 
   // ── 1 · only two keys, both ours, both innocuous ──
   const keys = await pg.evaluate(() => Object.keys(localStorage).sort());
-  const unexpected = keys.filter(k => k !== PLACE_KEY && k !== WELCOME_KEY);
+  const unexpected = keys.filter(k => k !== PLACE_KEY && k !== WELCOME_KEY && k !== LANG_KEY);
   ok(unexpected.length === 0,
-     'localStorage holds only the remembered place and the seen-welcome flag' +
+     'localStorage holds only the remembered place, the seen-welcome flag and the reading language' +
      (unexpected.length ? ' — also found: ' + unexpected.join(', ') : ''));
+
+  /* A language key is only innocuous while it holds a language. Asserting the
+     exact shape stops it becoming a convenient place to park anything else. */
+  const langVal = await pg.evaluate(k => localStorage.getItem(k), LANG_KEY);
+  ok(langVal === 'es',
+     `the stored language is a bare locale code and nothing else (got: ${JSON.stringify(langVal)})`);
 
   // ── 2 · the place is a place, nothing more ──
   const place = await pg.evaluate(k => JSON.parse(localStorage.getItem(k) || '{}'), PLACE_KEY);

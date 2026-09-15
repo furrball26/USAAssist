@@ -346,6 +346,9 @@ const STRINGS = {
     'source.inlineAria': 'Official source for {rule}',
     'home.promise':    'Free, and private by design: everything you enter stays on this device. This is legal information, not legal advice.',
     'nav.primary':     'Primary',
+    'nav.tab.home':    'Laws',
+    'nav.tab.rights':  'All rights',
+    'nav.tab.agencies':'Agencies',
     'crash.reload':    'Try reloading',
     'crash.reset':     'Reset and start over',
     'foot.reset':      'Resetting forgets the state, county and city you picked, and the month you gave for when your problem happened \u2014 the only things WorkLaw stores \u2014 and starts you again at the map. That is all it holds, and it holds it only in this browser.',
@@ -690,7 +693,7 @@ const STRINGS = {
     'welcome.sub':        'Plain-English employment law for every state \u2014 what you\u2019re owed, what counts as discrimination, and how long you have to act.',
     'welcome.artAria':    'Illustration: workers of different jobs, ages and abilities standing below a map of the United States',
     'map.smallStates':    'SMALL STATES \u2014 TAP A NAME',
-    'foot.privacy':       'Legal information, not legal advice. Nothing is uploaded \u2014 this browser remembers only the place you picked: state, county, and city if you gave one.',
+    'foot.privacy':       'Legal information, not legal advice. Nothing is uploaded \u2014 this browser remembers only what you picked: your state, county and city, the month you said it happened, and the language you read in.',
     'crash.h':            'Something went wrong',
     'crash.sub':          'WorkLaw hit an unexpected error. This is usually caused by a saved setting that got corrupted. Your options:',
     // ── Pay: the resolved wage, the arithmetic, the next step ──
@@ -740,6 +743,15 @@ const STRINGS = {
     'chrome.changePlace': 'Change where you work \u2014 currently {place}',
     'chrome.backTopics':  'All topics',
     'chrome.backTopicsAria': 'Back to all topics',
+
+    /* The reading language. `lang.unreviewed` is the promise LOCALES makes
+       good on: a locale marked reviewed:false says so, in its own language, on
+       every screen. It is a different claim from `draft.chip` — that one is
+       about whether a lawyer has checked the LAW, this one about whether
+       anyone has checked the TRANSLATION — so the two are worded so they
+       cannot read as the same sentence twice. */
+    'lang.label':         'Reading language',
+    'lang.unreviewed':    'Machine-translated. No lawyer who reads this language has checked the translation, and the official sources it links to are in English.',
     'disclaimer.state':   'Legal information for {state}, not legal advice, and laws change. Confirm anything important with an attorney.',
 
     // ── When the dataset does not arrive ──
@@ -823,6 +835,497 @@ const STRINGS = {
     'source.ctaAria':    'Check the official text of {rule} (opens in a new tab)',
     'source.none':       'We hold no link to the official text for this one \u2014 treat it as a lead, not an answer.',
   },
+  /* ── Español ───────────────────────────────────────────────────────────
+     Nobody has reviewed this translation. The app says so, in Spanish, on
+     every screen (LOCALES marks es reviewed:false and langNotice renders it).
+
+     Three rules held throughout:
+       - Agency names, statute citations and the official-source links stay in
+         English. They are what a reader will actually find when they follow
+         the link, and translating "Texas Workforce Commission" would send
+         someone looking for a body that does not exist under that name.
+       - Formal "usted", which is what US federal and state agencies use in
+         their own Spanish-language materials.
+       - The English here is deliberately plain rather than legalistic, and the
+         Spanish matches that register instead of reaching for court language. */
+  es: {
+    'pay.layer.local':    'Ordenanza local',
+    'pay.layer.state':    'Ley estatal',
+    'pay.layer.federal':  'El piso nacional (FLSA)',
+    'pay.layer.federalName': 'Federal',
+    'pay.layer.tied':     '{kind} — la misma cantidad',
+    'fact.theLaw':        'LA LEY',
+    'source.short':       'fuente ↗',
+    'nc.intro':           'La ley sobre acuerdos de no competencia varía mucho de un estado a otro, y varios estados han cambiado sus reglas hace poco. Esto es información general para {state}, no una opinión sobre su acuerdo en particular — solo un abogado puede decirle eso.',
+    'nc.ftc':             'FEDERAL — ESTADO DE LA REGLA DE LA FTC',
+    'nc.weigh.h':         'Qué suelen sopesar los tribunales (información general, no aplicada a su caso)',
+    'nc.weigh.body':      'En los estados que evalúan si un acuerdo de no competencia es "razonable" en lugar de prohibirlo por completo, los tribunales suelen fijarse en: qué tan limitado es el {scope}, cuánto dura el {duration}, si el empleador tiene un {interest} real que proteger (como secretos comerciales de verdad, no solo evitar la competencia), y si usted recibió una {consideration} real (algo de valor, como una nueva oferta de trabajo o un aumento) a cambio de firmar. Esta es una descripción general de factores comunes, no una calificación de su acuerdo en particular.',
+    'nc.weigh.scope':     'alcance geográfico',
+    'nc.weigh.duration':  'plazo',
+    'nc.weigh.interest':  'interés comercial legítimo',
+    'nc.weigh.consideration': 'contraprestación',
+    'nc.foot':            'Esto es información legal, no asesoría legal, y no es una opinión sobre si su acuerdo de no competencia es exigible. Un abogado laboral con licencia en {state} puede revisar su acuerdo real.',
+    'nc.findLawyer':      'Buscar un abogado',
+    'scope.federal':      'FEDERAL',
+    'scope.draft':        '{scope} (BORRADOR)',
+    'source.inline':      '[fuente ↗]',
+    'source.inlineAria':  'Fuente oficial de {rule}',
+    'home.promise':       'Gratis y privado por diseño: todo lo que usted escriba se queda en este dispositivo. Esto es información legal, no asesoría legal.',
+    'nav.primary':        'Principal',
+    'nav.tab.home':       'Leyes',
+    'nav.tab.rights':     'Todos los derechos',
+    'nav.tab.agencies':   'Agencias',
+    'crash.reload':       'Intentar recargar',
+    'crash.reset':        'Reiniciar y empezar de nuevo',
+    'foot.reset':         'Al reiniciar se olvidan el estado, el condado y la ciudad que usted eligió, y el mes que indicó para cuando ocurrió su problema — lo único que WorkLaw guarda — y usted vuelve a empezar en el mapa. Eso es todo lo que guarda, y lo guarda solo en este navegador.',
+    'cat.pay.label':      'Pago y horas extras',
+    'cat.pay.blurb':      'Salario mínimo, horas extras, propinas, igualdad salarial y cuándo le deben pagar.',
+    'cat.discrim.label':  'Discriminación y acoso',
+    'cat.discrim.blurb':  'Quién está protegido, qué cuenta y adaptaciones por discapacidad.',
+    'cat.retaliation.label': 'Represalias y alzar la voz',
+    'cat.retaliation.blurb': 'Ser castigado por quejarse, por denunciar o por hablar del sueldo.',
+    'cat.timeoff.label':  'Tiempo libre y descansos',
+    'cat.timeoff.blurb':  'Licencia familiar y médica, días por enfermedad y descansos para comer.',
+    'cat.leaving.label':  'Dejar un trabajo',
+    'cat.leaving.blurb':  'Cuándo llega el último cheque, acuerdos de indemnización y acuerdos de no competencia.',
+    'cat.deadlines.label': 'Plazos y lo que puede recuperar',
+    'cat.deadlines.blurb': 'Cuánto tiempo tiene antes de que un reclamo venza, y qué puede obtener. Estos no perdonan.',
+    'cat._other.label':   'Todo lo demás',
+    'tool.wage.label':    '¿Estoy exento de horas extras?',
+    'tool.wage.desc':     'Unas preguntas breves sobre las reglas federales y estatales para su trabajo.',
+    'tool.harassment.label': '¿Esto es acoso?',
+    'tool.harassment.desc': 'Compare lo que pasó con el estándar de ambiente de trabajo hostil.',
+    'tool.discrimination.label': '¿Esto es discriminación?',
+    'tool.discrimination.desc': 'Compare lo que pasó con los elementos de un reclamo por discriminación.',
+    'tool.noncompete.label': '¿Es exigible mi acuerdo de no competencia?',
+    'tool.noncompete.desc': 'Cómo trata su estado los acuerdos de no competencia, con la regla y su fuente.',
+    'agency.dol.covers':  'Salarios no pagados, horas extras, salario mínimo, licencia familiar y médica.',
+    'agency.eeoc.covers': 'Discriminación y acoso por raza, sexo, religión, origen nacional, edad, discapacidad o información genética.',
+    'agency.osha.covers': 'Condiciones de trabajo inseguras, y represalias por denunciarlas.',
+    'agency.nlrb.covers': 'Ser castigado por organizarse, o por hablar del sueldo y las condiciones con sus compañeros.',
+    'tool.aria':          '{name} — {desc}',
+    'agency.state.wageHour': 'Salarios y horas',
+    'agency.state.discrim': 'Discriminación y acoso',
+    'agency.state.labor': 'Normas laborales',
+    'gap.topic.h':        'Todo lo de abajo es ley federal. Todavía no tenemos reglas de {state} sobre esto.',
+    'gap.topic.sub':      'Eso es un vacío en lo que hemos recopilado, no una conclusión de que {state} no tenga ninguna — muchos estados agregan sus propias reglas encima del piso federal. La agencia laboral de su estado, en la pestaña Agencias, es el lugar para verificarlo.',
+    'gap.rights':         'Todavía no hay nada registrado aquí para {state}. Eso es un vacío en nuestros datos, no una afirmación de que no aplique ninguna regla.',
+    'gap.grid':           'Todavía no hay nada registrado para {state}. Eso no significa que no aplique ninguna regla.',
+    'gap.noncompete':     'Todavía no tenemos una respuesta con fuente para {state}. La ley sobre acuerdos de no competencia varía mucho por estado y está cambiando — hable con un abogado laboral antes de dar por hecho que su acuerdo es exigible o no.',
+    'gap.harassment':     'Ningún archivo estatal aquí tiene una entrada aparte de "acoso" — abajo se muestra la propia ley contra la discriminación de {state}, que por lo general también cubre los reclamos por acoso.',
+    'grid.h1':            'Sus derechos en {state}',
+    'grid.sub':           'La ley federal aplica en todas partes; las reglas de {state} se suman encima. Elija un tema.',
+    'rights.h1':          'Cada regla, tal como está escrita',
+    'rights.sub':         'Las mismas reglas que la pestaña Leyes explica — aquí sin explicación, solo la cita, la cifra y la fuente oficial.',
+    'rights.count':       '{n} en archivo para {state}.',
+    'rights.sourceAria':  'Fuente oficial de {rule}',
+    'agencies.h1':        'Quién hace cumplir esto',
+    'agencies.sub':       'Agencias del gobierno que usted puede contactar por su cuenta, gratis y sin abogado.',
+    'agencies.retal.h':   'Usted está protegido contra represalias por alzar la voz',
+    'agencies.retal.sub': 'Es ilegal que un empleador lo castigue — despedirlo, bajarlo de puesto, recortarle las horas — por preguntar, quejarse o presentar un reclamo sobre sus derechos en el trabajo. Esa protección también cubre las quejas internas y verbales, no solo las presentaciones formales.',
+    'agencies.lawyer.h':  'Buscar un abogado laboral',
+    'agencies.lawyer.sub': 'Quizá también quiera un abogado laboral con licencia en {state}. WorkLaw no opera un servicio de referencias ni recomienda despachos — el servicio de referencia de abogados del colegio de abogados de su estado o localidad es un buen lugar para empezar.',
+    'draft.agencies':     'Los plazos de estas tarjetas vienen de fuentes oficiales del gobierno, pero todavía no los ha verificado un abogado. Revise la fuente que aparece en la tarjeta antes de confiar en una fecha.',
+    'agencies.foot':      'Esto es información legal, no asesoría legal. Donde se muestra un plazo, viene de la fuente indicada en esa tarjeta, y es lo más corto que se interpone entre usted y un reclamo — un día tarde suele ser el caso entero.',
+    'scope.fedNationwide': 'FEDERAL — APLICA EN TODO EL PAÍS',
+    'scope.fedAnywhere':  'FEDERAL — EN CUALQUIER PARTE DE EE. UU.',
+    'wizard.applies':     'Qué aplica en {state}',
+    'welcome.sub':        'Ley laboral en palabras claras para cada estado — lo que le deben, qué cuenta como discriminación y cuánto tiempo tiene para actuar.',
+    'welcome.artAria':    'Ilustración: trabajadores de distintos oficios, edades y capacidades bajo un mapa de Estados Unidos',
+    'map.smallStates':    'ESTADOS PEQUEÑOS — TOQUE UN NOMBRE',
+    'foot.privacy':       'Información legal, no asesoría legal. No se sube nada — este navegador recuerda solo lo que usted eligió: su estado, condado y ciudad, el mes en que dijo que ocurrió, y el idioma en que lee.',
+    'crash.h':            'Algo salió mal',
+    'crash.sub':          'WorkLaw tuvo un error inesperado. Casi siempre lo causa un ajuste guardado que se dañó. Sus opciones:',
+    'pay.least':          'Lo mínimo que le pueden pagar legalmente',
+    'pay.leastIn':        'Lo mínimo que le pueden pagar legalmente en {city}',
+    'pay.perHour':        'por hora, antes de impuestos',
+    'pay.rule.beaten':    'Le deben pagar el salario mínimo más alto que alcance el lugar donde usted trabaja. Los otros están tachados porque a usted le aplica uno más alto, no porque estén equivocados.',
+    'pay.rule.tied':      'Todos los salarios mínimos que alcanzan su lugar de trabajo son la misma cantidad, así que esto es lo que le deben de cualquier manera.',
+    'pay.example.h':      'Si le pagaran el mínimo y hubiera trabajado 45 horas la semana pasada',
+    'pay.example.base':   '{hours} horas × {rate}',
+    'pay.example.ot':     '{hours} horas extras a 1.5×',
+    'pay.example.total':  'Su empleador le debe',
+    'pay.example.note':   'Un ejemplo al salario mínimo, usando la regla federal de que las horas extras empiezan después de 40 horas en una semana. Si le pagan más del mínimo, o si su estado cuenta las horas extras por día, su cifra es más alta.',
+    'pay.cta.kicker':     'SI LE PAGARON MENOS QUE ESTO',
+    'pay.cta.h':          'Presente un reclamo de salarios. Es gratis y no necesita abogado.',
+    'pay.cta.agency':     '{agency} recibe el reclamo directamente.',
+    'pay.cta.go':         'Iniciar un reclamo de salarios ↗',
+    'pay.deadline':       'Su plazo para presentarlo: {value}',
+    'pay.more.h':         'Puede que le deban más que la cifra de arriba.',
+    'pay.more.one':       'Un lugar en {where} fija su propia tarifa más alta. Cuál aplica depende de la dirección exacta donde usted trabaja, así que no podemos elegir una por usted:',
+    'pay.more.many':      '{n} lugares en {where} fijan su propia tarifa más alta. Cuál aplica depende de la dirección exacta donde usted trabaja, así que no podemos elegir una por usted:',
+    'pay.more.pick':      'Díganos en cuál trabaja',
+    'pay.local.kicker':   'EN {where} Y ALREDEDORES',
+    'pay.local.sub':      'Distintos lugares de aquí fijan tarifas distintas, y muchas veces no coinciden. Cuál le corresponde depende de dónde esté realmente su lugar de trabajo — lea lo que cada uno dice que cubre.',
+    'grid.reach.one':     '{n} REGLA LE ALCANZA',
+    'grid.reach.many':    '{n} REGLAS LE ALCANZAN',
+    'draft.chip':         'Todavía sin revisión de un abogado',
+    'draft.state':        'Estos datos de {state} están recopilados de fuentes oficiales del gobierno, pero todavía no los ha verificado un abogado.',
+    'draft.stateLocal':   'Estos datos de {state} y las ordenanzas locales de abajo están recopilados de fuentes oficiales del gobierno, pero todavía no los ha verificado un abogado. Las tarifas locales también cambian en una fecha fija cada año, así que revise la fuente oficial antes de confiar en una cifra.',
+    'map.us.aria':        'Mapa de Estados Unidos — elija su estado',
+    'map.us.failed':      'El mapa de Estados Unidos no se pudo cargar. Elija su estado de la lista de abajo — todo lo demás funciona con normalidad.',
+    'map.us.loading':     'Cargando el mapa…',
+    'map.state.aria':     'Mapa de {state} — elija su condado',
+    'map.state.failed':   'El mapa de {state} no se pudo cargar. Elija su condado de la lista de abajo — todo lo demás funciona con normalidad.',
+    'map.state.loading':  'Cargando el mapa de {state}…',
+    'loading':            'Cargando…',
+    'loading.state':      'Cargando las reglas de {state}…',
+    'home.h1':            'Conozca sus derechos en el trabajo',
+    'home.cta':           'Ver las reglas de mi estado',
+    'chrome.changePlace': 'Cambiar dónde trabaja — ahora {place}',
+    'chrome.backTopics':  'Todos los temas',
+    'chrome.backTopicsAria': 'Volver a todos los temas',
+    'lang.label':         'Idioma de lectura',
+    'lang.unreviewed':    'Traducción automática. Ningún abogado que lea español ha revisado la traducción, y las fuentes oficiales a las que enlaza están en inglés.',
+    'disclaimer.state':   'Información legal para {state}, no asesoría legal, y las leyes cambian. Confirme cualquier cosa importante con un abogado.',
+    'err.law':            'No se pudieron cargar los datos de leyes. Revise su conexión y vuelva a abrir.',
+    'err.rights':         'No se pudieron cargar los datos de derechos. Revise su conexión y vuelva a abrir.',
+    'err.federal':        'No se pudieron cargar las reglas federales. Revise su conexión y vuelva a abrir.',
+    'err.state':          'No se pudieron cargar las reglas de {state}. Revise su conexión y vuelva a abrir — esto no confirma que no apliquen protecciones estatales adicionales.',
+    'err.stateFed':       'No se pudieron cargar las reglas de {state}. Revise su conexión y vuelva a abrir — esto no confirma que no apliquen protecciones estatales adicionales. La ley federal sigue aplicando en todo el país.',
+    'err.stateRule':      'No se pudieron cargar las reglas de {state}. Revise su conexión y vuelva a abrir — esto no confirma que no aplique una regla estatal adicional.',
+    'err.stateNoncompete': 'No se pudieron cargar las reglas de {state}. Revise su conexión y vuelva a abrir — esto no confirma que {state} no tenga una regla sobre acuerdos de no competencia.',
+    'err.agencies':       'No se pudieron cargar los enlaces de agencias de {state}. Revise su conexión y vuelva a abrir — las agencias federales de abajo no son las únicas que pueden aplicar.',
+    'entry.country.h1':   '¿Dónde trabaja?',
+    'entry.country.sub':  'La ley laboral es distinta en cada estado. Elija el suyo para ver las reglas que de verdad le aplican.',
+    'entry.country.list': 'o elija de una lista',
+    'entry.country.select': 'Seleccione su estado',
+    'entry.county.back':  'Todo el país',
+    'entry.county.backAria': 'Volver al mapa de Estados Unidos',
+    'entry.county.h1':    '¿En qué parte de {state}?',
+    'entry.county.sub':   'Elija su condado en el mapa.',
+    'entry.county.list':  'o elija su {word} de una lista',
+    'entry.county.filter': 'Escriba para filtrar {n} {plural}…',
+    'entry.county.filterAria': 'Filtrar la lista de {word}',
+    'entry.county.select': 'Seleccione un {word} ({n})',
+    'entry.county.selectSome': 'Seleccione un {word} ({n} de {total})',
+    'entry.county.noMatch': 'Ningún {word} coincide con "{query}".',
+    'entry.county.haveLocal': 'Tenemos ordenanzas locales de {places}.',
+    'entry.county.haveLocalSub': 'Elija uno de esos y verá los salarios mínimos de la ciudad y del condado encima de la ley de {state} y la federal. Para cualquier otro condado de aquí solo tenemos la ley de {state} y la federal — eso no significa que su condado no tenga una ordenanza, solo que no la hemos recopilado. Revise también los sitios de su condado y su ciudad.',
+    'entry.county.noLocal': 'Todavía no tenemos ordenanzas de condado ni de ciudad para {state} — solo la ley federal y la de {state}. Muchos lugares agregan su propio salario mínimo, días por enfermedad o reglas de horarios encima, así que revise también los sitios de su condado y su ciudad.',
+    'entry.county.skip':  'Omitir — muéstreme la ley de {state}',
+    'entry.city.backAria': 'Volver a los condados de {state}',
+    'entry.city.h1':      '¿En qué parte de {county} trabaja?',
+    'entry.city.sub':     'No donde vive — donde de verdad hace el trabajo. {n} lugares de este condado fijan sus propias reglas, y no coinciden entre sí.',
+    'entry.city.elsewhere': 'En otra parte de {county}',
+    'entry.city.elsewhereSub': 'O no está seguro. Verá la ley de {state} y la federal, y debajo cada regla local que tenemos para este condado.',
+    'list.pair':          '{a} y {b}',
+    'list.more':          '{items} y {last}',
+    'entry.sit.heading':  '¿NINGUNA DE ESAS LE QUEDA?',
+    'entry.sit.home.label': 'Trabajo desde casa',
+    'entry.sit.home.note': 'Elija dónde está usted cuando trabaja, no dónde está la empresa. Qué ley estatal alcanza a un trabajador remoto no siempre está resuelto, así que si son dos estados distintos vale la pena leer los dos.',
+    'entry.sit.many.label': 'En más de un lugar',
+    'entry.sit.many.note': 'Empiece por el lugar donde más trabaja. Las reglas y las tarifas pueden ser distintas en cada uno y no podemos combinarlas — vuelva y cambie su lugar para leer los otros.',
+    'entry.sit.drive.label': 'Manejo o hago entregas',
+    'entry.sit.drive.note': 'Elija dónde suele empezar su ruta. Qué tarifa local alcanza al trabajo de manejo y entregas puede depender tanto de dónde tiene su base como de por dónde maneja en realidad, y si cruza límites de ciudad puede aplicar más de una. Eso no lo podemos resolver por usted.',
+    'entry.sit.past.label': 'Dejé ese trabajo',
+    'entry.sit.past.note': 'Elija dónde trabajaba, no dónde está ahora. Cada cifra de este sitio es la de hoy — no tenemos cuál era en una fecha anterior. Pero el reloj para presentar viene corriendo desde que pasó, y las tarjetas de plazos le dirán cuánto tiempo ha sido.',
+    'when.heading':       '¿Cuándo pasó esto?',
+    'when.sub':           'Opcional — cada plazo se muestra de cualquier manera. Si nos dice, le diremos hace cuánto fue, junto a cada uno.',
+    'when.month':         'Mes',
+    'when.monthAria':     'Mes en que pasó',
+    'when.year':          'Año',
+    'when.yearAria':      'Año en que pasó',
+    'when.clear':         'Borrar',
+    'when.said':          'Usted dijo que esto pasó {elapsed}.',
+    'when.past':          'Eso ya pasó este plazo.',
+    'when.soon':          'Eso es casi todo este plazo — no espere.',
+    'when.caveat':        'Los plazos corren desde fechas distintas, y algunos se pueden pausar, así que una fecha pasada no es necesariamente el final — pero revise hoy, no la semana que viene.',
+    'when.elapsed.thisMonth': 'este mes',
+    'when.elapsed.oneMonth': 'hace como un mes',
+    'when.elapsed.months': 'hace como {n} meses',
+    'when.elapsed.years': 'hace como {years}',
+    'when.elapsed.yearsAnd': 'hace como {years} y {months}',
+    'when.unit.oneYear':  'un año',
+    'when.unit.years':    '{n} años',
+    'when.unit.oneMonth': 'un mes',
+    'when.unit.months':   '{n} meses',
+    'source.unnamed':     'Fuente oficial',
+    'source.checkedLong': '{agency} · lo revisamos por última vez el {date}',
+    'source.checkedShort': '{agency} · revisado el {date}',
+    'source.cta':         'Ver el texto oficial ↗',
+    'source.ctaAria':     'Ver el texto oficial de {rule} (se abre en una pestaña nueva)',
+    'source.none':        'No tenemos un enlace al texto oficial para este — tómelo como una pista, no como una respuesta.',
+    // ── El nombre de cada regla, en palabras claras ──
+    'topic.deadlines.discriminationComplaint': 'Plazo para presentar una queja por discriminación',
+    'topic.deadlines.eeocCharge': 'Plazo para presentar ante la EEOC',
+    'topic.deadlines.equalPayAct': 'Plazo para un reclamo de igualdad salarial',
+    'topic.deadlines.fehaComplaint': 'Plazo para presentar una queja estatal de derechos civiles',
+    'topic.deadlines.flsaWageClaim': 'Plazo para demandar por salarios no pagados (federal)',
+    'topic.deadlines.oshaWhistleblower': 'Plazo para denunciar represalias por seguridad',
+    'topic.deadlines.wageClaim': 'Plazo para reclamar salarios no pagados',
+    'topic.disability.accommodation': 'Ajustes por una discapacidad',
+    'topic.disability.interactiveProcess': 'Acordar un ajuste con su empleador',
+    'topic.disability.pregnancyLeave': 'Licencia por embarazo',
+    'topic.disability.reasonableAccommodation': 'Qué cuenta como un ajuste razonable',
+    'topic.discrimination.age': 'Discriminación por edad',
+    'topic.discrimination.ageCoverage': 'A qué empleadores cubren las reglas de edad',
+    'topic.discrimination.ageDiscrimination': 'Discriminación por edad',
+    'topic.discrimination.coverage': 'A qué empleadores cubren las reglas de discriminación',
+    'topic.discrimination.coverageTitleVII': 'A qué empleadores cubre el Título VII',
+    'topic.discrimination.protectedClasses': 'Quién está protegido contra la discriminación',
+    'topic.discrimination.protectedClasses.age': 'La edad como característica protegida',
+    'topic.discrimination.retaliation': 'Castigo por una queja de discriminación',
+    'topic.discrimination.sexualHarassment': 'Acoso sexual',
+    'topic.discrimination.sexualHarassmentPolicy': 'Qué debe hacer su empleador ante el acoso',
+    'topic.enforcement.paths': 'Dónde puede presentar',
+    'topic.equalPay': 'Igual pago por igual trabajo',
+    'topic.final-pay': 'Su último cheque',
+    'topic.final-pay.timing': 'Cuándo le deben su último cheque',
+    'topic.final-pay.wageClaim': 'Reclamar un último cheque que nunca recibió',
+    'topic.final-pay.wageRecoveryLimitations': 'Hasta qué tan atrás se pueden reclamar salarios no pagados',
+    'topic.harassment.employerLiability': 'Cuándo responde el empleador por el acoso',
+    'topic.harassment.hostileEnvironmentStandard': 'Qué cuenta como ambiente de trabajo hostil',
+    'topic.harassment.reporting': 'Denunciar el acoso',
+    'topic.leave.earnedPaidSickTime': 'Días pagados por enfermedad que acumula al trabajar',
+    'topic.leave.fmla': 'Licencia familiar y médica',
+    'topic.leave.paidSickTime': 'Días pagados por enfermedad',
+    'topic.mealBreak': 'Descansos para comer y descansar',
+    'topic.minimumWage.adjustment': 'Cómo cambia el salario mínimo cada año',
+    'topic.minimumWage.coverage': 'A quién cubre el salario mínimo',
+    'topic.minimumWage.hotelWorker': 'Salario mínimo para trabajadores de hoteles',
+    'topic.minimumWage.hourly': 'Salario mínimo',
+    'topic.minimumWage.localPreemption': 'Si las ciudades pueden fijar su propio salario mínimo',
+    'topic.minimumWage.tipped': 'Salario mínimo cuando usted recibe propinas',
+    'topic.minimumWage.tippedCash': 'Salario en efectivo cuando usted recibe propinas',
+    'topic.minimumWage.tippedCashWage': 'Salario en efectivo cuando usted recibe propinas',
+    'topic.minimumWage.tippedFoodService': 'Salario mínimo para trabajo de comida con propinas',
+    'topic.minimumWage.tippedService': 'Salario mínimo para trabajo de servicio con propinas',
+    'topic.minimumWage.youth': 'Salario mínimo para trabajadores jóvenes',
+    'topic.nonCompete.enforceability': 'Si un acuerdo de no competencia se puede hacer cumplir',
+    'topic.nonCompete.ftcRuleStatus': 'En qué quedó la regla federal sobre no competencia',
+    'topic.overtime.basicRule': 'Cuándo empieza el pago de horas extras',
+    'topic.overtime.computerEmployeeHourly': 'Tarifa por hora que exime de horas extras a puestos de informática',
+    'topic.overtime.computerExemption': 'Exención de horas extras para puestos de informática',
+    'topic.overtime.daily': 'Horas extras contadas por día',
+    'topic.overtime.highlyCompensatedAnnual': 'Ingresos que eximen de horas extras a quienes ganan mucho',
+    'topic.overtime.salaryFloorWeekly': 'Salario que debe superar para estar exento de horas extras',
+    'topic.overtime.salaryLevelWeekly': 'Salario que debe superar para estar exento de horas extras',
+    'topic.overtime.salaryLevelWeekly.nycLIWestchester': 'Salario de exención — Ciudad de Nueva York, Long Island y Westchester',
+    'topic.overtime.salaryLevelWeekly.restOfState': 'Salario de exención — resto del estado',
+    'topic.overtime.salaryThreshold': 'Salario que debe superar para estar exento de horas extras',
+    'topic.payDiscussion.protected': 'Su derecho a hablar de su sueldo',
+    'topic.remedies.attorneysFees': 'Que le paguen sus costos legales',
+    'topic.remedies.liquidatedDamages': 'Daños dobles por salarios no pagados',
+    'topic.remedies.minimumWageDamages': 'Qué puede recuperar si le pagaron de menos',
+    'topic.remedies.trebleDamages': 'Daños triples',
+    'topic.retaliation': 'Ser castigado por alzar la voz',
+    'topic.retaliation.flsa': 'Ser castigado por una queja de salarios',
+    'topic.retaliation.protected': 'Qué tipos de castigo son ilegales',
+    'topic.retaliation.whistleblower': 'Protección para quien denuncia',
+    'topic.severance.adeaWaiver': 'Renunciar por escrito a un reclamo por discriminación por edad',
+    'topic.severance.wageWaiver': 'Renunciar por escrito a salarios no pagados',
+    'topic.wagePayment.frequency': 'Cada cuánto le deben pagar',
+    'topic.whistleblower': 'Protección para quien denuncia',
+    // ── Las tres autoevaluaciones ──
+    'wiz.followsFedOt':   '{state} sigue el estándar federal de horas extras.',
+    'wiz.followsFed':     '{state} por lo general sigue el estándar federal en esto.',
+    'wiz.flsa.kicker':    'RELOJ APARTE · PLAZO PARA DEMANDAR EN CORTE FEDERAL',
+    'wiz.deadlineWatch':  'ATENCIÓN AL PLAZO',
+    'wiz.reporting':      'DENUNCIAR Y REPRESALIAS',
+    'wiz.salaryFloor.kicker': 'COMPARE ESTO CON SU PROPIO SALARIO',
+    'wiz.salaryFloor.h':  '{state} exige al menos {amount} por semana para esta exención — más que los $684 federales.',
+    'wiz.salaryFloor.sub': 'Si su salario resulta menor que eso por semana, le deben horas extras bajo la ley de {state} sin importar cuáles sean sus tareas. {citation}La respuesta de arriba solo aplicó la prueba federal.',
+    'wiz.readRules':      'Leer las reglas de {domain}',
+    'wiz.domain.pay':     'pago y horas extras',
+    'wiz.domain.discrim': 'discriminación y acoso',
+    'wiz.again':          'Hacer la evaluación otra vez',
+    'wiz.complete':       'COMPLETA',
+    'wiz.question':       'PREGUNTA {n}',
+    'wiz.result':         'RESULTADO',
+    'wiz.back':           'Volver a la ley',
+    'wiz.cfg.discrimination.tag': 'IDENTIFICADOR DE DISCRIMINACIÓN',
+    'wiz.cfg.discrimination.doneTitle': 'Qué puede significar esto',
+    'wiz.cfg.discrimination.qDisclaimer': 'Esto es información general sobre cómo funciona en general la ley de discriminación, no una opinión legal sobre su situación — hable con un abogado.',
+    'wiz.cfg.discrimination.doneDisclaimer': 'Esto es información general, no una opinión legal sobre su situación — hable con un abogado.',
+    'wiz.cfg.harassment.tag': 'IDENTIFICADOR DE ACOSO',
+    'wiz.cfg.harassment.doneTitle': 'Qué puede significar esto',
+    'wiz.cfg.harassment.qDisclaimer': 'Esto es información general sobre cómo funciona en general la ley de acoso, no una opinión legal sobre su situación — hable con un abogado.',
+    'wiz.cfg.harassment.doneDisclaimer': 'Esto es información general, no una opinión legal sobre su situación — hable con un abogado.',
+    'wiz.cfg.wage.tag':   'EVALUACIÓN DE EXENCIÓN DE HORAS EXTRAS',
+    'wiz.cfg.wage.doneTitle': 'Su situación de horas extras',
+    'wiz.cfg.wage.qDisclaimer': 'Esta es una lectura en palabras claras de reglas publicadas, no asesoría legal sobre su trabajo en particular.',
+    'wiz.cfg.wage.doneDisclaimer': 'Esta es una lectura en palabras claras de reglas publicadas, no una opinión legal sobre su trabajo.',
+
+    'wiz.har.r.r_h_hostile.title': 'Esto podría llegar a ser un ambiente de trabajo hostil',
+    'wiz.har.r.r_h_hostile.body': 'Sus respuestas tienen la forma que los tribunales suelen buscar: conducta no deseada por usted, ligada a una característica protegida, y grave por sí sola o repetida a lo largo del tiempo. Esto es información general sobre el estándar legal, no una opinión legal sobre su situación — un abogado todavía tendría que revisar los detalles.',
+    'wiz.har.r.r_h_isolated.title': 'Puede que esto todavía no llegue al nivel de "grave o generalizado"',
+    'wiz.har.r.r_h_isolated.body': 'Los tribunales suelen buscar conducta que sea un incidente grave o un patrón repetido a lo largo del tiempo. Unos pocos comentarios aislados y menores — por sí solos — pueden no llegar a ese nivel, aun cuando estén ligados a una característica protegida. Eso no significa que no pase nada malo: siga anotando fechas, palabras y testigos. Un patrón que continúa puede cambiar esta respuesta.',
+    'wiz.har.r.r_h_not_unwelcome.title': 'Puede faltar un elemento — que la conducta no fuera deseada',
+    'wiz.har.r.r_h_not_unwelcome.body': 'La ley de acoso por lo general también exige que la conducta no fuera deseada por usted. Si sí lo era, esta teoría legal en particular puede no aplicar. Si esta respuesta no refleja lo que de verdad pasó, o la situación cambió, haga la evaluación otra vez.',
+    'wiz.har.r.r_h_no_link.title': 'Puede que esto no sea acoso protegido por la ley',
+    'wiz.har.r.r_h_no_link.body': 'La ley de acoso por lo general exige que la conducta esté ligada a una característica protegida — raza, sexo, religión, origen nacional, 40 años o más, discapacidad o similar. La grosería general o un choque de personalidades, por sí solos, casi nunca bastan, aunque en el día a día se sientan igual. Si nota un patrón ligado a quién es usted, haga esta evaluación otra vez — y una política del lugar de trabajo todavía puede prohibir conducta que no es ilegal.',
+    'wiz.har.n.reported.q': '¿Lo denunció internamente, y qué pasó?',
+    'wiz.har.n.reported.help': 'Denunciar no es requisito para tener un reclamo, pero puede importar para de qué se puede responsabilizar a un empleador.',
+    'wiz.har.n.reported.opt0': 'Lo denuncié y nada cambió',
+    'wiz.har.n.reported.trail0': 'Denunciado, nada cambió',
+    'wiz.har.n.reported.opt1': 'Lo denuncié y se atendió',
+    'wiz.har.n.reported.trail1': 'Denunciado y atendido',
+    'wiz.har.n.reported.opt2': 'No lo he denunciado',
+    'wiz.har.n.reported.trail2': 'No denunciado',
+    'wiz.har.n.who.q':    '¿Quién hizo esto?',
+    'wiz.har.n.who.help': 'Quién estuvo involucrado puede cambiar cómo se responsabiliza al empleador — no si la conducta cuenta como acoso en primer lugar.',
+    'wiz.har.n.who.opt0': 'Mi supervisor o gerente',
+    'wiz.har.n.who.trail0': 'Lo hizo un supervisor',
+    'wiz.har.n.who.opt1': 'Un compañero de trabajo',
+    'wiz.har.n.who.trail1': 'Lo hizo un compañero',
+    'wiz.har.n.who.opt2': 'Un cliente u otra persona de fuera',
+    'wiz.har.n.who.trail2': 'Lo hizo un cliente o alguien de fuera',
+    'wiz.har.n.severity.q': '¿Con qué frecuencia pasó, y qué tan grave fue?',
+    'wiz.har.n.severity.help': 'Los tribunales suelen tomar un solo incidente como suficiente únicamente si es grave (por ejemplo una agresión o una amenaza seria) — si no, buscan un patrón a lo largo del tiempo.',
+    'wiz.har.n.severity.opt0': 'Un incidente grave (agresión, un insulto discriminatorio, una amenaza seria)',
+    'wiz.har.n.severity.trail0': 'Un incidente grave',
+    'wiz.har.n.severity.opt1': 'Repetido a lo largo del tiempo',
+    'wiz.har.n.severity.trail1': 'Repetido a lo largo del tiempo',
+    'wiz.har.n.severity.opt2': 'Unos pocos comentarios aislados y menores',
+    'wiz.har.n.severity.trail2': 'Comentarios aislados y menores',
+    'wiz.har.n.unwelcome.q': '¿La conducta no era deseada por usted — usted no la invitó ni la quería?',
+    'wiz.har.n.unwelcome.help': 'Esto suele ser sencillo, pero es un elemento obligatorio del estándar legal.',
+    'wiz.har.n.unwelcome.opt0': 'Sí, no era deseada',
+    'wiz.har.n.unwelcome.trail0': 'La conducta no era deseada',
+    'wiz.har.n.unwelcome.opt1': 'No, o era mutua',
+    'wiz.har.n.unwelcome.trail1': 'La conducta sí era deseada',
+    'wiz.har.n.start.q':  '¿La conducta está ligada a una característica protegida — raza, sexo (incluidos embarazo, orientación sexual o identidad de género), religión, origen nacional, 40 años o más, discapacidad o información genética?',
+    'wiz.har.n.start.help': 'La ley de acoso solo cubre conducta ligada a quién es usted en alguna de estas formas — no la grosería en general.',
+    'wiz.har.n.start.opt0': 'Sí, está ligada a una de esas',
+    'wiz.har.n.start.trail0': 'Ligada a una característica protegida',
+    'wiz.har.n.start.opt1': 'No, se siente como grosería general o un choque de personalidades',
+    'wiz.har.n.start.trail1': 'No ligada a una característica protegida',
+    'wiz.har.n.start.opt2': 'No estoy seguro',
+    'wiz.har.n.start.trail2': 'No sabe si está protegida',
+    'wiz.dis.r.r_d_shape.title': 'Esto tiene la forma de un reclamo por discriminación',
+    'wiz.dis.r.r_d_shape.body': 'Su situación puede tener los elementos que los tribunales suelen buscar: una característica protegida, una acción adversa real, y un comparador o una señal de pretexto que los conecte. Esto es información general sobre el marco legal, no una opinión legal sobre su situación — un abogado todavía tendría que revisar los detalles, y el plazo de abajo es real.',
+    'wiz.dis.r.r_d_thin.title': 'Una acción adversa por sí sola puede no bastar todavía',
+    'wiz.dis.r.r_d_thin.body': 'Una característica protegida más una acción adversa es un comienzo, pero los tribunales por lo general también buscan algo que conecte las dos — un comparador tratado mejor, o una razón declarada que parece falsa o que sigue cambiando. Documente los detalles: quién más estaba en una situación parecida, qué le dijeron, y si esa explicación cambió con el tiempo.',
+    'wiz.dis.r.r_d_coverage_gap.title': 'La cobertura federal puede no alcanzar a este empleador',
+    'wiz.dis.r.r_d_coverage_gap.body': 'El Título VII y la ADA por lo general aplican a empleadores con 15 empleados o más (la ADEA, con 20 o más) — por debajo de ese tamaño, la ley federal de discriminación puede no aplicar. Muchos estados fijan un umbral más bajo o tienen su propia ley que alcanza a empleadores más pequeños; revise abajo qué aplica en su estado antes de dar por hecho que no hay reclamo.',
+    'wiz.dis.n.comparator.q': '¿Alguien que NO está en su grupo protegido recibió mejor trato en una situación parecida — o la razón que dio el empleador parecía falsa o siguió cambiando?',
+    'wiz.dis.n.comparator.help': 'Los tribunales por lo general buscan un comparador (alguien en situación parecida tratado mejor) o una señal de pretexto (una razón que no se sostiene) que conecte la acción adversa con la característica protegida.',
+    'wiz.dis.n.comparator.opt0': 'Sí, alguien recibió mejor trato (un comparador)',
+    'wiz.dis.n.comparator.trail0': 'Un comparador recibió mejor trato',
+    'wiz.dis.n.comparator.opt1': 'La razón declarada parece falsa o ha cambiado',
+    'wiz.dis.n.comparator.trail1': 'La razón declarada parece falsa',
+    'wiz.dis.n.comparator.opt2': 'No',
+    'wiz.dis.n.comparator.trail2': 'No se identificó un comparador',
+    'wiz.dis.n.comparator.opt3': 'No estoy seguro',
+    'wiz.dis.n.comparator.trail3': 'No sabe si hay un comparador',
+    'wiz.dis.n.adverseAction.q': '¿Qué acción adversa se tomó?',
+    'wiz.dis.n.adverseAction.help': 'Una acción adversa es un cambio real y concreto — no solo una conversación incómoda.',
+    'wiz.dis.n.adverseAction.opt0': 'Me despidieron',
+    'wiz.dis.n.adverseAction.trail0': 'Despedido',
+    'wiz.dis.n.adverseAction.opt1': 'No me contrataron o no me ascendieron',
+    'wiz.dis.n.adverseAction.trail1': 'No contratado ni ascendido',
+    'wiz.dis.n.adverseAction.opt2': 'Me bajaron de puesto o me recortaron el sueldo',
+    'wiz.dis.n.adverseAction.trail2': 'Bajado de puesto o con recorte de sueldo',
+    'wiz.dis.n.adverseAction.opt3': 'Me disciplinaron',
+    'wiz.dis.n.adverseAction.trail3': 'Disciplinado',
+    'wiz.dis.n.adverseAction.opt4': 'Otra',
+    'wiz.dis.n.adverseAction.trail4': 'Otra acción adversa',
+    'wiz.dis.n.employerSize.q': '¿Cuántos empleados tiene su empleador?',
+    'wiz.dis.n.employerSize.help': 'El Título VII y la ADA por lo general cubren empleadores con 15 empleados o más (la ADEA, con 20 o más). Algunos estados también cubren empleadores más pequeños — revise el panel en su resultado.',
+    'wiz.dis.n.employerSize.opt0': '15 o más',
+    'wiz.dis.n.employerSize.trail0': '15 empleados o más',
+    'wiz.dis.n.employerSize.opt1': 'Menos de 15',
+    'wiz.dis.n.employerSize.trail1': 'Menos de 15 empleados',
+    'wiz.dis.n.employerSize.opt2': 'No estoy seguro',
+    'wiz.dis.n.employerSize.trail2': 'No sabe el tamaño del empleador',
+    'wiz.dis.n.start.q':  '¿Qué característica protegida está involucrada?',
+    'wiz.dis.n.start.help': 'La ley federal cubre raza, color, religión, sexo (incluidos embarazo, orientación sexual e identidad de género), origen nacional, 40 años o más, discapacidad e información genética.',
+    'wiz.dis.n.start.opt0': 'Una de esas está involucrada',
+    'wiz.dis.n.start.trail0': 'Característica protegida indicada',
+    'wiz.dis.n.start.opt1': 'No estoy seguro',
+    'wiz.dis.n.start.trail1': 'No sabe cuál característica',
+    'wiz.wage.r.r_hce.title': 'Posiblemente exento — empleado con ingresos altos',
+    'wiz.wage.r.r_hce.body': 'Con $107,432 al año o más y al menos una tarea de tipo exento, la prueba de empleado con ingresos altos usa un estándar de tareas más flexible — no necesita cumplir la prueba completa de tareas que exigen las exenciones ordinarias ejecutiva, administrativa o profesional. Si su cifra de pago total o su descripción de tareas exageró algo, vuelva a revisarlo.',
+    'wiz.wage.r.r_commission.title': 'Depende — reglas de ventas por comisión',
+    'wiz.wage.r.r_commission.body': 'Quienes trabajan por comisión o por pieza casi siempre tienen derecho a horas extras, pero los empleados de comercio o servicio que ganan más de la mitad de su pago en comisiones a más de 1.5× el salario mínimo caen en una excepción especial. Anote sus horas y su pago para que se pueda revisar el cálculo.',
+    'wiz.wage.r.r_outside.title': 'Posiblemente exento — ventas fuera de la empresa',
+    'wiz.wage.r.r_outside.body': 'Hacer ventas con regularidad fuera del establecimiento del empleador califica, sin requisito de salario. El tiempo dedicado a entregas o a trabajo de servicio cuenta en contra de la exención.',
+    'wiz.wage.r.r_comp.title': 'Posiblemente exento — empleado de informática',
+    'wiz.wage.r.r_comp.body': 'Las tareas de análisis de sistemas, diseño y programación pueden calificar, con salario fijo o a $27.63 por hora o más. Algunos estados fijan un piso de pago mucho más alto que la ley federal para esta exención — revise abajo las reglas de su estado; ahí todavía le pueden deber horas extras.',
+    'wiz.wage.r.r_creative.title': 'Posiblemente exento — profesional creativo',
+    'wiz.wage.r.r_creative.body': 'El trabajo que exige invención, imaginación, originalidad o talento en un campo artístico o creativo reconocido puede calificar. El trabajo creativo rutinario o de fórmula casi nunca califica.',
+    'wiz.wage.r.r_prof.title': 'Posiblemente exento — profesional con estudios',
+    'wiz.wage.r.r_prof.body': 'El trabajo que exige conocimientos avanzados en un campo de la ciencia o el saber, adquiridos mediante instrucción especializada prolongada (derecho, medicina, ingeniería, contabilidad), puede calificar cuando el salario supera el umbral.',
+    'wiz.wage.r.r_admin.title': 'Posiblemente exento — administrativo',
+    'wiz.wage.r.r_admin.body': 'El trabajo de oficina o de operaciones del negocio que implica discreción y criterio independiente en asuntos importantes puede calificar. Esta es la exención más litigada — "criterio independiente" significa autoridad real, no seguir lineamientos.',
+    'wiz.wage.r.r_exec.title': 'Posiblemente exento — ejecutivo',
+    'wiz.wage.r.r_exec.body': 'Parece que usted cumple la exención ejecutiva: salario por encima del umbral, dirige a dos o más empleados y tiene influencia real sobre contrataciones y despidos. Si alguna respuesta exageró su autoridad real, vuelva a revisarla — mandan las tareas reales, no los títulos.',
+    'wiz.wage.r.r_outside_no.title': 'Probablemente no exento — le deben horas extras',
+    'wiz.wage.r.r_outside_no.body': 'La exención de ventas externas solo cubre a quienes habitualmente trabajan fuera del establecimiento del empleador haciendo ventas. Las ventas internas — por teléfono, por correo, desde un escritorio — no califican.',
+    'wiz.wage.r.r_hourly_comp_no.title': 'Probablemente no exento — le deben horas extras',
+    'wiz.wage.r.r_hourly_comp_no.body': 'La exención por hora para empleados de informática exige las dos cosas: tareas que califiquen (análisis de sistemas, diseño, programación) y al menos $27.63 por hora. Si falta cualquiera de las dos, le deben horas extras.',
+    'wiz.wage.r.r_exec_no.title': 'Probablemente no exento — le deben horas extras',
+    'wiz.wage.r.r_exec_no.body': 'Supervisar por sí solo no basta para la exención ejecutiva. Sin autoridad real sobre contratar, despedir o ascender — o recomendaciones que pesen de verdad — la prueba de tareas no se cumple.',
+    'wiz.wage.r.r_duties_none.title': 'Probablemente no exento — le deben horas extras',
+    'wiz.wage.r.r_duties_none.body': 'Su salario supera el umbral federal, pero la exención también exige tareas exentas. Seguir procedimientos y tareas establecidos no es trabajo ejecutivo, administrativo ni profesional según los reglamentos.',
+    'wiz.wage.r.r_hourly.title': 'Probablemente no exento — le deben horas extras',
+    'wiz.wage.r.r_hourly.body': 'El pago por hora no cumple la prueba de base salarial para las exenciones ejecutiva, administrativa y profesional. Salvo unas pocas excepciones muy limitadas, a quien cobra por hora hay que pagarle horas extras.',
+    'wiz.wage.r.r_salary_low.title': 'Probablemente no exento — le deben horas extras',
+    'wiz.wage.r.r_salary_low.body': 'Un salario de menos de $684 por semana ($35,568 al año) no cumple automáticamente la prueba federal de nivel salarial. Ninguna prueba de tareas lo puede hacer exento por debajo de esa línea, diga lo que diga su puesto.',
+    'wiz.wage.n.outsideSales.q': '¿Hace ventas con regularidad fuera del establecimiento de su empleador?',
+    'wiz.wage.n.outsideSales.help': 'En sitios de clientes, de puerta en puerta, en la calle. Vender por teléfono o correo desde casa o desde una oficina no cuenta.',
+    'wiz.wage.n.outsideSales.opt0': 'Sí, casi siempre en la calle',
+    'wiz.wage.n.outsideSales.trail0': 'Vende casi siempre en la calle',
+    'wiz.wage.n.outsideSales.opt1': 'No, casi siempre desde un escritorio',
+    'wiz.wage.n.outsideSales.trail1': 'Vende casi siempre desde un escritorio',
+    'wiz.wage.n.hourlyType.q': '¿Su trabajo principal es de sistemas de computación — como desarrollo de software o análisis de sistemas de TI — pagado a $27.63 por hora o más?',
+    'wiz.wage.n.hourlyType.help': 'A quien cobra por hora casi siempre le deben horas extras — la gran excepción son los empleados de informática que ganan $27.63 por hora o más.',
+    'wiz.wage.n.hourlyType.opt0': 'Sí, las dos cosas',
+    'wiz.wage.n.hourlyType.trail0': 'Trabajo de informática a $27.63 o más por hora',
+    'wiz.wage.n.hourlyType.opt1': 'No',
+    'wiz.wage.n.hourlyType.trail1': 'Por hora, otro tipo de trabajo',
+    'wiz.wage.n.execAuth.q': '¿Puede contratar o despedir — o sus recomendaciones pesan de verdad?',
+    'wiz.wage.n.execAuth.help': 'La exención ejecutiva exige autoridad real sobre el empleo de otras personas, no solo armar los horarios.',
+    'wiz.wage.n.execAuth.opt0': 'Sí, tengo esa autoridad',
+    'wiz.wage.n.execAuth.trail0': 'Tiene autoridad para contratar o despedir',
+    'wiz.wage.n.execAuth.opt1': 'No, solo superviso el trabajo',
+    'wiz.wage.n.execAuth.trail1': 'Sin autoridad para contratar o despedir',
+    'wiz.wage.n.duties.q': '¿Qué hace usted principalmente todo el día?',
+    'wiz.wage.n.duties.help': 'La prueba de tareas mira su trabajo real, no el título de su puesto. Elija lo más parecido.',
+    'wiz.wage.n.duties.opt0': 'Dirijo a dos o más empleados',
+    'wiz.wage.n.duties.trail0': 'Dirige a dos o más empleados',
+    'wiz.wage.n.duties.opt1': 'Trabajo de oficina con criterio independiente en asuntos importantes',
+    'wiz.wage.n.duties.trail1': 'Trabajo de oficina con criterio independiente',
+    'wiz.wage.n.duties.opt2': 'Trabajo que exige un título avanzado (derecho, ingeniería, medicina…)',
+    'wiz.wage.n.duties.trail2': 'Trabajo profesional con título avanzado',
+    'wiz.wage.n.duties.opt3': 'Trabajo creativo o artístico original',
+    'wiz.wage.n.duties.trail3': 'Trabajo creativo o artístico',
+    'wiz.wage.n.duties.opt4': 'Análisis de sistemas, diseño de software o programación',
+    'wiz.wage.n.duties.trail4': 'Trabajo de sistemas de computación',
+    'wiz.wage.n.duties.opt5': 'Sigo procedimientos y tareas establecidos',
+    'wiz.wage.n.duties.trail5': 'Sigue procedimientos establecidos',
+    'wiz.wage.n.hceDuty.q': '¿Hace con regularidad al menos una tarea de tipo exento — por ejemplo dirigir el trabajo de otros empleados, o trabajo de oficina o del negocio con discreción en asuntos importantes?',
+    'wiz.wage.n.hceDuty.help': 'La prueba de ingresos altos solo exige UNA tarea así, no la prueba completa de tareas ejecutivas, administrativas o profesionales.',
+    'wiz.wage.n.hceDuty.opt0': 'Sí, al menos una de esas',
+    'wiz.wage.n.hceDuty.trail0': 'Hace una tarea de tipo exento',
+    'wiz.wage.n.hceDuty.opt1': 'No, casi todo son tareas rutinarias',
+    'wiz.wage.n.hceDuty.trail1': 'Casi todo tareas rutinarias',
+    'wiz.wage.n.hceCheck.q': '¿Su pago total anual es de al menos $107,432 — incluyendo salario, comisiones y bonos no discrecionales?',
+    'wiz.wage.n.hceCheck.help': 'Ese es el umbral de empleado con ingresos altos. Hace más flexible la prueba de tareas pero no la elimina — todavía necesita al menos una tarea de tipo exento, que se revisa enseguida.',
+    'wiz.wage.n.hceCheck.opt0': 'Sí, $107,432 al año o más',
+    'wiz.wage.n.hceCheck.trail0': 'Alcanza el umbral de $107,432 al año',
+    'wiz.wage.n.hceCheck.opt1': 'No, o no estoy seguro',
+    'wiz.wage.n.hceCheck.trail1': 'Por debajo del umbral de $107,432 al año',
+    'wiz.wage.n.salaryLevel.q': '¿Su salario es de al menos $684 por semana?',
+    'wiz.wage.n.salaryLevel.help': 'Eso son $35,568 al año — la prueba federal de nivel salarial. Algunos estados fijan un piso salarial más alto; en su resultado verá la cifra de su estado junto a la federal.',
+    'wiz.wage.n.salaryLevel.opt0': 'Sí, $684 por semana o más',
+    'wiz.wage.n.salaryLevel.trail0': 'Alcanza el piso federal de $684 por semana',
+    'wiz.wage.n.salaryLevel.opt1': 'No, menos que eso',
+    'wiz.wage.n.salaryLevel.trail1': 'Por debajo del piso federal de $684 por semana',
+    'wiz.wage.n.salaryLevel.opt2': 'No estoy seguro',
+    'wiz.wage.n.salaryLevel.trail2': 'No sabe el monto del salario',
+    'wiz.wage.n.start.q': '¿Cómo le pagan?',
+    'wiz.wage.n.start.help': 'Casi todas las exenciones exigen un salario fijo — esta es la prueba de base salarial.',
+    'wiz.wage.n.start.opt0': 'Un salario fijo cada periodo',
+    'wiz.wage.n.start.trail0': 'Con salario fijo',
+    'wiz.wage.n.start.opt1': 'Por hora',
+    'wiz.wage.n.start.trail1': 'Por hora',
+    'wiz.wage.n.start.opt2': 'Por comisión o por pieza',
+    'wiz.wage.n.start.trail2': 'Por comisión o por pieza',
+    'wiz.wage.n.start.opt3': 'Soy vendedor fuera de la empresa',
+    'wiz.wage.n.start.trail3': 'Vendedor fuera de la empresa',
+  },
 };
 
 /* "A, B and C". Kept in the catalogue rather than hardcoded because the last
@@ -837,17 +1340,33 @@ function joinList(items){
 }
 
 
-/* There is one locale, so this never moves yet. When a second one lands it is
-   assigned at the top of App()'s render, before any child renders — React runs
-   a parent's function body to completion before rendering the children it
-   returned, so every t() below it would see the language the reader picked.
-   A module-level binding rather than a context because t() is also called from
-   plain functions that are not components and cannot useContext.
+/* The locales offered, in the order the control lists them. `reviewed` marks
+   whether a Spanish-speaking attorney has checked the translation — nobody has,
+   and the app says so on every screen in that language (see langNotice). */
+const LOCALES = [
+  { code: 'en', name: 'English', reviewed: true },
+  { code: 'es', name: 'Español', reviewed: false },
+];
+const LOCALE_CODES = LOCALES.map(l => l.code);
 
-   No language STATE and no stored preference yet, deliberately: with nothing
-   able to change the language, both would be scaffolding that no code path
-   reaches, and the stored one would widen the privacy promise for nothing. */
+/* Assigned at the top of App()'s render, before any child renders — React runs
+   a parent's function body to completion before rendering the children it
+   returned, so every t() below it sees the language the reader picked. A
+   module-level binding rather than a context because t() is also called from
+   plain functions that are not components and cannot useContext. */
 let CURRENT_LANG = 'en';
+
+/* Which language this device is reading in. Its own key rather than a field on
+   the place blob: someone can pick a language on the very first screen, before
+   there is any place to remember, and that choice has to survive. */
+const LANG_KEY = 'worklaw.lang.v1';
+function loadLang(){
+  try { const v = localStorage.getItem(LANG_KEY); return LOCALE_CODES.indexOf(v) >= 0 ? v : 'en'; }
+  catch(e){ return 'en'; }
+}
+function saveLang(code){
+  try { localStorage.setItem(LANG_KEY, code); } catch(e){ /* best-effort */ }
+}
 
 /* Look up a string, filling {placeholders} from `vars`.
 
@@ -1726,7 +2245,14 @@ const US_STATE_NAMES = Object.keys(US_STATE_ABBR).sort();
 const US_COUNTIES = {"Alabama":["Autauga County","Baldwin County","Barbour County","Bibb County","Blount County","Bullock County","Butler County","Calhoun County","Chambers County","Cherokee County","Chilton County","Choctaw County","Clarke County","Clay County","Cleburne County","Coffee County","Colbert County","Conecuh County","Coosa County","Covington County","Crenshaw County","Cullman County","Dale County","Dallas County","DeKalb County","Elmore County","Escambia County","Etowah County","Fayette County","Franklin County","Geneva County","Greene County","Hale County","Henry County","Houston County","Jackson County","Jefferson County","Lamar County","Lauderdale County","Lawrence County","Lee County","Limestone County","Lowndes County","Macon County","Madison County","Marengo County","Marion County","Marshall County","Mobile County","Monroe County","Montgomery County","Morgan County","Perry County","Pickens County","Pike County","Randolph County","Russell County","Shelby County","St. Clair County","Sumter County","Talladega County","Tallapoosa County","Tuscaloosa County","Walker County","Washington County","Wilcox County","Winston County"],"Alaska":["Aleutians East Borough","Aleutians West Census Area","Anchorage Municipality","Bethel Census Area","Bristol Bay Borough","Denali Borough","Dillingham Census Area","Fairbanks North Star Borough","Haines Borough","Hoonah-Angoon Census Area","Juneau City and Borough","Kenai Peninsula Borough","Ketchikan Gateway Borough","Kodiak Island Borough","Lake and Peninsula Borough","Matanuska-Susitna Borough","Nome Census Area","North Slope Borough","Northwest Arctic Borough","Petersburg Census Area","Prince of Wales-Hyder Census Area","Sitka City and Borough","Skagway Municipality","Southeast Fairbanks Census Area","Valdez-Cordova Census Area","Kusilvak Census Area","Wrangell City and Borough","Yakutat City and Borough","Yukon-Koyukuk Census Area"],"Arizona":["Apache County","Cochise County","Coconino County","Gila County","Graham County","Greenlee County","La Paz County","Maricopa County","Mohave County","Navajo County","Pima County","Pinal County","Santa Cruz County","Yavapai County","Yuma County"],"Arkansas":["Arkansas County","Ashley County","Baxter County","Benton County","Boone County","Bradley County","Calhoun County","Carroll County","Chicot County","Clark County","Clay County","Cleburne County","Cleveland County","Columbia County","Conway County","Craighead County","Crawford County","Crittenden County","Cross County","Dallas County","Desha County","Drew County","Faulkner County","Franklin County","Fulton County","Garland County","Grant County","Greene County","Hempstead County","Hot Spring County","Howard County","Independence County","Izard County","Jackson County","Jefferson County","Johnson County","Lafayette County","Lawrence County","Lee County","Lincoln County","Little River County","Logan County","Lonoke County","Madison County","Marion County","Miller County","Mississippi County","Monroe County","Montgomery County","Nevada County","Newton County","Ouachita County","Perry County","Phillips County","Pike County","Poinsett County","Polk County","Pope County","Prairie County","Pulaski County","Randolph County","Saline County","Scott County","Searcy County","Sebastian County","Sevier County","Sharp County","St. Francis County","Stone County","Union County","Van Buren County","Washington County","White County","Woodruff County","Yell County"],"California":["Alameda County","Alpine County","Amador County","Butte County","Calaveras County","Colusa County","Contra Costa County","Del Norte County","El Dorado County","Fresno County","Glenn County","Humboldt County","Imperial County","Inyo County","Kern County","Kings County","Lake County","Lassen County","Los Angeles County","Madera County","Marin County","Mariposa County","Mendocino County","Merced County","Modoc County","Mono County","Monterey County","Napa County","Nevada County","Orange County","Placer County","Plumas County","Riverside County","Sacramento County","San Benito County","San Bernardino County","San Diego County","San Francisco County","San Joaquin County","San Luis Obispo County","San Mateo County","Santa Barbara County","Santa Clara County","Santa Cruz County","Shasta County","Sierra County","Siskiyou County","Solano County","Sonoma County","Stanislaus County","Sutter County","Tehama County","Trinity County","Tulare County","Tuolumne County","Ventura County","Yolo County","Yuba County"],"Colorado":["Adams County","Alamosa County","Arapahoe County","Archuleta County","Baca County","Bent County","Boulder County","Broomfield County","Chaffee County","Cheyenne County","Clear Creek County","Conejos County","Costilla County","Crowley County","Custer County","Delta County","Denver County","Dolores County","Douglas County","Eagle County","El Paso County","Elbert County","Fremont County","Garfield County","Gilpin County","Grand County","Gunnison County","Hinsdale County","Huerfano County","Jackson County","Jefferson County","Kiowa County","Kit Carson County","La Plata County","Lake County","Larimer County","Las Animas County","Lincoln County","Logan County","Mesa County","Mineral County","Moffat County","Montezuma County","Montrose County","Morgan County","Otero County","Ouray County","Park County","Phillips County","Pitkin County","Prowers County","Pueblo County","Rio Blanco County","Rio Grande County","Routt County","Saguache County","San Juan County","San Miguel County","Sedgwick County","Summit County","Teller County","Washington County","Weld County","Yuma County"],"Connecticut":["Fairfield County","Hartford County","Litchfield County","Middlesex County","New Haven County","New London County","Tolland County","Windham County"],"Delaware":["Kent County","New Castle County","Sussex County"],"Florida":["Alachua County","Baker County","Bay County","Bradford County","Brevard County","Broward County","Calhoun County","Charlotte County","Citrus County","Clay County","Collier County","Columbia County","DeSoto County","Dixie County","Duval County","Escambia County","Flagler County","Franklin County","Gadsden County","Gilchrist County","Glades County","Gulf County","Hamilton County","Hardee County","Hendry County","Hernando County","Highlands County","Hillsborough County","Holmes County","Indian River County","Jackson County","Jefferson County","Lafayette County","Lake County","Lee County","Leon County","Levy County","Liberty County","Madison County","Manatee County","Marion County","Martin County","Miami-Dade County","Monroe County","Nassau County","Okaloosa County","Okeechobee County","Orange County","Osceola County","Palm Beach County","Pasco County","Pinellas County","Polk County","Putnam County","Santa Rosa County","Sarasota County","Seminole County","St. Johns County","St. Lucie County","Sumter County","Suwannee County","Taylor County","Union County","Volusia County","Wakulla County","Walton County","Washington County"],"Georgia":["Appling County","Atkinson County","Bacon County","Baker County","Baldwin County","Banks County","Barrow County","Bartow County","Ben Hill County","Berrien County","Bibb County","Bleckley County","Brantley County","Brooks County","Bryan County","Bulloch County","Burke County","Butts County","Calhoun County","Camden County","Candler County","Carroll County","Catoosa County","Charlton County","Chatham County","Chattahoochee County","Chattooga County","Cherokee County","Clarke County","Clay County","Clayton County","Clinch County","Cobb County","Coffee County","Colquitt County","Columbia County","Cook County","Coweta County","Crawford County","Crisp County","Dade County","Dawson County","Decatur County","DeKalb County","Dodge County","Dooly County","Dougherty County","Douglas County","Early County","Echols County","Effingham County","Elbert County","Emanuel County","Evans County","Fannin County","Fayette County","Floyd County","Forsyth County","Franklin County","Fulton County","Gilmer County","Glascock County","Glynn County","Gordon County","Grady County","Greene County","Gwinnett County","Habersham County","Hall County","Hancock County","Haralson County","Harris County","Hart County","Heard County","Henry County","Houston County","Irwin County","Jackson County","Jasper County","Jeff Davis County","Jefferson County","Jenkins County","Johnson County","Jones County","Lamar County","Lanier County","Laurens County","Lee County","Liberty County","Lincoln County","Long County","Lowndes County","Lumpkin County","Macon County","Madison County","Marion County","McDuffie County","McIntosh County","Meriwether County","Miller County","Mitchell County","Monroe County","Montgomery County","Morgan County","Murray County","Muscogee County","Newton County","Oconee County","Oglethorpe County","Paulding County","Peach County","Pickens County","Pierce County","Pike County","Polk County","Pulaski County","Putnam County","Quitman County","Rabun County","Randolph County","Richmond County","Rockdale County","Schley County","Screven County","Seminole County","Spalding County","Stephens County","Stewart County","Sumter County","Talbot County","Taliaferro County","Tattnall County","Taylor County","Telfair County","Terrell County","Thomas County","Tift County","Toombs County","Towns County","Treutlen County","Troup County","Turner County","Twiggs County","Union County","Upson County","Walker County","Walton County","Ware County","Warren County","Washington County","Wayne County","Webster County","Wheeler County","White County","Whitfield County","Wilcox County","Wilkes County","Wilkinson County","Worth County"],"Hawaii":["Hawaii County","Honolulu County","Kalawao County","Kauai County","Maui County"],"Idaho":["Ada County","Adams County","Bannock County","Bear Lake County","Benewah County","Bingham County","Blaine County","Boise County","Bonner County","Bonneville County","Boundary County","Butte County","Camas County","Canyon County","Caribou County","Cassia County","Clark County","Clearwater County","Custer County","Elmore County","Franklin County","Fremont County","Gem County","Gooding County","Idaho County","Jefferson County","Jerome County","Kootenai County","Latah County","Lemhi County","Lewis County","Lincoln County","Madison County","Minidoka County","Nez Perce County","Oneida County","Owyhee County","Payette County","Power County","Shoshone County","Teton County","Twin Falls County","Valley County","Washington County"],"Illinois":["Adams County","Alexander County","Bond County","Boone County","Brown County","Bureau County","Calhoun County","Carroll County","Cass County","Champaign County","Christian County","Clark County","Clay County","Clinton County","Coles County","Cook County","Crawford County","Cumberland County","De Witt County","DeKalb County","Douglas County","DuPage County","Edgar County","Edwards County","Effingham County","Fayette County","Ford County","Franklin County","Fulton County","Gallatin County","Greene County","Grundy County","Hamilton County","Hancock County","Hardin County","Henderson County","Henry County","Iroquois County","Jackson County","Jasper County","Jefferson County","Jersey County","Jo Daviess County","Johnson County","Kane County","Kankakee County","Kendall County","Knox County","Lake County","LaSalle County","Lawrence County","Lee County","Livingston County","Logan County","Macon County","Macoupin County","Madison County","Marion County","Marshall County","Mason County","Massac County","McDonough County","McHenry County","McLean County","Menard County","Mercer County","Monroe County","Montgomery County","Morgan County","Moultrie County","Ogle County","Peoria County","Perry County","Piatt County","Pike County","Pope County","Pulaski County","Putnam County","Randolph County","Richland County","Rock Island County","Saline County","Sangamon County","Schuyler County","Scott County","Shelby County","St. Clair County","Stark County","Stephenson County","Tazewell County","Union County","Vermilion County","Wabash County","Warren County","Washington County","Wayne County","White County","Whiteside County","Will County","Williamson County","Winnebago County","Woodford County"],"Indiana":["Adams County","Allen County","Bartholomew County","Benton County","Blackford County","Boone County","Brown County","Carroll County","Cass County","Clark County","Clay County","Clinton County","Crawford County","Daviess County","Dearborn County","Decatur County","DeKalb County","Delaware County","Dubois County","Elkhart County","Fayette County","Floyd County","Fountain County","Franklin County","Fulton County","Gibson County","Grant County","Greene County","Hamilton County","Hancock County","Harrison County","Hendricks County","Henry County","Howard County","Huntington County","Jackson County","Jasper County","Jay County","Jefferson County","Jennings County","Johnson County","Knox County","Kosciusko County","LaGrange County","Lake County","LaPorte County","Lawrence County","Madison County","Marion County","Marshall County","Martin County","Miami County","Monroe County","Montgomery County","Morgan County","Newton County","Noble County","Ohio County","Orange County","Owen County","Parke County","Perry County","Pike County","Porter County","Posey County","Pulaski County","Putnam County","Randolph County","Ripley County","Rush County","Scott County","Shelby County","Spencer County","St. Joseph County","Starke County","Steuben County","Sullivan County","Switzerland County","Tippecanoe County","Tipton County","Union County","Vanderburgh County","Vermillion County","Vigo County","Wabash County","Warren County","Warrick County","Washington County","Wayne County","Wells County","White County","Whitley County"],"Iowa":["Adair County","Adams County","Allamakee County","Appanoose County","Audubon County","Benton County","Black Hawk County","Boone County","Bremer County","Buchanan County","Buena Vista County","Butler County","Calhoun County","Carroll County","Cass County","Cedar County","Cerro Gordo County","Cherokee County","Chickasaw County","Clarke County","Clay County","Clayton County","Clinton County","Crawford County","Dallas County","Davis County","Decatur County","Delaware County","Des Moines County","Dickinson County","Dubuque County","Emmet County","Fayette County","Floyd County","Franklin County","Fremont County","Greene County","Grundy County","Guthrie County","Hamilton County","Hancock County","Hardin County","Harrison County","Henry County","Howard County","Humboldt County","Ida County","Iowa County","Jackson County","Jasper County","Jefferson County","Johnson County","Jones County","Keokuk County","Kossuth County","Lee County","Linn County","Louisa County","Lucas County","Lyon County","Madison County","Mahaska County","Marion County","Marshall County","Mills County","Mitchell County","Monona County","Monroe County","Montgomery County","Muscatine County","O'Brien County","Osceola County","Page County","Palo Alto County","Plymouth County","Pocahontas County","Polk County","Pottawattamie County","Poweshiek County","Ringgold County","Sac County","Scott County","Shelby County","Sioux County","Story County","Tama County","Taylor County","Union County","Van Buren County","Wapello County","Warren County","Washington County","Wayne County","Webster County","Winnebago County","Winneshiek County","Woodbury County","Worth County","Wright County"],"Kansas":["Allen County","Anderson County","Atchison County","Barber County","Barton County","Bourbon County","Brown County","Butler County","Chase County","Chautauqua County","Cherokee County","Cheyenne County","Clark County","Clay County","Cloud County","Coffey County","Comanche County","Cowley County","Crawford County","Decatur County","Dickinson County","Doniphan County","Douglas County","Edwards County","Elk County","Ellis County","Ellsworth County","Finney County","Ford County","Franklin County","Geary County","Gove County","Graham County","Grant County","Gray County","Greeley County","Greenwood County","Hamilton County","Harper County","Harvey County","Haskell County","Hodgeman County","Jackson County","Jefferson County","Jewell County","Johnson County","Kearny County","Kingman County","Kiowa County","Labette County","Lane County","Leavenworth County","Lincoln County","Linn County","Logan County","Lyon County","Marion County","Marshall County","McPherson County","Meade County","Miami County","Mitchell County","Montgomery County","Morris County","Morton County","Nemaha County","Neosho County","Ness County","Norton County","Osage County","Osborne County","Ottawa County","Pawnee County","Phillips County","Pottawatomie County","Pratt County","Rawlins County","Reno County","Republic County","Rice County","Riley County","Rooks County","Rush County","Russell County","Saline County","Scott County","Sedgwick County","Seward County","Shawnee County","Sheridan County","Sherman County","Smith County","Stafford County","Stanton County","Stevens County","Sumner County","Thomas County","Trego County","Wabaunsee County","Wallace County","Washington County","Wichita County","Wilson County","Woodson County","Wyandotte County"],"Kentucky":["Adair County","Allen County","Anderson County","Ballard County","Barren County","Bath County","Bell County","Boone County","Bourbon County","Boyd County","Boyle County","Bracken County","Breathitt County","Breckinridge County","Bullitt County","Butler County","Caldwell County","Calloway County","Campbell County","Carlisle County","Carroll County","Carter County","Casey County","Christian County","Clark County","Clay County","Clinton County","Crittenden County","Cumberland County","Daviess County","Edmonson County","Elliott County","Estill County","Fayette County","Fleming County","Floyd County","Franklin County","Fulton County","Gallatin County","Garrard County","Grant County","Graves County","Grayson County","Green County","Greenup County","Hancock County","Hardin County","Harlan County","Harrison County","Hart County","Henderson County","Henry County","Hickman County","Hopkins County","Jackson County","Jefferson County","Jessamine County","Johnson County","Kenton County","Knott County","Knox County","Larue County","Laurel County","Lawrence County","Lee County","Leslie County","Letcher County","Lewis County","Lincoln County","Livingston County","Logan County","Lyon County","Madison County","Magoffin County","Marion County","Marshall County","Martin County","Mason County","McCracken County","McCreary County","McLean County","Meade County","Menifee County","Mercer County","Metcalfe County","Monroe County","Montgomery County","Morgan County","Muhlenberg County","Nelson County","Nicholas County","Ohio County","Oldham County","Owen County","Owsley County","Pendleton County","Perry County","Pike County","Powell County","Pulaski County","Robertson County","Rockcastle County","Rowan County","Russell County","Scott County","Shelby County","Simpson County","Spencer County","Taylor County","Todd County","Trigg County","Trimble County","Union County","Warren County","Washington County","Wayne County","Webster County","Whitley County","Wolfe County","Woodford County"],"Louisiana":["Acadia Parish","Allen Parish","Ascension Parish","Assumption Parish","Avoyelles Parish","Beauregard Parish","Bienville Parish","Bossier Parish","Caddo Parish","Calcasieu Parish","Caldwell Parish","Cameron Parish","Catahoula Parish","Claiborne Parish","Concordia Parish","De Soto Parish","East Baton Rouge Parish","East Carroll Parish","East Feliciana Parish","Evangeline Parish","Franklin Parish","Grant Parish","Iberia Parish","Iberville Parish","Jackson Parish","Jefferson Davis Parish","Jefferson Parish","La Salle Parish","Lafayette Parish","Lafourche Parish","Lincoln Parish","Livingston Parish","Madison Parish","Morehouse Parish","Natchitoches Parish","Orleans Parish","Ouachita Parish","Plaquemines Parish","Pointe Coupee Parish","Rapides Parish","Red River Parish","Richland Parish","Sabine Parish","St. Bernard Parish","St. Charles Parish","St. Helena Parish","St. James Parish","St. John the Baptist Parish","St. Landry Parish","St. Martin Parish","St. Mary Parish","St. Tammany Parish","Tangipahoa Parish","Tensas Parish","Terrebonne Parish","Union Parish","Vermilion Parish","Vernon Parish","Washington Parish","Webster Parish","West Baton Rouge Parish","West Carroll Parish","West Feliciana Parish","Winn Parish"],"Maine":["Androscoggin County","Aroostook County","Cumberland County","Franklin County","Hancock County","Kennebec County","Knox County","Lincoln County","Oxford County","Penobscot County","Piscataquis County","Sagadahoc County","Somerset County","Waldo County","Washington County","York County"],"Maryland":["Allegany County","Anne Arundel County","Baltimore city","Baltimore County","Calvert County","Caroline County","Carroll County","Cecil County","Charles County","Dorchester County","Frederick County","Garrett County","Harford County","Howard County","Kent County","Montgomery County","Prince George's County","Queen Anne's County","Somerset County","St. Mary's County","Talbot County","Washington County","Wicomico County","Worcester County"],"Massachusetts":["Barnstable County","Berkshire County","Bristol County","Dukes County","Essex County","Franklin County","Hampden County","Hampshire County","Middlesex County","Nantucket County","Norfolk County","Plymouth County","Suffolk County","Worcester County"],"Michigan":["Alcona County","Alger County","Allegan County","Alpena County","Antrim County","Arenac County","Baraga County","Barry County","Bay County","Benzie County","Berrien County","Branch County","Calhoun County","Cass County","Charlevoix County","Cheboygan County","Chippewa County","Clare County","Clinton County","Crawford County","Delta County","Dickinson County","Eaton County","Emmet County","Genesee County","Gladwin County","Gogebic County","Grand Traverse County","Gratiot County","Hillsdale County","Houghton County","Huron County","Ingham County","Ionia County","Iosco County","Iron County","Isabella County","Jackson County","Kalamazoo County","Kalkaska County","Kent County","Keweenaw County","Lake County","Lapeer County","Leelanau County","Lenawee County","Livingston County","Luce County","Mackinac County","Macomb County","Manistee County","Marquette County","Mason County","Mecosta County","Menominee County","Midland County","Missaukee County","Monroe County","Montcalm County","Montmorency County","Muskegon County","Newaygo County","Oakland County","Oceana County","Ogemaw County","Ontonagon County","Osceola County","Oscoda County","Otsego County","Ottawa County","Presque Isle County","Roscommon County","Saginaw County","Sanilac County","Schoolcraft County","Shiawassee County","St. Clair County","St. Joseph County","Tuscola County","Van Buren County","Washtenaw County","Wayne County","Wexford County"],"Minnesota":["Aitkin County","Anoka County","Becker County","Beltrami County","Benton County","Big Stone County","Blue Earth County","Brown County","Carlton County","Carver County","Cass County","Chippewa County","Chisago County","Clay County","Clearwater County","Cook County","Cottonwood County","Crow Wing County","Dakota County","Dodge County","Douglas County","Faribault County","Fillmore County","Freeborn County","Goodhue County","Grant County","Hennepin County","Houston County","Hubbard County","Isanti County","Itasca County","Jackson County","Kanabec County","Kandiyohi County","Kittson County","Koochiching County","Lac qui Parle County","Lake County","Lake of the Woods County","Le Sueur County","Lincoln County","Lyon County","Mahnomen County","Marshall County","Martin County","McLeod County","Meeker County","Mille Lacs County","Morrison County","Mower County","Murray County","Nicollet County","Nobles County","Norman County","Olmsted County","Otter Tail County","Pennington County","Pine County","Pipestone County","Polk County","Pope County","Ramsey County","Red Lake County","Redwood County","Renville County","Rice County","Rock County","Roseau County","Scott County","Sherburne County","Sibley County","St. Louis County","Stearns County","Steele County","Stevens County","Swift County","Todd County","Traverse County","Wabasha County","Wadena County","Waseca County","Washington County","Watonwan County","Wilkin County","Winona County","Wright County","Yellow Medicine County"],"Mississippi":["Adams County","Alcorn County","Amite County","Attala County","Benton County","Bolivar County","Calhoun County","Carroll County","Chickasaw County","Choctaw County","Claiborne County","Clarke County","Clay County","Coahoma County","Copiah County","Covington County","DeSoto County","Forrest County","Franklin County","George County","Greene County","Grenada County","Hancock County","Harrison County","Hinds County","Holmes County","Humphreys County","Issaquena County","Itawamba County","Jackson County","Jasper County","Jefferson County","Jefferson Davis County","Jones County","Kemper County","Lafayette County","Lamar County","Lauderdale County","Lawrence County","Leake County","Lee County","Leflore County","Lincoln County","Lowndes County","Madison County","Marion County","Marshall County","Monroe County","Montgomery County","Neshoba County","Newton County","Noxubee County","Oktibbeha County","Panola County","Pearl River County","Perry County","Pike County","Pontotoc County","Prentiss County","Quitman County","Rankin County","Scott County","Sharkey County","Simpson County","Smith County","Stone County","Sunflower County","Tallahatchie County","Tate County","Tippah County","Tishomingo County","Tunica County","Union County","Walthall County","Warren County","Washington County","Wayne County","Webster County","Wilkinson County","Winston County","Yalobusha County","Yazoo County"],"Missouri":["Adair County","Andrew County","Atchison County","Audrain County","Barry County","Barton County","Bates County","Benton County","Bollinger County","Boone County","Buchanan County","Butler County","Caldwell County","Callaway County","Camden County","Cape Girardeau County","Carroll County","Carter County","Cass County","Cedar County","Chariton County","Christian County","Clark County","Clay County","Clinton County","Cole County","Cooper County","Crawford County","Dade County","Dallas County","Daviess County","DeKalb County","Dent County","Douglas County","Dunklin County","Franklin County","Gasconade County","Gentry County","Greene County","Grundy County","Harrison County","Henry County","Hickory County","Holt County","Howard County","Howell County","Iron County","Jackson County","Jasper County","Jefferson County","Johnson County","Knox County","Laclede County","Lafayette County","Lawrence County","Lewis County","Lincoln County","Linn County","Livingston County","Macon County","Madison County","Maries County","Marion County","McDonald County","Mercer County","Miller County","Mississippi County","Moniteau County","Monroe County","Montgomery County","Morgan County","New Madrid County","Newton County","Nodaway County","Oregon County","Osage County","Ozark County","Pemiscot County","Perry County","Pettis County","Phelps County","Pike County","Platte County","Polk County","Pulaski County","Putnam County","Ralls County","Randolph County","Ray County","Reynolds County","Ripley County","Saline County","Schuyler County","Scotland County","Scott County","Shannon County","Shelby County","St. Charles County","St. Clair County","St. Francois County","St. Louis city","St. Louis County","Ste. Genevieve County","Stoddard County","Stone County","Sullivan County","Taney County","Texas County","Vernon County","Warren County","Washington County","Wayne County","Webster County","Worth County","Wright County"],"Montana":["Beaverhead County","Big Horn County","Blaine County","Broadwater County","Carbon County","Carter County","Cascade County","Chouteau County","Custer County","Daniels County","Dawson County","Deer Lodge County","Fallon County","Fergus County","Flathead County","Gallatin County","Garfield County","Glacier County","Golden Valley County","Granite County","Hill County","Jefferson County","Judith Basin County","Lake County","Lewis and Clark County","Liberty County","Lincoln County","Madison County","McCone County","Meagher County","Mineral County","Missoula County","Musselshell County","Park County","Petroleum County","Phillips County","Pondera County","Powder River County","Powell County","Prairie County","Ravalli County","Richland County","Roosevelt County","Rosebud County","Sanders County","Sheridan County","Silver Bow County","Stillwater County","Sweet Grass County","Teton County","Toole County","Treasure County","Valley County","Wheatland County","Wibaux County","Yellowstone County"],"Nebraska":["Adams County","Antelope County","Arthur County","Banner County","Blaine County","Boone County","Box Butte County","Boyd County","Brown County","Buffalo County","Burt County","Butler County","Cass County","Cedar County","Chase County","Cherry County","Cheyenne County","Clay County","Colfax County","Cuming County","Custer County","Dakota County","Dawes County","Dawson County","Deuel County","Dixon County","Dodge County","Douglas County","Dundy County","Fillmore County","Franklin County","Frontier County","Furnas County","Gage County","Garden County","Garfield County","Gosper County","Grant County","Greeley County","Hall County","Hamilton County","Harlan County","Hayes County","Hitchcock County","Holt County","Hooker County","Howard County","Jefferson County","Johnson County","Kearney County","Keith County","Keya Paha County","Kimball County","Knox County","Lancaster County","Lincoln County","Logan County","Loup County","Madison County","McPherson County","Merrick County","Morrill County","Nance County","Nemaha County","Nuckolls County","Otoe County","Pawnee County","Perkins County","Phelps County","Pierce County","Platte County","Polk County","Red Willow County","Richardson County","Rock County","Saline County","Sarpy County","Saunders County","Scotts Bluff County","Seward County","Sheridan County","Sherman County","Sioux County","Stanton County","Thayer County","Thomas County","Thurston County","Valley County","Washington County","Wayne County","Webster County","Wheeler County","York County"],"Nevada":["Carson City","Churchill County","Clark County","Douglas County","Elko County","Esmeralda County","Eureka County","Humboldt County","Lander County","Lincoln County","Lyon County","Mineral County","Nye County","Pershing County","Storey County","Washoe County","White Pine County"],"New Hampshire":["Belknap County","Carroll County","Cheshire County","Coos County","Grafton County","Hillsborough County","Merrimack County","Rockingham County","Strafford County","Sullivan County"],"New Jersey":["Atlantic County","Bergen County","Burlington County","Camden County","Cape May County","Cumberland County","Essex County","Gloucester County","Hudson County","Hunterdon County","Mercer County","Middlesex County","Monmouth County","Morris County","Ocean County","Passaic County","Salem County","Somerset County","Sussex County","Union County","Warren County"],"New Mexico":["Bernalillo County","Catron County","Chaves County","Cibola County","Colfax County","Curry County","De Baca County","Dona Ana County","Eddy County","Grant County","Guadalupe County","Harding County","Hidalgo County","Lea County","Lincoln County","Los Alamos County","Luna County","McKinley County","Mora County","Otero County","Quay County","Rio Arriba County","Roosevelt County","San Juan County","San Miguel County","Sandoval County","Santa Fe County","Sierra County","Socorro County","Taos County","Torrance County","Union County","Valencia County"],"New York":["Albany County","Allegany County","Bronx County","Broome County","Cattaraugus County","Cayuga County","Chautauqua County","Chemung County","Chenango County","Clinton County","Columbia County","Cortland County","Delaware County","Dutchess County","Erie County","Essex County","Franklin County","Fulton County","Genesee County","Greene County","Hamilton County","Herkimer County","Jefferson County","Kings County","Lewis County","Livingston County","Madison County","Monroe County","Montgomery County","Nassau County","New York County","Niagara County","Oneida County","Onondaga County","Ontario County","Orange County","Orleans County","Oswego County","Otsego County","Putnam County","Queens County","Rensselaer County","Richmond County","Rockland County","Saratoga County","Schenectady County","Schoharie County","Schuyler County","Seneca County","St. Lawrence County","Steuben County","Suffolk County","Sullivan County","Tioga County","Tompkins County","Ulster County","Warren County","Washington County","Wayne County","Westchester County","Wyoming County","Yates County"],"North Carolina":["Alamance County","Alexander County","Alleghany County","Anson County","Ashe County","Avery County","Beaufort County","Bertie County","Bladen County","Brunswick County","Buncombe County","Burke County","Cabarrus County","Caldwell County","Camden County","Carteret County","Caswell County","Catawba County","Chatham County","Cherokee County","Chowan County","Clay County","Cleveland County","Columbus County","Craven County","Cumberland County","Currituck County","Dare County","Davidson County","Davie County","Duplin County","Durham County","Edgecombe County","Forsyth County","Franklin County","Gaston County","Gates County","Graham County","Granville County","Greene County","Guilford County","Halifax County","Harnett County","Haywood County","Henderson County","Hertford County","Hoke County","Hyde County","Iredell County","Jackson County","Johnston County","Jones County","Lee County","Lenoir County","Lincoln County","Macon County","Madison County","Martin County","McDowell County","Mecklenburg County","Mitchell County","Montgomery County","Moore County","Nash County","New Hanover County","Northampton County","Onslow County","Orange County","Pamlico County","Pasquotank County","Pender County","Perquimans County","Person County","Pitt County","Polk County","Randolph County","Richmond County","Robeson County","Rockingham County","Rowan County","Rutherford County","Sampson County","Scotland County","Stanly County","Stokes County","Surry County","Swain County","Transylvania County","Tyrrell County","Union County","Vance County","Wake County","Warren County","Washington County","Watauga County","Wayne County","Wilkes County","Wilson County","Yadkin County","Yancey County"],"North Dakota":["Adams County","Barnes County","Benson County","Billings County","Bottineau County","Bowman County","Burke County","Burleigh County","Cass County","Cavalier County","Dickey County","Divide County","Dunn County","Eddy County","Emmons County","Foster County","Golden Valley County","Grand Forks County","Grant County","Griggs County","Hettinger County","Kidder County","LaMoure County","Logan County","McHenry County","McIntosh County","McKenzie County","McLean County","Mercer County","Morton County","Mountrail County","Nelson County","Oliver County","Pembina County","Pierce County","Ramsey County","Ransom County","Renville County","Richland County","Rolette County","Sargent County","Sheridan County","Sioux County","Slope County","Stark County","Steele County","Stutsman County","Towner County","Traill County","Walsh County","Ward County","Wells County","Williams County"],"Ohio":["Adams County","Allen County","Ashland County","Ashtabula County","Athens County","Auglaize County","Belmont County","Brown County","Butler County","Carroll County","Champaign County","Clark County","Clermont County","Clinton County","Columbiana County","Coshocton County","Crawford County","Cuyahoga County","Darke County","Defiance County","Delaware County","Erie County","Fairfield County","Fayette County","Franklin County","Fulton County","Gallia County","Geauga County","Greene County","Guernsey County","Hamilton County","Hancock County","Hardin County","Harrison County","Henry County","Highland County","Hocking County","Holmes County","Huron County","Jackson County","Jefferson County","Knox County","Lake County","Lawrence County","Licking County","Logan County","Lorain County","Lucas County","Madison County","Mahoning County","Marion County","Medina County","Meigs County","Mercer County","Miami County","Monroe County","Montgomery County","Morgan County","Morrow County","Muskingum County","Noble County","Ottawa County","Paulding County","Perry County","Pickaway County","Pike County","Portage County","Preble County","Putnam County","Richland County","Ross County","Sandusky County","Scioto County","Seneca County","Shelby County","Stark County","Summit County","Trumbull County","Tuscarawas County","Union County","Van Wert County","Vinton County","Warren County","Washington County","Wayne County","Williams County","Wood County","Wyandot County"],"Oklahoma":["Adair County","Alfalfa County","Atoka County","Beaver County","Beckham County","Blaine County","Bryan County","Caddo County","Canadian County","Carter County","Cherokee County","Choctaw County","Cimarron County","Cleveland County","Coal County","Comanche County","Cotton County","Craig County","Creek County","Custer County","Delaware County","Dewey County","Ellis County","Garfield County","Garvin County","Grady County","Grant County","Greer County","Harmon County","Harper County","Haskell County","Hughes County","Jackson County","Jefferson County","Johnston County","Kay County","Kingfisher County","Kiowa County","Latimer County","Le Flore County","Lincoln County","Logan County","Love County","Major County","Marshall County","Mayes County","McClain County","McCurtain County","McIntosh County","Murray County","Muskogee County","Noble County","Nowata County","Okfuskee County","Oklahoma County","Okmulgee County","Osage County","Ottawa County","Pawnee County","Payne County","Pittsburg County","Pontotoc County","Pottawatomie County","Pushmataha County","Roger Mills County","Rogers County","Seminole County","Sequoyah County","Stephens County","Texas County","Tillman County","Tulsa County","Wagoner County","Washington County","Washita County","Woods County","Woodward County"],"Oregon":["Baker County","Benton County","Clackamas County","Clatsop County","Columbia County","Coos County","Crook County","Curry County","Deschutes County","Douglas County","Gilliam County","Grant County","Harney County","Hood River County","Jackson County","Jefferson County","Josephine County","Klamath County","Lake County","Lane County","Lincoln County","Linn County","Malheur County","Marion County","Morrow County","Multnomah County","Polk County","Sherman County","Tillamook County","Umatilla County","Union County","Wallowa County","Wasco County","Washington County","Wheeler County","Yamhill County"],"Pennsylvania":["Adams County","Allegheny County","Armstrong County","Beaver County","Bedford County","Berks County","Blair County","Bradford County","Bucks County","Butler County","Cambria County","Cameron County","Carbon County","Centre County","Chester County","Clarion County","Clearfield County","Clinton County","Columbia County","Crawford County","Cumberland County","Dauphin County","Delaware County","Elk County","Erie County","Fayette County","Forest County","Franklin County","Fulton County","Greene County","Huntingdon County","Indiana County","Jefferson County","Juniata County","Lackawanna County","Lancaster County","Lawrence County","Lebanon County","Lehigh County","Luzerne County","Lycoming County","McKean County","Mercer County","Mifflin County","Monroe County","Montgomery County","Montour County","Northampton County","Northumberland County","Perry County","Philadelphia County","Pike County","Potter County","Schuylkill County","Snyder County","Somerset County","Sullivan County","Susquehanna County","Tioga County","Union County","Venango County","Warren County","Washington County","Wayne County","Westmoreland County","Wyoming County","York County"],"Rhode Island":["Bristol County","Kent County","Newport County","Providence County","Washington County"],"South Carolina":["Abbeville County","Aiken County","Allendale County","Anderson County","Bamberg County","Barnwell County","Beaufort County","Berkeley County","Calhoun County","Charleston County","Cherokee County","Chester County","Chesterfield County","Clarendon County","Colleton County","Darlington County","Dillon County","Dorchester County","Edgefield County","Fairfield County","Florence County","Georgetown County","Greenville County","Greenwood County","Hampton County","Horry County","Jasper County","Kershaw County","Lancaster County","Laurens County","Lee County","Lexington County","Marion County","Marlboro County","McCormick County","Newberry County","Oconee County","Orangeburg County","Pickens County","Richland County","Saluda County","Spartanburg County","Sumter County","Union County","Williamsburg County","York County"],"South Dakota":["Aurora County","Beadle County","Bennett County","Bon Homme County","Brookings County","Brown County","Brule County","Buffalo County","Butte County","Campbell County","Charles Mix County","Clark County","Clay County","Codington County","Corson County","Custer County","Davison County","Day County","Deuel County","Dewey County","Douglas County","Edmunds County","Fall River County","Faulk County","Grant County","Gregory County","Haakon County","Hamlin County","Hand County","Hanson County","Harding County","Hughes County","Hutchinson County","Hyde County","Jackson County","Jerauld County","Jones County","Kingsbury County","Lake County","Lawrence County","Lincoln County","Lyman County","Marshall County","McCook County","McPherson County","Meade County","Mellette County","Miner County","Minnehaha County","Moody County","Pennington County","Perkins County","Potter County","Roberts County","Sanborn County","Oglala Lakota County","Spink County","Stanley County","Sully County","Todd County","Tripp County","Turner County","Union County","Walworth County","Yankton County","Ziebach County"],"Tennessee":["Anderson County","Bedford County","Benton County","Bledsoe County","Blount County","Bradley County","Campbell County","Cannon County","Carroll County","Carter County","Cheatham County","Chester County","Claiborne County","Clay County","Cocke County","Coffee County","Crockett County","Cumberland County","Davidson County","Decatur County","DeKalb County","Dickson County","Dyer County","Fayette County","Fentress County","Franklin County","Gibson County","Giles County","Grainger County","Greene County","Grundy County","Hamblen County","Hamilton County","Hancock County","Hardeman County","Hardin County","Hawkins County","Haywood County","Henderson County","Henry County","Hickman County","Houston County","Humphreys County","Jackson County","Jefferson County","Johnson County","Knox County","Lake County","Lauderdale County","Lawrence County","Lewis County","Lincoln County","Loudon County","Macon County","Madison County","Marion County","Marshall County","Maury County","McMinn County","McNairy County","Meigs County","Monroe County","Montgomery County","Moore County","Morgan County","Obion County","Overton County","Perry County","Pickett County","Polk County","Putnam County","Rhea County","Roane County","Robertson County","Rutherford County","Scott County","Sequatchie County","Sevier County","Shelby County","Smith County","Stewart County","Sullivan County","Sumner County","Tipton County","Trousdale County","Unicoi County","Union County","Van Buren County","Warren County","Washington County","Wayne County","Weakley County","White County","Williamson County","Wilson County"],"Texas":["Anderson County","Andrews County","Angelina County","Aransas County","Archer County","Armstrong County","Atascosa County","Austin County","Bailey County","Bandera County","Bastrop County","Baylor County","Bee County","Bell County","Bexar County","Blanco County","Borden County","Bosque County","Bowie County","Brazoria County","Brazos County","Brewster County","Briscoe County","Brooks County","Brown County","Burleson County","Burnet County","Caldwell County","Calhoun County","Callahan County","Cameron County","Camp County","Carson County","Cass County","Castro County","Chambers County","Cherokee County","Childress County","Clay County","Cochran County","Coke County","Coleman County","Collin County","Collingsworth County","Colorado County","Comal County","Comanche County","Concho County","Cooke County","Coryell County","Cottle County","Crane County","Crockett County","Crosby County","Culberson County","Dallam County","Dallas County","Dawson County","Deaf Smith County","Delta County","Denton County","DeWitt County","Dickens County","Dimmit County","Donley County","Duval County","Eastland County","Ector County","Edwards County","El Paso County","Ellis County","Erath County","Falls County","Fannin County","Fayette County","Fisher County","Floyd County","Foard County","Fort Bend County","Franklin County","Freestone County","Frio County","Gaines County","Galveston County","Garza County","Gillespie County","Glasscock County","Goliad County","Gonzales County","Gray County","Grayson County","Gregg County","Grimes County","Guadalupe County","Hale County","Hall County","Hamilton County","Hansford County","Hardeman County","Hardin County","Harris County","Harrison County","Hartley County","Haskell County","Hays County","Hemphill County","Henderson County","Hidalgo County","Hill County","Hockley County","Hood County","Hopkins County","Houston County","Howard County","Hudspeth County","Hunt County","Hutchinson County","Irion County","Jack County","Jackson County","Jasper County","Jeff Davis County","Jefferson County","Jim Hogg County","Jim Wells County","Johnson County","Jones County","Karnes County","Kaufman County","Kendall County","Kenedy County","Kent County","Kerr County","Kimble County","King County","Kinney County","Kleberg County","Knox County","La Salle County","Lamar County","Lamb County","Lampasas County","Lavaca County","Lee County","Leon County","Liberty County","Limestone County","Lipscomb County","Live Oak County","Llano County","Loving County","Lubbock County","Lynn County","Madison County","Marion County","Martin County","Mason County","Matagorda County","Maverick County","McCulloch County","McLennan County","McMullen County","Medina County","Menard County","Midland County","Milam County","Mills County","Mitchell County","Montague County","Montgomery County","Moore County","Morris County","Motley County","Nacogdoches County","Navarro County","Newton County","Nolan County","Nueces County","Ochiltree County","Oldham County","Orange County","Palo Pinto County","Panola County","Parker County","Parmer County","Pecos County","Polk County","Potter County","Presidio County","Rains County","Randall County","Reagan County","Real County","Red River County","Reeves County","Refugio County","Roberts County","Robertson County","Rockwall County","Runnels County","Rusk County","Sabine County","San Augustine County","San Jacinto County","San Patricio County","San Saba County","Schleicher County","Scurry County","Shackelford County","Shelby County","Sherman County","Smith County","Somervell County","Starr County","Stephens County","Sterling County","Stonewall County","Sutton County","Swisher County","Tarrant County","Taylor County","Terrell County","Terry County","Throckmorton County","Titus County","Tom Green County","Travis County","Trinity County","Tyler County","Upshur County","Upton County","Uvalde County","Val Verde County","Van Zandt County","Victoria County","Walker County","Waller County","Ward County","Washington County","Webb County","Wharton County","Wheeler County","Wichita County","Wilbarger County","Willacy County","Williamson County","Wilson County","Winkler County","Wise County","Wood County","Yoakum County","Young County","Zapata County","Zavala County"],"Utah":["Beaver County","Box Elder County","Cache County","Carbon County","Daggett County","Davis County","Duchesne County","Emery County","Garfield County","Grand County","Iron County","Juab County","Kane County","Millard County","Morgan County","Piute County","Rich County","Salt Lake County","San Juan County","Sanpete County","Sevier County","Summit County","Tooele County","Uintah County","Utah County","Wasatch County","Washington County","Wayne County","Weber County"],"Vermont":["Addison County","Bennington County","Caledonia County","Chittenden County","Essex County","Franklin County","Grand Isle County","Lamoille County","Orange County","Orleans County","Rutland County","Washington County","Windham County","Windsor County"],"Virginia":["Accomack County","Albemarle County","Alexandria city","Alleghany County","Amelia County","Amherst County","Appomattox County","Arlington County","Augusta County","Bath County","Bedford County","Bland County","Botetourt County","Bristol city","Brunswick County","Buchanan County","Buckingham County","Buena Vista city","Campbell County","Caroline County","Carroll County","Charles City County","Charlotte County","Charlottesville city","Chesapeake city","Chesterfield County","Clarke County","Colonial Heights city","Covington city","Craig County","Culpeper County","Cumberland County","Danville city","Dickenson County","Dinwiddie County","Emporia city","Essex County","Fairfax city","Fairfax County","Falls Church city","Fauquier County","Floyd County","Fluvanna County","Franklin city","Franklin County","Frederick County","Fredericksburg city","Galax city","Giles County","Gloucester County","Goochland County","Grayson County","Greene County","Greensville County","Halifax County","Hampton city","Hanover County","Harrisonburg city","Henrico County","Henry County","Highland County","Hopewell city","Isle of Wight County","James City County","King and Queen County","King George County","King William County","Lancaster County","Lee County","Lexington city","Loudoun County","Louisa County","Lunenburg County","Lynchburg city","Madison County","Manassas city","Manassas Park city","Martinsville city","Mathews County","Mecklenburg County","Middlesex County","Montgomery County","Nelson County","New Kent County","Newport News city","Norfolk city","Northampton County","Northumberland County","Norton city","Nottoway County","Orange County","Page County","Patrick County","Petersburg city","Pittsylvania County","Poquoson city","Portsmouth city","Powhatan County","Prince Edward County","Prince George County","Prince William County","Pulaski County","Radford city","Rappahannock County","Richmond city","Richmond County","Roanoke city","Roanoke County","Rockbridge County","Rockingham County","Russell County","Salem city","Scott County","Shenandoah County","Smyth County","Southampton County","Spotsylvania County","Stafford County","Staunton city","Suffolk city","Surry County","Sussex County","Tazewell County","Virginia Beach city","Warren County","Washington County","Waynesboro city","Westmoreland County","Williamsburg city","Winchester city","Wise County","Wythe County","York County"],"Washington":["Adams County","Asotin County","Benton County","Chelan County","Clallam County","Clark County","Columbia County","Cowlitz County","Douglas County","Ferry County","Franklin County","Garfield County","Grant County","Grays Harbor County","Island County","Jefferson County","King County","Kitsap County","Kittitas County","Klickitat County","Lewis County","Lincoln County","Mason County","Okanogan County","Pacific County","Pend Oreille County","Pierce County","San Juan County","Skagit County","Skamania County","Snohomish County","Spokane County","Stevens County","Thurston County","Wahkiakum County","Walla Walla County","Whatcom County","Whitman County","Yakima County"],"West Virginia":["Barbour County","Berkeley County","Boone County","Braxton County","Brooke County","Cabell County","Calhoun County","Clay County","Doddridge County","Fayette County","Gilmer County","Grant County","Greenbrier County","Hampshire County","Hancock County","Hardy County","Harrison County","Jackson County","Jefferson County","Kanawha County","Lewis County","Lincoln County","Logan County","Marion County","Marshall County","Mason County","McDowell County","Mercer County","Mineral County","Mingo County","Monongalia County","Monroe County","Morgan County","Nicholas County","Ohio County","Pendleton County","Pleasants County","Pocahontas County","Preston County","Putnam County","Raleigh County","Randolph County","Ritchie County","Roane County","Summers County","Taylor County","Tucker County","Tyler County","Upshur County","Wayne County","Webster County","Wetzel County","Wirt County","Wood County","Wyoming County"],"Wisconsin":["Adams County","Ashland County","Barron County","Bayfield County","Brown County","Buffalo County","Burnett County","Calumet County","Chippewa County","Clark County","Columbia County","Crawford County","Dane County","Dodge County","Door County","Douglas County","Dunn County","Eau Claire County","Florence County","Fond du Lac County","Forest County","Grant County","Green County","Green Lake County","Iowa County","Iron County","Jackson County","Jefferson County","Juneau County","Kenosha County","Kewaunee County","La Crosse County","Lafayette County","Langlade County","Lincoln County","Manitowoc County","Marathon County","Marinette County","Marquette County","Menominee County","Milwaukee County","Monroe County","Oconto County","Oneida County","Outagamie County","Ozaukee County","Pepin County","Pierce County","Polk County","Portage County","Price County","Racine County","Richland County","Rock County","Rusk County","Sauk County","Sawyer County","Shawano County","Sheboygan County","St. Croix County","Taylor County","Trempealeau County","Vernon County","Vilas County","Walworth County","Washburn County","Washington County","Waukesha County","Waupaca County","Waushara County","Winnebago County","Wood County"],"Wyoming":["Albany County","Big Horn County","Campbell County","Carbon County","Converse County","Crook County","Fremont County","Goshen County","Hot Springs County","Johnson County","Laramie County","Lincoln County","Natrona County","Niobrara County","Park County","Platte County","Sheridan County","Sublette County","Sweetwater County","Teton County","Uinta County","Washakie County","Weston County"]};
 
 
-const TAB_DEFS = [['home','home','Laws'],['rights','rights','All rights'],['agencies','building','Agencies']];
+/* Catalogue keys, not labels. These three sat here as bare English literals
+   through the whole string extraction: the scanner only sees text in a
+   createElement child or a text-bearing prop, and prose parked in a data
+   array reaches the DOM as `{label}` — an expression, invisible to it. The
+   tab bar is on every screen of the app, so in Spanish it was the most
+   visible English left. test/language-toggle.mjs now reads every translated
+   string back off the page, which is what catches the next one. */
+const TAB_DEFS = [['home','home','nav.tab.home'],['rights','rights','nav.tab.rights'],['agencies','building','nav.tab.agencies']];
 
 
 /* ── Remembered location ──────────────────────────────────────────── */
@@ -2224,6 +2750,16 @@ function App(){
   // everywhere: every deadline still shows without it, just without the
   // elapsed-time line beside it.
   const [when, setWhen] = useState(() => loadPrefs().when || '');
+  /* The reading language. Assigned to CURRENT_LANG immediately below, before
+     any child renders, so every t() in this tree resolves in it. */
+  const [lang, setLang] = useState(loadLang);
+  CURRENT_LANG = lang;
+  const pickLang = (code) => { if (LOCALE_CODES.indexOf(code) >= 0) { saveLang(code); setLang(code); } };
+  /* React does not own <html>, so the language attribute is written directly.
+     It is not decoration: it tells a screen reader which voice to read the
+     page in, and a Spanish page announced by an English voice is close to
+     unusable. */
+  useEffect(() => { document.documentElement.lang = lang; }, [lang]);
   // Which of the four working lives the map cannot express, if the reader said.
   // Component state only — see EntrySituations for why it is not persisted.
   const [situation, setSituation] = useState(null);
@@ -2396,6 +2932,44 @@ function App(){
       <span style={css("font:700 14px/1.4 'Atkinson Hyperlegible',sans-serif;color:#6B4B00")}>{FLSA_SOL_TIMING_NOTE}</span>
     </div>
   );
+
+  /* The language control, and — when the active locale is unreviewed — the one
+     line that says so.
+
+     It sits above every screen rather than inside a settings menu, because a
+     reader who cannot read English cannot find a settings menu labelled in
+     English. That includes the welcome screen, which is the only place someone
+     arriving for the first time will look.
+
+     The unreviewed notice lives here, beside the control that caused it,
+     instead of being repeated inside each screen's copy. Navigating resets the
+     scroll to the top of main (see mainRef), so it is on screen on arrival
+     everywhere — which is what LOCALES promises — without becoming a banner
+     to scroll past a second time on the way back.
+
+     It disappears entirely at one locale: a picker with a single option is a
+     control that does nothing. */
+  const LangBar = () => {
+    if (LOCALES.length < 2) return null;
+    const active = LOCALES.filter(l => l.code === lang)[0] || LOCALES[0];
+    return (
+      <div style={css("padding:10px 22px 0;display:flex;flex-direction:column;gap:7px")}>
+        <div role="group" aria-label={t('lang.label')} style={css("display:flex;gap:6px;flex-wrap:wrap")}>
+          {LOCALES.map(l =>
+            <button key={l.code} lang={l.code} onClick={() => pickLang(l.code)}
+              aria-pressed={l.code === lang} className="hoverfx"
+              style={css("min-height:44px;padding:8px 14px;border-radius:999px;cursor:pointer;font:700 13px 'Atkinson Hyperlegible',sans-serif;" + (l.code === lang
+                ? "border:2px solid #14181F;background:#FFF4D6;color:#14181F"
+                : "border:2px solid rgba(20,24,31,.28);background:transparent;color:#4A5162"))}>
+              {l.name}
+            </button>
+          )}
+        </div>
+        {active.reviewed ? null :
+          <p style={css("margin:0;font:400 13px/1.45 'Atkinson Hyperlegible',sans-serif;color:#6B4B00")}>{t('lang.unreviewed')}</p>}
+      </div>
+    );
+  };
 
   const Welcome = () => {
     const enter = () => { markWelcomeSeen(); setScreen('home'); };
@@ -3520,16 +4094,17 @@ function App(){
             visual layout there is unchanged. */}
         {showTabs &&
           <nav aria-label={t('nav.primary')} className="tabbar">
-            {TAB_DEFS.map(([k, name, label]) =>
+            {TAB_DEFS.map(([k, name, labelKey]) =>
               <button key={k} className="hoverfx tabbar-btn" onClick={nav(k)} aria-current={screen === k ? 'page' : undefined}
                 style={css('border:2px solid ' + (screen === k ? '#14181F' : 'transparent') + ';background:' + (screen === k ? '#FFF4D6' : 'transparent') + ';color:#14181F;cursor:pointer')}>
                 <Icon name={name} size={22} />
-                <span style={css("font:700 12px 'Atkinson Hyperlegible',sans-serif")}>{label}</span>
+                <span style={css("font:700 12px 'Atkinson Hyperlegible',sans-serif")}>{t(labelKey)}</span>
               </button>
             )}
           </nav>
         }
         <main className="scrollarea" ref={mainRef} tabIndex={-1} style={css("outline:none")}>
+          {LangBar()}
           {/* Call the screen as a function (not <Current/>) so it inlines into this
               stable tree instead of remounting on every keystroke — remounting was
               destroying the chat/onboarding/letter inputs and jumping scroll. */}

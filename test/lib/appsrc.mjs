@@ -46,23 +46,29 @@ export function constSource(src, name) {
 }
 
 /**
- * The English catalogue, as the app defines it.
+ * One locale's catalogue, as the app defines it.
  *
  * Read out of the source rather than hand-copied, so a suite asserting on copy
- * is asserting on the string that actually ships — and so that when a second
- * locale lands, the same suites cover it by swapping one table.
+ * is asserting on the string that actually ships — and so a suite covering a
+ * second language is the same suite with one argument changed.
+ *
+ * The locale header is matched anchored at its own indentation (`^  es: {`)
+ * rather than by substring: `es: {` occurs inside the English copy often
+ * enough that a plain indexOf would find a fragment of prose and eval it.
  */
-export function catalogue(src) {
+export function catalogue(src, code = 'en') {
   const at = src.indexOf('const STRINGS = {');
   if (at < 0) throw new Error('could not find STRINGS in index.dev.html');
-  const enAt = src.indexOf('en: {', at);
-  const open = src.indexOf('{', enAt);
+  const rest = src.slice(at);
+  const hdr = rest.search(new RegExp('^  ' + code + ': \\{', 'm'));
+  if (hdr < 0) throw new Error('no locale ' + code + ' in STRINGS');
+  const open = rest.indexOf('{', hdr);
   let d = 0;
-  for (let j = open; j < src.length; j++) {
-    if (src[j] === '{') d++;
-    else if (src[j] === '}') { d--; if (d === 0) return (0, eval)('(' + src.slice(open, j + 1) + ')'); }
+  for (let j = open; j < rest.length; j++) {
+    if (rest[j] === '{') d++;
+    else if (rest[j] === '}') { d--; if (d === 0) return (0, eval)('(' + rest.slice(open, j + 1) + ')'); }
   }
-  throw new Error('unbalanced STRINGS.en');
+  throw new Error('unbalanced STRINGS.' + code);
 }
 
 /**

@@ -123,8 +123,13 @@ try {
     text = await pg.evaluate(() => document.body.innerText);
     ok(text.includes(SITUATIONS.find(s => s.key === 'drive').note), 'and shows its note');
     ok(!text.includes(SITUATIONS.find(s => s.key === 'home').note), 'and only its own');
+    /* The language picker (LangBar) is on every screen and marks the current
+       language with aria-pressed too, so it is excluded by its wrapper role —
+       this is about which ESCAPE CHIP is chosen, and the chips sit loose in
+       the step rather than in a group. */
     const pressed = await pg.evaluate(() =>
-      [...document.querySelectorAll('button[aria-pressed="true"]')].map(b => b.textContent.trim()));
+      [...document.querySelectorAll('button[aria-pressed="true"]')]
+        .filter(b => !b.closest('[role="group"]')).map(b => b.textContent.trim()));
     ok(pressed.length === 1 && pressed[0] === 'I drive or deliver',
        'the chosen chip is the one marked pressed, for anyone not seeing the colour');
 
