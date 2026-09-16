@@ -81,32 +81,20 @@ ok(collisions.length === 0,
   'no two shapes in a state share a name (Virginia\'s Fairfax county vs Fairfax city stay distinct)' +
   (collisions.length ? ': ' + collisions.join(', ') : ''));
 
-// Drawn labels must not overlap each other. The build (chooseLabels in
-// automation/build-county-geo.mjs) rejects colliding labels; without that pass
-// Texas stacked Jack over Wise, King over Knox and Lamb over Hale. Recompute
-// the boxes here from the shipped data so a regression in that pass fails
-// rather than silently producing unreadable maps.
-const LABEL_FS = 14, CHAR_W = 0.62, PAD_X = 6, PAD_Y = 4;
-const STRIP = /\s+(County|Parish|Borough|Census Area|Municipio|Municipality|City and Borough)$/i;
-let drawn = 0;
-const overlaps = [];
-for (const abbr of Object.values(ABBR)) {
-  const f = join(ROOT, 'content/geo', abbr + '.json');
-  if (!existsSync(f)) continue;
-  const boxes = [];
-  for (const c of JSON.parse(readFileSync(f, 'utf8')).counties) {
-    if (!c.lab) continue;
-    drawn++;
-    const w = c.name.replace(STRIP, '').length * LABEL_FS * CHAR_W;
-    const box = { n: c.name, x0: c.lx - w / 2 - PAD_X, x1: c.lx + w / 2 + PAD_X,
-      y0: c.ly - LABEL_FS / 2 - PAD_Y, y1: c.ly + LABEL_FS / 2 + PAD_Y };
-    const hit = boxes.find(b => box.x0 < b.x1 && box.x1 > b.x0 && box.y0 < b.y1 && box.y1 > b.y0);
-    if (hit) overlaps.push(`${abbr}: "${box.n}" over "${hit.n}"`);
-    boxes.push(box);
-  }
-}
-ok(drawn > 0, `counties carry drawn name labels (${drawn} of ${shapes})`);
-ok(overlaps.length === 0, 'no two drawn county labels overlap' + (overlaps.length ? `: ${overlaps.slice(0, 5).join(', ')}` : ''));
+/* County names are no longer drawn on the shapes.
+ *
+ * They used to be, at 18 viewBox units — ~12px in the desktop reading column
+ * and 6.2px on a phone, small enough that glyph spacing collapses. There was
+ * a whole collision-avoidance pass in the build to stop Texas stacking Jack
+ * over Wise; the honest fix was that text that needs a collision solver to be
+ * merely overlapping is already too small to read. The live caption under the
+ * map carries the name now.
+ *
+ * The geo files still carry `lab`/`lx`/`ly` (automation/build-county-geo.mjs
+ * still computes them) — harmless, and cheaper to leave than to regenerate
+ * fifty files, but nothing reads them. The browser half below asserts the map
+ * draws no text at all, which is what fails if a label layer comes back.
+ */
 // Geometry files are fetched per state, so size is a user-facing cost.
 const sizes = readdirSync(join(ROOT, 'content/geo'))
   .map(f => statSync(join(ROOT, 'content/geo', f)).size);
@@ -158,6 +146,30 @@ try {
   });
   ok(a11y && a11y.role === 'button' && a11y.tab === '0' && /County$/.test(a11y.label || ''),
     'county shapes are focusable buttons with a full county name as their label');
+
+  /* No drawn names on the shapes — the regression guard for the label layer
+     that was removed because it was too small to read at any tier. Checked in
+     the DOM rather than against the CSS, so re-adding <text> under any class
+     name, or with the display rule relaxed, fails here. The caption below the
+     map must still carry the name, so this asserts the absence of one and the
+     presence of the other. */
+  const mapText = await pg.evaluate(() => {
+    const svg = document.querySelector('.wlCountyMap');
+    return svg ? svg.querySelectorAll('text').length : -1;
+  });
+  ok(mapText === 0, `the county map draws no names on the shapes (found ${mapText} text nodes)`);
+
+  /* A REAL hover, not a synthetic mouseenter: React delegates onMouseEnter
+     through mouseover, so a dispatched `mouseenter` event never reaches the
+     handler and this read back an empty caption from a working app. */
+  await pg.hover('.wlCountyMap path[aria-label="Los Angeles County"]');
+  await new Promise(r => setTimeout(r, 300));
+  const named = await pg.evaluate(() => {
+    const live = document.querySelector('[aria-live="polite"]');
+    return live ? (live.textContent || '').trim() : null;
+  });
+  ok(named === 'Los Angeles County',
+     `hovering a county names it in the live caption instead (got: ${JSON.stringify(named)})`);
 
   // A click must write exactly what the dropdown holds.
   const picked = await pg.evaluate(() => {

@@ -185,7 +185,15 @@ function resolveName(geoName, fips, appCounties) {
  * AND its box clears every label already accepted. Decided here rather than at
  * render time so the result is deterministic and costs the browser nothing.
  */
-const LABEL_FS = 14;             // must match .wlCountyLabel in index.dev.html
+/* NOTHING READS THESE ANY MORE. The app stopped drawing names on the county
+   shapes — at 18 viewBox units they were ~12px on desktop and 6.2px on a
+   phone, too small to read, and a collision solver only made them merely
+   non-overlapping rather than legible (see .wlCountyLabel's note in
+   index.dev.html, and test/county-map.mjs, which now asserts the map draws no
+   text). The `lab`/`lx`/`ly` fields are still emitted so the geo files keep a
+   stable shape; delete this pass and regenerate all fifty if the bytes ever
+   matter. */
+const LABEL_FS = 14;             // sized against Atkinson Hyperlegible, as the map once drew it
 const CHAR_W = 0.62;             // average advance for Atkinson Hyperlegible, rounded up
 const LABEL_PAD_X = 6;           // breathing room so neighbours don't touch
 const LABEL_PAD_Y = 4;
