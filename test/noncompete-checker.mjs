@@ -65,7 +65,7 @@ try {
 //    the federal FTC-rule-status note.
 {
   const { pg, errs } = await newPage();
-  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`, { place: { state: 'California', county: '' } });
+  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`, { place: { state: 'California', county: '—' } });
   await new Promise(r => setTimeout(r, 700));
 
   await openCheck(pg);
@@ -102,7 +102,7 @@ try {
 //    "no sourced answer" copy, never a fabricated/leaked stance.
 {
   const { pg, errs } = await newPage();
-  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`, { place: { state: 'Alabama', county: '' } });
+  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`, { place: { state: 'Alabama', county: '—' } });
   await new Promise(r => setTimeout(r, 700));
 
   await openCheck(pg);
@@ -127,7 +127,7 @@ try {
 // 3. The check lives under Leaving a job, and nowhere else.
 {
   const { pg, errs } = await newPage();
-  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`, { place: { state: 'Texas', county: '' } });
+  await gotoApp(pg, `http://127.0.0.1:${PORT}/index.html`, { place: { state: 'Texas', county: '—' } });
   await new Promise(r => setTimeout(r, 800));
   const grid = await bodyText(pg);
 

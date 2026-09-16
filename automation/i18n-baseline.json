@@ -1,0 +1,5 @@
+{
+  "note": "Un-extracted user-facing strings still baked into index.dev.html. The build fails if this goes UP. Lower it as screens move to t(); the target is 0. See automation/check-i18n.mjs.",
+  "distinct": 0,
+  "occurrences": 0
+}

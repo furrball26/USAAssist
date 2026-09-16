@@ -113,18 +113,42 @@ try {
   await pg.close();
 }
 
-// ── 3 · the intro offers exactly one way on, and it is not a trap ──
+// ── 3 · the intro offers exactly one way ON, and it is not a trap ──
 // There used to be a "Skip" link under the primary button wired to the SAME
 // handler: two controls, one destination, and an opt-out that opted out of
 // nothing. It is gone, so assert the shape rather than the old label — a
 // second CTA reappearing here is the regression worth catching.
+//
+// The language picker sits on this screen too (LangBar), and deliberately: a
+// reader who cannot read English cannot go looking for a settings menu
+// labelled in English, so the one screen everyone starts on is where the
+// choice has to be. It is not a second way on — it changes the language of
+// the screen you are already reading — so it is excluded by its role, and
+// then checked BELOW to be sure that is actually true of it.
 {
   const { pg } = await freshPage();
   await gotoApp(pg, URL_, { freshVisitor: true });
   const ctas = await pg.evaluate(() => [...document.querySelectorAll('button')]
-    .map(b => (b.textContent || '').trim())
-    .filter(t => t && !/^(Laws|All rights|Agencies)$/.test(t)));
+    .filter(b => !b.closest('[role="group"]'))
+    .map(b => (b.textContent || '').trim()).filter(Boolean));
   ok(ctas.length === 1, `the welcome screen offers one call to action, not several — found: ${JSON.stringify(ctas)}`);
+
+  // The exclusion above is only honest if the excluded controls really do stay
+  // put. Pressing one must translate this screen, not leave it.
+  await pg.evaluate(() => {
+    const b = [...document.querySelectorAll('[role="group"] button')].find(x => (x.textContent || '').trim() === 'Español');
+    if (b) b.click();
+  });
+  await new Promise(r => setTimeout(r, 600));
+  ok(await pg.$('#onb-state') === null, 'choosing a language stays on the welcome screen — it is a control, not a destination');
+  ok(/Conozca sus derechos en el trabajo/.test(await pg.evaluate(() => document.body.innerText)),
+     'and it does translate the screen it is on');
+  await pg.evaluate(() => {
+    const b = [...document.querySelectorAll('[role="group"] button')].find(x => (x.textContent || '').trim() === 'English');
+    if (b) b.click();
+  });
+  await new Promise(r => setTimeout(r, 600));
+
   await clickText(pg, 'Find my state’s rules');
   ok(await pg.$('#onb-state') !== null, 'that one button leaves the welcome screen for the state map');
   await pg.close();

@@ -115,9 +115,16 @@ try {
       .filter(d => /^THE LAW$/m.test(d.innerText || '') && d.querySelectorAll('div').length < 4)
       .length);
   ok(cards > 0, `fact cards render a distinct THE LAW block (${cards} found)`);
-  const linkText = await pg.evaluate(() =>
-    [...document.querySelectorAll('a')].some(a => /Read the official text/.test(a.textContent)));
-  ok(linkText, 'each law block links out to the official text rather than claiming to be it');
+  /* Checks the behaviour, not the wording: this used to pin the exact string
+     "Read the official text", so rewording the link failed a suite that has
+     nothing to do with the wording. What must hold is that every law block
+     sends the reader to the authority instead of posing as it. */
+  const outbound = await pg.evaluate(() =>
+    [...document.querySelectorAll('a')]
+      .filter(a => /official text/i.test(a.textContent || ''))
+      .map(a => ({ href: a.href, offOrigin: new URL(a.href).origin !== location.origin })));
+  ok(outbound.length > 0 && outbound.every(l => /^https:\/\//.test(l.href) && l.offOrigin),
+     `each law block links out to the official text rather than claiming to be it (${outbound.length})`);
 
   // Back returns to the index.
   await pg.evaluate(() => {
