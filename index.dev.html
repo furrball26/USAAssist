@@ -91,21 +91,17 @@
     stroke:#FFFDF8;stroke-width:6;stroke-linejoin:round}
   .wlLeader{stroke:#4A5162;stroke-width:1.6;fill:none;vector-effect:non-scaling-stroke}
   .wlLeaderDot{fill:#4A5162}
-  /* County names are words, not codes, so they need to be smaller to fit and
-     are only drawn where there is room (see lr in content/geo/<ABBR>.json).
-     Sized in viewBox units, which every state normalises to 1000 wide — so the
-     RENDERED size is 18 x (container / 1000). In the 342px column of a phone
-     that is 6.2px, at which glyph spacing collapses and "Humboldt" renders as
-     "Humb o ld t". Genuinely illegible, and worse than nothing: it reads as a
-     broken map rather than an unlabelled one.
-     So they are drawn only from the desktop tier, where the 680px column puts
-     them at ~12px. Below that the map is unlabelled by design and the live
-     caption under it carries the name instead. */
-  .wlCountyLabel{display:none}
-  @media (min-width:1024px){
-    .wlCountyLabel{display:block;font:700 18px 'Atkinson Hyperlegible',sans-serif;fill:#14181F;
-      paint-order:stroke;stroke:#FFFDF8;stroke-width:4;stroke-linejoin:round}
-  }
+  /* The county map carries no drawn names. There is no .wlCountyLabel any
+     more, and that is the point: county names are words, not two-letter
+     codes, and they were sized in viewBox units that every state normalises
+     to 1000 wide. Eighteen of those units is ~12px in the 680px desktop
+     column and 6.2px in a phone's 342px one — small enough that glyph
+     spacing collapses and "Humboldt" reads as "Humb o ld t".
+     Hiding them below the desktop tier only narrowed the problem; at their
+     most legible they were still hard to read, and text you have to squint at
+     on a map makes the map look broken rather than clean. The live caption
+     under the map names the county instead, on hover, focus and selection —
+     one name, at a size meant to be read. */
   /* Decorative copy on the welcome screen — no pointer, no focus. */
   .wlUsMapDecor path{fill:#EEF1FF;stroke:#14181F;stroke-width:1.6;
     vector-effect:non-scaling-stroke;cursor:default}
@@ -1904,7 +1900,6 @@ function SmallStateRow({ states, value, onPick, onHover }) {
    shipped it. */
 /* Drawn county labels drop the redundant suffix — it's a county map. The
    accessible label and the stored value keep the full string. */
-const COUNTY_LABEL_STRIP = /\s+(County|Parish|Borough|Census Area|Municipio|Municipality|City and Borough)$/i;
 
 function StateCountyMap({ stateName, value, onPick }) {
   const abbr = US_STATE_ABBR[stateName] || '';
@@ -1952,27 +1947,13 @@ function StateCountyMap({ stateName, value, onPick }) {
               onFocus={() => setHovered(full)} onBlur={() => setHovered(null)} />
           );
         })}
-        <g className="wlMapLabels" aria-hidden="true">
-          {geo.counties.map(c => {
-            // `lab` is decided in automation/build-county-geo.mjs, which rejects
-            // labels that don't fit their shape OR collide with a neighbour's.
-            if (!c.lab) return null;
-            const short = c.name.replace(COUNTY_LABEL_STRIP, '');
-            const on = value === c.name;
-            return (
-              <text key={c.fips} x={c.lx} y={c.ly} className="wlCountyLabel" textAnchor="middle"
-                style={on ? { fill: '#fff' } : null}>{short}</text>
-            );
-          })}
-        </g>
       </svg>
-      {/* Names are drawn only where the county is big enough to hold one —
-          about two-thirds of California's 58, but barely a tenth of Texas's
-          254, whose counties run ~60 viewBox units across while a name like
-          "Nacogdoches" needs ~89. Labelling the rest anyway would stack
-          unreadable text on itself. Whatever is unlabelled is still named
-          here on hover or focus, and in the list below. aria-live so a
-          screen-reader user tabbing the map hears where they are. */}
+      {/* The only place a county is named on the map. Nothing is drawn on the
+          shapes themselves any more (see .wlCountyLabel's note in the style
+          block), so this line carries the whole job: it fills on hover, on
+          focus and on selection, at a size meant to be read. min-height keeps
+          the map from jumping as it fills and empties. aria-live so a
+          screen-reader user tabbing the shapes hears where they are. */}
       <p aria-live="polite" style={css("margin:0;min-height:24px;text-align:center;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#14181F")}>{shown}</p>
     </div>
   );
